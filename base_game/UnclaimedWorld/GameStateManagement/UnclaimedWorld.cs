@@ -153,6 +153,13 @@ public class UnclaimedWorld : Game
 		}
 		while (flag);
 		base.IsMouseVisible = true;
+
+		// The studio never set this, so the title bar showed whatever MonoGame defaulted to from
+		// the assembly. Named explicitly now, because this build is not their game and should not
+		// present itself as though it were - see license.md section 3, which permits this name
+		// and forbids anything implying an official release.
+		base.Window.Title = GameName;
+
 		base.Initialize();
 	}
 
@@ -318,8 +325,23 @@ public class UnclaimedWorld : Game
 		return AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Version;
 	}
 
+	/// <summary>
+	/// The version as a player should read it: "1.0", not "1.0.0.0".
+	/// </summary>
+	/// <remarks>
+	/// Version.ToString() prints every component the assembly declares, so a plain 1.0 release
+	/// reads "1.0.0.0" in the fatal-error title and on the save/load screen. Trimming to
+	/// major.minor is cosmetic and stops there - GetVersion() still returns the real Version, and
+	/// SnapshotHeader still writes THAT into saves, so nothing that parses a version sees this.
+	/// </remarks>
 	public static string GetVersionAsString()
 	{
-		return GetVersion().ToString();
+		Version v = GetVersion();
+		return v.Build > 0 || v.Revision > 0
+			? v.ToString()
+			: $"{v.Major}.{v.Minor}";
 	}
+
+	/// <summary>The name shown on the window and anywhere the game names itself.</summary>
+	public const string GameName = "Unclaimed World Deluxe";
 }
