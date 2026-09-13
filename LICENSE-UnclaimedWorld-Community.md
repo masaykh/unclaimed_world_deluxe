@@ -1,17 +1,15 @@
 UNCLAIMED WORLD COMMUNITY LICENSE
 Version 1.0
 
-Copyright © 2016–2026 Refactored Games
-
-Founders: Lars Pedersen and Morten Pedersen
+Copyright © 2016–2026 Refactored Games (Morten Pedersen)
 
 This license applies to the source code, game assets, and other materials
-identified as being released under this license by Refactored Games
+identified as being released under this license by Refactored Games (Morten Pedersen)
 ("the Original Materials").
 
 1. GRANT OF RIGHTS
 
-Refactored Games grants you a worldwide, royalty-free, non-exclusive license
+Refactored Games (Morten Pedersen) grants you a worldwide, royalty-free, non-exclusive license
 to:
 
 - use, copy, study, and modify the Original Materials;
@@ -38,7 +36,7 @@ In particular, you may not:
 - monetize such a project through advertising, subscriptions, donations,
   crowdfunding, Patreon, sponsorship, or similar means.
 
-Refactored Games may grant written permission for commercial use on a
+Refactored Games (Morten Pedersen) may grant written permission for commercial use on a
 case-by-case basis.
 
 3. NAME AND BRANDING
@@ -56,39 +54,24 @@ and "Unclaimed World Deluxe".
 You may use the Unclaimed World logo as it appears in the original game.
 
 You may not modify or use the name, logo, or other branding in a manner that
-suggests that Refactored Games officially endorses, publishes, maintains,
+suggests that Refactored Games (Morten Pedersen) officially endorses, publishes, maintains,
 supports, or is otherwise responsible for the derivative project.
 
 4. NO ENDORSEMENT OR WARRANTY
 
 A derivative project must clearly state that it is an unofficial community
 project and is not endorsed, published, maintained, or supported by
-Refactored Games, unless Refactored Games has expressly agreed otherwise.
+Refactored Games (Morten Pedersen), unless Refactored Games (Morten Pedersen) has expressly agreed otherwise.
 
-Refactored Games does not accept responsibility for derivative projects or
+Refactored Games (Morten Pedersen) does not accept responsibility for derivative projects or
 for any damage or loss resulting from their use.
 
 5. COPYRIGHT AND OWNERSHIP
 
-Refactored Games retains all copyright and other intellectual property
+Refactored Games (Morten Pedersen) retains all copyright and other intellectual property
 rights in the original Unclaimed World game, its source code, assets,
 characters, artwork, audio, trademarks, logos, and other original materials,
 except for materials owned by third parties.
-
-Nothing in this license transfers ownership of those rights.
-
-The founders of Refactored Games are Lars Pedersen and Morten Pedersen.
-
-If Refactored Games ceases to exist, is dissolved, or otherwise no longer
-operates as a legal entity, the rights described above shall not be deemed
-to have been abandoned or transferred to the public domain solely as a
-result of the dissolution or cessation of Refactored Games. To the extent
-permitted by applicable law, those rights shall remain with, or pass to,
-the persons or entities legally entitled to them, including Lars Pedersen
-and Morten Pedersen as the founders of Refactored Games.
-
-The permissions granted by this license to the community shall continue
-regardless of whether Refactored Games continues to exist.
 
 You must retain existing copyright notices and attribution information in
 the Original Materials.
@@ -106,7 +89,7 @@ Materials.
 
 7. THIRD-PARTY MATERIALS
 
-This license applies only to materials that Refactored Games has the right
+This license applies only to materials that Refactored Games (Morten Pedersen) has the right
 to license under these terms.
 
 Third-party software, libraries, assets, fonts, music, middleware, or other
@@ -131,7 +114,7 @@ violate its terms.
 10. NO WARRANTY
 
 THE ORIGINAL MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED. TO THE MAXIMUM EXTENT PERMITTED BY LAW, REFACTORED GAMES
+EXPRESS OR IMPLIED. TO THE MAXIMUM EXTENT PERMITTED BY LAW, REFACTORED GAMES (MORTEN PEDERSEN)
 DISCLAIMS ALL WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS
 FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
@@ -145,9 +128,9 @@ be limited under applicable law.
 For permission to use the Original Materials commercially, or for other
 uses not permitted by this license, contact:
 
-Refactored Games
-larsped@gmail.com
-mortendesign@hotmail.com
+Refactored Games (Morten Pedersen)
+larsped at gmail.com
+mortendesign at hotmail.com
 
 ---
 

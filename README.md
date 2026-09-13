@@ -1,17 +1,49 @@
 # Unclaimed World Deluxe
 
+**1.0**
+
 A community port of [*Unclaimed World*](https://store.steampowered.com/app/284100/) — the
 survival colony sim by **Refactored Games** — from its shipped .NET Framework 4.5.1 / MonoGame 3.6
-build onto **.NET 8 + MonoGame 3.8.5.1 / DesktopGL**, so it runs natively on Windows, Linux and
-macOS and can be modified and rebuilt.
+build onto **.NET 8 + MonoGame 3.8.5.1 / DesktopGL**. It runs natively on Windows, Linux and
+macOS, can be rebuilt from source, and ships a set of gameplay mods you can turn off.
 
 > **This is an unofficial community project. It is not endorsed by, affiliated with, or supported
-> by Refactored Games.** Please do not report problems with this build to them. See
-> [license.md](license.md).
+> by Refactored Games.** Please do not report problems with this build to them.
+> See [license.md](license.md).
 
-**You need to own the game.** This repository contains code, build tooling, the studio's released
-source and the data files that came with it. It does **not** contain the game's art, audio,
-models or compiled content — those stay in your own Steam install.
+**You need to own the game.** The archives and this repository contain **no game content** — no
+art, audio, models or `Content/`. Those are not part of what the studio released; you copy them
+from your own install. Your Steam copy is never modified.
+
+## Getting it
+
+**Download** a release archive for your platform, copy `Content/` and `data/` from your own
+install next to the executable, and run it. Each archive carries an `install.md` with the details,
+including the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0) requirement and
+— for macOS, which ships unsigned — the Gatekeeper command.
+
+**Or build it**, on any of the three platforms: [build.md](build.md).
+
+## What is different from the stock game
+
+The port itself is meant to be invisible: same game, running on a current runtime, on three
+platforms instead of one. What you will actually notice is the mods — **seven of them, on by
+default, each individually switchable** in the options menu under **MODS**, or all off with
+`-nomods`.
+
+| mod | what it changes |
+|---|---|
+| **Unhidden** | EDIT and TEST buttons the studio implemented and never wired up, user scenarios in the picker, newest-first saves, wheel-scrolling data sheets, `O` for shadows — plus charcoal from peat and a resource-respawn fix |
+| **Healing** | wounds can heal fully rather than stopping halfway, at a rate set by food, sleep and morale rather than muscle energy alone |
+| **Self-preservation** | a colonist not in a Bold stance, and an animal nobody is already handling, stop going looking for fights nobody ordered |
+| **Disassembly** | salvage recipes generated from the recipes that built the thing, so metal tools, weapons, furniture and textiles come apart — not just the handful the studio hand-wrote |
+| **Balanced diet** | meat carries protein, plants carry micronutrients, only a cooked meal carries both; one food source stops feeding a colonist indefinitely |
+| **Magnification** | zoom *below* 1, which the stock game clamps away: less screen for the interface, more for the world |
+| **Map edge** | the camera stops at the edge of the map instead of allowing half a screen of empty grid |
+
+Most exist because **Kastuk** asked for them, and each mod's source opens with the report that
+prompted it. [how_to_use_mods.md](how_to_use_mods.md) has the switches and the two things worth
+knowing about saves.
 
 ## How this repository is organised
 
@@ -20,38 +52,49 @@ The organising rule, and the one thing to understand before changing anything:
 > **`base_game/` is the original game plus core work. `mods/` is everything that changes how the
 > game plays.**
 
-Core means the port itself — .NET 8, MonoGame 3.8.5.1, DesktopGL — and bugfixes. A crash is a
-bug; a balance change is not. If a change makes the game behave differently at the player's
-level and it is not fixing something broken, it belongs in `mods/`, switchable, off-able, and
-readable on its own.
+Core means the port — .NET 8, MonoGame 3.8.5.1, DesktopGL — and bugfixes. A crash is a bug; a
+balance change is not, however clearly it was a mistake. `unhidden.capResourceRespawn` fixes a
+clamp the studio computed and discarded, and it is *still* a mod, because it changes the food
+economy of a running game.
 
 | directory | what is in it |
 |---|---|
-| **`base_game/`** | the game: four projects, the port, the modding framework |
-| **`mods/`** | gameplay mods, compiled in but individually switchable at runtime |
-| **`assets/`** | asset **sources** a human edits — `.fx` shaders today |
+| **`base_game/`** | the game: four projects, the port, and the modding *framework* |
+| **`mods/`** | the gameplay mods, compiled in but individually switchable at runtime |
+| **`assets/`** | asset sources a human edits — the `.fx` shaders and the menu animation |
 | **`scenarios/`** | the studio's maps, as released |
-| **`translations/`** | the string tables |
+| **`translations/`** | the string table — read `translations/README.md` first, it is smaller than it looks |
 | **`tools/`** | the build scripts and the tools they drive |
 
-Compiled content is a build output and is not committed. `assets/` holds what you would edit;
-`Content/` is produced from it.
+Compiled shaders are a build output and are not committed: `assets/effects/*.fx` is the source,
+and the build compiles it. Everything else in `Content/` comes from your own copy of the game —
+the build never generates it and this repository never contains it.
 
 ## Documents
 
 | | |
 |---|---|
 | [build.md](build.md) | building and packaging, on any of the three platforms |
-| [modding.md](modding.md) | writing a mod, the hook points, the settings system |
+| [modding.md](modding.md) | writing a mod: the hook points, the settings system, the data export |
 | [how_to_use_mods.md](how_to_use_mods.md) | installing and switching mods, for players |
-| [license.md](license.md) | the Community License, and what it does and does not allow |
+| [license.md](license.md) | which licence covers what, and what they require |
 
-## Status
+## Status, honestly
 
-The port runs. It is played end to end — new game, scenario load, save and load, terrain, models,
-animation, the full HUD, the simulation, Steam achievements.
+It runs, and is played end to end: new game, scenario load, save and load, terrain, models,
+animation, the full HUD, the simulation. Every asset — 33 of 33, all 19 effects among them — is
+checked to load on a real graphics device on every build, without launching the game.
 
-Honest about what is not done: the render comparison between the two shader compilers has not
-been measured, several cross-backend passes still differ slightly, and the rebase onto the
-studio's released 1.0.4.7 source (rather than the decompiled tree this was built from) is in
-progress. See `todo.md` in the porting repository for the live list.
+What is **not** done:
+
+- **`base_game/` is decompiled, not the studio's released source.** The two are identical at
+  declaration level — 1801 types, 25,974 members, zero differences — but rebasing onto the real
+  source is a separate project and has not happened. Until it does, this is ILSpy output with the
+  port applied on top.
+- **Rendering is verified by eye, not measured.** Nobody has diffed this build's output against
+  the original frame by frame, and a handful of cross-backend passes are known to differ slightly.
+- **Steam achievements work on Windows only.** The Linux and macOS natives are not bundled; the
+  game degrades gracefully without them.
+- **The Linux and macOS archives are built but not yet play-tested** on those platforms.
+
+CI builds and packages all four platforms on every push, and cuts the release archives from a tag.

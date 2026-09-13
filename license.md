@@ -30,7 +30,7 @@ a name implying an official sequel — *"Unclaimed World 2"* and the like — or
 or logo suggesting the studio endorses or maintains this.
 
 **Copyright notices stay (§5).** Unclaimed World, its code, art, audio, characters, trademarks
-and logos remain the property of Refactored Games. Founders: Lars Pedersen and Morten Pedersen.
+and logos remain the property of Refactored Games (Morten Pedersen).
 
 **Redistribution carries the license (§8).** Any build or fork you distribute must include a copy
 of the Community License and identify itself as an unofficial community project.
