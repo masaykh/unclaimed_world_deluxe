@@ -56,29 +56,28 @@ echo "==> ShadowDusk source at $SD_REF"
 # does not support targeting .NET 10.0". `-f` alone is not enough: it picks the output TFM but
 # restore still walks every TargetFrameworks entry.
 #
-# Restricting them has a consequence worth stating, because it cost a red CI run. ShadowDusk sets
+# This repository's global.json pins the SDK to 8.x with rollForward:latestFeature, and the
+# clone lands UNDER this repository, so it inherits that pin. Installing a .NET 10 SDK does not
+# help - global.json decides which one runs, and it will never pick 10. So net8.0 is not a
+# fallback here, it is the only path, and the override is always needed.
+#
+# Restricting the target frameworks has a consequence worth stating, because it cost two red CI
+# runs. ShadowDusk sets
 #
 #     <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
 #
 # and every CI provider sets CI=true - so on a runner, restore demands that the project's target
 # frameworks match the lock file's exactly. A single-TFM override does not match, and restore
-# fails NU1004 with a message that reads like the lock file is corrupt when nothing is wrong
-# with it. (Reproduce locally with `CI=true dotnet build ...`; without it the check is off and
-# the same command succeeds, which is why this passed here and failed there.)
+# fails NU1004 with a message that reads like the lock file is corrupt when nothing is wrong with
+# it. Reproduce locally with `CI=true dotnet build ...`; without CI set the check is simply off,
+# which is why this passed here and failed there.
 #
-# So locked mode is disabled on this path and only this one. The lock file is a supply-chain
-# protection and is honoured wherever it can be - which is why CI installs the .NET 10 SDK and
-# takes the first branch. See .github/workflows/content.yml.
-if "$DOTNET" --list-sdks | grep -q '^10\.'; then
-  echo "==> building ShadowDuskCLI (net8.0 + net10.0, lock file enforced)"
-  TFM_ARGS="-f net8.0"
-else
-  echo "==> building ShadowDuskCLI (net8.0 only - no .NET 10 SDK, lock file not enforced)"
-  TFM_ARGS="-f net8.0 -p:TargetFrameworks=net8.0 -p:RestoreLockedMode=false"
-fi
-
+# Turning locked mode off costs less than it looks. The lock file pins ShadowDusk's DEPENDENCY
+# versions; we already pin ShadowDusk itself to a commit SHA above, which is the stronger
+# guarantee and the one that decides what our shaders compile to.
+echo "==> building ShadowDuskCLI (net8.0)"
 "$DOTNET" build "$SRC/src/ShadowDusk.Cli/ShadowDusk.Cli.csproj" \
-  -c Release $TFM_ARGS -v q --nologo
+  -c Release -f net8.0 -p:TargetFrameworks=net8.0 -p:RestoreLockedMode=false -v q --nologo
 
 BUILT="$SRC/src/ShadowDusk.Cli/bin/Release/net8.0"
 [ -f "$BUILT/ShadowDuskCLI.dll" ] || { echo "FATAL: build produced no ShadowDuskCLI.dll" >&2; exit 1; }
