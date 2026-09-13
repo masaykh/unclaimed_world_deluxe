@@ -89,12 +89,10 @@ gh release create "$TAG" "$@" \
   --title "Unclaimed World Deluxe ${TAG#v}" \
   --generate-notes \
   --notes "
-An unofficial community port. **Not endorsed by, affiliated with, or supported by Refactored
-Games** — please don't take problems with this build to them.
+*Unclaimed World* on .NET 8 and DesktopGL — Windows, Linux and macOS, with seven gameplay mods
+you can switch off.
 
-**You need to own the game** — for its \`Content\` folder, and only that. The maps, the string
-table and the menu animation are already in the archive, because Refactored Games released them.
-\`install.md\` inside has the details. Your Steam copy is never modified.
+**Download, extract, run.** Nothing to install, nothing to copy.
 
 | download | for |
 |---|---|
@@ -104,7 +102,19 @@ table and the menu animation are already in the archive, because Refactored Game
 | \`...-osx-arm64.7z\` | macOS, Apple Silicon |
 
 Needs the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0). macOS builds are
-unsigned — \`install.md\` has the Gatekeeper command.
+unsigned, so Gatekeeper needs a word — \`install.md\` inside has the command.
+
+---
+
+**This is an unofficial community project — not endorsed by, affiliated with, or supported by
+Refactored Games.** Please don't take problems with this build to them.
+
+It exists because Refactored Games released *Unclaimed World*'s source **and its assets** under
+the Unclaimed World Community License. That was a generous thing to do, and it is the only
+reason any of this is possible.
+
+**Please [buy the game](https://store.steampowered.com/app/284100/)** if you have not — this is
+a port of someone's work, not a way around paying for it.
 "
 
 echo

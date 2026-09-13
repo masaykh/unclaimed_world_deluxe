@@ -62,6 +62,11 @@ jobs:
             dotnet build "$p"/*.csproj -c Release -p:UwPlatform=GL
           done
 
+      # A document that is confidently wrong is worse than one that is missing - the reader has
+      # no reason to doubt it. Four claims outlived what they described before this existed.
+      - name: Documents are current
+        run: sh tools/build/82-verify-docs-current.sh
+
   cross-publish:
     needs: build
     runs-on: ubuntu-latest
