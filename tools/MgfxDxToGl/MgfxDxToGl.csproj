@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Converts the shipped DirectX-profile MGFX effects to OpenGL-profile ones, so the DesktopGL
+    build can load them without recovering HLSL for every effect.
+
+    How it can work at all: 16 of the 19 shipped effects were compiled at a level_9_x profile,
+    so their DXBC carries an Aon9 chunk holding real DX9 (SM2/SM3) bytecode alongside the
+    DX11 bytecode. That is exactly the input MojoShader consumes, and MojoShader's GLSL profile
+    is what MonoGame's own OpenGLShaderProfile uses. So the shader translation is the same one
+    mgfxc would do - just fed from the shipped bytecode instead of from source.
+
+    Why this is a separate tool from MgfxTranscode: MgfxTranscode is deliberately pure byte
+    manipulation with no dependencies, and it ships in the modder archive. This one needs a
+    native mojoshader.dll beside it, which is a different deployment story.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>mgfxdxtogl</AssemblyName>
+    <RootNamespace>UW.Tools.MgfxDxToGl</RootNamespace>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Shared with MgfxTranscode rather than duplicated: this is the XNB container reader,
+         and having two copies drift would be worse than the coupling. -->
+    <Compile Include="..\MgfxTranscode\XnbFile.cs" />
+    <Compile Include="..\MgfxTranscode\Lz4DecoderStream.cs" />
+  </ItemGroup>
+
+  <!-- mojoshader.dll comes from the dotnet-mgfxc tool package, so the version that translates
+       the shaders is the same one MonoGame's own effect compiler uses. Copied next to the exe
+       by build/33-build-gl-from-dx.sh; not a PackageReference because the tool package
+       delivers it as tool content, not as a library asset. -->
+
+</Project>

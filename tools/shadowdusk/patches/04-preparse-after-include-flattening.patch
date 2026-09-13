@@ -1,0 +1,70 @@
+diff --git a/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs b/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs
+index e7bc85f..b429270 100644
+--- a/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs
++++ b/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs
+@@ -93,14 +93,25 @@ internal sealed class CompilationPipeline
+ 
+         string sourceFileName = options.SourceFileName ?? "<source>";
+ 
+-        // Stage 1: FX9 pre-parser.
+-        var parseResult = FxPreParser.Parse(hlslSource, sourceFileName);
+-        if (parseResult.IsFailure)
+-            return Fail(FromFxParseError(parseResult.Error));
+-
+-        FxParseResult fxParsed = parseResult.Value;
+-
+-        // Stage 2: Preprocessor — inject platform macros and flatten #includes.
++        // Stage 1: Preprocessor — inject platform macros and flatten #includes.
++        //
++        // This runs BEFORE the FX9 pre-parser, not after. The pre-parse is what rewrites every
++        // legacy FX9 construct into something DXC accepts — the `texture`/`sampler_state`
++        // declarations, the `tex2D` calls, the `: COLOR` return semantic — and it can only
++        // rewrite what it can see. Parsing the entry file first left every one of those
++        // constructs UNTOUCHED when it lived in an #include'd header, and the failure surfaced
++        // far downstream as a DXC error pointing into the header ("Unsupported intrinsic",
++        // "invalid semantic 'COLOR' for ps 6.0") with nothing to connect it to the rewrite that
++        // should have fired. Splitting a shader across .fxh headers is ordinary practice, so
++        // this affected whole shaders, not edge cases: four of this project's nineteen effects
++        // failed for no reason other than which FILE their sampler or their PS entry sat in.
++        //
++        // Flattening is a pure text operation (prepend macros, inline #include) with no
++        // dependency on the strip, so the order is free to be this way round. The pre-parse
++        // below then feeds its STRIPPED text back into this same PreprocessedSource rather than
++        // re-flattening (which would double-prepend the macros) — the pattern the zero-technique
++        // fallback further down already uses.
++        //
+         // Pre-check (no exception-as-control-flow): an unsupported target is reported
+         // as a Result error, never caught from PlatformMacros.For.
+         if (!PlatformMacros.IsSupported(options.Target))
+@@ -130,7 +141,7 @@ internal sealed class CompilationPipeline
+         var preprocessor = new Preprocessor();
+ 
+         var preprocessResult = preprocessor.Flatten(
+-            fxParsed.StrippedHlsl,
++            hlslSource,
+             sourceFileName,
+             macros,
+             includeResolver,
+@@ -139,8 +150,20 @@ internal sealed class CompilationPipeline
+         if (preprocessResult.IsFailure)
+             return Fail(preprocessResult.Error);
+ 
+-        PreprocessedSource preprocessed = preprocessResult.Value;
+-        IReadOnlyList<ShaderError> preprocessWarnings = preprocessed.Warnings;
++        PreprocessedSource flattened = preprocessResult.Value;
++        IReadOnlyList<ShaderError> preprocessWarnings = flattened.Warnings;
++
++        // Stage 2: FX9 pre-parser, over the FLATTENED source — see Stage 1's note.
++        var parseResult = FxPreParser.Parse(flattened.Text, sourceFileName);
++        if (parseResult.IsFailure)
++            return Fail(FromFxParseError(parseResult.Error));
++
++        FxParseResult fxParsed = parseResult.Value;
++
++        // The stripped text still carries the macro prepend and the inlined headers (the strip
++        // only blanks technique/annotation/sampler_state spans in place), so it is complete —
++        // re-flattening it would double-prepend the macros.
++        PreprocessedSource preprocessed = flattened with { Text = fxParsed.StrippedHlsl };
+ 
+         // LAZY DXC instance, hoisted above the zero-technique fallback so the fallback's
+         // preprocess pass and the GL reflection compile share one instance/disposal

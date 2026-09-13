@@ -1,0 +1,43 @@
+# Build output. Everything the build produces lives under artifacts/ and none of it is committed.
+/artifacts/
+
+# Per-project intermediates, for anything that escapes the artifacts pivot.
+[Bb]in/
+[Oo]bj/
+
+# COMPILED CONTENT IS A BUILD OUTPUT.
+#
+# assets/ holds what a human edits - the .fx shader sources, and in time the .png, .wav and
+# .spritefont. The .xnb the pipeline produces from them does not belong in git: it would make
+# every texture tweak a binary diff, and it is reproducible from what is here.
+#
+# The game's own art, audio and models are not here at all and never will be - they are not part
+# of what Refactored Games released, and you need your own copy of the game. See license.md.
+/Content/
+*.xnb
+
+# The shader compiler: a pinned clone of our ShadowDusk fork plus natives from NuGet, assembled
+# by tools/shadowdusk/build-shadowdusk.sh into artifacts/. Fetched, never vendored - 155 MB
+# across all RIDs, and a 27 MB .so never delta-compresses, so committing it would add a full
+# copy to history on every rebuild.
+/tools/shadowdusk/bin/
+
+# Player state, if someone runs the game from the tree.
+/user/
+/Saves/
+Options.xml
+ModSettings.xml
+
+# Runtime droppings. A stale Errors.txt shipped in every package for weeks once, looking like a
+# report on the build you had just made.
+Errors.txt
+RenderTrace.txt
+/RenderTrace/
+
+# Editors and OS
+.vs/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db

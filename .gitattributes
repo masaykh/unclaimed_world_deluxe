@@ -1,0 +1,14 @@
+* text=auto
+*.cs      text eol=crlf
+*.csproj  text eol=crlf
+*.sln     text eol=crlf
+*.props   text eol=crlf
+*.config  text eol=crlf
+*.ps1     text eol=crlf
+*.sh      text eol=lf
+*.fx      text eol=crlf
+*.hlsl    text eol=crlf
+*.xnb     binary
+*.dll     binary
+*.exe     binary
+*.png     binary

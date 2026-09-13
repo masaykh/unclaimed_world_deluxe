@@ -1,0 +1,217 @@
+diff --git a/src/ShadowDusk.Compiler/Internal/GlStructOutputColorRewriter.cs b/src/ShadowDusk.Compiler/Internal/GlStructOutputColorRewriter.cs
+index 913a295..873f5bf 100644
+--- a/src/ShadowDusk.Compiler/Internal/GlStructOutputColorRewriter.cs
++++ b/src/ShadowDusk.Compiler/Internal/GlStructOutputColorRewriter.cs
+@@ -57,17 +57,31 @@ internal static class GlStructOutputColorRewriter
+             string? returnType = FindFunctionReturnType(hlsl, entry);
+             if (returnType is not null)
+                 outputStructs.Add(returnType);
++
++            // The other way a D3D9 pixel shader states its outputs: a `void` entry writing
++            // through an `out` STRUCT parameter —
++            //   void RenderEmitters(in VertexShaderOutput input, out EmitterPixelShaderOutput o)
++            // Its struct members carry exactly the same `: COLOR<n>` semantics the return form
++            // does, and DXC rejects them identically, so it needs the same retarget. (This is
++            // the shape in Refactored Games' ModelShader.fxh; without it two effects fail with
++            // "Semantic COLOR is invalid for shader model: ps" and the return-form rewrite
++            // never even looks at them, because their return type is `void`.)
++            foreach (string outStruct in CollectOutParameterTypes(hlsl, entry))
++                outputStructs.Add(outStruct);
+         }
+ 
+         if (outputStructs.Count == 0)
+             return hlsl;
+ 
+-        // 2b) SAFETY: never rewrite a struct that is ALSO used as a function PARAMETER type — it
+-        //     is a shader INPUT there (its COLOR0 is a valid DXC input interpolant), and rewriting
+-        //     the shared definition to SV_Target would break that input use. A struct used as both
+-        //     a PS return AND an input is pathological; we leave it unrewritten so the GL compile
+-        //     surfaces the original, LOUD COLOR error rather than a silently-wrong rewrite.
+-        outputStructs.RemoveWhere(s => IsUsedAsParameterType(hlsl, s));
++        // 2b) SAFETY: never rewrite a struct that is ALSO used as an INPUT parameter — there its
++        //     COLOR0 is a valid DXC input interpolant, and rewriting the shared definition to
++        //     SV_Target would break that use. A struct used as both a PS output AND an input is
++        //     pathological; we leave it unrewritten so the GL compile surfaces the original,
++        //     LOUD COLOR error rather than a silently-wrong rewrite.
++        //
++        //     An `out`-qualified parameter position does NOT count as such a use: that IS the
++        //     output form resolved just above, so counting it would veto every struct it finds.
++        outputStructs.RemoveWhere(s => IsUsedAsInputParameterType(hlsl, s));
+         if (outputStructs.Count == 0)
+             return hlsl;
+ 
+@@ -87,7 +101,7 @@ internal static class GlStructOutputColorRewriter
+     /// <c>(StructName)</c> followed by <c>)</c>). A local declaration (<c>StructName o;</c> inside
+     /// a body) follows <c>{</c>/<c>;</c>, never <c>(</c>/<c>,</c>, so it does not match.
+     /// </summary>
+-    private static bool IsUsedAsParameterType(string hlsl, string structName)
++    private static bool IsUsedAsInputParameterType(string hlsl, string structName)
+     {
+         int i = 0;
+         while (i < hlsl.Length)
+@@ -98,12 +112,12 @@ internal static class GlStructOutputColorRewriter
+ 
+             if (hlsl[i] == '(' || hlsl[i] == ',')
+             {
+-                int t = SkipParamQualifiers(hlsl, SkipWsAndComments(hlsl, i + 1));
+-                if (t < hlsl.Length && MatchesWordAt(hlsl, t, structName))
++                int t = SkipParamQualifiers(hlsl, SkipWsAndComments(hlsl, i + 1), out bool writesOut);
++                if (!writesOut && t < hlsl.Length && MatchesWordAt(hlsl, t, structName))
+                 {
+                     int afterType = SkipWsAndComments(hlsl, t + structName.Length);
+                     if (afterType < hlsl.Length && IsIdentStart(hlsl[afterType]))
+-                        return true; // 'structName <paramName>' in a parameter position
++                        return true; // 'structName <paramName>' in an INPUT parameter position
+                 }
+             }
+             i++;
+@@ -111,23 +125,105 @@ internal static class GlStructOutputColorRewriter
+         return false;
+     }
+ 
++    /// <summary>
++    /// The struct types passed to <paramref name="entry"/> as <c>out</c> parameters — the D3D9
++    /// pixel-shader output form for a <c>void</c> entry. Only a plain <c>out</c> qualifies:
++    /// <c>inout</c> is both an input and an output, so its semantics cannot be retargeted without
++    /// breaking the input side, and it is left for the loud DXC error.
++    /// </summary>
++    private static IEnumerable<string> CollectOutParameterTypes(string hlsl, string entry)
++    {
++        int parenOpen = FindFunctionParameterList(hlsl, entry);
++        if (parenOpen < 0)
++            yield break;
++
++        // Walk the parameter list to its matching ')', treating each top-level ',' as a
++        // separator. Nested parens (a default-value expression, an attribute) are skipped by
++        // the depth counter so a comma inside one is not mistaken for a separator.
++        int depth = 0;
++        int paramStart = parenOpen + 1;
++        for (int i = parenOpen; i < hlsl.Length; i++)
++        {
++            i = SkipCommentAt(hlsl, i, out bool skipped);
++            if (skipped) { i--; continue; }
++            if (i >= hlsl.Length) break;
++
++            char c = hlsl[i];
++            if (c == '(') { depth++; continue; }
++            if (c == ')')
++            {
++                depth--;
++                if (depth == 0)
++                {
++                    if (TryReadOutParameterType(hlsl, paramStart, i, out string? last))
++                        yield return last!;
++                    yield break;
++                }
++                continue;
++            }
++            if (c == ',' && depth == 1)
++            {
++                if (TryReadOutParameterType(hlsl, paramStart, i, out string? type))
++                    yield return type!;
++                paramStart = i + 1;
++            }
++        }
++    }
++
++    /// <summary>
++    /// Reads one parameter declaration spanning <c>[start, end)</c> and yields its TYPE name when
++    /// the parameter is <c>out</c>-qualified and the type is followed by a parameter name.
++    /// </summary>
++    private static bool TryReadOutParameterType(string hlsl, int start, int end, out string? type)
++    {
++        type = null;
++        if (start >= end)
++            return false;
++
++        int t = SkipParamQualifiers(hlsl, SkipWsAndComments(hlsl, start), out bool writesOut);
++        if (!writesOut || t >= end || !IsIdentStart(hlsl[t]))
++            return false;
++
++        int typeEnd = t;
++        while (typeEnd < end && IsIdentChar(hlsl[typeEnd])) typeEnd++;
++
++        // A type with no parameter name after it is not a declaration we understand.
++        int afterType = SkipWsAndComments(hlsl, typeEnd);
++        if (afterType >= end || !IsIdentStart(hlsl[afterType]))
++            return false;
++
++        type = hlsl.Substring(t, typeEnd - t);
++        return true;
++    }
++
+     /// <summary>Skip leading HLSL parameter qualifiers (<c>in</c>/<c>out</c>/<c>inout</c>/
+-    /// <c>const</c>/<c>uniform</c>) so a qualified parameter type is still recognized.</summary>
+-    private static int SkipParamQualifiers(string s, int i)
++    /// <c>const</c>/<c>uniform</c>) so a qualified parameter type is still recognized, reporting
++    /// whether a plain <c>out</c> (never <c>inout</c>) was among them.</summary>
++    private static int SkipParamQualifiers(string s, int i, out bool writesOut)
+     {
++        writesOut = false;
+         while (true)
+         {
+             int matched = -1;
+             foreach (string q in ParamQualifiers)
+             {
+-                if (MatchesWordAt(s, i, q)) { matched = i + q.Length; break; }
++                if (MatchesWordAt(s, i, q))
++                {
++                    if (q == "out") writesOut = true;
++                    if (q == "inout") writesOut = false;
++                    matched = i + q.Length;
++                    break;
++                }
+             }
+             if (matched < 0) return i;
+             i = SkipWsAndComments(s, matched);
+         }
+     }
+ 
+-    private static readonly string[] ParamQualifiers = { "in", "out", "inout", "const", "uniform" };
++    // Ordered so 'inout' is tested before 'in': 'in' is a prefix of 'inout' only as a substring,
++    // and MatchesWordAt requires identifier boundaries, so either order is correct — but keeping
++    // the longer form first documents the intent.
++    private static readonly string[] ParamQualifiers = { "inout", "in", "out", "const", "uniform" };
+ 
+     // -- Member-semantic rewrite (only within the named struct's balanced braces). ---------
+ 
+@@ -168,6 +264,39 @@ internal static class GlStructOutputColorRewriter
+     /// entry sits at depth &gt; 0 (inside a body) and is preceded by an operator/keyword, so it is
+     /// never mistaken for the definition.
+     /// </summary>
++    /// <summary>
++    /// The index of the <c>(</c> opening <paramref name="entry"/>'s parameter list in its
++    /// top-level definition, or -1 if not found. Same depth-0 discrimination as
++    /// <see cref="FindFunctionReturnType"/>: a CALL to the entry sits inside a body (depth &gt; 0).
++    /// </summary>
++    private static int FindFunctionParameterList(string hlsl, string entry)
++    {
++        int depth = 0;
++        int i = 0;
++        while (i < hlsl.Length)
++        {
++            i = SkipCommentAt(hlsl, i, out bool skipped);
++            if (skipped) continue;
++            if (i >= hlsl.Length) break;
++
++            char c = hlsl[i];
++            if (c == '{') { depth++; i++; continue; }
++            if (c == '}') { if (depth > 0) depth--; i++; continue; }
++
++            if (depth == 0 && IsIdentStart(c) && MatchesWordAt(hlsl, i, entry))
++            {
++                int after = SkipWsAndComments(hlsl, i + entry.Length);
++                if (after < hlsl.Length && hlsl[after] == '(')
++                    return after;
++                i += entry.Length;
++                continue;
++            }
++
++            i++;
++        }
++        return -1;
++    }
++
+     private static string? FindFunctionReturnType(string hlsl, string entry)
+     {
+         int depth = 0;

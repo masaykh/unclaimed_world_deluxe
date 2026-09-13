@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Renders each effect's every technique and pass to a PNG, so the DirectX and OpenGL builds of
+    the same effect can be compared pixel by pixel.
+
+    This is the validation the earlier checks could not give. `roundtrip` proves the container is
+    preserved, `ContentProbe` proves an effect loads, and neither says anything about whether the
+    translated shader computes the same thing - which is exactly how a silent attribute-binding
+    bug survived being called "verified". A render on both backends with identical inputs does
+    say it.
+
+    The comparison needs no knowledge of what any shader was meant to look like: both backends
+    get the same deterministic parameter values, the same geometry and the same clear colour, so
+    agreement is the signal and disagreement localises to one effect, technique and pass.
+
+    Build with -p:UwPlatform=GL for the DesktopGL flavour. Same reasoning as ContentProbe: an
+    OpenGL-profile effect can only be exercised by an OpenGL device.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>effectrender</AssemblyName>
+    <RootNamespace>UW.Tools.EffectRender</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UwPlatform Condition="'$(UwPlatform)' == ''">DX</UwPlatform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UwPlatform)' == 'DX'">
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <DefineConstants>$(DefineConstants);UW_DX</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UwPlatform)' == 'GL'">
+    <TargetFramework>net8.0</TargetFramework>
+    <UseWindowsForms>false</UseWindowsForms>
+    <!--
+      Same switch the game is built with, and here for the same reason: the harness has to feed
+      each backend the vertex data the GAME feeds it, and PORT DEVIATION 14 makes those differ.
+      See TestVertex.Declaration.
+    -->
+    <DefineConstants>$(DefineConstants);UW_GL</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ArtifactsPivots>$(Configuration.ToLowerInvariant())_$(UwPlatform.ToLowerInvariant())</ArtifactsPivots>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UwPlatform)' == 'DX'">
+    <PackageReference Include="MonoGame.Framework.WindowsDX" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UwPlatform)' == 'GL'">
+    <PackageReference Include="MonoGame.Framework.DesktopGL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\base_game\SpriteSheetRuntime\SpriteSheetRuntime.csproj" />
+    <ProjectReference Include="..\..\base_game\AnimationComponentRuntime\AnimationComponentRuntime.csproj" />
+  </ItemGroup>
+</Project>

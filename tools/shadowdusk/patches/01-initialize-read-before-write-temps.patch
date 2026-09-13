@@ -1,0 +1,355 @@
+diff --git a/src/ShadowDusk.Core/D3d9BytecodePatcher.cs b/src/ShadowDusk.Core/D3d9BytecodePatcher.cs
+index 8257f77..43a2669 100644
+--- a/src/ShadowDusk.Core/D3d9BytecodePatcher.cs
++++ b/src/ShadowDusk.Core/D3d9BytecodePatcher.cs
+@@ -3,6 +3,7 @@
+ using System;
+ using System.Buffers.Binary;
+ using System.Collections.Generic;
++using System.Linq;
+ 
+ namespace ShadowDusk.Core;
+ 
+@@ -84,6 +85,10 @@ public static class D3d9BytecodePatcher
+             return Ok(bytecode);
+         }
+ 
++        // Fix #4 runs first and independently: it rebuilds the stream, so everything below
++        // must walk the result rather than the input.
++        bytecode = InitializeReadBeforeWriteTemps(bytecode, major);
++
+         // ---- Pass 1: find fixup sites and the highest temp register in use.
+         var sites = new List<int>(); // byte offset of each instruction token needing a fix
+         bool needsDefClamp = false;
+@@ -357,6 +362,182 @@ public static class D3d9BytecodePatcher
+     private static uint ReadU32(byte[] bytes, int offset) =>
+         BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset, 4));
+ 
++    /// <summary>
++    /// Fix #4: gives a defined value to any temp register that is READ before it is ever
++    /// WRITTEN, by inserting <c>sub rN, c0, c0</c> immediately before the first such read.
++    ///
++    /// MojoShader validates this linearly, in token order (mojoshader.c, in the destination
++    /// operand walk):
++    ///
++    ///     if ((info-&gt;regtype == REG_TYPE_TEMP) &amp;&amp; (reg) &amp;&amp; (!reg-&gt;written))
++    ///         failf(ctx, "Temp register r%d used uninitialized", info-&gt;regnum);
++    ///
++    /// so a stream vkd3d emits where rN is sourced before any instruction names it as a
++    /// destination is rejected outright — "MOJOSHADER_compileEffect Error: Temp register r1
++    /// used uninitialized" — even though the D3D9 runtime never enforced it and fxc-era
++    /// shaders relied on that. Observed on real content: Unclaimed World's multiTex (r1) and
++    /// Billboard (r3), both of which initialise correctly at the HLSL level.
++    ///
++    /// <c>sub rN, c0, c0</c> rather than a mov from a literal: it needs no new <c>def</c>
++    /// constant (which could collide with a slot the effect's constant table already uses)
++    /// and yields zero whatever c0 holds, including when c0 is unbound and reads as zero.
++    /// The value itself cannot change behaviour that was defined before — the register had no
++    /// defined contents at that point by construction.
++    ///
++    /// Conservative by design: an instruction using relative addressing is left alone rather
++    /// than mis-parsed, and anything that cannot be walked cleanly returns the input
++    /// untouched.
++    /// </summary>
++    /// <summary>
++    /// Whether a token starts an instruction that may appear after the declaration prologue.
++    /// dcl / def / defi / defb must all precede real work in SM2+, so the first token that is
++    /// none of them marks where an inserted initialiser is legal.
++    /// </summary>
++    private static bool IsRealInstruction(uint token)
++    {
++        if ((token & 0xFFFF) == CommentOpcode && (token & ParamTokenBit) == 0) return false;
++        int opcode = (int)(token & 0xFFFF);
++        return opcode is not (OpDcl or OpDef or OpDefI or OpDefB);
++    }
++
++    private static byte[] InitializeReadBeforeWriteTemps(byte[] bytecode, int major)
++    {
++        const int OpSub = 0x03;
++        const uint ConstRegTypeBits = 0x2000_0000; // D3DSPR_CONST in bits [30:28]
++        const uint IdentitySwizzle = 0x00E4_0000;
++
++        var written = new HashSet<int>();
++        var fixes = new List<(int Offset, int Register)>();
++
++        int pos = 4;
++        while (pos + 4 <= bytecode.Length)
++        {
++            uint token = ReadU32(bytecode, pos);
++            if (token == EndToken)
++                break;
++
++            if ((token & 0xFFFF) == CommentOpcode && (token & ParamTokenBit) == 0)
++            {
++                pos += 4 + (int)((token >> 16) & 0x7FFF) * 4;
++                continue;
++            }
++
++            int opcode = (int)(token & 0xFFFF);
++            int operandTokens = (int)((token >> 24) & 0xF);
++            int instructionStart = pos;
++            pos += 4;
++
++            if (pos + operandTokens * 4 > bytecode.Length)
++                return bytecode; // truncated tail - do not guess
++
++            // Declarations and literal definitions carry payloads, not operands.
++            if (opcode is OpDcl or OpDef or OpDefI or OpDefB)
++            {
++                pos += operandTokens * 4;
++                continue;
++            }
++
++            // Opcodes with no destination operand. Everything else in SM2+ writes operand 0.
++            bool hasDest = opcode is not (0x00 or 0x19 or 0x1A or 0x1B or 0x1C or 0x1D or 0x1E
++                                          or 0x26 or 0x27 or 0x28 or 0x29 or 0x2A or 0x2B
++                                          or 0x2C or 0x2D);
++
++            bool relative = false;
++            for (int o = pos; o < pos + operandTokens * 4 && o + 4 <= bytecode.Length; o += 4)
++            {
++                if ((ReadU32(bytecode, o) & RelativeAddressingBit) != 0)
++                    relative = true;
++            }
++
++            if (!relative)
++            {
++                // Sources first: a read of an as-yet-unwritten temp is what we are looking for,
++                // and a register both read and written by the SAME instruction still counts as
++                // a read - which matches how MojoShader parses it.
++                int firstSource = hasDest ? 1 : 0;
++                for (int i = firstSource; i < operandTokens; i++)
++                {
++                    uint p = ReadU32(bytecode, pos + i * 4);
++                    if ((p & ParamTokenBit) == 0)
++                        continue;
++                    int regType = (int)(((p >> 28) & 0x7) | (((p >> 11) & 0x3) << 3));
++                    if (regType != 0 /* D3DSPR_TEMP */)
++                        continue;
++                    int reg = (int)(p & 0x7FF);
++                    if (!written.Contains(reg) && !fixes.Exists(f => f.Register == reg))
++                        fixes.Add((instructionStart, reg));
++                }
++
++                if (hasDest && operandTokens >= 1)
++                {
++                    uint dest = ReadU32(bytecode, pos);
++                    if ((dest & ParamTokenBit) != 0)
++                    {
++                        int regType = (int)(((dest >> 28) & 0x7) | (((dest >> 11) & 0x3) << 3));
++                        if (regType == 0)
++                            written.Add((int)(dest & 0x7FF));
++                    }
++                }
++            }
++
++            pos += operandTokens * 4;
++        }
++
++        if (fixes.Count == 0)
++            return bytecode;
++
++        // ---- rebuild, inserting each init immediately before the instruction that reads it.
++        var output = new List<byte>(bytecode.Length + fixes.Count * 16);
++        Append(output, bytecode, 0, 4);
++        bool prologueDone = false;
++
++        pos = 4;
++        while (pos + 4 <= bytecode.Length)
++        {
++            uint token = ReadU32(bytecode, pos);
++            if (token == EndToken)
++                break;
++
++            int length;
++            if ((token & 0xFFFF) == CommentOpcode && (token & ParamTokenBit) == 0)
++            {
++                length = 4 + (int)((token >> 16) & 0x7FFF) * 4;
++            }
++            else
++            {
++                length = 4 + (int)((token >> 24) & 0xF) * 4;
++            }
++
++            // Hoisted to the PROLOGUE, not emitted before each offending read.
++            //
++            // MojoShader's check is linear, but execution is not: inside a loop, a register
++            // written at the end of one iteration is legitimately read at the start of the next,
++            // and the linear scan flags that as uninitialised. Initialising immediately before
++            // the read would then re-zero the register on every iteration and destroy exactly the
++            // accumulator the shader was carrying. Doing it once, before any real instruction,
++            // satisfies the validator and cannot clobber a value the shader computed.
++            if (!prologueDone && IsRealInstruction(token))
++            {
++                prologueDone = true;
++                foreach (int reg in fixes.Select(f => f.Register).Distinct())
++                {
++                    WriteU32(output, 0x0300_0000u | OpSub);
++                    WriteU32(output, ParamTokenBit | FullWritemask | (uint)reg);
++                    WriteU32(output, ParamTokenBit | ConstRegTypeBits | IdentitySwizzle);
++                    WriteU32(output, ParamTokenBit | ConstRegTypeBits | IdentitySwizzle);
++                }
++            }
++
++            if (pos + length > bytecode.Length)
++                return bytecode;
++            Append(output, bytecode, pos, length);
++            pos += length;
++        }
++
++        Append(output, bytecode, pos, bytecode.Length - pos);
++        return output.ToArray();
++    }
++
+     private static void WriteU32(List<byte> output, uint value)
+     {
+         Span<byte> tmp = stackalloc byte[4];
+diff --git a/tests/ShadowDusk.Core.Tests/Fx2/D3d9BytecodePatcherTests.cs b/tests/ShadowDusk.Core.Tests/Fx2/D3d9BytecodePatcherTests.cs
+index 27e9e60..8491ced 100644
+--- a/tests/ShadowDusk.Core.Tests/Fx2/D3d9BytecodePatcherTests.cs
++++ b/tests/ShadowDusk.Core.Tests/Fx2/D3d9BytecodePatcherTests.cs
+@@ -33,6 +33,33 @@ public sealed class D3d9BytecodePatcherTests
+     private static uint TempSrc(int reg, uint swizzle) => 0x8000_0000u | (swizzle << 16) | (uint)reg;
+     private static uint InputDest(int reg, uint mask) => 0x9000_0000u | (mask << 16) | (uint)reg; // type 1 = INPUT
+     private static uint SamplerSrc(int reg) => 0xA000_0800u | 0x00E4_0000u | (uint)reg;           // type 10 = SAMPLER
++    private static uint ConstSrc(int reg) => 0xA000_0000u | 0x00E4_0000u | (uint)reg;             // type 2 = CONST
++
++    /// <summary>
++    /// <c>mov r&lt;reg&gt;, c0</c> — three tokens giving a temp a defined value before the
++    /// instruction under test reads it.
++    /// </summary>
++    /// <remarks>
++    /// A fixture whose only reference to a temp is a READ is not a stream any compiler emits,
++    /// and MojoShader rejects it outright ("Temp register rN used uninitialized") — so the
++    /// patcher's read-before-write pass fires on it and shifts every token the assertions
++    /// below index by position. Defining the temp first keeps each test aimed at the ONE pass
++    /// it is about.
++    /// </remarks>
++    private static uint[] Define(int reg) => new[] { MovToken, TempDest(reg, 0xF), ConstSrc(0) };
++
++    private static byte[] StreamWith(uint version, uint[] prologue, params uint[] tokens)
++    {
++        var all = new uint[1 + prologue.Length + tokens.Length];
++        all[0] = version;
++        prologue.CopyTo(all, 1);
++        tokens.CopyTo(all, 1 + prologue.Length);
++        return Stream(all);
++    }
++
++    /// <summary>Token count of <see cref="Define"/>'s prologue — the offset every index-based
++    /// assertion in a fixture that uses it shifts by.</summary>
++    private const int DefineTokens = 3;
+ 
+     private static byte[] Stream(params uint[] tokens)
+     {
+@@ -53,9 +80,8 @@ public sealed class D3d9BytecodePatcherTests
+     [Fact]
+     public void TexkillPartialMask_RoutedThroughFreshTempWithReplicatedSwizzle()
+     {
+-        // mov r1.y, r0.x ; texkill r1(.y) — the vkd3d shape MojoShader rejects.
+-        byte[] input = Stream(
+-            PsV3,
++        // mov r0, c0 ; mov r1.y, r0.x ; texkill r1(.y) — the vkd3d shape MojoShader rejects.
++        byte[] input = StreamWith(PsV3, Define(0),
+             MovToken, TempDest(1, 0x2), TempSrc(0, 0x00),
+             TexKillToken, TempDest(1, 0x2),
+             End);
+@@ -64,15 +90,15 @@ public sealed class D3d9BytecodePatcherTests
+ 
+         result.IsSuccess.ShouldBeTrue();
+         uint[] tokens = Tokens(result.Value);
+-        // version, mov, texkill→(mov + texkill), end → 1 + 3 + (3 + 2) + 1
+-        tokens.Count().ShouldBe(10, customMessage: "one compensating mov (3 tokens) is inserted");
++        // version, define, mov, texkill→(mov + texkill), end → 1 + 3 + 3 + (3 + 2) + 1
++        tokens.Count().ShouldBe(10 + DefineTokens, customMessage: "one compensating mov (3 tokens) is inserted");
+ 
+-        tokens[4].ShouldBe(MovToken, customMessage: "a mov precedes the canonicalized texkill");
+-        tokens[5].ShouldBe(TempDest(2, 0xF), customMessage: "the fresh temp is r2 (max used was r1) with a full writemask");
++        tokens[4 + DefineTokens].ShouldBe(MovToken, customMessage: "a mov precedes the canonicalized texkill");
++        tokens[5 + DefineTokens].ShouldBe(TempDest(2, 0xF), customMessage: "the fresh temp is r2 (max used was r1) with a full writemask");
+         // Source = r1 with .yyyy (component 1 replicated: lanes 01 01 01 01 = 0x55).
+-        tokens[6].ShouldBe(TempSrc(1, 0x55));
+-        tokens[7].ShouldBe(TexKillToken);
+-        tokens[8].ShouldBe(TempDest(2, 0xF), customMessage: "texkill now targets the fresh temp with .xyzw");
++        tokens[6 + DefineTokens].ShouldBe(TempSrc(1, 0x55));
++        tokens[7 + DefineTokens].ShouldBe(TexKillToken);
++        tokens[8 + DefineTokens].ShouldBe(TempDest(2, 0xF), customMessage: "texkill now targets the fresh temp with .xyzw");
+     }
+ 
+     [Fact]
+@@ -105,9 +131,8 @@ public sealed class D3d9BytecodePatcherTests
+     [Fact]
+     public void TexldSrc0Swizzle_AtSm2_IsRoutedThroughTemp()
+     {
+-        // texld r0, r1.xyxx, s0 — swizzle 0x04 (lanes x,y,x,x) is illegal below SM3.
+-        byte[] input = Stream(
+-            PsV2,
++        // mov r1, c0 ; texld r0, r1.xyxx, s0 — swizzle 0x04 (lanes x,y,x,x) is illegal below SM3.
++        byte[] input = StreamWith(PsV2, Define(1),
+             TexLdToken, TempDest(0, 0xF), TempSrc(1, 0x04), SamplerSrc(0),
+             End);
+ 
+@@ -115,20 +140,19 @@ public sealed class D3d9BytecodePatcherTests
+ 
+         result.IsSuccess.ShouldBeTrue();
+         uint[] tokens = Tokens(result.Value);
+-        tokens[1].ShouldBe(MovToken);
+-        tokens[2].ShouldBe(TempDest(2, 0xF), customMessage: "fresh temp above r0/r1");
+-        tokens[3].ShouldBe(TempSrc(1, 0x04), customMessage: "the mov keeps src0's original swizzle");
+-        tokens[4].ShouldBe(TexLdToken);
+-        tokens[5].ShouldBe(TempDest(0, 0xF));
+-        tokens[6].ShouldBe(TempSrc(2, 0xE4), customMessage: "texld's coord source is now the unswizzled temp");
+-        tokens[7].ShouldBe(SamplerSrc(0));
++        tokens[1 + DefineTokens].ShouldBe(MovToken);
++        tokens[2 + DefineTokens].ShouldBe(TempDest(2, 0xF), customMessage: "fresh temp above r0/r1");
++        tokens[3 + DefineTokens].ShouldBe(TempSrc(1, 0x04), customMessage: "the mov keeps src0's original swizzle");
++        tokens[4 + DefineTokens].ShouldBe(TexLdToken);
++        tokens[5 + DefineTokens].ShouldBe(TempDest(0, 0xF));
++        tokens[6 + DefineTokens].ShouldBe(TempSrc(2, 0xE4), customMessage: "texld's coord source is now the unswizzled temp");
++        tokens[7 + DefineTokens].ShouldBe(SamplerSrc(0));
+     }
+ 
+     [Fact]
+     public void TexldSrc0Swizzle_AtSm3_IsPassthrough()
+     {
+-        byte[] input = Stream(
+-            PsV3,
++        byte[] input = StreamWith(PsV3, Define(1),
+             TexLdToken, TempDest(0, 0xF), TempSrc(1, 0x04), SamplerSrc(0),
+             End);
+ 
+@@ -145,8 +169,7 @@ public sealed class D3d9BytecodePatcherTests
+         // [27:24] = 1). MojoShader's "TEXLD src0 must have no modifiers" applies to
+         // every SM2+ major, so SM3 must patch this even though the swizzle is legal.
+         uint negatedSrc = TempSrc(1, 0xE4) | 0x0100_0000u;
+-        byte[] input = Stream(
+-            PsV3,
++        byte[] input = StreamWith(PsV3, Define(1),
+             TexLdToken, TempDest(0, 0xF), negatedSrc, SamplerSrc(0),
+             End);
+ 
+@@ -154,15 +177,15 @@ public sealed class D3d9BytecodePatcherTests
+ 
+         result.IsSuccess.ShouldBeTrue();
+         uint[] tokens = Tokens(result.Value);
+-        tokens.Count().ShouldBe(9, customMessage: "one compensating mov (3 tokens) is inserted");
+-        tokens[1].ShouldBe(MovToken);
+-        tokens[2].ShouldBe(TempDest(2, 0xF), customMessage: "fresh temp above r0/r1");
+-        tokens[3].ShouldBe(negatedSrc, customMessage: "the mov keeps src0's swizzle AND modifier — the negate moves onto the mov");
+-        tokens[4].ShouldBe(TexLdToken);
+-        tokens[5].ShouldBe(TempDest(0, 0xF));
+-        tokens[6].ShouldBe(TempSrc(2, 0xE4), customMessage: "texld's coord source is now an unswizzled, unmodified temp");
+-        tokens[7].ShouldBe(SamplerSrc(0));
+-        tokens[8].ShouldBe(End);
++        tokens.Count().ShouldBe(9 + DefineTokens, customMessage: "one compensating mov (3 tokens) is inserted");
++        tokens[1 + DefineTokens].ShouldBe(MovToken);
++        tokens[2 + DefineTokens].ShouldBe(TempDest(2, 0xF), customMessage: "fresh temp above r0/r1");
++        tokens[3 + DefineTokens].ShouldBe(negatedSrc, customMessage: "the mov keeps src0's swizzle AND modifier — the negate moves onto the mov");
++        tokens[4 + DefineTokens].ShouldBe(TexLdToken);
++        tokens[5 + DefineTokens].ShouldBe(TempDest(0, 0xF));
++        tokens[6 + DefineTokens].ShouldBe(TempSrc(2, 0xE4), customMessage: "texld's coord source is now an unswizzled, unmodified temp");
++        tokens[7 + DefineTokens].ShouldBe(SamplerSrc(0));
++        tokens[8 + DefineTokens].ShouldBe(End);
+     }
+ 
+     [Fact]

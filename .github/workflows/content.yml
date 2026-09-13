@@ -1,0 +1,84 @@
+# Builds the game's effects from their HLSL sources.
+#
+# This job runs on Linux, which it could not have done until recently. MonoGame's own mgfxc
+# P/Invokes d3dcompiler_47.dll EVEN FOR THE OPENGL PROFILE, so compiling shaders needed Windows
+# or Wine and this was going to be a windows-latest job. Patched ShadowDusk replaces it: its
+# OpenGL path is HLSL -> DXC -> SPIR-V -> SPIRV-Cross -> GLSL, with natives for linux-x64.
+#
+# Separate from publish.yml because it is the slow half and changes rarely - shader sources move
+# far less often than code. The effects are uploaded as an artifact for publish.yml to consume,
+# so a code-only change never recompiles a shader.
+#
+# One build serves every platform: the port ships DesktopGL only, effects are profile 0
+# everywhere, so there is no per-platform content build.
+name: content
+
+on:
+  push:
+    paths:
+      - 'assets/**'
+      - 'tools/shadowdusk/**'
+      - 'tools/build/34-build-gl-effects-shadowdusk.sh'
+      - '.github/workflows/content.yml'
+  pull_request:
+    paths:
+      - 'assets/**'
+      - 'tools/shadowdusk/**'
+  workflow_dispatch:
+
+jobs:
+  effects:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # The compiler is a pinned commit of our ShadowDusk fork plus the natives from the
+      # published NuGet tool. Caching the whole assembled CLI keeps the common case to a
+      # download: the key is the pin, so it only rebuilds when the pin moves.
+      - name: Cache ShadowDusk
+        id: cache-shadowdusk
+        uses: actions/cache@v4
+        with:
+          path: artifacts/tools/shadowdusk
+          key: shadowdusk-${{ runner.os }}-${{ hashFiles('tools/shadowdusk/build-shadowdusk.sh') }}
+
+      - name: Build the shader compiler
+        if: steps.cache-shadowdusk.outputs.cache-hit != 'true'
+        run: sh tools/shadowdusk/build-shadowdusk.sh
+
+      # The effects need the shipped game's XNB containers as templates, and the shipped
+      # effects as the source of truth for every parameter's INITIAL VALUE - DXC drops
+      # initialisers on external globals, exactly as mgfxc's OpenGL path zeroes them, and
+      # uniforms this game never assigns from code (Billboard's LightColor, skinFX's Alpha)
+      # are nothing but their initialiser. Zeroed, they draw the world as black silhouettes.
+      #
+      # Those come from a copy of the game, which CI does not have and must not contain. Until
+      # that is resolved this job compiles the effects and checks they compile; it cannot
+      # produce shippable XNBs. See the note in build.md.
+      - name: Compile effects
+        run: |
+          export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.dll"
+          fail=0
+          mkdir -p artifacts/ci-effects
+          for fx in assets/effects/*.fx assets/effects/GUI/*.fx; do
+            [ -f "$fx" ] || continue
+            name=$(basename "$fx" .fx)
+            if dotnet "$UW_SHADOWDUSK" "$fx" "artifacts/ci-effects/$name.mgfx" /Profile:OpenGL; then
+              echo "ok   $name"
+            else
+              echo "FAIL $name"; fail=$((fail+1))
+            fi
+          done
+          echo
+          echo "$fail effect(s) failed"
+          [ "$fail" = 0 ]
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: effects-gl
+          path: artifacts/ci-effects/
+          if-no-files-found: error

@@ -1,0 +1,100 @@
+# Builds the game and cross-publishes it for every platform we ship.
+#
+# ONE Linux runner produces all four RIDs. DesktopGL's SDL2 and OpenAL natives come from the
+# MonoGame.Framework.DesktopGL package for every RID, so there is nothing platform-specific to
+# do at build time. A macOS runner would be needed only for a SIGNED .app bundle, which needs a
+# paid Apple Developer account - so macOS ships unsigned, with Gatekeeper instructions.
+name: publish
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # Compiles with mods in, which is the shipping configuration. The other configurations
+      # are exercised below rather than shipped.
+      - name: Build
+        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -warnaserror
+
+      # The mod/base_game split is a build-time arrangement, so it is a build-time promise and
+      # gets checked like one. A build with the harmony feature off must reference no HarmonyLib
+      # and ship no 0Harmony.dll - that is the guarantee offered to anyone who does not want a
+      # loader for other people's code in their process, and it is worth failing CI over.
+      # Two booleans, not a list: ';' and ',' both delimit properties to the dotnet CLI, so a
+      # list form fails with MSB1006 however it is quoted. The csproj explains this at length.
+      - name: Build without mod loading
+        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false -p:UwUnhiddenMod=true
+
+      - name: Build with no mods at all
+        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false -p:UwUnhiddenMod=false
+
+      - name: Tools
+        run: |
+          for p in tools/MgfxTranscode tools/ContentProbe tools/DataExport; do
+            dotnet build "$p"/*.csproj -c Release -p:UwPlatform=GL
+          done
+
+  cross-publish:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [win-x64, linux-x64, osx-x64, osx-arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Publish ${{ matrix.rid }}
+        run: |
+          dotnet publish base_game/UnclaimedWorld/UnclaimedWorld.csproj \
+            -c Release -p:UwPlatform=GL -r ${{ matrix.rid }} --self-contained false \
+            -o artifacts/publish/${{ matrix.rid }}
+
+      # SharpDX is the WindowsDX backend's dependency. A DesktopGL publish that carries one has
+      # picked up the wrong backend, which would fail only at runtime and only on Linux/macOS -
+      # so it is caught here instead.
+      - name: No SharpDX in a DesktopGL build
+        run: |
+          if ls artifacts/publish/${{ matrix.rid }}/SharpDX* >/dev/null 2>&1; then
+            echo "SharpDX assemblies in a DesktopGL publish:"
+            ls artifacts/publish/${{ matrix.rid }}/SharpDX*
+            exit 1
+          fi
+          echo "ok - no SharpDX"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UnclaimedWorld-${{ matrix.rid }}
+          path: artifacts/publish/${{ matrix.rid }}/
+          if-no-files-found: error

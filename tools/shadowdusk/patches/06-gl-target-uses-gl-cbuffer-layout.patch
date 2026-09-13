@@ -1,0 +1,48 @@
+diff --git a/src/ShadowDusk.HLSL/Dxc/DxcFlagBuilder.cs b/src/ShadowDusk.HLSL/Dxc/DxcFlagBuilder.cs
+index 1570c36..f2b11f6 100644
+--- a/src/ShadowDusk.HLSL/Dxc/DxcFlagBuilder.cs
++++ b/src/ShadowDusk.HLSL/Dxc/DxcFlagBuilder.cs
+@@ -27,12 +27,12 @@ internal static class DxcFlagBuilder
+         {
+             case (PlatformTarget.OpenGL, ShaderStage.Vertex):
+                 profile = ShaderProfiles.Sm5Vertex;
+-                platformFlags = new[] { "-spirv", "-fvk-use-dx-layout", "-fvk-use-dx-position-w" };
++                platformFlags = new[] { "-spirv", "-fvk-use-gl-layout", "-fvk-use-dx-position-w" };
+                 break;
+ 
+             case (PlatformTarget.OpenGL, ShaderStage.Pixel):
+                 profile = ShaderProfiles.Sm5Pixel;
+-                platformFlags = new[] { "-spirv", "-fvk-use-dx-layout", "-auto-binding-space", "1" };
++                platformFlags = new[] { "-spirv", "-fvk-use-gl-layout", "-auto-binding-space", "1" };
+                 break;
+ 
+             // -fvk-bind-globals pins the implicit "$Globals" cbuffer (DXC's auto-generated
+diff --git a/tests/ShadowDusk.HLSL.Tests/Dxc/DxcFlagBuilderTests.cs b/tests/ShadowDusk.HLSL.Tests/Dxc/DxcFlagBuilderTests.cs
+index abbe5f8..1600389 100644
+--- a/tests/ShadowDusk.HLSL.Tests/Dxc/DxcFlagBuilderTests.cs
++++ b/tests/ShadowDusk.HLSL.Tests/Dxc/DxcFlagBuilderTests.cs
+@@ -28,8 +28,22 @@ public sealed class DxcFlagBuilderTests
+     [Fact] public void OpenGL_Vertex_HasProfile_vs5_0()
+         => Build(PlatformTarget.OpenGL, ShaderStage.Vertex).ShouldContain("vs_5_0");
+ 
+-    [Fact] public void OpenGL_Vertex_HasDxLayout()
+-        => Build(PlatformTarget.OpenGL, ShaderStage.Vertex).ShouldContain("-fvk-use-dx-layout");
++    // The GL target asks DXC for std140/std430-conformant cbuffer offsets, NOT D3D packing.
++    // SPIRV-Cross has to emit the block as a GLSL uniform block, and D3D packing produces
++    // offsets no GLSL layout can express ("Buffer block cannot be expressed as any of std430,
++    // std140, scalar") — an outright compile failure for any shader whose globals happen to
++    // pack that way. The offsets themselves are never read on this path (the MonoGame GL
++    // register layout is assigned in GLSL declaration order, and the .mgfx cbuffer record is
++    // built from that same list), so this changes which shaders COMPILE and nothing else.
++    // Every other SPIR-V target keeps -fvk-use-dx-layout: they do read the offsets.
++    [Fact] public void OpenGL_Vertex_HasGlLayout()
++        => Build(PlatformTarget.OpenGL, ShaderStage.Vertex).ShouldContain("-fvk-use-gl-layout");
++
++    [Fact] public void OpenGL_Pixel_HasGlLayout()
++        => Build(PlatformTarget.OpenGL, ShaderStage.Pixel).ShouldContain("-fvk-use-gl-layout");
++
++    [Fact] public void Vulkan_Vertex_KeepsDxLayout()
++        => Build(PlatformTarget.Vulkan, ShaderStage.Vertex).ShouldContain("-fvk-use-dx-layout");
+ 
+     [Fact] public void OpenGL_Vertex_HasDxPositionW()
+         => Build(PlatformTarget.OpenGL, ShaderStage.Vertex).ShouldContain("-fvk-use-dx-position-w");

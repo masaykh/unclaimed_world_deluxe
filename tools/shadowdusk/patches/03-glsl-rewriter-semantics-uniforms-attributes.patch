@@ -1,0 +1,426 @@
+diff --git a/src/ShadowDusk.GLSL/MonoGameGlslRewriter.cs b/src/ShadowDusk.GLSL/MonoGameGlslRewriter.cs
+index 35cc92c..4c05ea9 100644
+--- a/src/ShadowDusk.GLSL/MonoGameGlslRewriter.cs
++++ b/src/ShadowDusk.GLSL/MonoGameGlslRewriter.cs
+@@ -154,10 +154,32 @@ public static class MonoGameGlslRewriter
+         RegexOptions.Compiled);
+ 
+     // in <type> in_var_<SEM>;
++    //
++    // Integer types are matched too. A D3D9 vertex attribute is ALWAYS float on the GL
++    // side — mgfxc declares every attribute `attribute vec4 vs_v{k}` regardless of the
++    // HLSL type (verified against this project's skinFX golden, whose `int4 BlendIndices
++    // : BLENDINDICES0` is `attribute vec4 vs_v2`) — so an `int`/`ivec4` input is a
++    // declaration to CONVERT at its uses, not one to reject. See IntegerInputConversion.
+     private static readonly Regex InputVaryingDecl = new(
+-        @"^\s*in\s+(float|vec2|vec3|vec4)\s+(in_var_[A-Za-z0-9_]+)\s*;\s*$",
++        @"^\s*in\s+(float|vec2|vec3|vec4|int|ivec2|ivec3|ivec4|uint|uvec2|uvec3|uvec4)\s+(in_var_[A-Za-z0-9_]+)\s*;\s*$",
+         RegexOptions.Compiled);
+ 
++    /// <summary>
++    /// For an integer vertex-input type, the GLSL constructor that converts the float
++    /// attribute back to it and the swizzle that selects the right width — e.g. <c>ivec2</c>
++    /// reads <c>ivec2(vs_v0.xy)</c>. Unsigned types are absent deliberately: <c>uint</c> and
++    /// <c>uvec</c> do not exist in GLSL ES 1.00 or versionless desktop GLSL 1.10, the two
++    /// profiles this one artifact has to satisfy, so they fail loudly instead.
++    /// </summary>
++    private static readonly Dictionary<string, (string Ctor, string Swizzle)> IntegerInputConversion =
++        new(StringComparer.Ordinal)
++    {
++        ["int"]   = ("int",   ".x"),
++        ["ivec2"] = ("ivec2", ".xy"),
++        ["ivec3"] = ("ivec3", ".xyz"),
++        ["ivec4"] = ("ivec4", ""),
++    };
++
+     // out <type> out_var_<SEM>;  — a VERTEX shader's user output (becomes a legacy
+     // `varying`). Excludes the SV_Target output (that is the pixel-shader colour, and
+     // is handled by OutputDecl). The pixel stage never has user `out_var_*` outputs
+@@ -186,14 +208,38 @@ public static class MonoGameGlslRewriter
+         RegexOptions.Compiled);
+ 
+     // <type> <member>;  or  <type> <member>[N];  (Phase 43 F6: array members are
+-    // modelled — N consecutive element strides). Anything else inside a uniform
+-    // block (int/bool/mat3/struct/layout-qualified members) FAILS LOUDLY in
++    // modelled — N consecutive element strides), optionally carrying the
++    // `layout(offset = N)` qualifier SPIRV-Cross emits when the block's std140
++    // layout is not the natural one. Anything else inside a uniform block
++    // (vector ints, mat3, struct members) FAILS LOUDLY in
+     // ThrowUnmodeledUniformMember instead of shipping GLSL that still references
+     // the deleted block.
++    //
++    // The explicit offsets are deliberately IGNORED, not honoured. They describe the
++    // D3D constant-buffer byte layout, which nothing downstream reads: the register
++    // index here is assigned in declaration order, and the .mgfx cbuffer record the
++    // pipeline writes is built from THIS SAME list (parameter offset = BaseRegister *
++    // 16), so the two sides always agree by construction. Vehicle.fx is the proof that
++    // they must be accepted rather than rejected — SPIRV-Cross emits every one of its
++    // 35 members with an explicit offset, and in USE order (552, 556, 560, 564, 576,
++    // then back to 80, 96, …), which no offset-honouring model could flatten anyway.
+     private static readonly Regex UniformMember = new(
+-        @"^\s*(float|vec2|vec3|vec4|mat4)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[\s*([0-9]+)\s*\])?\s*;\s*$",
++        @"^\s*(?:layout\s*\([^)]*\)\s*)?(float|vec2|vec3|vec4|mat4|int|uint|bool)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[\s*([0-9]+)\s*\])?\s*;\s*$",
+         RegexOptions.Compiled);
+ 
++    /// <summary>
++    /// True for the scalar integer/boolean member types. HLSL <c>bool</c> and <c>int</c>
++    /// uniforms both reach SPIRV-Cross as a 32-bit integer member; see the rewrite branch in
++    /// <see cref="Rewrite"/> for how they are lowered onto the float register file.
++    /// </summary>
++    private static bool IsIntegerScalarType(string type) => type is "int" or "uint" or "bool";
++
++    // `<Instance>.<member> != 0u` / `== 0u` — SPIRV-Cross's lowering of an HLSL `bool`
++    // uniform used as a condition (DXC stores a cbuffer bool as a 32-bit uint, so the
++    // truth test becomes an integer comparison). Captured so the comparison can be
++    // re-typed to float along with the member itself.
++    private static readonly string IntegerBoolTestSuffix = @"\s*(!=|==)\s*0u\b";
++
+     // } <Instance>;  — the close of a uniform block, capturing the instance name the
+     // body's member uses are qualified with (`_Globals` for loose globals, the
+     // cbuffer's own name otherwise).
+@@ -409,6 +455,30 @@ public static class MonoGameGlslRewriter
+             {
+                 var type = inMatch.Groups[1].Value;
+                 var ident = inMatch.Groups[2].Value;
++
++                if (type.StartsWith("uint", StringComparison.Ordinal) ||
++                    type.StartsWith("uvec", StringComparison.Ordinal))
++                {
++                    throw new MonoGameGlslRewriteException(
++                        $"Unsupported stage input '{type} {ident}': GLSL ES 1.00 and versionless " +
++                        $"desktop GLSL 1.10 — the profiles one MonoGame GL artifact must satisfy — " +
++                        $"have no unsigned integer type, so the float attribute cannot be converted " +
++                        $"back to it. Declare the input as a signed int/int2/int3/int4 (or a float " +
++                        $"type) in the shader.");
++                }
++
++                if (!isVertex && IntegerInputConversion.ContainsKey(type))
++                {
++                    // A D3D9 varying is always float — there is no `flat` qualifier in the
++                    // dialect and no integer interpolation — so an integer PIXEL input means a
++                    // shape the vertex side did not produce. Refuse rather than convert.
++                    throw new MonoGameGlslRewriteException(
++                        $"Unsupported pixel-stage input '{type} {ident}': shader model 3 varyings " +
++                        $"are floating point and carry no flat-interpolation qualifier, so an " +
++                        $"integer varying cannot be expressed. Pass the value as a float and " +
++                        $"convert in the pixel shader.");
++                }
++
+                 if (isVertex)
+                 {
+                     // VS input = a vertex ATTRIBUTE. MojoShader names attributes
+@@ -551,7 +621,45 @@ public static class MonoGameGlslRewriter
+             {
+                 int perElement = type == "mat4" ? 4 : 1;
+                 int registers  = perElement * Math.Max(1, elements);
+-                if (elements > 0)
++                if (IsIntegerScalarType(type))
++                {
++                    // An integer/boolean uniform lives in the SAME float register file as
++                    // everything else, because that is what MonoGame's GL runtime uploads:
++                    // ConstantBuffer.PlatformApply hands the whole buffer to glUniform4fv, and
++                    // a Bool parameter's storage is one 4-byte slot like a float's. So no
++                    // separate ivec4/bool register set is needed — only the TEST has to be
++                    // re-typed, since GLSL ES 1.00 and versionless desktop GLSL 1.10 (the two
++                    // profiles this one artifact serves) have no `uint` type at all and would
++                    // reject the `!= 0u` SPIRV-Cross emits.
++                    //
++                    // Only the boolean-test shape is modelled — an HLSL `uniform bool` used as
++                    // a condition, which is what the FX9 sources that need this actually write.
++                    // Integer ARITHMETIC on such a uniform is a different problem (it needs
++                    // int() conversions and int literals throughout the surrounding expression,
++                    // plus the `uint` locals SPIRV-Cross declares alongside), so an arithmetic
++                    // use is left to the leftover-instance guard below rather than half-lowered
++                    // into something that compiles and computes the wrong thing. Likewise an
++                    // ARRAY of them: RewriteArrayMemberUses emits float register reads, which
++                    // would leave the integer expression around them untyped.
++                    string regExpr = $"{regPrefix}_uniforms_vec4[{reg}].x";
++                    var memberRef = $@"\b{Regex.Escape(block.Instance)}\.{Regex.Escape(member)}\b";
++                    body = Regex.Replace(body, memberRef + IntegerBoolTestSuffix,
++                        m => $"{regExpr} {m.Groups[1].Value} 0.0");
++
++                    // Name the uniform rather than leaving the generic leftover-instance guard
++                    // below to report only the block.
++                    if (Regex.IsMatch(body, memberRef))
++                    {
++                        throw new MonoGameGlslRewriteException(
++                            $"Unsupported use of the integer/boolean uniform '{type} {member}' for " +
++                            $"the MonoGame OpenGL target: it is modelled only as a CONDITION " +
++                            $"(SPIRV-Cross's `{member} != 0u` shape), because the register file it " +
++                            $"shares with every other uniform holds floats and GLSL ES 1.00 / GLSL " +
++                            $"1.10 have no integer conversion path that survives the dialect " +
++                            $"rewrite. Use a float uniform for integer arithmetic.");
++                    }
++                }
++                else if (elements > 0)
+                 {
+                     // Array member (Phase 43 F6): every use must be an indexed
+                     // access — rewritten to the packed register form, literal
+@@ -1119,13 +1227,14 @@ public static class MonoGameGlslRewriter
+         if (probe.Success)
+         {
+             string t = probe.Groups[1].Value;
+-            if (t is "int" or "uint" or "bool" || t.StartsWith("ivec") || t.StartsWith("uvec") || t.StartsWith("bvec"))
++            if (t.StartsWith("ivec") || t.StartsWith("uvec") || t.StartsWith("bvec"))
+             {
+                 throw new MonoGameGlslRewriteException(
+-                    $"Unsupported uniform type in '{trimmed}': integer/boolean uniforms are not " +
+-                    $"modelled for the MonoGame OpenGL target (MojoShader places them in the " +
+-                    $"separate {{vs,ps}}_uniforms_ivec4/_bool register sets, which ShadowDusk " +
+-                    $"does not emit yet). Use a float-typed uniform and cast in the shader.");
++                    $"Unsupported uniform type in '{trimmed}': VECTOR integer/boolean uniforms " +
++                    $"are not modelled for the MonoGame OpenGL target. A SCALAR int/uint/bool " +
++                    $"uniform used as a condition is supported (it shares the float register " +
++                    $"file, which is what the GL runtime uploads); the vector forms would need " +
++                    $"component-wise conversion at every use. Use float-typed uniforms instead.");
+             }
+             throw new MonoGameGlslRewriteException(
+                 $"Unsupported uniform type in '{trimmed}': only float/float2/float3/float4 " +
+@@ -1545,14 +1654,43 @@ public static class MonoGameGlslRewriter
+         // spelling, so ": position" must map like ": POSITION" (bug-hunt 2026-07-27 M3).
+         var sem = StripInterfacePrefix(identifier).ToUpperInvariant();
+ 
++        // SV_ prefix: DXC mirrors the author's spelling, and an FX9-era shader may declare a
++        // vertex input as SV_POSITION. On a vertex INPUT that names the same thing POSITION
++        // does - D3D9 has no system-value inputs - so strip the prefix and map as usual.
++        if (sem.StartsWith("SV_"))
++            sem = sem.Substring(3);
++
++        // The full XNA VertexElementUsage enum, in its declared order. Modelling only the
++        // first four meant any shader using a tangent frame, skinning, fog or point size
++        // failed to compile at all - and those are ordinary things for a D3D9-era effect to
++        // declare. The numbers are the enum values, which is what the MGFX attribute table
++        // stores.
+         if (sem.StartsWith("POSITION"))
+             return (0, ParseTrailingIndex(sem, "POSITION"));
+         if (sem.StartsWith("COLOR"))
+             return (1, ParseTrailingIndex(sem, "COLOR"));
+         if (sem.StartsWith("TEXCOORD"))
+             return (2, ParseTrailingIndex(sem, "TEXCOORD"));
++        if (sem.StartsWith("BINORMAL"))
++            return (4, ParseTrailingIndex(sem, "BINORMAL"));
+         if (sem.StartsWith("NORMAL"))
+             return (3, ParseTrailingIndex(sem, "NORMAL"));
++        if (sem.StartsWith("TANGENT"))
++            return (5, ParseTrailingIndex(sem, "TANGENT"));
++        if (sem.StartsWith("BLENDINDICES"))
++            return (6, ParseTrailingIndex(sem, "BLENDINDICES"));
++        if (sem.StartsWith("BLENDWEIGHT"))
++            return (7, ParseTrailingIndex(sem, "BLENDWEIGHT"));
++        if (sem.StartsWith("DEPTH"))
++            return (8, ParseTrailingIndex(sem, "DEPTH"));
++        if (sem.StartsWith("FOG"))
++            return (9, ParseTrailingIndex(sem, "FOG"));
++        if (sem.StartsWith("PSIZE"))
++            return (10, ParseTrailingIndex(sem, "PSIZE"));
++        if (sem.StartsWith("POINTSIZE"))
++            return (10, ParseTrailingIndex(sem, "POINTSIZE"));
++        if (sem.StartsWith("TESSFACTOR"))
++            return (12, ParseTrailingIndex(sem, "TESSFACTOR"));
+ 
+         // Unknown semantic: a real effect using an attribute the table doesn't model
+         // would bind to the wrong vertex element (silent, not a link error). Fail
+@@ -1623,9 +1761,20 @@ public static class MonoGameGlslRewriter
+     /// </summary>
+     private static string ReplaceInputVaryingUses(string input, InputVarying varying)
+     {
+-        var swizzle = SwizzleForType(varying.Type);
+         var pattern = $@"\b{Regex.Escape(varying.Identifier)}\b";
+ 
++        // An integer attribute is carried by a FLOAT vec4 (mgfxc declares every attribute
++        // vec4), so each use converts back: `ivec4(vs_v2)`, `int(vs_v1.x)`. The conversion
++        // is always parenthesized, so a trailing swizzle on the use (`…BLENDINDICES0.y`)
++        // applies to the converted value and stays well-typed — unlike the float path, this
++        // has no trailing-'.' exception to make.
++        if (IntegerInputConversion.TryGetValue(varying.Type, out var conv))
++        {
++            string converted = $"{conv.Ctor}({varying.VaryingName}{conv.Swizzle})";
++            return Regex.Replace(input, pattern, converted.Replace("$", "$$"));
++        }
++
++        var swizzle = SwizzleForType(varying.Type);
+         return Regex.Replace(input, pattern, match =>
+         {
+             int after = match.Index + match.Length;
+diff --git a/tests/ShadowDusk.GLSL.Tests/MonoGameGlslRewriterTests.cs b/tests/ShadowDusk.GLSL.Tests/MonoGameGlslRewriterTests.cs
+index 4d5cf98..8a0c916 100644
+--- a/tests/ShadowDusk.GLSL.Tests/MonoGameGlslRewriterTests.cs
++++ b/tests/ShadowDusk.GLSL.Tests/MonoGameGlslRewriterTests.cs
+@@ -871,16 +871,58 @@ void main()
+     [Fact]
+     public void VertexStage_UnknownSemantic_ThrowsLoudly()
+     {
++        // A semantic outside VertexElementUsage entirely — BLENDWEIGHT, BINORMAL, TANGENT,
++        // BLENDINDICES, FOG, PSIZE and TESSFACTOR are all modelled, so the test needs a name
++        // that genuinely maps to no vertex element.
+         const string src = """
+ #version 140
+-in vec4 in_var_BLENDWEIGHT0;
++in vec4 in_var_NOTASEMANTIC0;
+ void main()
+ {
+-    gl_Position = in_var_BLENDWEIGHT0;
++    gl_Position = in_var_NOTASEMANTIC0;
+ }
+ """;
+         var act = () => MonoGameGlslRewriter.Rewrite(src, ShaderStage.Vertex);
+-        Should.Throw<MonoGameGlslRewriteException>(act).Message.ShouldContain("BLENDWEIGHT0", Case.Sensitive);
++        Should.Throw<MonoGameGlslRewriteException>(act).Message.ShouldContain("NOTASEMANTIC0", Case.Sensitive);
++    }
++
++    [Fact]
++    public void VertexStage_IntegerAttribute_IsDeclaredVec4AndConvertedAtUse()
++    {
++        // D3D9 vertex attributes are always float on the GL side — mgfxc declares every
++        // attribute `attribute vec4 vs_v{k}` whatever the HLSL type — so an `int4
++        // BlendIndices : BLENDINDICES0` is a declaration to CONVERT, not one to reject.
++        const string src = """
++#version 140
++in ivec4 in_var_BLENDINDICES0;
++in vec4 in_var_POSITION0;
++void main()
++{
++    gl_Position = in_var_POSITION0 + vec4(float(in_var_BLENDINDICES0.x));
++}
++""";
++        var result = MonoGameGlslRewriter.Rewrite(src, ShaderStage.Vertex);
++
++        result.Glsl.ShouldContain("attribute vec4 vs_v0;", Case.Sensitive);
++        result.Glsl.ShouldContain("ivec4(vs_v0).x", Case.Sensitive);
++        result.Glsl.ShouldNotContain("in_var_BLENDINDICES0", Case.Sensitive);
++    }
++
++    [Fact]
++    public void VertexStage_UnsignedAttribute_ThrowsLoudly()
++    {
++        // GLSL ES 1.00 / GLSL 1.10 have no unsigned integer type, so the float attribute
++        // cannot be converted back to one.
++        const string src = """
++#version 140
++in uvec4 in_var_BLENDINDICES0;
++void main()
++{
++    gl_Position = vec4(float(in_var_BLENDINDICES0.x));
++}
++""";
++        var act = () => MonoGameGlslRewriter.Rewrite(src, ShaderStage.Vertex);
++        Should.Throw<MonoGameGlslRewriteException>(act).Message.ShouldContain("unsigned integer");
+     }
+ 
+     // ---- Phase 43 F4/F5/F6: the GL cbuffer/array model. ----
+@@ -1058,9 +1100,8 @@ void main()
+     }
+ 
+     [Theory]
+-    [InlineData("    int Mode;", "integer/boolean uniforms")]
+-    [InlineData("    bool Flag;", "integer/boolean uniforms")]
+-    [InlineData("    ivec4 Counts;", "integer/boolean uniforms")]
++    [InlineData("    ivec4 Counts;", "VECTOR integer/boolean")]
++    [InlineData("    uvec2 Pair;", "VECTOR integer/boolean")]
+     [InlineData("    mat3 Rot;", "float4x4")]
+     [InlineData("    mat2 Small;", "float4x4")]
+     public void UnmodeledUniformMember_FailsLoudly(string memberLine, string expectedMessage)
+@@ -1085,6 +1126,103 @@ void main()
+         Should.Throw<MonoGameGlslRewriteException>(act).Message.ShouldContain(expectedMessage, Case.Sensitive);
+     }
+ 
++    [Theory]
++    [InlineData("uint")]
++    [InlineData("int")]
++    [InlineData("bool")]
++    public void ScalarIntegerUniform_UsedAsCondition_SharesTheFloatRegisterFile(string type)
++    {
++        // MonoGame's GL runtime uploads the whole constant buffer through glUniform4fv, so a
++        // Bool parameter occupies one 4-byte slot exactly like a float — no separate
++        // ivec4/bool register set is needed. Only the TEST has to be re-typed, because GLSL ES
++        // 1.00 and GLSL 1.10 have no `uint` and would reject SPIRV-Cross's `!= 0u`.
++        string src = $$"""
++#version 140
++
++layout(binding = 0, std140) uniform type_Globals
++{
++    vec4 Tint;
++    {{type}} UseIntegerPositions;
++} _Globals;
++
++out vec4 out_var_SV_Target;
++
++void main()
++{
++    out_var_SV_Target = _Globals.Tint;
++    if (_Globals.UseIntegerPositions != 0u)
++    {
++        out_var_SV_Target *= 0.5;
++    }
++}
++""";
++        var result = MonoGameGlslRewriter.Rewrite(src, ShaderStage.Pixel);
++
++        result.Glsl.ShouldContain("ps_uniforms_vec4[1].x != 0.0", Case.Sensitive);
++        result.Glsl.ShouldNotContain("0u", Case.Sensitive);
++        result.Glsl.ShouldNotContain("_Globals", Case.Sensitive);
++        result.Uniforms.ShouldBe(new[] {
++            new MonoGameGlslUniform("Tint", 0, 1),
++            new MonoGameGlslUniform("UseIntegerPositions", 1, 1)});
++    }
++
++    [Fact]
++    public void ScalarIntegerUniform_UsedInArithmetic_FailsLoudly()
++    {
++        // Modelled only as a CONDITION: integer arithmetic would need int() conversions and
++        // int literals through the whole surrounding expression, so it is refused rather than
++        // half-lowered into something that compiles and computes the wrong thing.
++        const string src = """
++#version 140
++
++layout(binding = 0, std140) uniform type_Globals
++{
++    uint Steps;
++} _Globals;
++
++out vec4 out_var_SV_Target;
++
++void main()
++{
++    out_var_SV_Target = vec4(float(_Globals.Steps * 2u));
++}
++""";
++        var act = () => MonoGameGlslRewriter.Rewrite(src, ShaderStage.Pixel);
++        Should.Throw<MonoGameGlslRewriteException>(act).Message.ShouldContain("Steps", Case.Sensitive);
++    }
++
++    [Fact]
++    public void UniformMember_WithExplicitLayoutOffset_IsAcceptedAndPackedInDeclarationOrder()
++    {
++        // SPIRV-Cross emits explicit offsets whenever the block's std140 layout is not the
++        // natural one, and in USE order rather than offset order. They are ignored: the
++        // register index is assigned in declaration order and the .mgfx cbuffer record is
++        // built from that same list, so both sides agree by construction.
++        const string src = """
++#version 140
++
++layout(binding = 0, std140) uniform type_Globals
++{
++    layout(offset = 552) vec4 Late;
++    layout(offset = 80) vec3 Early;
++} _Globals;
++
++out vec4 out_var_SV_Target;
++
++void main()
++{
++    out_var_SV_Target = _Globals.Late + vec4(_Globals.Early, 1.0);
++}
++""";
++        var result = MonoGameGlslRewriter.Rewrite(src, ShaderStage.Pixel);
++
++        result.Glsl.ShouldContain("ps_uniforms_vec4[0]", Case.Sensitive);
++        result.Glsl.ShouldContain("ps_uniforms_vec4[1].xyz", Case.Sensitive);
++        result.Uniforms.ShouldBe(new[] {
++            new MonoGameGlslUniform("Late", 0, 1),
++            new MonoGameGlslUniform("Early", 1, 1)});
++    }
++
+     [Fact]
+     public void ArrayMember_WholeArrayUse_FailsLoudly()
+     {

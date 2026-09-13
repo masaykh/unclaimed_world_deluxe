@@ -1,0 +1,1142 @@
+diff --git a/src/ShadowDusk.HLSL/FxPreParser.cs b/src/ShadowDusk.HLSL/FxPreParser.cs
+index 61357f5..fc63292 100644
+--- a/src/ShadowDusk.HLSL/FxPreParser.cs
++++ b/src/ShadowDusk.HLSL/FxPreParser.cs
+@@ -114,6 +114,15 @@ public sealed class FxPreParser
+         "sampler_state", "SamplerState", "Sampler2D", "Sampler3D", "SamplerCube",
+     };
+ 
++    // The FX9 sampler OBJECT types — the subset of the above that can be the declared type of a
++    // function PARAMETER carrying a legacy sampler ('float4 f(sampler s, float2 uv)'). Excludes
++    // 'sampler_state' (a state-block keyword, not a type) and the modern 'SamplerState' (already
++    // valid as a parameter type, and a shader using it declares its own texture).
++    private static readonly HashSet<string> LegacySamplerObjectTypes = new(StringComparer.OrdinalIgnoreCase)
++    {
++        "sampler", "sampler1D", "sampler2D", "sampler3D", "samplerCUBE",
++    };
++
+     // -------------------------------------------------------------------------
+     // Render-state keys whose value is a D3DCOLORWRITEENABLE flag mask
+     // -------------------------------------------------------------------------
+@@ -170,33 +179,69 @@ public sealed class FxPreParser
+     // Legacy sampling intrinsics
+     // -------------------------------------------------------------------------
+ 
++    /// <summary>
++    /// The resource type a legacy sampling intrinsic requires the sampler's texture to be
++    /// declared as. The FX9 <c>texture</c> object type is DIMENSIONLESS — the dimension is
++    /// carried by the intrinsic that samples it, not by the declaration — so this is what
++    /// resolves 'texture EnvironmentMap;' to <c>TextureCube</c> rather than <c>Texture2D</c>.
++    /// </summary>
++    private enum LegacyTextureKind
++    {
++        Texture2D,
++        Texture3D,
++        TextureCube,
++    }
++
++    /// <summary>
++    /// How one legacy sampling intrinsic lowers onto a modern Texture method.
++    /// <paramref name="Method"/> is the method name (<c>Sample</c> / <c>SampleGrad</c>),
++    /// <paramref name="Kind"/> the resource type the bound texture must have, and
++    /// <paramref name="DecayFrom1D"/> marks the tex1D family, whose scalar coordinate has
++    /// to be widened (see <see cref="BuildSampleHelpers"/>).
++    /// </summary>
++    private readonly record struct LegacySampleIntrinsic(
++        string Method,
++        LegacyTextureKind Kind,
++        bool DecayFrom1D = false);
++
+     // SM 1.x–3.x sampling intrinsics that DXC 6.x dropped and that ShadowDusk
+     // rewrites to the modern '<texture>.<Method>(<sampler>, …)' form. Only the
+     // intrinsics whose argument lists align ONE-TO-ONE with the corresponding
+-    // Texture2D method are handled, so the rewrite is a clean identifier swap:
+-    //   tex2D(s, uv)               → T.Sample(s, uv)
+-    //   tex2Dgrad(s, uv, ddx, ddy) → T.SampleGrad(s, uv, ddx, ddy)
++    // Texture method are handled, so the rewrite is a clean identifier swap:
++    //   tex2D(s, uv)                 → T.Sample(s, uv)
++    //   tex2Dgrad(s, uv, ddx, ddy)   → T.SampleGrad(s, uv, ddx, ddy)
++    //   texCUBE(s, dir)              → TCube.Sample(s, dir)
++    //   tex3D(s, uvw)                → TVol.Sample(s, uvw)
++    // The tex1D family aligns 1:1 in ARITY but not in coordinate WIDTH, so it is
++    // routed through a generated helper instead — still a clean identifier swap at
++    // the call site. See BuildSampleHelpers.
+     // Matched case-sensitively because HLSL intrinsic names are case-sensitive.
+-    private static readonly Dictionary<string, string> LegacySampleIntrinsics = new(StringComparer.Ordinal)
++    private static readonly Dictionary<string, LegacySampleIntrinsic> LegacySampleIntrinsics =
++        new(StringComparer.Ordinal)
+     {
+-        ["tex2D"]     = "Sample",
+-        ["tex2Dgrad"] = "SampleGrad",
++        ["tex1D"]       = new("Sample",     LegacyTextureKind.Texture2D, DecayFrom1D: true),
++        ["tex1Dgrad"]   = new("SampleGrad", LegacyTextureKind.Texture2D, DecayFrom1D: true),
++        ["tex2D"]       = new("Sample",     LegacyTextureKind.Texture2D),
++        ["tex2Dgrad"]   = new("SampleGrad", LegacyTextureKind.Texture2D),
++        ["tex3D"]       = new("Sample",     LegacyTextureKind.Texture3D),
++        ["tex3Dgrad"]   = new("SampleGrad", LegacyTextureKind.Texture3D),
++        ["texCUBE"]     = new("Sample",     LegacyTextureKind.TextureCube),
++        ["texCUBEgrad"] = new("SampleGrad", LegacyTextureKind.TextureCube),
+     };
+ 
+     // Legacy sampling intrinsics whose arguments do NOT map 1:1 onto a modern
+     // Texture method (tex2Dlod packs the LOD into coord.w, tex2Dproj divides by
+-    // coord.w, the bias forms pack the bias into coord.w; the 1D/3D/CUBE families
+-    // additionally need a non-Texture2D resource the sampler rewrite does not
+-    // synthesize). Rewriting them is NOT mechanical with the span-substitution
+-    // machinery here, so they fail loudly with a targeted FX0012 diagnostic instead
+-    // of dying later inside DXC with a misleading 'unknown identifier' error.
++    // coord.w, the bias forms pack the bias into coord.w). Rewriting them is NOT
++    // mechanical with the span-substitution machinery here, so they fail loudly with
++    // a targeted FX0012 diagnostic instead of dying later inside DXC with a
++    // misleading 'unknown identifier' error.
+     // The FNA target (PreserveSm3) compiles all of these natively via vkd3d.
+     private static readonly HashSet<string> UnsupportedLegacyIntrinsics = new(StringComparer.Ordinal)
+     {
+-        "tex1D", "tex1Dbias", "tex1Dgrad", "tex1Dlod", "tex1Dproj",
++        "tex1Dbias", "tex1Dlod", "tex1Dproj",
+         "tex2Dbias", "tex2Dlod", "tex2Dproj",
+-        "tex3D", "tex3Dbias", "tex3Dgrad", "tex3Dlod", "tex3Dproj",
+-        "texCUBE", "texCUBEbias", "texCUBEgrad", "texCUBElod", "texCUBEproj",
++        "tex3Dbias", "tex3Dlod", "tex3Dproj",
++        "texCUBEbias", "texCUBElod", "texCUBEproj",
+     };
+ 
+     // SM4+ resource/sampler types with no fx_2_0 (D3D9 SM1-3) equivalent. Only the FNA
+@@ -236,6 +281,15 @@ public sealed class FxPreParser
+         ["textureCUBE"] = "TextureCube",
+     };
+ 
++    // The subset of the above that states NO dimension. The mapping to Texture2D is only a
++    // default: what the resource actually is can be decided solely by the intrinsic that
++    // samples it (texCUBE => TextureCube), which is not known until the whole file is
++    // scanned. Declarations using these keywords are therefore rewritten in a deferred pass.
++    private static readonly HashSet<string> DimensionlessTextureTypeKeywords = new(StringComparer.Ordinal)
++    {
++        "texture", "Texture",
++    };
++
+     // -------------------------------------------------------------------------
+     // Instance state
+     // -------------------------------------------------------------------------
+@@ -285,6 +339,48 @@ public sealed class FxPreParser
+     // in this map by the time its tex2D call is reached.
+     private readonly Dictionary<string, string> _samplerTextureBindings = new(StringComparer.Ordinal);
+ 
++    // SAMPLER name -> the resource dimension implied by the legacy intrinsics that sample
++    // through it, and the set of those intrinsic names. The FX9 'texture' object type is
++    // dimensionless, so the CALL SITE is the only place the dimension is stated: a
++    // 'texture EnvironmentMap;' reached by texCUBE must become 'TextureCube', not
++    // 'Texture2D'. Populated by the same pre-scan that fills _legacyIntrinsicSamplers.
++    private Dictionary<string, LegacyTextureKind> _samplerSampleKinds = new(StringComparer.Ordinal);
++    private Dictionary<string, HashSet<string>> _samplerLegacyIntrinsics = new(StringComparer.Ordinal);
++
++    // First sampler found being sampled at two different dimensions (e.g. both tex2D and
++    // texCUBE). That is not expressible — one resource cannot be two types — and it means
++    // the shader is wrong, so the pre-scan records it and Parse fails loudly rather than
++    // silently picking one.
++    private (string Sampler, string First, string Second)? _samplerKindConflict;
++
++    // TEXTURE name -> the dimension resolved for it, recorded as sampler declarations bind
++    // textures in the main loop. Read when the DEFERRED dimensionless-'texture' declaration
++    // rewrites are applied after the scan (the declaration is reached before the sampler
++    // that gives it a dimension, so it cannot be resolved in place).
++    private readonly Dictionary<string, LegacyTextureKind> _textureKinds = new(StringComparer.Ordinal);
++
++    /// <summary>
++    /// One legacy <c>sampler</c> parameter of a function: where it sits in the parameter list,
++    /// and what it is called. Shader model 4 has no sampler-with-texture object, so the parameter
++    /// is split into a <c>Texture2D</c> + <c>SamplerState</c> PAIR and every call site has to
++    /// grow the matching texture argument at the same index.
++    /// </summary>
++    private readonly record struct SamplerParameter(int ArgIndex, string Name);
++
++    // FUNCTION name -> its legacy sampler parameters, in parameter order. Populated by a pre-scan
++    // so a CALL (which may appear before the definition once headers are inlined) can be rewritten
++    // without a second pass.
++    private readonly Dictionary<string, List<SamplerParameter>> _samplerParamFunctions =
++        new(StringComparer.Ordinal);
++
++    // Token indices of the function-NAME token at each such function's definition, so the main
++    // loop can tell the definition from a call to it.
++    private readonly HashSet<int> _samplerParamFunctionDefNames = new();
++
++    // Parameter-declaration span rewrites ('sampler s' -> 'Texture2D s_SDTexture, SamplerState s'),
++    // computed by the pre-scan and applied with the other deferred rewrites after the main loop.
++    private readonly List<(int Start, int End, string Replacement)> _samplerParamDeclRewrites = new();
++
+     /// <summary>
+     /// SAMPLER name -> the explicit <c>register(sN)</c> index on its legacy declaration, captured
+     /// before the SM4 rewrite drops the clause (issue #189). Resolved to TEXTURE names against
+@@ -481,6 +577,11 @@ public sealed class FxPreParser
+         var deferredColorRewrites = new List<(int Start, int End, string Replacement, string? Function)>();
+         var vertexEntryNames = new HashSet<string>(StringComparer.Ordinal);
+ 
++        // Dimensionless legacy 'texture T;' declarations, resolved to a concrete resource
++        // type after the scan — the dimension comes from the intrinsic that samples T, which
++        // is always further down the file than the declaration.
++        var deferredTextureDecls = new List<(int Start, int End, string TextureName)>();
++
+         // Brace-nesting depth in the main scan (B7). Incremented when the verbatim
+         // path consumes a '{' and decremented on '}'. Technique / pass / sampler_state
+         // bodies are consumed inside their own parsers (never via the main loop), so
+@@ -499,12 +600,37 @@ public sealed class FxPreParser
+         // intrinsic so the main loop knows which declarations to rewrite.
+         _legacyIntrinsicSamplers = CollectLegacyIntrinsicSamplers();
+ 
++        // A sampler reached at two different dimensions cannot be given a resource type: one
++        // texture is not both a Texture2D and a TextureCube. D3D9 tolerated it (the sampler
++        // carried the dimension, not the resource); SM4 does not, so say exactly that rather
++        // than picking one and rendering something wrong.
++        if (_mode == FxSourceMode.RewriteToSm4 && _samplerKindConflict is { } conflict)
++        {
++            return Fail<FxParseResult>(FxParseErrorCode.UnsupportedLegacyIntrinsic,
++                $"Sampler '{conflict.Sampler}' is sampled at two different dimensions " +
++                $"({conflict.First} and {conflict.Second}). The legacy FX 'texture' type is " +
++                "dimensionless, so ShadowDusk takes the dimension from the intrinsic; shader " +
++                "model 4+ requires one concrete resource type per sampler. Split it into one " +
++                "sampler per dimension.", Peek());
++        }
++
+         // Pre-scan: discover which samplers are used through a MODERN Texture
+         // method call (e.g. 'Tex.Sample(S, uv)') so a 'sampler_state' declaration
+         // that the modern code actually references is rewritten to a passthrough
+         // 'SamplerState S;' rather than erased (see _modernMethodSamplers).
+         _modernMethodSamplers = CollectModernMethodSamplers();
+ 
++        // Pre-scan: discover functions taking a legacy 'sampler' PARAMETER, so its uses inside
++        // the body resolve to a texture and every call site can grow the matching argument.
++        // Runs before the main loop because a call can precede the definition once headers are
++        // inlined. RewriteToSm4 only — vkd3d takes a sampler parameter natively.
++        if (_mode == FxSourceMode.RewriteToSm4)
++        {
++            var samplerParamResult = CollectSamplerParameterFunctions();
++            if (samplerParamResult.IsFailure)
++                return Result<FxParseResult, FxParseError>.Fail(samplerParamResult.Error);
++        }
++
+         // Skip comments and preprocessor directives at the start of the token stream
+         // (they are always included verbatim in stripped output).
+         SkipNonCodeTokens();
+@@ -638,9 +764,18 @@ public sealed class FxPreParser
+                             // (declared separately as 'Texture2D T;'); otherwise synthesize.
+                             string texture = info.TextureReference ?? SynthTextureName(info.Name);
+                             _samplerTextureBindings[info.Name] = texture;
++
++                            // The dimension comes from the intrinsics that sample through this
++                            // sampler — the FX9 'texture' type does not carry one. Record it so
++                            // the deferred rewrite of a separately-declared 'texture T;' picks
++                            // the same resource type this binding assumes.
++                            LegacyTextureKind kind = KindOfSampler(info.Name);
++                            _textureKinds[texture] = kind;
++                            string helpers = BuildSampleHelpers(info.Name, texture);
++
+                             string newDecl = info.TextureReference is not null
+-                                ? $"SamplerState {info.Name};"
+-                                : $"Texture2D {texture}; SamplerState {info.Name};";
++                                ? $"SamplerState {info.Name};{helpers}"
++                                : $"{ResourceTypeOf(kind)} {texture}; SamplerState {info.Name};{helpers}";
+ 
+                             replacedRanges.Add((blockStart, declEnd,
+                                 BuildDeclReplacement(blockStart, declEnd, newDecl)));
+@@ -690,10 +825,14 @@ public sealed class FxPreParser
+                         int blockStart = _tokenCharOffset[_pos];
+                         (string name, int declEnd) = ConsumeBareSamplerDecl();
+ 
+-                        // A bare sampler binds no texture in source — synthesize one.
++                        // A bare sampler binds no texture in source — synthesize one, at the
++                        // dimension its call sites imply.
+                         string synth = SynthTextureName(name);
+                         _samplerTextureBindings[name] = synth;
+-                        string newDecl = $"Texture2D {synth}; SamplerState {name};";
++                        LegacyTextureKind bareKind = KindOfSampler(name);
++                        _textureKinds[synth] = bareKind;
++                        string newDecl = $"{ResourceTypeOf(bareKind)} {synth}; SamplerState {name};" +
++                                         BuildSampleHelpers(name, synth);
+ 
+                         replacedRanges.Add((blockStart, declEnd,
+                             BuildDeclReplacement(blockStart, declEnd, newDecl)));
+@@ -734,8 +873,18 @@ public sealed class FxPreParser
+             // statement boundary (preceded by ';' / '}' / a preprocessor line / start
+             // of file), so declining on just these two predecessors is the minimal,
+             // lowest-risk discriminator: every previously-rewritten shape is unchanged.
++            // ...with one exception: a DECLARATION MODIFIER is an Identifier too, and one
++            // preceding the keyword means the keyword is still in TYPE position, not name
++            // position. 'uniform const texture PanelContentTexture;' and 'uniform texture
++            // OverlayTexture;' are both ordinary FX9 declarations, and declining on them left
++            // the texture undeclared - so the sampler_state form that references it failed with
++            // "use of undeclared identifier", five effects at a time. A modern declaration never
++            // puts a modifier immediately before the variable NAME ('Texture2D const Tex;' is
++            // not legal), so excluding these is unambiguous.
+             TokenKind prevKind = PrevCodeKind();
+-            bool prevIsNamePosition = prevKind is TokenKind.Identifier or TokenKind.RAngle;
++            bool prevIsNamePosition = (prevKind is TokenKind.Identifier &&
++                                       !DeclarationModifiers.Contains(PrevCodeText()))
++                                      || prevKind is TokenKind.RAngle;
+             if (_mode == FxSourceMode.RewriteToSm4 &&
+                 !prevIsNamePosition &&
+                 tok.Kind == TokenKind.Identifier &&
+@@ -745,10 +894,23 @@ public sealed class FxPreParser
+                 if (Peek(nameOffset).Kind == TokenKind.Identifier)
+                 {
+                     int blockStart = _tokenCharOffset[_pos];
++                    bool dimensionless = DimensionlessTextureTypeKeywords.Contains(tok.Text);
+                     (string texName, int declEnd) = ConsumeLegacyTextureDecl();
+-                    string newDecl = $"{modernTextureType} {texName};";
+-                    replacedRanges.Add((blockStart, declEnd,
+-                        BuildDeclReplacement(blockStart, declEnd, newDecl)));
++
++                    if (dimensionless)
++                    {
++                        // 'texture T;' states no dimension — only the intrinsic that samples T
++                        // does, and the sampler that binds them is declared AFTER this point.
++                        // Defer, exactly as the ': COLOR' rewrite defers on the enclosing
++                        // function, and resolve once the whole file has been scanned.
++                        deferredTextureDecls.Add((blockStart, declEnd, texName));
++                    }
++                    else
++                    {
++                        // 'texture1D' / 'texture3D' / 'textureCUBE' name their own dimension.
++                        replacedRanges.Add((blockStart, declEnd,
++                            BuildDeclReplacement(blockStart, declEnd, $"{modernTextureType} {texName};")));
++                    }
+ 
+                     SkipNonCodeTokens();
+                     continue;
+@@ -897,6 +1059,38 @@ public sealed class FxPreParser
+                     "Vulkan targets, which support it.", tok);
+             }
+ 
++            // A CALL to a function that takes a legacy sampler parameter: grow the matching
++            // texture argument so the call still matches the signature the parameter rewrite
++            // produced (see CollectSamplerParameterFunctions). The sampler argument's own span is
++            // replaced with '<texture>, <sampler>' — the texture FIRST, matching the parameter
++            // order — so the edit needs no zero-width insertion. Argument indices are the
++            // ORIGINAL ones on both sides, and each insertion shifts both equally, so a function
++            // with several sampler parameters stays aligned.
++            if (_mode == FxSourceMode.RewriteToSm4 &&
++                tok.Kind == TokenKind.Identifier &&
++                !_samplerParamFunctionDefNames.Contains(_pos) &&
++                _samplerParamFunctions.TryGetValue(tok.Text, out List<SamplerParameter>? samplerParams) &&
++                Peek(NextCodeOffset(1)).Kind == TokenKind.LParen)
++            {
++                foreach (SamplerParameter sp in samplerParams)
++                {
++                    if (!TryFindCallArgumentIdentifier(NextCodeOffset(1), sp.ArgIndex, out int argIdx))
++                        continue;
++                    if (!_samplerTextureBindings.TryGetValue(_tokens[argIdx].Text, out string? argTexture))
++                        continue; // not a sampler we resolved — leave it for DXC to diagnose
++
++                    int argStart = _tokenCharOffset[argIdx];
++                    replacedRanges.Add((argStart, argStart + _tokens[argIdx].Text.Length,
++                        $"{argTexture}, {_tokens[argIdx].Text}"));
++                }
++
++                // Consume only the function name; the argument list flows through the loop
++                // verbatim (its own nested calls still get their rewrites).
++                Consume();
++                SkipNonCodeTokens();
++                continue;
++            }
++
+             // DXC 6.x dropped the legacy 'tex2D(s, uv)' / 'tex2Dgrad(s, uv, ddx, ddy)'
+             // sampling intrinsics. Rewrite them to '<texture>.Sample(…)' /
+             // '<texture>.SampleGrad(…)', where <texture> is the Texture2D the sampler
+@@ -911,13 +1105,24 @@ public sealed class FxPreParser
+             // check makes it explicit).
+             if (_mode == FxSourceMode.RewriteToSm4 &&
+                 tok.Kind == TokenKind.Identifier &&
+-                LegacySampleIntrinsics.TryGetValue(tok.Text, out string? sampleMethod) &&
++                LegacySampleIntrinsics.TryGetValue(tok.Text, out LegacySampleIntrinsic sampleOp) &&
+                 TryMatchTexSampleArgument(out string samplerArg) &&
+                 _samplerTextureBindings.TryGetValue(samplerArg, out string? boundTexture))
+             {
+                 int texStart = _tokenCharOffset[_pos];
+                 int texEnd = texStart + tok.Text.Length;
+-                replacedRanges.Add((texStart, texEnd, $"{boundTexture}.{sampleMethod}"));
++
++                // The tex1D family's coordinate is narrower than the resource it samples, so
++                // it goes through the helper emitted alongside the sampler declaration rather
++                // than straight to a Texture method. Either way the edit is the same shape:
++                // replace the intrinsic identifier, copy '(s, …)' verbatim.
++                string callee = sampleOp.DecayFrom1D
++                    ? (sampleOp.Method == "SampleGrad"
++                        ? Tex1DGradHelperName(samplerArg)
++                        : Tex1DHelperName(samplerArg))
++                    : $"{boundTexture}.{sampleOp.Method}";
++
++                replacedRanges.Add((texStart, texEnd, callee));
+ 
+                 // Consume only the intrinsic identifier; '(', the sampler argument,
+                 // and the rest of the call flow through the loop verbatim.
+@@ -958,6 +1163,24 @@ public sealed class FxPreParser
+             replacedRanges.Add((start, end, replacement));
+         }
+ 
++        // Split each legacy 'sampler s' parameter into the 'Texture2D s_SDTexture, SamplerState s'
++        // pair its call sites were rewritten to match. Computed by the pre-scan (a call can
++        // precede the definition once headers are inlined) and applied here with the other
++        // deferred rewrites; the main loop copies these spans verbatim, so the two never collide.
++        replacedRanges.AddRange(_samplerParamDeclRewrites);
++
++        // Resolve the dimensionless 'texture T;' declarations now that every sampler binding
++        // is known. A texture no legacy intrinsic reaches keeps Texture2D — the behaviour
++        // before dimensions were modelled, so nothing that compiled before changes.
++        foreach (var (start, end, textureName) in deferredTextureDecls)
++        {
++            string resourceType = _textureKinds.TryGetValue(textureName, out LegacyTextureKind kind)
++                ? ResourceTypeOf(kind)
++                : "Texture2D";
++            replacedRanges.Add((start, end,
++                BuildDeclReplacement(start, end, $"{resourceType} {textureName};")));
++        }
++
+         string strippedHlsl = BuildStrippedOutput(erasedRanges, replacedRanges);
+ 
+         // Re-key the captured `register(sN)` indices from SAMPLER name onto TEXTURE name,
+@@ -1804,6 +2027,28 @@ public sealed class FxPreParser
+     /// position, or <see cref="TokenKind.EOF"/> when there is none. Used to disambiguate a
+     /// type keyword that is actually a variable name closing a template ('...&gt; Texture').
+     /// </summary>
++    /// <summary>
++    /// Storage classes and type modifiers that may legally precede a type keyword in an HLSL
++    /// declaration. They lex as ordinary identifiers, so anything discriminating "type position"
++    /// from "variable-name position" by looking at the previous token has to exclude them.
++    /// </summary>
++    private static readonly HashSet<string> DeclarationModifiers = new(StringComparer.Ordinal)
++    {
++        "uniform", "const", "static", "extern", "shared", "volatile", "inline",
++        "precise", "groupshared", "nointerpolation", "linear", "centroid", "noperspective",
++        "sample", "row_major", "column_major", "globallycoherent",
++    };
++
++    /// <summary>The text of the previous code token, or "" at the start of the stream.</summary>
++    private string PrevCodeText()
++    {
++        int offset = -1;
++        while (_pos + offset >= 0 &&
++               Peek(offset).Kind is TokenKind.LineComment or TokenKind.BlockComment)
++            offset--;
++        return _pos + offset >= 0 ? Peek(offset).Text : "";
++    }
++
+     private TokenKind PrevCodeKind()
+     {
+         int offset = -1;
+@@ -1863,12 +2108,18 @@ public sealed class FxPreParser
+     private HashSet<string> CollectLegacyIntrinsicSamplers()
+     {
+         var used = new HashSet<string>(StringComparer.Ordinal);
++        _samplerSampleKinds = new Dictionary<string, LegacyTextureKind>(StringComparer.Ordinal);
++        _samplerLegacyIntrinsics = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
++        _samplerKindConflict = null;
+ 
+         for (int i = 0; i < _tokens.Count; i++)
+         {
+-            if (_tokens[i].Kind != TokenKind.Identifier || !LegacySampleIntrinsics.ContainsKey(_tokens[i].Text))
++            if (_tokens[i].Kind != TokenKind.Identifier ||
++                !LegacySampleIntrinsics.TryGetValue(_tokens[i].Text, out LegacySampleIntrinsic intrinsic))
+                 continue;
+ 
++            string intrinsicName = _tokens[i].Text;
++
+             // Expect '<intrinsic>' '(' Identifier — comments may sit in between.
+             int j = i + 1;
+             while (j < _tokens.Count && _tokens[j].Kind is TokenKind.LineComment or TokenKind.BlockComment)
+@@ -1879,13 +2130,336 @@ public sealed class FxPreParser
+             j++;
+             while (j < _tokens.Count && _tokens[j].Kind is TokenKind.LineComment or TokenKind.BlockComment)
+                 j++;
+-            if (j < _tokens.Count && _tokens[j].Kind == TokenKind.Identifier)
+-                used.Add(_tokens[j].Text);
++            if (j >= _tokens.Count || _tokens[j].Kind != TokenKind.Identifier)
++                continue;
++
++            string sampler = _tokens[j].Text;
++            used.Add(sampler);
++
++            // Record the dimension this call site implies, and which intrinsics reach this
++            // sampler (the tex1D family needs a generated helper per sampler).
++            if (!_samplerLegacyIntrinsics.TryGetValue(sampler, out HashSet<string>? names))
++                _samplerLegacyIntrinsics[sampler] = names = new HashSet<string>(StringComparer.Ordinal);
++            names.Add(intrinsicName);
++
++            if (_samplerSampleKinds.TryGetValue(sampler, out LegacyTextureKind existing))
++            {
++                if (existing != intrinsic.Kind && _samplerKindConflict is null)
++                    _samplerKindConflict = (sampler, existing.ToString(), intrinsic.Kind.ToString());
++            }
++            else
++            {
++                _samplerSampleKinds[sampler] = intrinsic.Kind;
++            }
+         }
+ 
+         return used;
+     }
+ 
++    /// <summary>
++    /// Finds every function parameter declared with a legacy <c>sampler</c> object type and
++    /// records what the main loop needs to split it into a <c>Texture2D</c> + <c>SamplerState</c>
++    /// pair: the owning function, the parameter's position, and the span of its declaration.
++    /// </summary>
++    /// <remarks>
++    /// <para>
++    /// Shader model 4 separated the texture from the sampler, so <c>tex2D(s, uv)</c> lowers to
++    /// <c>T.Sample(s, uv)</c> — which needs a T. For a sampler DECLARED at file scope the
++    /// <c>sampler_state</c> block names it; for a sampler that arrives as a function PARAMETER
++    /// there is nothing to name, so the parameter itself has to carry the texture:
++    /// </para>
++    /// <code>
++    ///   float4 GetOutlineColor(sampler s, float2 uv)
++    ///     -> float4 GetOutlineColor(Texture2D s_SDTexture, SamplerState s, float2 uv)
++    ///   GetOutlineColor(TextureSampler, uv)
++    ///     -> GetOutlineColor(BasicTexture, TextureSampler, uv)
++    /// </code>
++    /// <para>
++    /// A sampler parameter is recognized WITHOUT needing to detect function definitions: the type
++    /// keyword sits immediately after a '(' or a ',', which is a parameter position and nothing
++    /// else (a call passes an expression, never <c>Type ident</c>). Walking back from there to the
++    /// parameter list's own '(' gives the function name and the parameter's index.
++    /// </para>
++    /// </remarks>
++    private Result<Unit, FxParseError> CollectSamplerParameterFunctions()
++    {
++        // Pass 1: the names declared as samplers at FILE SCOPE. A sampler-typed token pair is a
++        // parameter exactly when a '(' or ',' precedes it, so the same discrimination, inverted,
++        // identifies the declarations — needed for the shadowing guard below, because file-scope
++        // declarations are not processed until the main loop.
++        var fileScopeSamplers = new HashSet<string>(StringComparer.Ordinal);
++        for (int i = 0; i < _tokens.Count; i++)
++        {
++            if (_tokens[i].Kind != TokenKind.Identifier ||
++                !LegacySamplerObjectTypes.Contains(_tokens[i].Text))
++                continue;
++
++            int n = NextCodeIndex(i + 1);
++            if (n >= _tokens.Count || _tokens[n].Kind != TokenKind.Identifier)
++                continue;
++
++            int p = PrevCodeIndex(i - 1);
++            if (p < 0 || _tokens[p].Kind is not (TokenKind.LParen or TokenKind.Comma))
++                fileScopeSamplers.Add(_tokens[n].Text);
++        }
++
++        // Passing a sampler to one of these functions IS sampling through it, so the argument
++        // has to join the "sampled through a legacy intrinsic" set — otherwise its declaration is
++        // erased as unused and no texture binding is recorded, and the call site has nothing to
++        // pass. Which arguments those are is only known once the callees are known, and a callee
++        // is only recognized once its own parameter is known to be sampled — so iterate to a fixed
++        // point. One round finds the directly-sampled cases, the next those passed on from them.
++        // The set only ever grows and is bounded by the number of identifiers, so this terminates.
++        var intrinsicSamplers = new HashSet<string>(_legacyIntrinsicSamplers, StringComparer.Ordinal);
++        while (true)
++        {
++            _samplerParamFunctions.Clear();
++            _samplerParamFunctionDefNames.Clear();
++            _samplerParamDeclRewrites.Clear();
++
++            Result<Unit, FxParseError> scan = ScanSamplerParameters(fileScopeSamplers, intrinsicSamplers);
++            if (scan.IsFailure)
++                return scan;
++
++            int before = intrinsicSamplers.Count;
++            CollectSamplerArgumentsAtCallSites(intrinsicSamplers);
++            if (intrinsicSamplers.Count == before)
++                break;
++        }
++
++        _legacyIntrinsicSamplers = intrinsicSamplers;
++        return Result<Unit, FxParseError>.Ok(Unit.Value);
++    }
++
++    /// <summary>
++    /// One round of the fixed point in <see cref="CollectSamplerParameterFunctions"/>: records
++    /// every sampler parameter that <paramref name="intrinsicSamplers"/> says is sampled through.
++    /// </summary>
++    private Result<Unit, FxParseError> ScanSamplerParameters(
++        HashSet<string> fileScopeSamplers, HashSet<string> intrinsicSamplers)
++    {
++        for (int i = 1; i < _tokens.Count; i++)
++        {
++            if (_tokens[i].Kind != TokenKind.Identifier ||
++                !LegacySamplerObjectTypes.Contains(_tokens[i].Text))
++                continue;
++
++            int nameIdx = NextCodeIndex(i + 1);
++            if (nameIdx >= _tokens.Count || _tokens[nameIdx].Kind != TokenKind.Identifier)
++                continue;
++
++            // Must sit in parameter position: the preceding code token is '(' or ','.
++            int prevIdx = PrevCodeIndex(i - 1);
++            if (prevIdx < 0 || _tokens[prevIdx].Kind is not (TokenKind.LParen or TokenKind.Comma))
++                continue;
++
++            // Only a parameter a legacy intrinsic actually samples through needs splitting —
++            // the same gate the file-scope sampler declarations use. A sampler parameter nothing
++            // samples through is left exactly as written: there is nothing to fix, and rewriting
++            // it would change a signature (and every call site) for no reason.
++            if (!intrinsicSamplers.Contains(_tokens[nameIdx].Text))
++                continue;
++
++            // Walk back to the parameter list's own '(', counting the top-level commas that
++            // precede this parameter — that count IS its argument index.
++            int argIndex = 0;
++            int depth = 0;
++            int open = -1;
++            for (int j = prevIdx; j >= 0; j--)
++            {
++                TokenKind k = _tokens[j].Kind;
++                if (k == TokenKind.RParen) { depth++; continue; }
++                if (k == TokenKind.LParen)
++                {
++                    if (depth == 0) { open = j; break; }
++                    depth--;
++                    continue;
++                }
++                if (k == TokenKind.Comma && depth == 0) argIndex++;
++            }
++            if (open < 0)
++                continue;
++
++            int funcIdx = PrevCodeIndex(open - 1);
++            if (funcIdx < 0 || _tokens[funcIdx].Kind != TokenKind.Identifier)
++                continue;
++
++            string funcName = _tokens[funcIdx].Text;
++            string paramName = _tokens[nameIdx].Text;
++
++            // A parameter shadowing a FILE-SCOPE sampler of the same name would make the binding
++            // map ambiguous: the map is keyed by name, so the main loop's declaration would
++            // overwrite this parameter's entry and the body's tex2D would silently sample the
++            // global texture through the parameter's sampler. Refuse rather than guess.
++            //
++            // Two FUNCTIONS sharing a parameter name is not that, and is entirely ordinary — they
++            // are separate scopes, both resolve to the same synthesized name, and each declares
++            // its own texture parameter. It must not be flagged.
++            if (fileScopeSamplers.Contains(paramName))
++            {
++                return Fail<Unit>(FxParseErrorCode.UnsupportedLegacyIntrinsic,
++                    $"The sampler parameter '{paramName}' of '{funcName}' shadows a sampler " +
++                    "declared at file scope. ShadowDusk binds each sampler to one texture by " +
++                    "name, so the shadowed name cannot be resolved unambiguously. Rename the " +
++                    "parameter.", _tokens[nameIdx]);
++            }
++
++            // tex1D through a sampler parameter would need its decay helper declared inside the
++            // function (the texture is a local now, not a global), which the span-substitution
++            // machinery cannot do. Say so rather than emitting a call to a helper that is not there.
++            if (_samplerLegacyIntrinsics.TryGetValue(paramName, out HashSet<string>? used) &&
++                (used.Contains("tex1D") || used.Contains("tex1Dgrad")))
++            {
++                return Fail<Unit>(FxParseErrorCode.UnsupportedLegacyIntrinsic,
++                    $"The sampler parameter '{paramName}' of '{funcName}' is sampled with a tex1D " +
++                    "intrinsic. tex1D lowers through a generated helper bound to the sampler's " +
++                    "texture, which only exists for a sampler declared at file scope. Sample it " +
++                    "with tex2D (a 1D texture is one texel tall), or pass the texture separately.",
++                    _tokens[nameIdx]);
++            }
++
++            string texture = SynthTextureName(paramName);
++            LegacyTextureKind kind = KindOfSampler(paramName);
++            _samplerTextureBindings[paramName] = texture;
++            _textureKinds[texture] = kind;
++
++            if (!_samplerParamFunctions.TryGetValue(funcName, out List<SamplerParameter>? list))
++                _samplerParamFunctions[funcName] = list = new List<SamplerParameter>();
++            list.Add(new SamplerParameter(argIndex, paramName));
++
++            _samplerParamFunctionDefNames.Add(funcIdx);
++
++            int spanStart = _tokenCharOffset[i];
++            int spanEnd = _tokenCharOffset[nameIdx] + _tokens[nameIdx].Text.Length;
++            _samplerParamDeclRewrites.Add((spanStart, spanEnd,
++                $"{ResourceTypeOf(kind)} {texture}, SamplerState {paramName}"));
++        }
++
++        return Result<Unit, FxParseError>.Ok(Unit.Value);
++    }
++
++    /// <summary>
++    /// Adds every sampler passed at a sampler-parameter position of a known sampler-taking
++    /// function to <paramref name="intrinsicSamplers"/>, and propagates the parameter's
++    /// dimension to it. Passing a sampler to such a function is sampling through it: without
++    /// this its declaration is erased as unused, so no texture is bound and the call site has
++    /// nothing to pass.
++    /// </summary>
++    private void CollectSamplerArgumentsAtCallSites(HashSet<string> intrinsicSamplers)
++    {
++        for (int i = 0; i < _tokens.Count; i++)
++        {
++            if (_tokens[i].Kind != TokenKind.Identifier ||
++                _samplerParamFunctionDefNames.Contains(i) ||
++                !_samplerParamFunctions.TryGetValue(_tokens[i].Text, out List<SamplerParameter>? ps))
++                continue;
++
++            int lparen = NextCodeIndex(i + 1);
++            if (lparen >= _tokens.Count || _tokens[lparen].Kind != TokenKind.LParen)
++                continue;
++
++            foreach (SamplerParameter sp in ps)
++            {
++                if (!TryFindCallArgumentIdentifierAt(lparen, sp.ArgIndex, out int argIdx))
++                    continue;
++
++                string arg = _tokens[argIdx].Text;
++                intrinsicSamplers.Add(arg);
++
++                // The callee states the dimension; the caller's declaration has to agree, or its
++                // texture would be synthesized as the wrong resource type.
++                if (!_samplerSampleKinds.ContainsKey(arg) &&
++                    _samplerSampleKinds.TryGetValue(sp.Name, out LegacyTextureKind kind))
++                    _samplerSampleKinds[arg] = kind;
++            }
++        }
++    }
++
++    /// <summary>Index of the nearest code token at or after <paramref name="index"/>.</summary>
++    private int NextCodeIndex(int index)
++    {
++        while (index < _tokens.Count &&
++               _tokens[index].Kind is TokenKind.LineComment or TokenKind.BlockComment)
++            index++;
++        return index;
++    }
++
++    /// <summary>Index of the nearest code token at or before <paramref name="index"/>, or -1.</summary>
++    private int PrevCodeIndex(int index)
++    {
++        while (index >= 0 &&
++               _tokens[index].Kind is TokenKind.LineComment or TokenKind.BlockComment)
++            index--;
++        return index;
++    }
++
++    /// <summary>
++    /// The modern resource type a legacy dimensionless <c>texture</c> declaration must be
++    /// rewritten to, given the dimension its call sites imply.
++    /// </summary>
++    private static string ResourceTypeOf(LegacyTextureKind kind) => kind switch
++    {
++        LegacyTextureKind.Texture3D   => "Texture3D",
++        LegacyTextureKind.TextureCube => "TextureCube",
++        _                             => "Texture2D",
++    };
++
++    /// <summary>
++    /// The dimension implied for <paramref name="samplerName"/> by the legacy intrinsics that
++    /// sample through it, defaulting to 2D (the behaviour before dimensions were modelled).
++    /// </summary>
++    private LegacyTextureKind KindOfSampler(string samplerName) =>
++        _samplerSampleKinds.TryGetValue(samplerName, out LegacyTextureKind kind)
++            ? kind
++            : LegacyTextureKind.Texture2D;
++
++    private static string Tex1DHelperName(string samplerName) => samplerName + "_SDTex1D";
++    private static string Tex1DGradHelperName(string samplerName) => samplerName + "_SDTex1DGrad";
++
++    /// <summary>
++    /// HLSL for the tex1D-family helpers <paramref name="samplerName"/> needs, appended to its
++    /// rewritten declaration (which is where both the sampler and its texture are in scope).
++    /// Returns <see cref="string.Empty"/> when no tex1D call reaches this sampler — the
++    /// overwhelmingly common case, where nothing is emitted at all.
++    /// </summary>
++    /// <remarks>
++    /// <para>
++    /// <c>tex1D</c> has no modern counterpart because D3D10+ dropped the notion of a sampler
++    /// whose coordinate is narrower than its resource. A 1D sample is not a distinct operation
++    /// in the GL/SM4 world: it is a 2D sample of a texture one texel tall, and the second
++    /// coordinate is don't-care. That is also exactly what the D3D9 stack did — the application
++    /// binds an ordinary 2D texture to the slot (this game's <c>OverlayGradient</c> is a 76x1
++    /// <c>Texture2D</c>), and fxc replicates the scalar across the coordinate register.
++    /// MojoShader lowers the same construct the same way, decaying the sampler to
++    /// <c>sampler2D</c> and emitting <c>texture2D(s, coord.xx)</c> — verified against an
++    /// mgfxc-built golden of this game's <c>skinFX</c>.
++    /// </para>
++    /// <para>
++    /// So the lowering is <c>T.Sample(s, float2(t, 0))</c>: 0 is the canonical don't-care for
++    /// the dimension the intrinsic declines to address. Emitting it as a per-sampler helper
++    /// rather than rewriting the call's argument list keeps the call-site edit a pure
++    /// identifier swap, which is all the span-substitution machinery here can do safely.
++    /// </para>
++    /// </remarks>
++    private string BuildSampleHelpers(string samplerName, string textureName)
++    {
++        if (!_samplerLegacyIntrinsics.TryGetValue(samplerName, out HashSet<string>? intrinsics))
++            return string.Empty;
++
++        var sb = new StringBuilder();
++
++        if (intrinsics.Contains("tex1D"))
++            sb.Append($" float4 {Tex1DHelperName(samplerName)}(SamplerState s, float t)" +
++                      $" {{ return {textureName}.Sample(s, float2(t, 0.0f)); }}");
++
++        if (intrinsics.Contains("tex1Dgrad"))
++            sb.Append($" float4 {Tex1DGradHelperName(samplerName)}(SamplerState s, float t," +
++                      $" float dx, float dy) {{ return {textureName}.SampleGrad(s, float2(t, 0.0f)," +
++                      $" float2(dx, 0.0f), float2(dy, 0.0f)); }}");
++
++        return sb.ToString();
++    }
++
+     /// <summary>
+     /// One-pass scan collecting the names of samplers passed as the first argument
+     /// of a MODERN Texture method call ('<c>Tex.Sample(S, uv)</c>',
+@@ -1979,6 +2553,83 @@ public sealed class FxPreParser
+     /// At a <c>tex2D</c> identifier token, matches the following <c>'(' Identifier</c>
+     /// and returns the sampler argument name. Comments may appear between tokens.
+     /// </summary>
++    /// <summary>
++    /// Locates argument <paramref name="argIndex"/> of the call whose '(' sits at
++    /// <c>_pos + lparenOffset</c>, succeeding only when that argument is a SINGLE bare identifier
++    /// token — the shape a sampler argument always has, and the only one that can be prefixed with
++    /// its texture without re-parsing an expression. Returns the identifier's token index.
++    /// </summary>
++    private bool TryFindCallArgumentIdentifier(int lparenOffset, int argIndex, out int identifierIndex)
++        => TryFindCallArgumentIdentifierAt(_pos + lparenOffset, argIndex, out identifierIndex);
++
++    /// <summary>
++    /// <see cref="TryFindCallArgumentIdentifier"/> addressed by absolute token index, for the
++    /// pre-scan (which has no <c>_pos</c>).
++    /// </summary>
++    private bool TryFindCallArgumentIdentifierAt(int lparenIndex, int argIndex, out int identifierIndex)
++    {
++        identifierIndex = -1;
++
++        int i = lparenIndex;
++        if (i < 0 || i >= _tokens.Count || _tokens[i].Kind != TokenKind.LParen)
++            return false;
++
++        int depth = 0;
++        int current = 0;
++        int argStart = -1;
++        for (; i < _tokens.Count; i++)
++        {
++            TokenKind k = _tokens[i].Kind;
++
++            if (k == TokenKind.LParen)
++            {
++                depth++;
++                if (depth == 1) argStart = i + 1;
++                continue;
++            }
++
++            if (k == TokenKind.RParen)
++            {
++                depth--;
++                if (depth == 0)
++                    return current == argIndex && IsSingleIdentifier(argStart, i, out identifierIndex);
++                continue;
++            }
++
++            if (k == TokenKind.Comma && depth == 1)
++            {
++                if (current == argIndex)
++                    return IsSingleIdentifier(argStart, i, out identifierIndex);
++                current++;
++                argStart = i + 1;
++            }
++        }
++
++        return false;
++    }
++
++    /// <summary>
++    /// True when the token span <c>[start, end)</c> holds exactly one identifier once comments are
++    /// ignored, reporting its index.
++    /// </summary>
++    private bool IsSingleIdentifier(int start, int end, out int identifierIndex)
++    {
++        identifierIndex = -1;
++        if (start < 0)
++            return false;
++
++        for (int i = start; i < end && i < _tokens.Count; i++)
++        {
++            if (_tokens[i].Kind is TokenKind.LineComment or TokenKind.BlockComment)
++                continue;
++            if (_tokens[i].Kind != TokenKind.Identifier || identifierIndex >= 0)
++                return false;
++            identifierIndex = i;
++        }
++
++        return identifierIndex >= 0;
++    }
++
+     private bool TryMatchTexSampleArgument(out string samplerArg)
+     {
+         samplerArg = string.Empty;
+diff --git a/tests/ShadowDusk.HLSL.Tests/FxPreParserTests.cs b/tests/ShadowDusk.HLSL.Tests/FxPreParserTests.cs
+index 1fbbf1c..b32ec6a 100644
+--- a/tests/ShadowDusk.HLSL.Tests/FxPreParserTests.cs
++++ b/tests/ShadowDusk.HLSL.Tests/FxPreParserTests.cs
+@@ -1826,8 +1826,8 @@ public sealed class FxPreParserTests
+     [InlineData("tex2Dlod")]
+     [InlineData("tex2Dproj")]
+     [InlineData("tex2Dbias")]
+-    [InlineData("texCUBE")]
+-    [InlineData("tex3D")]
++    [InlineData("texCUBElod")]
++    [InlineData("tex3Dproj")]
+     public void Parse_UnsupportedLegacyIntrinsic_FailsWithFX0012_NamingTheIntrinsic(string intrinsic)
+     {
+         string source = $$"""
+@@ -1850,6 +1850,259 @@ public sealed class FxPreParserTests
+         result.Error.Message.ShouldContain($"'{intrinsic}'", Case.Sensitive);
+     }
+ 
++    [Theory]
++    [InlineData("texCUBE", "TextureCube", "Sample")]
++    [InlineData("tex3D", "Texture3D", "Sample")]
++    [InlineData("texCUBEgrad", "TextureCube", "SampleGrad")]
++    [InlineData("tex3Dgrad", "Texture3D", "SampleGrad")]
++    public void Parse_DimensionedSampleIntrinsic_TakesResourceTypeFromTheCallSite(
++        string intrinsic, string expectedResourceType, string expectedMethod)
++    {
++        // The FX9 'texture' object type is DIMENSIONLESS — the dimension is stated only by the
++        // intrinsic that samples it, so 'texture EnvironmentMap;' reached by texCUBE must be
++        // rewritten to TextureCube, not the Texture2D default.
++        string source = $$"""
++            uniform const texture EnvMap;
++            uniform const sampler EnvSampler : register(s0) = sampler_state { Texture = (EnvMap); };
++
++            float4 PSMain(float4 t : TEXCOORD0) : SV_Target
++            {
++                return {{intrinsic}}(EnvSampler, t.xyz, t.xyz, t.xyz);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsSuccess.ShouldBeTrue();
++        result.Value.StrippedHlsl.ShouldContain($"{expectedResourceType} EnvMap;", Case.Sensitive);
++        result.Value.StrippedHlsl.ShouldContain($"EnvMap.{expectedMethod}(EnvSampler,", Case.Sensitive);
++        result.Value.StrippedHlsl.ShouldNotContain(intrinsic + "(", Case.Sensitive);
++    }
++
++    [Fact]
++    public void Parse_Tex1D_LowersThroughAHelperOnATexture2D()
++    {
++        // tex1D has no modern counterpart: D3D10+ dropped the narrower-than-resource sampler.
++        // A 1D sample IS a 2D sample of a one-texel-tall texture with a don't-care v — which is
++        // also what the application binds (an ordinary Texture2D) and what MojoShader emits.
++        const string source = """
++            uniform texture Gradient;
++            uniform sampler GradientSampler = sampler_state { Texture = (Gradient); };
++
++            float4 PSMain(float t : TEXCOORD0) : SV_Target
++            {
++                return tex1D(GradientSampler, t);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsSuccess.ShouldBeTrue();
++        result.Value.StrippedHlsl.ShouldContain("Texture2D Gradient;", Case.Sensitive);
++        result.Value.StrippedHlsl.ShouldContain(
++            "Gradient.Sample(s, float2(t, 0.0f))", Case.Sensitive);
++        result.Value.StrippedHlsl.ShouldContain(
++            "GradientSampler_SDTex1D(GradientSampler, t)", Case.Sensitive);
++        result.Value.StrippedHlsl.ShouldNotContain("tex1D(", Case.Sensitive);
++    }
++
++    [Fact]
++    public void Parse_SamplerUsedAtTwoDimensions_FailsLoudly()
++    {
++        // One resource cannot be both a Texture2D and a TextureCube. D3D9 tolerated it (the
++        // SAMPLER carried the dimension); SM4 does not.
++        const string source = """
++            uniform const texture Tex;
++            uniform const sampler S : register(s0) = sampler_state { Texture = (Tex); };
++
++            float4 PSMain(float4 t : TEXCOORD0) : SV_Target
++            {
++                return tex2D(S, t.xy) + texCUBE(S, t.xyz);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsFailure.ShouldBeTrue();
++        result.Error.Message.ShouldContain("two different dimensions");
++    }
++
++    [Fact]
++    public void Parse_SamplerParameter_SplitsIntoTexturePairAndGrowsCallSites()
++    {
++        // Shader model 4 separated the texture from the sampler, so a function taking a legacy
++        // `sampler` has nothing to call `.Sample` on. The parameter carries the texture instead,
++        // and every call site grows the matching argument at the same index.
++        const string source = """
++            uniform const texture BasicTexture;
++            uniform const sampler TextureSampler : register(s0) = sampler_state
++                { Texture = (BasicTexture); };
++
++            float4 Outline(sampler texSampler, float2 uv)
++            {
++                return tex2D(texSampler, uv);
++            }
++
++            float4 PSMain(float2 uv : TEXCOORD0) : SV_Target
++            {
++                return Outline(TextureSampler, uv);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsSuccess.ShouldBeTrue();
++        string stripped = result.Value.StrippedHlsl;
++
++        // The signature carries the texture, FIRST, so the call-site edit is a plain span swap.
++        stripped.ShouldContain(
++            "float4 Outline(Texture2D texSampler_SDTexture, SamplerState texSampler, float2 uv)",
++            Case.Sensitive);
++
++        // The body samples through it.
++        stripped.ShouldContain("texSampler_SDTexture.Sample(texSampler, uv)", Case.Sensitive);
++
++        // The call passes the caller's OWN texture alongside its sampler.
++        stripped.ShouldContain("Outline(BasicTexture, TextureSampler, uv)", Case.Sensitive);
++        stripped.ShouldNotContain("tex2D(", Case.Sensitive);
++    }
++
++    [Fact]
++    public void Parse_SamplerParameterNeverSampled_IsLeftExactlyAsWritten()
++    {
++        // Nothing to fix: no legacy intrinsic samples through it, so splitting the signature
++        // (and every call site) would be a change for its own sake.
++        const string source = """
++            float4 Unused(sampler s, float2 uv)
++            {
++                return float4(uv, 0, 1);
++            }
++
++            float4 PSMain(float2 uv : TEXCOORD0) : SV_Target
++            {
++                return Unused((sampler)0, uv);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsSuccess.ShouldBeTrue();
++        result.Value.StrippedHlsl.ShouldContain("Unused(sampler s, float2 uv)", Case.Sensitive);
++        result.Value.StrippedHlsl.ShouldNotContain("_SDTexture", Case.Sensitive);
++    }
++
++    [Fact]
++    public void Parse_SamplerParameterNameReusedAcrossFunctions_IsNotShadowing()
++    {
++        // Two functions sharing a parameter name are separate scopes — entirely ordinary, and
++        // NOT the file-scope shadowing the guard is for. Regression test: an earlier version
++        // keyed the check off the binding map, which the first function had already populated,
++        // so the second function tripped it.
++        const string source = """
++            uniform const texture TexA;
++            uniform const sampler SampA : register(s0) = sampler_state { Texture = (TexA); };
++            uniform const texture TexB;
++            uniform const sampler SampB : register(s1) = sampler_state { Texture = (TexB); };
++
++            float4 First(sampler s, float2 uv)  { return tex2D(s, uv); }
++            float4 Second(sampler s, float2 uv) { return tex2D(s, uv) * 0.5; }
++
++            float4 PSMain(float2 uv : TEXCOORD0) : SV_Target
++            {
++                return First(SampA, uv) + Second(SampB, uv);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsSuccess.ShouldBeTrue();
++        string stripped = result.Value.StrippedHlsl;
++        stripped.ShouldContain("First(Texture2D s_SDTexture, SamplerState s, float2 uv)", Case.Sensitive);
++        stripped.ShouldContain("Second(Texture2D s_SDTexture, SamplerState s, float2 uv)", Case.Sensitive);
++        stripped.ShouldContain("First(TexA, SampA, uv)", Case.Sensitive);
++        stripped.ShouldContain("Second(TexB, SampB, uv)", Case.Sensitive);
++    }
++
++    [Fact]
++    public void Parse_SamplerParameterShadowingFileScopeSampler_FailsLoudly()
++    {
++        // The binding map is keyed by NAME, so a parameter sharing a file-scope sampler's name
++        // would have its entry overwritten and the body would silently sample the global
++        // texture through the parameter's sampler.
++        const string source = """
++            uniform const texture TexA;
++            uniform const sampler s : register(s0) = sampler_state { Texture = (TexA); };
++
++            float4 Shadowed(sampler s, float2 uv) { return tex2D(s, uv); }
++
++            float4 PSMain(float2 uv : TEXCOORD0) : SV_Target
++            {
++                return Shadowed(s, uv);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsFailure.ShouldBeTrue();
++        result.Error.Message.ShouldContain("shadows a sampler");
++    }
++
++    [Fact]
++    public void Parse_SamplerParameterNotInFirstPosition_GrowsTheRightArgument()
++    {
++        const string source = """
++            uniform const texture TexA;
++            uniform const sampler SampA : register(s0) = sampler_state { Texture = (TexA); };
++
++            float4 Tail(float2 uv, sampler s, float bias) { return tex2D(s, uv) * bias; }
++
++            float4 PSMain(float2 uv : TEXCOORD0) : SV_Target
++            {
++                return Tail(uv, SampA, 0.5);
++            }
++            technique T
++            {
++                pass P { PixelShader = compile ps_3_0 PSMain(); }
++            }
++            """;
++
++        var result = FxPreParser.Parse(source, sourceFile: "test.fx");
++
++        result.IsSuccess.ShouldBeTrue();
++        string stripped = result.Value.StrippedHlsl;
++        stripped.ShouldContain(
++            "Tail(float2 uv, Texture2D s_SDTexture, SamplerState s, float bias)", Case.Sensitive);
++        stripped.ShouldContain("Tail(uv, TexA, SampA, 0.5)", Case.Sensitive);
++    }
++
+     [Fact]
+     public void Parse_IdentifierNamedLikeIntrinsic_ButNotACall_DoesNotFail()
+     {

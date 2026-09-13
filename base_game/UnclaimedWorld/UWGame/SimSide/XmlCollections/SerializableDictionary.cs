@@ -1,0 +1,113 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Schema;
+using System.Xml.Serialization;
+
+namespace UWGame.SimSide.XmlCollections;
+
+[XmlRoot("dictionary")]
+public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
+{
+	public SerializableDictionary()
+	{
+	}
+
+	public SerializableDictionary(IDictionary<TKey, TValue> dictionary)
+		: base(dictionary)
+	{
+	}
+
+	public SerializableDictionary(IEqualityComparer<TKey> comparer)
+		: base(comparer)
+	{
+	}
+
+	public SerializableDictionary(int capacity)
+		: base(capacity)
+	{
+	}
+
+	public SerializableDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer)
+		: base(dictionary, comparer)
+	{
+	}
+
+	public SerializableDictionary(int capacity, IEqualityComparer<TKey> comparer)
+		: base(capacity, comparer)
+	{
+	}
+
+	protected SerializableDictionary(SerializationInfo info, StreamingContext context)
+		: base(info, context)
+	{
+	}
+
+	public XmlSchema GetSchema()
+	{
+		return null;
+	}
+
+	public void ReadXml(XmlReader reader)
+	{
+		XmlSerializer xmlSerializer = new XmlSerializer(typeof(TKey));
+		XmlSerializer xmlSerializer2 = new XmlSerializer(typeof(TValue));
+		bool isEmptyElement = reader.IsEmptyElement;
+		reader.Read();
+		if (!isEmptyElement)
+		{
+			while (reader.NodeType != XmlNodeType.EndElement)
+			{
+				reader.ReadStartElement("item");
+				reader.ReadStartElement("key");
+				TKey key = (TKey)xmlSerializer.Deserialize(reader);
+				reader.ReadEndElement();
+				reader.ReadStartElement("value");
+				TValue value = (TValue)xmlSerializer2.Deserialize(reader);
+				reader.ReadEndElement();
+				Add(key, value);
+				reader.ReadEndElement();
+				reader.MoveToContent();
+			}
+			reader.ReadEndElement();
+		}
+	}
+
+	public void WriteXml(XmlWriter writer)
+	{
+		if (base.Count <= 0)
+		{
+			return;
+		}
+		KeyValuePair<TKey, TValue> keyValuePair = this.First();
+		XmlSerializer xmlSerializer = ((!(keyValuePair.Key is IGameData)) ? new XmlSerializer(typeof(TKey)) : new XmlSerializer(typeof(string)));
+		XmlSerializer xmlSerializer2 = ((!(keyValuePair.Value is IGameData)) ? new XmlSerializer(typeof(TValue)) : new XmlSerializer(typeof(string)));
+		foreach (TKey key in base.Keys)
+		{
+			writer.WriteStartElement("item");
+			writer.WriteStartElement("key");
+			if (key is IGameData)
+			{
+				xmlSerializer.Serialize(writer, ((IGameData)(object)key).KeyName);
+			}
+			else
+			{
+				xmlSerializer.Serialize(writer, key);
+			}
+			writer.WriteEndElement();
+			writer.WriteStartElement("value");
+			TValue val = base[key];
+			if (val is IGameData)
+			{
+				xmlSerializer2.Serialize(writer, ((IGameData)(object)val).KeyName);
+			}
+			else
+			{
+				xmlSerializer2.Serialize(writer, val);
+			}
+			writer.WriteEndElement();
+			writer.WriteEndElement();
+		}
+	}
+}
