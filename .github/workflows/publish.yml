@@ -49,9 +49,21 @@ jobs:
       - name: Build with no mods at all
         run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false -p:UwUnhiddenMod=false
 
+      # The tools that build on a Linux runner. Not all of them do, and that is by design rather
+      # than an oversight:
+      #
+      #   DataExport, EffectRender, XmlProxyGen   net8.0-windows + WinForms, unconditionally.
+      #                                           They are Windows desktop tools.
+      #   ContentProbe                            net8.0-windows for DX, plain net8.0 for GL -
+      #                                           so it builds here, under UwPlatform=GL.
+      #
+      # Building a Windows-targeting project on Linux needs EnableWindowsTargeting=true, which
+      # would make them compile and not make them runnable. Better to not claim they are part of
+      # this job.
       - name: Tools
         run: |
-          for p in tools/MgfxTranscode tools/ContentProbe tools/DataExport; do
+          for p in tools/MgfxTranscode tools/MgfxDxToGl tools/XnbExtract tools/XnbVertexWiden \
+                   tools/SourceCompare tools/ContentProbe; do
             dotnet build "$p"/*.csproj -c Release -p:UwPlatform=GL
           done
 

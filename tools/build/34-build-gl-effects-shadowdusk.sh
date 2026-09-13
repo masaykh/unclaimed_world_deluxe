@@ -1,54 +1,58 @@
 #!/bin/sh
-# Builds the OpenGL-profile effects with ShadowDusk instead of mgfxc.
+# Builds the game's OpenGL-profile effects from the HLSL in assets/effects/.
 #
-# Same output contract as build/31-build-gl-effects.sh - profile-0 MGFX in the shipped effect's
-# own XNB container - but compiled by a toolchain that runs on Linux and macOS as well as
-# Windows. mgfxc needs the Windows-only fxc/d3dcompiler; ShadowDusk's OpenGL path is
-# HLSL -> DXC -> SPIR-V -> SPIRV-Cross -> GLSL, and its natives ship for win-x64, linux-x64,
-# osx-x64 and osx-arm64. That is the whole reason this script exists: it is what would let the
-# effects be built in CI on any runner.
+# The output is profile-0 MGFX inside the shipped effect's own XNB container, which is what the
+# game loads. What makes this the build rather than one of two is the compiler: MonoGame's own
+# mgfxc P/Invokes the Windows-only d3dcompiler_47.dll EVEN FOR THE OPENGL PROFILE, so it can only
+# run on Windows or under Wine. ShadowDusk's OpenGL path is
+# HLSL -> DXC -> SPIR-V -> SPIRV-Cross -> GLSL, with natives for win-x64, linux-x64, osx-x64 and
+# osx-arm64 - so the effects can be built on any of the three platforms, and in CI on a Linux
+# runner.
 #
-# Writes to content/effects-gl-sd/, NOT content/effects-gl/. The mgfxc output is what ships
-# today and stays the reference to compare against; nothing here overwrites it.
-#
-# REQUIRES A PATCHED ShadowDusk. Stock 0.20.0 compiles 6 of these 19. The nine gaps and the six
-# patches that close them are in patches/shadowdusk/, which also carries the build instructions.
-# Point UW_SHADOWDUSK at the built CLI.
+# REQUIRES A PATCHED ShadowDusk. Stock 0.20.0 compiles 6 of these 19; the nine gaps and the six
+# patches that close them are in tools/shadowdusk/. Build one with
+# tools/shadowdusk/build-shadowdusk.sh and point UW_SHADOWDUSK at the result.
 set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
 
 SD=${UW_SHADOWDUSK:-}
 if [ -z "$SD" ] || [ ! -f "$SD" ]; then
-  echo "Set UW_SHADOWDUSK to a PATCHED ShadowDuskCLI.exe." >&2
-  echo "See patches/shadowdusk/README.md for how to build one:" >&2
-  echo "  git clone https://github.com/kaltinril/ShadowDusk.git && git checkout e4b1c878" >&2
-  echo "  git apply \$UW_REPO/patches/shadowdusk/*.patch" >&2
-  echo "  dotnet build src/ShadowDusk.Cli/ShadowDusk.Cli.csproj -c Release -f net8.0 \\" >&2
-  echo "               -p:TargetFrameworks=net8.0" >&2
-  echo "  # then copy the native compilers per that README" >&2
+  echo "Set UW_SHADOWDUSK to a PATCHED ShadowDuskCLI." >&2
+  echo >&2
+  echo "  sh tools/shadowdusk/build-shadowdusk.sh" >&2
+  echo "  export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe\"" >&2
+  echo >&2
+  echo "See tools/shadowdusk/README.md for what the patches fix and why." >&2
   exit 2
 fi
 
 TOOL=artifacts/bin/MgfxTranscode/debug/mgfxtranscode.exe
 [ -f "$TOOL" ] || "$DOTNET" build tools/MgfxTranscode/MgfxTranscode.csproj -v q --nologo >/dev/null
 
-SRCDIR=content/effects
-OUT=content/effects-gl-sd
+# Shader SOURCES are in the repository; everything else here is a build output or comes from
+# your own copy of the game.
+SRCDIR=assets/effects
+OUT=artifacts/content/effects-gl
 OBJ=artifacts/obj/gl-effects-sd
-TEMPLATES=ref/effects-mgfx8-original
+
+# The XNB CONTAINER to reuse, and the source of truth for every parameter's INITIAL VALUE. Both
+# come from a copy of the game, because both are compiled content and neither is in this
+# repository. UW_TEMPLATES lets a checkout that HAS a pristine snapshot use it instead.
+TEMPLATES="${UW_TEMPLATES:-$UW_GAME/Content}"
 mkdir -p "$OUT" "$OBJ"
 
-# NOTE: no preprocessed source copy, unlike build/31.
+# NO PREPROCESSING. The sources in assets/effects/ are compiled exactly as they are.
 #
-# That script compiles from a COPY with the explicit vertex constant-register bindings stripped
-# ('uniform const float4x4 World : register(vs, c20);'), because mgfxc's OpenGL path mishandles
-# them - it rendered 7 of Vehicle's 8 passes wrong, half the pixels each, and the vehicles came
-# out see-through. ShadowDusk does not need that workaround: compiling Vehicle.fx with and
-# without the annotations produces BYTE-IDENTICAL output, so it ignores them exactly as the MGFX
-# model says it should (uniforms are repacked into generated constant buffers; a raw register
-# index is meaningless by the time GLSL is emitted). So this builds the studio's sources as
-# released, with no transformation at all.
+# Worth stating, because the mgfxc route could not do that. It had to compile from a COPY with
+# the explicit vertex constant-register bindings stripped - 'uniform const float4x4 World :
+# register(vs, c20);' - because mgfxc's OpenGL path mishandles them: 7 of Vehicle's 8 passes came
+# out wrong, half the pixels each, and in game the vehicles were see-through.
+#
+# ShadowDusk needs no such workaround. Compiling Vehicle.fx with and without the annotations
+# produces BYTE-IDENTICAL output, so it ignores them exactly as the MGFX model says it should -
+# uniforms are repacked into generated constant buffers, and a raw register index is meaningless
+# by the time GLSL is emitted.
 
 EFFECTS="Billboard BloomCombine BloomExtract CloudShadows DevShape EdgeDetect GaussianBlur
          GUI/CRT GUI/LCD LightSourcesEffect multiTex OverlayEffect OverlayGroundSpriteEffect

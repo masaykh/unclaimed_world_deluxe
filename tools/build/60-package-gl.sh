@@ -59,7 +59,7 @@ fi
 
 # ---- 2. binaries ---------------------------------------------------------------------------
 echo "==> publishing GL ($CFG)"
-"$DOTNET" publish src/UnclaimedWorld/UnclaimedWorld.csproj -c "$CFG" -p:UwPlatform=GL -v q --nologo
+"$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj -c "$CFG" -p:UwPlatform=GL -v q --nologo
 [ -d "$PUB" ] || { echo "FATAL: $PUB not found" >&2; exit 1; }
 
 # The directory's CONTENTS are cleared rather than the directory itself: on Windows anything
