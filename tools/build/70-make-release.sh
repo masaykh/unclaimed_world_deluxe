@@ -16,6 +16,20 @@ set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
 
+# --full folds the game's compiled Content/ in, so the archive is standalone: extract and play,
+# nothing to copy, no install steps. Everything in it traces to a source Refactored Games
+# released - all 549 shipped assets were checked against their public repository, and every one
+# has a released source - so distributing a build of them is what section 1 of the Community
+# License grants.
+#
+# Without --full the archive carries code, data/ and the port-content overrides, and the player
+# brings Content/ from their own copy.
+FULL=""
+for a in "$@"; do
+  [ "$a" = "--full" ] && FULL=1
+done
+set -- $(echo "$@" | sed 's/--full//')
+
 VERSION=${1:-}
 if [ -z "$VERSION" ]; then
   VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//') || true
@@ -118,15 +132,39 @@ for rid in $RIDS; do
     exit 1
   fi
 
-  mkdir -p "$app/port-content/Music"
-  ( cd "$EFFECTS_SRC" && find . -name '*.xnb' -exec sh -c 'mkdir -p "$0/$(dirname "$1")" && cp -p "$1" "$0/$1"' "$app/port-content" {} \; )
-  cp -p "$MEDIA_SRC"/Music/*.ogg "$app/port-content/Music/" 2>/dev/null || true
-  cp -p "$MEDIA_SRC"/Music/*.xnb "$app/port-content/Music/" 2>/dev/null || true
-  echo "    port-content: $(find "$app/port-content" -name '*.xnb' | wc -l) xnb, $(ls "$app/port-content/Music"/*.ogg 2>/dev/null | wc -l) ogg"
+  if [ -n "$FULL" ]; then
+    # --full: the compiled Content/ goes IN, and the overrides are written straight into it the
+    # way tools/build/60-package-gl.sh does. No port-content/, because there is nothing left to
+    # shadow - and no Songs problem either, since SongReader resolves an .ogg against the Content
+    # root and here that is where it is.
+    [ -d "$UW_STEAM/Content" ] || {
+      echo "FATAL: --full needs the game's compiled Content/, and UW_STEAM is not a game folder." >&2
+      echo "       UW_STEAM=$UW_STEAM" >&2
+      exit 1
+    }
+    cp -rp "$UW_STEAM/Content" "$app/Content"
+    cp -p  "$UW_STEAM/steam_appid.txt" "$app/" 2>/dev/null || true
+
+    ( cd "$EFFECTS_SRC" && find . -name '*.xnb' -exec cp -p {} "$app/Content/{}" \; )
+    cp -p "$MEDIA_SRC"/Music/*.ogg "$app/Content/Music/" 2>/dev/null || true
+    cp -p "$MEDIA_SRC"/Music/*.xnb "$app/Content/Music/" 2>/dev/null || true
+    rm -f "$app"/Content/Music/*.wma          # dead weight: the stubs point at the .ogg now
+    rm -f "$app"/Content/MainMenu/*.wmv       # no DesktopGL VideoPlayer; the .uwanim replaces it
+
+    [ -f native/steam/steam_api64.dll ] && cp -p native/steam/steam_api64.dll "$app/" || true
+
+    echo "    Content: $(find "$app/Content" -name '*.xnb' | wc -l) xnb  ($(du -sh "$app/Content" | cut -f1))"
+  else
+    mkdir -p "$app/port-content/Music"
+    ( cd "$EFFECTS_SRC" && find . -name '*.xnb' -exec sh -c 'mkdir -p "$0/$(dirname "$1")" && cp -p "$1" "$0/$1"' "$app/port-content" {} \; )
+    cp -p "$MEDIA_SRC"/Music/*.ogg "$app/port-content/Music/" 2>/dev/null || true
+    cp -p "$MEDIA_SRC"/Music/*.xnb "$app/port-content/Music/" 2>/dev/null || true
+    echo "    port-content: $(find "$app/port-content" -name '*.xnb' | wc -l) xnb, $(ls "$app/port-content/Music"/*.ogg 2>/dev/null | wc -l) ogg"
+  fi
 
   # --- licences and instructions --------------------------------------------------------------
   cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md how_to_use_mods.md "$app/"
-  sh "$(dirname "$0")/_release-install-md.sh" > "$app/install.md"
+  sh "$(dirname "$0")/_release-install-md.sh" ${FULL:+--full} > "$app/install.md"
 
   # --- archive ---------------------------------------------------------------------------------
   name="UnclaimedWorldDeluxe-$VERSION-$rid.7z"
