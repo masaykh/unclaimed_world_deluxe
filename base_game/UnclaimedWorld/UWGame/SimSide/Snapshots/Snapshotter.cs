@@ -185,7 +185,16 @@ public class Snapshotter
 		}
 	}
 
+	// CS0067 "the event is never used" is correct and the event stays anyway. Nothing raises it
+	// and nothing subscribes; the SetPreLoadPostProcess methods on the quad trees and the
+	// collision manager are a different mechanism that happens to share the name. It is the
+	// studio's PUBLIC surface, though, so deleting it to satisfy a warning the port turned on
+	// would be the port editing the game to suit its own build settings - which is exactly what
+	// base_game is not for. Suppressed here, at the one declaration, so -warnaserror keeps
+	// working everywhere else.
+#pragma warning disable CS0067
 	public event Action PreLoadPostProcess;
+#pragma warning restore CS0067
 
 	public Snapshotter()
 	{
