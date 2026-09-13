@@ -32,9 +32,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # BOTH SDKs. 8 is what the game targets; 10 is what ShadowDusk's libraries multi-target,
+      # and having it means the shader compiler builds as upstream intends, with its package
+      # lock file enforced. Without it the build has to restrict the target frameworks, which
+      # no longer matches the lock file, and CI - where RestoreLockedMode is on - fails NU1004.
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       # The compiler is a pinned commit of our ShadowDusk fork plus the natives from the
       # published NuGet tool. Caching the whole assembled CLI keeps the common case to a

@@ -50,12 +50,35 @@ fi
 echo "==> ShadowDusk source at $SD_REF"
 
 # ---- 2. build the managed CLI --------------------------------------------------------------
-# net8.0 explicitly. ShadowDusk multi-targets net8.0;net10.0, and with only the .NET 8 SDK
-# present MSBuild otherwise picks net10.0 and fails. Passing TargetFrameworks as well as -f is
-# what actually restricts the restore - -f alone still restores both.
-echo "==> building ShadowDuskCLI (net8.0)"
+# ShadowDusk's libraries multi-target net8.0;net10.0 (the CLI itself is single-TFM). With BOTH
+# SDKs present, build it the way upstream intends. With only .NET 8, restrict the target
+# frameworks - otherwise restore evaluates net10.0 and dies NETSDK1045, "The current .NET SDK
+# does not support targeting .NET 10.0". `-f` alone is not enough: it picks the output TFM but
+# restore still walks every TargetFrameworks entry.
+#
+# Restricting them has a consequence worth stating, because it cost a red CI run. ShadowDusk sets
+#
+#     <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+#
+# and every CI provider sets CI=true - so on a runner, restore demands that the project's target
+# frameworks match the lock file's exactly. A single-TFM override does not match, and restore
+# fails NU1004 with a message that reads like the lock file is corrupt when nothing is wrong
+# with it. (Reproduce locally with `CI=true dotnet build ...`; without it the check is off and
+# the same command succeeds, which is why this passed here and failed there.)
+#
+# So locked mode is disabled on this path and only this one. The lock file is a supply-chain
+# protection and is honoured wherever it can be - which is why CI installs the .NET 10 SDK and
+# takes the first branch. See .github/workflows/content.yml.
+if "$DOTNET" --list-sdks | grep -q '^10\.'; then
+  echo "==> building ShadowDuskCLI (net8.0 + net10.0, lock file enforced)"
+  TFM_ARGS="-f net8.0"
+else
+  echo "==> building ShadowDuskCLI (net8.0 only - no .NET 10 SDK, lock file not enforced)"
+  TFM_ARGS="-f net8.0 -p:TargetFrameworks=net8.0 -p:RestoreLockedMode=false"
+fi
+
 "$DOTNET" build "$SRC/src/ShadowDusk.Cli/ShadowDusk.Cli.csproj" \
-  -c Release -f net8.0 -p:TargetFrameworks=net8.0 -v q --nologo
+  -c Release $TFM_ARGS -v q --nologo
 
 BUILT="$SRC/src/ShadowDusk.Cli/bin/Release/net8.0"
 [ -f "$BUILT/ShadowDuskCLI.dll" ] || { echo "FATAL: build produced no ShadowDuskCLI.dll" >&2; exit 1; }
