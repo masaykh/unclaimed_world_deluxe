@@ -9,7 +9,7 @@
 #
 # Inputs, in overlay order:
 #   1. the pristine Steam Content/ and data/            (original assets, untouched)
-#   2. content/effects-gl/*.xnb    from 31-build-gl-effects.sh   (OpenGL-profile effects)
+#   2. the OpenGL-profile effects   from tools/build/34-build-gl-effects-shadowdusk.sh
 #   3. content/media-gl/**         from 32-convert-media.sh      (Ogg Vorbis music + stubs)
 #   4. the GL publish output                                     (8 managed assemblies, no SharpDX)
 set -e
@@ -20,12 +20,12 @@ CFG=${1:-Release}
 LOWER=$(echo "$CFG" | tr 'A-Z' 'a-z')
 PUB="artifacts/publish/UnclaimedWorld/${LOWER}_gl"
 
-# Which effect build to overlay, and what to call the package. Both default to the mgfxc output
-# that ships today; setting UW_GL_EFFECTS to content/effects-gl-sd (build/34) packages the
-# ShadowDusk build instead, SIDE BY SIDE with this one rather than over it, so the two can be
-# run against each other. Everything else about the package is identical, which is the point:
-# the only variable is the shader compiler.
-EFFECTS_DIR=${UW_GL_EFFECTS:-content/effects-gl}
+# Which effect build to overlay, and what to call the package. The default is what
+# 34-build-gl-effects-shadowdusk.sh produces. Both are overridable so two packages can be built
+# SIDE BY SIDE from different effect builds and run against each other - everything but the 19
+# effect files is identical between them, which is what makes that a fair comparison.
+EFFECTS_DIR=${UW_GL_EFFECTS:-artifacts/content/effects-gl}
+MEDIA_DIR=${UW_GL_MEDIA:-artifacts/content/media-gl}
 PKG="artifacts/package/UnclaimedWorld-GL${UW_GL_PKG_SUFFIX:-}"
 
 # ---- 1. gate on content completeness -------------------------------------------------------
@@ -42,7 +42,7 @@ if [ -n "$missing" ] && [ "$UW_ALLOW_INCOMPLETE_EFFECTS" != 1 ]; then
   echo >&2
   echo "MonoGame throws on a shader-profile mismatch, so a package missing any one of these" >&2
   echo "crashes at content load rather than degrading. Add the .fx source under" >&2
-  echo "content/effects/ and re-run build/31-build-gl-effects.sh." >&2
+  echo "assets/effects/ and re-run tools/build/34-build-gl-effects-shadowdusk.sh." >&2
   echo >&2
   echo "To build anyway - for testing the parts that do not touch them - set" >&2
   echo "UW_ALLOW_INCOMPLETE_EFFECTS=1. The result is NOT shippable." >&2
@@ -111,14 +111,34 @@ echo "==> overlaying OpenGL effects"
 ( cd "$EFFECTS_DIR" && find . -name '*.xnb' -exec cp -p {} "$UW_REPO/$PKG/Content/{}" \; )
 
 echo "==> overlaying Ogg Vorbis music"
-cp -p content/media-gl/Music/*.ogg "$PKG/Content/Music/"
-cp -p content/media-gl/Music/*.xnb "$PKG/Content/Music/"
+cp -p "$MEDIA_DIR"/Music/*.ogg "$PKG/Content/Music/"
+cp -p "$MEDIA_DIR"/Music/*.xnb "$PKG/Content/Music/"
 # The WMAs are now dead weight - the patched stubs point at the .ogg files.
 rm -f "$PKG"/Content/Music/*.wma
-# MonoGame has no DesktopGL VideoPlayer (still true in 3.8.5.1), so the menu video can never
-# play here and the game falls back to the still background (PORT DEVIATIONS 7 and 11).
-# Drop the 9.4 MB WMV.
+# ---- 4b. the animated menu background ------------------------------------------------------
+# MonoGame has no DesktopGL VideoPlayer (still true in 3.8.5.1), so Content/MainMenu's WMV can
+# never play on this backend. Without a replacement the menu falls back to a still image
+# (PORT DEVIATIONS 7 and 11) - so the WMV is dropped and MainMenuIntro.uwanim goes in instead:
+# the same footage as a motion-JPEG frame sequence, which MonoGame's ILMerged StbImageSharp
+# already decodes on every backend with no new dependency.
+#
+# It loads from the GAME ROOT, not Content/ - see UWGame/Control/BackgroundScreen.cs.
+#
+# Committed as an asset rather than generated here because generating it needs a video decoder,
+# which is a heavy thing to require of a build (and of CI) for one 4.7 MB file that changes
+# never. It is derived from TauCetiMainMenu.wmv, which IS part of the released source, so it is
+# redistributable - see license.md.
 rm -f "$PKG"/Content/MainMenu/*.wmv
+
+if [ -f assets/MainMenuIntro.uwanim ]; then
+  cp -p assets/MainMenuIntro.uwanim "$PKG/"
+  echo "==> menu animation: MainMenuIntro.uwanim"
+else
+  # Not fatal: the game treats a missing .uwanim as "use the still background", which is a
+  # supported state rather than a broken one. Say so, because a silently still menu looks like
+  # a bug to whoever tests it.
+  echo "    ! assets/MainMenuIntro.uwanim not present - the menu will use the still background" >&2
+fi
 
 # ---- 5. Steam natives ----------------------------------------------------------------------
 echo "==> Steam natives"

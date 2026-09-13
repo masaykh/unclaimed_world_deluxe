@@ -11,7 +11,7 @@
     Build with -p:UwPlatform=GL for the DesktopGL flavour. That is not cosmetic: MGFX effects
     are profile-specific and Effect.ReadHeader throws "This MGFX effect was built for a
     different platform!" on a mismatch, so the OpenGL-profile effects produced by
-    build/33-convert-effects-to-gl.sh can ONLY be verified by a DesktopGL probe. Program.cs is
+    tools/build/34-build-gl-effects-shadowdusk.sh can ONLY be verified by a DesktopGL probe. Program.cs is
     platform-neutral - it drives a Game/GraphicsDeviceManager and touches no WinForms - so the
     switch is entirely in this file.
   -->

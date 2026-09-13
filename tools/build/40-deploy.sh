@@ -19,8 +19,8 @@
 #     stay harmlessly under runtimes/<rid>/native/ and the apphost uses the installed runtime.
 #     The cleanup below is belt-and-braces in case they ever reach the root again.
 #
-# game/ is disposable: build/00-snapshot-game.sh restores it from the pristine Steam folder,
-# and build/30-transcode-effects.sh re-applies the MGFX v10 conversion.
+# game/ is disposable: it is a working copy of your install, and re-copying it from the
+# pristine Steam folder is always safe.
 set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"

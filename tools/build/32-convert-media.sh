@@ -30,7 +30,7 @@ FFMPEG=$(command -v ffmpeg 2>/dev/null || true)
 echo "==> ffmpeg: $FFMPEG"
 
 SRC="$UW_GAME/Content"
-OUT=content/media-gl
+OUT=artifacts/content/media-gl
 mkdir -p "$OUT/Music"
 
 converted=0

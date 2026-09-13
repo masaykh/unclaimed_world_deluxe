@@ -32,7 +32,7 @@ namespace UWGame.Port;
 /// that was ever drawn. What keeps that from becoming a way to hide real breakage is that the
 /// set is not a matter of judgement: <c>mgfxtranscode compare-params game/Content
 /// content/effects-gl</c> lists exactly which parameters each rebuilt effect lost, and
-/// <c>build/31-build-gl-effects.sh</c> fails if one appears that is not accounted for here. Use
+/// <c>tools/build/34-build-gl-effects-shadowdusk.sh</c> fails if one appears that is not accounted for here. Use
 /// this only for a name that check has reported; a parameter that goes missing for any other
 /// reason should still crash.
 /// </summary>

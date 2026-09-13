@@ -36,10 +36,12 @@ OpenGL path zeroes those defaults too. The exposed parameter set is a strict SUP
 (ShadowDusk additionally exposes the sampler names), so nothing the game calls
 `Parameters["…"].SetValue` on is missing.
 
-**And they render.** Packaged as `artifacts/package/UnclaimedWorld-GL-ShadowDusk` — byte-identical
-to the shipping GL package except the 19 effect files — and confirmed working in a play test
-(2026-09-13). Not yet measured against the mgfxc build pixel-for-pixel; `build/compare-renders.pl`
-is the tool for that if this is ever to become the default.
+**And they render.** Packaged, and confirmed working in a play test (2026-09-13) against a build
+that differed from the known-good one only in these 19 files.
+
+Not yet measured pixel-for-pixel against an mgfxc build. That comparison — and the mgfxc route it
+would compare against — live in the porting repository, not here: this repository has one shader
+compiler, and it is this one.
 
 The 13 effects that compiled before these patches produce **byte-identical** output after them,
 verified by `cmp` over the full set. ShadowDusk's own unit suite is green except for 5

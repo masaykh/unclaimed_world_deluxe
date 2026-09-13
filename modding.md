@@ -12,7 +12,7 @@ tooling only.
 
 Everything the retail game does, on .NET 8:
 
-- main menu with its video background and music
+- main menu with its animated background and music
 - new game, scenario load (including the 17 MB `MapData.xml` maps), save and load
 - terrain, models, animation, the full WindowSystem HUD, the simulation
 - **Steam achievements**, with the `CSteamworks` shim retired
@@ -24,10 +24,10 @@ every build, without launching the game, is:
 
 | gate | what it proves |
 |---|---|
-| `tools/ContentProbe` | 15 representative assets load, including a song, the video and two effects — and that `MediaPlayer` initialises |
-| `build/80-verify-modloader.sh` | Harmony patching works, mods load, the failure paths behave, and `user/ModSettings.xml` decides what gets built |
+| `tools/ContentProbe` | every asset loads - 33 of 33, including songs, the menu animation and all 19 effects - on a real GraphicsDevice |
+| `tools/build/80-verify-modloader.sh` | Harmony patching works, mods load, the failure paths behave, and `user/ModSettings.xml` decides what gets built |
 | `tools/DataExport` | every data table builds, and what the mods actually changed |
-| `build/verify-identities.ps1` | the six load-critical assembly identities |
+
 
 So: content, media, data and modding are gated; **rendering and gameplay are not**, and cannot
 be — those need a person to look at the screen.
@@ -41,7 +41,7 @@ XML — 56 of 69 tables, 3.2 MB — and `--data-from-xml` loads them back. See
 | | |
 |---|---|
 | .NET SDK | 8.0 (`global.json` pins 8.0.420, rolls forward on feature band) |
-| OS | Windows for the default build; the code also compiles for DesktopGL (see below) |
+| OS | Windows, Linux or macOS - DesktopGL is the only target that ships |
 | A legal copy of the game | for `Content/` and `data/` |
 
 No Visual Studio needed — `dotnet build` is enough. Everything else (the decompiler, the
@@ -49,47 +49,54 @@ MonoGame effect compiler) installs as a repo-local dotnet tool.
 
 ## Quick start
 
+Building the game is [build.md](build.md); this is the short version.
+
 ```sh
-dotnet tool restore                       # ilspycmd, mgcb, mgfxc
-sh build/00-snapshot-game.sh              # SHA-256s your Steam install, copies it to game/
-sh build/12-fetch-steam-natives.sh        # steam_api64.dll matching the pinned Steamworks.NET
-sh build/30-transcode-effects.sh          # rewrites the 19 effects from MGFX v8 to v10
-sh build/40-deploy.sh Debug DX            # publish + deploy into game/
-powershell -File build/50-run.ps1 30      # launch and report
+sh tools/build/12-fetch-steam-natives.sh          # steam_api64.dll for the pinned Steamworks.NET
+sh tools/shadowdusk/build-shadowdusk.sh           # the shader compiler
+export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
+sh tools/build/34-build-gl-effects-shadowdusk.sh  # the 19 effects
+sh tools/build/32-convert-media.sh                # WMA -> Ogg Vorbis
+sh tools/build/60-package-gl.sh Release           # -> artifacts/package/UnclaimedWorld-GL
 ```
 
-`build/00-snapshot-game.sh` only ever **reads** your Steam folder. `game/` is the disposable
-run target; re-run the snapshot to reset it, and Steam's *Verify integrity of game files* is
-always the final escape hatch.
+Nothing here writes to your Steam folder. It is only ever **read**, for the compiled content
+that is not in this repository. `game/` is the disposable run target, and Steam's *Verify
+integrity of game files* is always the final escape hatch.
 
-To build a shareable Windows package: `sh build/61-package-dx.sh Release`.
+`sh tools/build/40-deploy.sh` deploys a build over `game/`, and
+`powershell -File tools/build/50-run.ps1 30` launches it and reports.
 
 If you are here to write a mod rather than to work on the port, you need far less than the
-above — see [Writing a mod](#writing-a-mod-harmonylib). Start from
-`samples/FasterCharcoalMod/`, and check your work with:
+above — see [Writing a mod](#writing-a-mod-harmonylib), and check your work with:
 
 ```sh
-sh build/80-verify-modloader.sh           # proves the loader works, end to end, no launch
+sh tools/build/80-verify-modloader.sh     # proves the loader works, end to end, no launch
 ```
 
 ## Layout
 
 ```
-src/UnclaimedWorld/          the game - 2170 types. Entry point GameStateManagement.Program
-src/UnclaimedWorld/UWGame/Mods/   the mod loader, and the bundled Unhidden Mod
-src/WindowSystem/            the UI layer (also contains the merged InputEventSystem + RoundLines)
-src/SpriteSheetRuntime/      sprite-sheet types - LOAD-CRITICAL, see below
-src/AnimationComponentRuntime/  skeletal animation (assembly Xclna.Xna.Animationx86) - LOAD-CRITICAL
-decomp/                      untouched decompiler output. NEVER edited - it is the diff baseline
-samples/FasterCharcoalMod/   a working example mod - COPY THIS to start your own
-patches/                     the contributed BepInEx patches the bundled mod came from, verbatim
-tools/MgfxTranscode/         MGFX shader-container tool (transcode / inject / validate / shaders)
-tools/DataExport/            runs the data loader headlessly - test data mods without launching
-tools/ContentProbe/          loads assets through a real ContentManager and reports pass/fail
-content/effects/             recovered HLSL for the DesktopGL target
-build/                       numbered build scripts, run in order
-PORTING-NOTES.md             every deviation from the shipped game, and why
+base_game/UnclaimedWorld/        the game - 2170 types. Entry point GameStateManagement.Program
+base_game/UnclaimedWorld/UWGame/Mods/   the modding FRAMEWORK: loader, settings, Absent stubs
+base_game/WindowSystem/          the UI layer (also the merged InputEventSystem + RoundLines)
+base_game/SpriteSheetRuntime/    sprite-sheet types - LOAD-CRITICAL, see below
+base_game/AnimationComponentRuntime/  skeletal animation (Xclna.Xna.Animationx86) - LOAD-CRITICAL
+mods/                            the gameplay mods themselves - compiled in, switchable
+assets/effects/                  the HLSL the effects are built from
+assets/MainMenuIntro.uwanim      the menu background animation
+scenarios/                       the studio's maps
+translations/                    string tables - see translations/README.md before starting
+tools/shadowdusk/                the shader compiler: patches, and a script to fetch and build it
+tools/MgfxTranscode/             MGFX shader-container tool (transcode / inject / validate)
+tools/DataExport/                runs the data loader headlessly - test data mods without launching
+tools/ContentProbe/              loads assets through a real ContentManager and reports pass/fail
+tools/build/                     numbered build scripts, run in order
 ```
+
+The split is the thing to understand: **`base_game/` is the original game plus core work — the
+port and bugfixes. `mods/` is everything that changes how the game plays.** A crash is a bug and
+is fixed in `base_game`; a balance change is a mod, however clearly it was a mistake.
 
 At runtime, in the game folder:
 
@@ -113,12 +120,11 @@ port-content/GUI/GUISprites.xnb      replaces Content/GUI/GUISprites.xnb
 port-content/Models/demonTree_idle.xnb
 ```
 
-The port itself uses this for the 19 shaders: they ship as MGFX v8 and MonoGame 3.8 needs v10, so
-converted copies live in `port-content/` and your originals stay v8 and untouched. If you inspect
-`Content/` and see v8, that is correct.
-
-Rebuild the shader overrides yourself with `sh build/34-make-port-content.sh <Content> <out>` —
-it hashes the source before and after and refuses to finish if it modified anything.
+The mechanism is still there and is the supported way for **you** to override an asset. The port
+itself no longer needs it: this DesktopGL build compiles its own effects from
+`assets/effects/*.fx` and the packager writes them straight into the package's `Content/`, so
+there is nothing left for it to shadow. Your own Steam install is untouched either way — the
+package is a separate directory.
 
 ### The menu background is no longer a video
 
@@ -133,10 +139,10 @@ uses the still background image**, the same thing it does when the *PlayVideo* o
 
 **There is no video path left at all** — this is not a fallback arrangement. No assembly the port
 ships references MonoGame's `VideoPlayer` or `VideoReader`, and
-`build/81-verify-no-videoplayer.sh` fails the build if one ever does:
+`tools/build/81-verify-no-videoplayer.sh` fails the build if one ever does:
 
 ```sh
-sh build/81-verify-no-videoplayer.sh    # VideoPlayer-independent: 17 assemblies clean
+sh tools/build/81-verify-no-videoplayer.sh    # VideoPlayer-independent: 17 assemblies clean
 ```
 
 (`MediaPlayer` and `Song` *do* remain — that is the WMA music, which still uses MediaFoundation
@@ -146,7 +152,7 @@ Rebuild it at a different size or quality from your own copy of the video:
 
 ```sh
 UW_ANIM_WIDTH=1280 UW_ANIM_HEIGHT=720 UW_ANIM_FPS=15 UW_ANIM_Q=3 \
-  sh build/33-make-menu-animation.sh <game>/Content/MainMenu/TauCetiMainMenu.wmv \
+  sh tools/build/33-make-menu-animation.sh <game>/Content/MainMenu/TauCetiMainMenu.wmv \
                                      <game>/MainMenuIntro.uwanim
 ```
 
@@ -169,16 +175,19 @@ assembly-qualified name, and MonoGame only normalizes its own:
   `Xclna.Xna.Animation.Content.AnimationReader, Xclna.Xna.Animationx86`
 
 Change either assembly's **name** and those 53 assets stop loading. (The *version* is fine —
-MonoGame's `PrepareType` strips it. `build/verify-identities.ps1` checks all of this.)
+MonoGame's `PrepareType` strips it.)
 
 The `x86` in `Xclna.Xna.Animationx86` is upstream naming, not bitness — the assembly is pure
 AnyCPU IL with no native code, and the game runs as x64.
 
-**2. Effects must be transcoded before the game will load them.** The shipped effects are
-MGFX **v8** (MonoGame 3.6). MonoGame 3.8.x requires **v10** and throws
-*"This MGFX effect is for an older release of MonoGame"* otherwise. `build/30-transcode-effects.sh`
-rewrites the container in place — the compiled shader bytecode is untouched, only the framing
-changes, so the shaders are bit-identical to what shipped.
+**2. The shipped effects cannot be used as they are.** They are MGFX **v8** (MonoGame 3.6) and
+DirectX-profile. MonoGame 3.8.x requires **v10** — *"This MGFX effect is for an older release of
+MonoGame"* otherwise — and this build is DesktopGL, where a DirectX-profile effect throws
+*"This MGFX effect was built for a different platform!"* whatever its version.
+
+Both are moot here, because the effects are not converted at all: they are **compiled** from the
+studio's HLSL in `assets/effects/` by `tools/build/34-build-gl-effects-shadowdusk.sh`, which
+emits a v10 OpenGL-profile container directly. Your own `Content/` is never touched.
 
 ## Where the mod hooks are
 
@@ -273,7 +282,7 @@ dataexport <game-dir>            # loads user/Mods, exports the tables the game 
 dataexport <game-dir> --nomods   # stock tables, for diffing
 ```
 
-`build/80-verify-modloader.sh` is the loader's own regression test and a worked example of this
+`tools/build/80-verify-modloader.sh` is the loader's own regression test and a worked example of this
 loop: it builds the sample mod, asserts `makeCharcoal`'s `DaysNeeded` actually halved in the
 exported XML, and checks the three failure cases (`-nomods` suppression, a corrupt DLL not
 stopping later mods, a stray `0Harmony.dll` refused).
@@ -323,7 +332,7 @@ added `item:peatCharcoal` as a second forge fuel with its own `makePeatCharcoal`
 in a forge, because of the retagging, but could never be turned into gunpowder or sold — and, worse,
 it put a **new EntityType key** into saves, which a build without the mod cannot resolve at all.
 Producing the real item closes all of that at once, so the separate item and its recipe were
-**removed** rather than kept alongside. `build/80-verify-modloader.sh` asserts they are gone, from
+**removed** rather than kept alongside. `tools/build/80-verify-modloader.sh` asserts they are gone, from
 the tables and from the assembly.
 
 It costs **two** dry peat where the firewood recipe costs one log, and the reason is not the work
@@ -472,7 +481,7 @@ Checking it without launching: `dataexport <game-dir> --disassembly` loads the t
 *game* does and prints one line per generated recipe, with what each gives back and whether the
 item actually points at it. (It loads without exporting on purpose: the recipes are computed from
 the entity table, and `entityTypes.xml` is one of the 13 that cannot serialize — in an exporting
-run the entity table dies half-built.) `build/80-verify-modloader.sh` case 12 asserts against that
+run the entity table dies half-built.) `tools/build/80-verify-modloader.sh` case 12 asserts against that
 output, comparing each recovery against the production recipe it came from rather than against
 numbers written in the test.
 
@@ -634,30 +643,43 @@ build/20-generate-xml-proxies.sh --check    fail if what is committed is stale
 Run `--check` before you ship anything. A stale proxy does not error — the field just silently
 disappears from the XML.
 
-## DesktopGL (Linux/macOS)
+## DesktopGL
 
-`dotnet build -p:UwPlatform=GL` compiles with **zero errors** and produces 8 managed assemblies
-with **no SharpDX**, plus SDL2/OpenAL natives for 7 RIDs. Music is transcoded to Ogg Vorbis by
-`build/32-convert-media.sh`.
+DesktopGL is not a side target any more — **it is the build**, and the only one that ships. One
+build serves Windows, Linux and macOS: `dotnet build -p:UwPlatform=GL` produces 8 managed
+assemblies with **no SharpDX**, plus SDL2/OpenAL natives for every RID. Music is transcoded to
+Ogg Vorbis by `tools/build/32-convert-media.sh`.
 
-It does **not run yet**. MGFX effects are shader-profile-specific and MonoGame throws on a
-mismatch, so all 19 effects must be rebuilt for the OpenGL profile from HLSL — and the HLSL
-does not ship. 16 of 19 now come from `build/33-convert-effects-to-gl.sh`, which translates the
-DX9 bytecode fxc left in the shipped effects and needs no HLSL at all; all 13 are verified
-loading on a real DesktopGL device. 3 more have recovered HLSL in `content/effects/` (from
-Microsoft's XNA Bloom
-sample). `build/31-build-gl-effects.sh` builds what exists and lists what is missing with
-recovery leads; `build/60-package-gl.sh` refuses to package until all 19 are present, because
-a package short even one effect crashes at content load rather than degrading.
+MGFX effects are shader-profile-specific and MonoGame throws on a mismatch, so all 19 must be
+built for the OpenGL profile from HLSL. They are, by
+`tools/build/34-build-gl-effects-shadowdusk.sh`, from the studio's sources in `assets/effects/`
+with no transformation — and on any of the three platforms, because that compiler does not need
+Windows. `tools/build/60-package-gl.sh` refuses to package until all 19 are present: a package
+short even one crashes at content load rather than degrading.
 
-Also note MonoGame has no DesktopGL `VideoPlayer` at all, so the menu video can never
-play there; the game falls back to the still background image.
+WindowsDX still exists (`-p:UwPlatform=DX`) and is kept as a correctness oracle — something to
+compare renders against — not as a shipping target.
+
+MonoGame has no DesktopGL `VideoPlayer` at all, which is why the menu background is a motion-JPEG
+animation rather than the shipped video. That turned out better than a workaround: the GL build
+never had a menu animation before, and now it does.
 
 ## Licensing, briefly
 
-The port code and tooling are yours to use. But `decomp/` and `src/` are **decompiled from the
-game's binaries**, and the third-party libraries in `src/` are studio-modified forks of MS-PL
-XNA-era projects (Aaron MacDougall's WindowSystem, David Astle's XNA Animation Component
-Library, Microsoft's Sprite Sheet and RoundLine samples). Treat this as material for people who
-own the game, not as something to publish broadly. No game assets are included here, and please
-keep it that way.
+Full version in [license.md](license.md). Short version: the game is under the **Unclaimed World
+Community License**, which Refactored Games wrote to permit exactly this — use, modify,
+distribute, build derivative projects — with three conditions that matter to anything you make
+from it:
+
+- **non-commercial**, and that travels with a fork;
+- it must say it is **unofficial** and not endorsed by Refactored Games;
+- redistribution carries the license with it.
+
+The port's own code and tooling are MIT. The third-party libraries in `base_game/` are
+studio-modified forks of MS-PL XNA-era projects — Aaron MacDougall's WindowSystem, David Astle's
+XNA Animation Component Library, Microsoft's Sprite Sheet and RoundLine samples — and keep their
+own terms.
+
+The game's compiled content is **not** here: no art, audio, models or `Content/`. That is not
+part of what the studio released, and you need your own copy of the game. Please keep it that
+way.

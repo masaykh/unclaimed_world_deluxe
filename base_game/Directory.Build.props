@@ -51,7 +51,9 @@
       So we keep each assembly's ORIGINAL decompiled Properties/AssemblyInfo.cs verbatim
       (exact AssemblyVersion, Guid, Company, Copyright) and switch off SDK generation rather
       than restating the identity in MSBuild, where a default could silently override it.
-      build/verify-identities.ps1 asserts the result against ref/original/.
+
+      Do not "tidy" one of those AssemblyInfo.cs files. A changed AssemblyVersion stops the
+      game's own XNBs loading, because the reader name recorded inside each one carries it.
     -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>true</GenerateTargetFrameworkAttribute>
