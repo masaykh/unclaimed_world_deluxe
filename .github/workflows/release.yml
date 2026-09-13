@@ -7,12 +7,11 @@
 # or run it by hand from the Actions tab, which builds the archives and uploads them as workflow
 # artifacts without publishing a Release.
 #
-# WHAT IS AND IS NOT IN AN ARCHIVE. The game's compiled content - art, audio, models, Content/ -
-# is NOT part of what Refactored Games released and is not in this repository, so it cannot be in
-# a release either. An archive therefore carries the game's CODE plus everything this project
-# adds, and the player supplies Content/ and data/ from their own copy. install.md in the archive
-# says how. That is the same arrangement the port has always had; it is what the Community
-# License permits and no more.
+# WHAT IS AND IS NOT IN AN ARCHIVE. Refactored Games released their assets under the Community
+# License, so an archive carries a good deal of them: all 21 maps, the string table, the menu
+# animation. data/ ships COMPLETE. What it cannot carry is the compiled Content/ - the textures,
+# audio and models the content pipeline produces - so the player copies that ONE folder from
+# their own install, and install.md in the archive says so.
 #
 # One Linux runner builds every platform. DesktopGL's SDL2 and OpenAL natives come from the
 # MonoGame package for every RID, so there is nothing platform-specific to do at build time, and
@@ -76,127 +75,20 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
           echo "Building $v for ${{ matrix.rid }}"
 
-      - name: Publish
-        run: |
-          dotnet publish base_game/UnclaimedWorld/UnclaimedWorld.csproj \
-            -c Release -p:UwPlatform=GL -r ${{ matrix.rid }} --self-contained false \
-            -o stage/UnclaimedWorldDeluxe
-          rm -f stage/UnclaimedWorldDeluxe/*.pdb stage/UnclaimedWorldDeluxe/*.dll.config
-
-      # A DesktopGL build that carries SharpDX has picked up the WindowsDX backend, which would
-      # fail at runtime and only on Linux/macOS. Catch it before it reaches anyone.
-      - name: No SharpDX
-        run: |
-          if ls stage/UnclaimedWorldDeluxe/SharpDX* >/dev/null 2>&1; then
-            echo "SharpDX in a DesktopGL build:"; ls stage/UnclaimedWorldDeluxe/SharpDX*; exit 1
-          fi
-
-      # The menu background. Committed rather than generated because making it needs a video
-      # decoder - see tools/build/60-package-gl.sh. Without it the menu is a still image, which
-      # is a supported state, so this warns rather than fails.
-      - name: Menu animation
-        run: |
-          if [ -f assets/MainMenuIntro.uwanim ]; then
-            cp assets/MainMenuIntro.uwanim stage/UnclaimedWorldDeluxe/
-          else
-            echo "::warning::assets/MainMenuIntro.uwanim missing - the menu will be a still image"
-          fi
-
-      # data/ ships COMPLETE, because both halves of it are in this repository: the studio
-      # released their maps and string table under the Community License, and they live here as
-      # scenarios/ and translations/. So the player supplies Content/ and nothing else.
-      - name: Game data
-        run: |
-          mkdir -p stage/UnclaimedWorldDeluxe/data/Maps stage/UnclaimedWorldDeluxe/data/BaseData/Strings
-          cp -r scenarios/. stage/UnclaimedWorldDeluxe/data/Maps/
-          cp translations/*.xml stage/UnclaimedWorldDeluxe/data/BaseData/Strings/
-          echo "maps:    $(ls stage/UnclaimedWorldDeluxe/data/Maps | wc -l)"
-          echo "strings: $(ls stage/UnclaimedWorldDeluxe/data/BaseData/Strings | wc -l)"
-
-      - name: Licenses and instructions
-        run: |
-          cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md \
-             how_to_use_mods.md stage/UnclaimedWorldDeluxe/
-          cat > stage/UnclaimedWorldDeluxe/install.md <<'EOF'
-          # Unclaimed World Deluxe — install
-
-          **This is an unofficial community project. It is not endorsed by, affiliated with, or
-          supported by Refactored Games.** Please do not report problems with this build to them.
-
-          **You need to own the game** — for one directory. This archive already has the maps, the
-          string table and the menu animation, because Refactored Games released those. What it
-          does not have is the compiled `Content/`: the textures, audio and models.
-
-          ## Install
-
-          1. Find your copy of *Unclaimed World*. In Steam: right-click the game →
-             *Manage* → *Browse local files*.
-          2. Copy the **`Content`** folder from there into this folder, next to the executable.
-          3. Run it.
-
-          That is the only thing you need to bring. `data/` is already here.
-
-          Your Steam install is not modified. Nothing here writes to it.
-
-          ## Running
-
-          | | |
-          |---|---|
-          | Windows | `UnclaimedWorld.exe` |
-          | Linux | `./UnclaimedWorld` — you may need `chmod +x UnclaimedWorld` first |
-          | macOS | `./UnclaimedWorld` — see Gatekeeper, below |
-
-          .NET 8 must be installed: <https://dotnet.microsoft.com/download/dotnet/8.0>
-          (the *Runtime* is enough; the SDK also works).
-
-          ### macOS: Gatekeeper
-
-          This build is not code-signed — signing needs a paid Apple Developer account. macOS
-          will refuse to run it until you say otherwise:
-
-          ```sh
-          xattr -dr com.apple.quarantine .
-          chmod +x UnclaimedWorld
-          ./UnclaimedWorld
-          ```
-
-          ## Mods
-
-          Seven gameplay mods ship with this build, on by default and individually switchable —
-          options menu → **MODS**, or `user/ModSettings.xml`. `-nomods` turns all of them off.
-          See `how_to_use_mods.md`.
-
-          ## Licensing
-
-          The game is under the Unclaimed World Community License; this port's own code is MIT.
-          Both are in this folder, and `license.md` explains which covers what. Non-commercial.
-          EOF
-
-      - name: Archive (7z)
+      # The build is tools/build/70-make-release.sh, NOT a copy of it inlined here. Two copies of
+      # a packaging recipe drift, and the drift only shows up in something a player downloads.
+      # It does the publish, the SharpDX guard, data/, the menu animation, the licences,
+      # install.md, the 7z and the archive verification - so `sh tools/build/70-make-release.sh`
+      # on a laptop produces the same bytes this job does.
+      - name: Build the release archive
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq p7zip-full
-          name="UnclaimedWorldDeluxe-${{ steps.ver.outputs.version }}-${{ matrix.rid }}.7z"
-          # -mx=9 is worth the CPU here: these are published once and downloaded many times.
-          ( cd stage && 7z a -t7z -mx=9 "../$name" UnclaimedWorldDeluxe/ >/dev/null )
-          ls -la "$name"
-          echo "archive=$name" >> "$GITHUB_ENV"
-
-      - name: Verify the archive
-        run: |
-          7z t "$archive" >/dev/null && echo "integrity ok"
-          # An archive missing the executable is worse than a failed build, because it looks
-          # like a release. Check the things a player would notice missing.
-          for want in UnclaimedWorldDeluxe/UnclaimedWorld.dll \
-                      UnclaimedWorldDeluxe/install.md \
-                      UnclaimedWorldDeluxe/LICENSE-UnclaimedWorld-Community.md; do
-            7z l "$archive" | grep -q "${want##*/}" || { echo "MISSING from archive: $want"; exit 1; }
-          done
-          echo "contents ok"
+          sh tools/build/70-make-release.sh "${{ steps.ver.outputs.version }}" "${{ matrix.rid }}"
 
       - uses: actions/upload-artifact@v4
         with:
           name: UnclaimedWorldDeluxe-${{ matrix.rid }}
-          path: ${{ env.archive }}
+          path: artifacts/release/*.7z
           if-no-files-found: error
 
   publish:

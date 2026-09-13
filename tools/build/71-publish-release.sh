@@ -1,0 +1,111 @@
+#!/bin/sh
+# Publishes the archives in artifacts/release/ as a GitHub Release.
+#
+#     sh tools/build/70-make-release.sh 1.0
+#     sh tools/build/71-publish-release.sh v1.0
+#
+# Separate from the build on purpose. Building is repeatable and local; publishing is neither -
+# it puts files somewhere other people can download them, under a tag that is awkward to move
+# once anyone has fetched it. So it is its own command, it shows you exactly what it is about to
+# do, and it asks before doing it.
+#
+#     --draft     publish as a draft, visible only to you until you release it
+#     --yes       skip the confirmation (for scripting; think before using it)
+set -e
+. "$(dirname "$0")/env.sh"
+cd "$UW_REPO"
+
+TAG=""
+DRAFT=""
+ASSUME_YES=""
+for arg in "$@"; do
+  case "$arg" in
+    --draft) DRAFT="--draft" ;;
+    --yes|-y) ASSUME_YES=1 ;;
+    -*) echo "unknown option: $arg" >&2; exit 2 ;;
+    *)  TAG="$arg" ;;
+  esac
+done
+
+if [ -z "$TAG" ]; then
+  echo "usage: sh tools/build/71-publish-release.sh <tag> [--draft] [--yes]" >&2
+  echo "  e.g. sh tools/build/71-publish-release.sh v1.0" >&2
+  exit 2
+fi
+
+command -v gh >/dev/null 2>&1 || {
+  echo "FATAL: GitHub CLI (gh) not found on PATH." >&2
+  echo "       On Windows it installs to /c/Program Files/GitHub CLI/ and is not added to PATH:" >&2
+  echo "         export PATH=\"/c/Program Files/GitHub CLI:\$PATH\"" >&2
+  exit 2
+}
+gh auth status >/dev/null 2>&1 || { echo "FATAL: gh is not authenticated. Run: gh auth login" >&2; exit 2; }
+
+OUT="$UW_REPO/artifacts/release"
+set -- "$OUT"/*.7z
+[ -e "$1" ] || { echo "FATAL: no archives in $OUT - run 70-make-release.sh first" >&2; exit 1; }
+
+# A release built from a dirty tree is not reproducible from its tag, and nobody can tell that by
+# looking at it afterwards. Warn loudly; it is still the user's call.
+DIRTY=""
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+  DIRTY=" (WORKING TREE IS DIRTY - this release will not match its tag)"
+fi
+
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || echo "?")
+PRIVATE=$(gh repo view --json isPrivate --jq .isPrivate 2>/dev/null || echo "?")
+
+echo "About to publish:"
+echo
+echo "    repository  $REPO   (private: $PRIVATE)"
+echo "    tag         $TAG${DRAFT:+   [DRAFT]}"
+echo "    commit      $(git rev-parse --short HEAD)$DIRTY"
+echo "    assets:"
+for f in "$@"; do printf "      %-52s %s\n" "$(basename "$f")" "$(du -h "$f" | cut -f1)"; done
+echo
+if [ "$PRIVATE" = "false" ]; then
+  echo "    This repository is PUBLIC. These files become downloadable by anyone."
+  echo
+fi
+
+if [ -z "$ASSUME_YES" ]; then
+  printf "Publish? [y/N] "
+  read -r reply
+  case "$reply" in y|Y|yes|YES) ;; *) echo "Cancelled."; exit 0 ;; esac
+fi
+
+# The tag has to exist before a release can hang off it. Create it here only if it does not,
+# and push it - `gh release create` would make one from the default branch otherwise, which is
+# not necessarily what is being published.
+if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+  echo "==> tagging $TAG at $(git rev-parse --short HEAD)"
+  git tag "$TAG"
+fi
+git push origin "$TAG" 2>&1 | tail -2
+
+echo "==> creating the release"
+gh release create "$TAG" "$@" \
+  $DRAFT \
+  --title "Unclaimed World Deluxe ${TAG#v}" \
+  --generate-notes \
+  --notes "
+An unofficial community port. **Not endorsed by, affiliated with, or supported by Refactored
+Games** — please don't take problems with this build to them.
+
+**You need to own the game** — for its \`Content\` folder, and only that. The maps, the string
+table and the menu animation are already in the archive, because Refactored Games released them.
+\`install.md\` inside has the details. Your Steam copy is never modified.
+
+| download | for |
+|---|---|
+| \`...-win-x64.7z\` | Windows |
+| \`...-linux-x64.7z\` | Linux |
+| \`...-osx-x64.7z\` | macOS, Intel |
+| \`...-osx-arm64.7z\` | macOS, Apple Silicon |
+
+Needs the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0). macOS builds are
+unsigned — \`install.md\` has the Gatekeeper command.
+"
+
+echo
+gh release view "$TAG" --json url --jq .url
