@@ -102,6 +102,17 @@ jobs:
             echo "::warning::assets/MainMenuIntro.uwanim missing - the menu will be a still image"
           fi
 
+      # data/ ships COMPLETE, because both halves of it are in this repository: the studio
+      # released their maps and string table under the Community License, and they live here as
+      # scenarios/ and translations/. So the player supplies Content/ and nothing else.
+      - name: Game data
+        run: |
+          mkdir -p stage/UnclaimedWorldDeluxe/data/Maps stage/UnclaimedWorldDeluxe/data/BaseData/Strings
+          cp -r scenarios/. stage/UnclaimedWorldDeluxe/data/Maps/
+          cp translations/*.xml stage/UnclaimedWorldDeluxe/data/BaseData/Strings/
+          echo "maps:    $(ls stage/UnclaimedWorldDeluxe/data/Maps | wc -l)"
+          echo "strings: $(ls stage/UnclaimedWorldDeluxe/data/BaseData/Strings | wc -l)"
+
       - name: Licenses and instructions
         run: |
           cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md \
@@ -112,15 +123,18 @@ jobs:
           **This is an unofficial community project. It is not endorsed by, affiliated with, or
           supported by Refactored Games.** Please do not report problems with this build to them.
 
-          **You need to own the game.** This archive has no game content in it — no art, audio,
-          models or `Content/`. Those are not part of what the studio released.
+          **You need to own the game** — for one directory. This archive already has the maps, the
+          string table and the menu animation, because Refactored Games released those. What it
+          does not have is the compiled `Content/`: the textures, audio and models.
 
           ## Install
 
           1. Find your copy of *Unclaimed World*. In Steam: right-click the game →
              *Manage* → *Browse local files*.
-          2. Copy `Content/` and `data/` from there into this folder, next to the executable.
+          2. Copy the **`Content`** folder from there into this folder, next to the executable.
           3. Run it.
+
+          That is the only thing you need to bring. `data/` is already here.
 
           Your Steam install is not modified. Nothing here writes to it.
 
@@ -207,9 +221,10 @@ jobs:
             An unofficial community port. **Not endorsed by, affiliated with, or supported by
             Refactored Games** — please don't take problems with this build to them.
 
-            **You need to own the game.** These archives contain no game content: copy `Content/`
-            and `data/` from your own install, as `install.md` in the archive describes. Your
-            Steam copy is never modified.
+            **You need to own the game** — for its `Content` folder, and only that. The maps, the
+            string table and the menu animation are already in the archive, because Refactored
+            Games released them. `install.md` inside has the details. Your Steam copy is never
+            modified.
 
             | download | for |
             |---|---|

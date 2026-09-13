@@ -11,9 +11,13 @@ macOS, can be rebuilt from source, and ships a set of gameplay mods you can turn
 > by Refactored Games.** Please do not report problems with this build to them.
 > See [license.md](license.md).
 
-**You need to own the game.** The archives and this repository contain **no game content** — no
-art, audio, models or `Content/`. Those are not part of what the studio released; you copy them
-from your own install. Your Steam copy is never modified.
+**You need to own the game** — for its `Content/`, and only that.
+
+Refactored Games released the game's source *and* its assets under the Community License, so a
+fair amount of it is here: the shader sources, the menu animation, all 21 maps, the string table.
+What is **not** here is the compiled `Content/` — the textures, audio and models the content
+pipeline produces. You copy that one directory from your own install. Your Steam copy is never
+modified.
 
 ## Getting it
 
@@ -87,10 +91,15 @@ checked to load on a real graphics device on every build, without launching the 
 
 What is **not** done:
 
-- **`base_game/` is decompiled, not the studio's released source.** The two are identical at
-  declaration level — 1801 types, 25,974 members, zero differences — but rebasing onto the real
-  source is a separate project and has not happened. Until it does, this is ILSpy output with the
-  port applied on top.
+- **`base_game/` is still the decompiled tree, not the studio's own source.** Not for want of the
+  source: Refactored Games released it, it is public at
+  [spunky44/UnclaimedWorld](https://github.com/spunky44/UnclaimedWorld), and it has been compared
+  against this tree — 1801 types, 25,974 members, **zero differences at declaration level**. The
+  port was simply built from ILSpy output first, and moving it onto the real source is pending
+  work rather than a missing input. The whole delta is 51 files and ~3,400 lines, and the
+  released source is in places *more* correct — MonoGame added `MathHelper.Max(int, int)`
+  overloads XNA never had, so the decompiler resolved them and dropped casts the studio actually
+  wrote.
 - **Rendering is verified by eye, not measured.** Nobody has diffed this build's output against
   the original frame by frame, and a handful of cross-backend passes are known to differ slightly.
 - **Steam achievements work on Windows only.** The Linux and macOS natives are not bundled; the
