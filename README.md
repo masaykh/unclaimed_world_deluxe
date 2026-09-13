@@ -11,20 +11,23 @@ macOS, can be rebuilt from source, and ships a set of gameplay mods you can turn
 > by Refactored Games.** Please do not report problems with this build to them.
 > See [license.md](license.md).
 
-**You need to own the game** — for its `Content/`, and only that.
+Refactored Games released *Unclaimed World*'s source **and its assets** under the Unclaimed World
+Community License. That is what makes this possible, and it is why the whole game is here: 3343
+textures, 247 models, 235 sounds, the music, the fonts, all 21 maps, the string table. Nothing is
+held back and nothing needs fetching from elsewhere.
 
-Refactored Games released the game's source *and* its assets under the Community License, so a
-fair amount of it is here: the shader sources, the menu animation, all 21 maps, the string table.
-What is **not** here is the compiled `Content/` — the textures, audio and models the content
-pipeline produces. You copy that one directory from your own install. Your Steam copy is never
-modified.
+**Please [buy the game](https://store.steampowered.com/app/284100/)** if you have not. This
+licence is a gift from its authors; the least it deserves is that people who enjoy their work pay
+for it.
 
 ## Getting it
 
-**Download** a release archive for your platform, copy `Content/` and `data/` from your own
-install next to the executable, and run it. Each archive carries an `install.md` with the details,
-including the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0) requirement and
-— for macOS, which ships unsigned — the Gatekeeper command.
+**Download** the release archive for your platform, extract it, and run it. There is nothing to
+install and nothing to copy.
+
+You will need the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0). macOS builds
+are unsigned — signing needs a paid Apple Developer account — so Gatekeeper needs a word;
+`install.md` inside the archive has the command.
 
 **Or build it**, on any of the three platforms: [build.md](build.md).
 
@@ -65,14 +68,18 @@ economy of a running game.
 |---|---|
 | **`base_game/`** | the game: four projects, the port, and the modding *framework* |
 | **`mods/`** | the gameplay mods, compiled in but individually switchable at runtime |
-| **`assets/`** | asset sources a human edits — the `.fx` shaders and the menu animation |
+| **`assets/`** | the studio's asset sources — textures, models, sounds, music, fonts, shaders — plus the menu animation. `assets/README.md` first: two files called `Billboard.fx` live here and they are not the same file |
 | **`scenarios/`** | the studio's maps, as released |
 | **`translations/`** | the string table — read `translations/README.md` first, it is smaller than it looks |
 | **`tools/`** | the build scripts and the tools they drive |
 
-Compiled shaders are a build output and are not committed: `assets/effects/*.fx` is the source,
-and the build compiles it. Everything else in `Content/` comes from your own copy of the game —
-the build never generates it and this repository never contains it.
+**Compiled content is a build output and is not committed** — no `.xnb` anywhere. `assets/` holds
+what you would edit.
+
+The shaders build from source here, on any platform. The rest of `Content/` does not yet: MGCB
+compiles 425 of 425 items and 30 of 30 for WindowSystem, but **3 of 50 models** — the other 47 are
+ASCII FBX 6.1, which no version of Assimp reads. So the release archives ship the compiled
+`Content/` rather than rebuilding it. `assets/README.md` has the detail.
 
 ## Documents
 
@@ -104,6 +111,12 @@ What is **not** done:
   the original frame by frame, and a handful of cross-backend passes are known to differ slightly.
 - **Steam achievements work on Windows only.** The Linux and macOS natives are not bundled; the
   game degrades gracefully without them.
-- **The Linux and macOS archives are built but not yet play-tested** on those platforms.
+- **The Linux and macOS archives are built but not yet play-tested** on those platforms. They are
+  structurally correct — right natives, right assets, every asset loads — which is not the same as
+  somebody having played them.
+- **A from-source content build is 47 models short**, as above.
 
-CI builds and packages all four platforms on every push, and cuts the release archives from a tag.
+CI builds and packages all four platforms on every push. **Release archives are cut locally**, not
+by CI: a complete archive needs the compiled `Content/`, and a runner has no copy of the game to
+take it from. `tools/build/70-make-release.sh --full` is the command, and
+`tools/build/71-publish-release.sh` uploads.

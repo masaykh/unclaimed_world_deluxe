@@ -35,14 +35,25 @@ and logos remain the property of Refactored Games (Morten Pedersen).
 **Redistribution carries the license (§8).** Any build or fork you distribute must include a copy
 of the Community License and identify itself as an unofficial community project.
 
-## What is and is not in this repository
+## What is in this repository, and in a release
 
-**Is:** the studio's released source, the data files that came with it (scenarios, string
-tables), the port's own code, the build tooling, and the mods.
+**The repository** carries the studio's released source and their asset **sources** — 3343
+textures, 247 models, 235 sounds, the music, the fonts, the shaders — plus the maps, the string
+table, the port's own code, the build tooling and the mods. It carries no compiled content: no
+`.xnb`, because that is a build output.
 
-**Is not:** the game's compiled content — art, audio, models, textures, the `Content/` directory.
-Those are not part of the released materials, and you need your own copy of the game. Building
-produces `Content/` from your own installation.
+**A release archive** carries the compiled `Content/` as well, so it runs on its own.
+
+That second point is the one worth being able to defend, so here is the working. Every one of the
+549 compiled assets the game ships was checked against
+[spunky44/UnclaimedWorld](https://github.com/spunky44/UnclaimedWorld): all 512 distinct basenames
+have a released source, counting `WindowSystem/Content/` as well as `UnclaimedWorld/Content/`.
+So the compiled `Content/` is a **build of Original Materials**, and §1 grants the right to
+"distribute the Original Materials and your modifications".
+
+Rebuilding it from those sources rather than shipping the studio's own build would be cleaner
+provenance, and is not possible yet: 47 of the models are ASCII FBX 6.1, which no version of
+Assimp reads. See `assets/README.md`.
 
 ## If you are packaging a build
 

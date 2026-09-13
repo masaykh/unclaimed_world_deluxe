@@ -4,9 +4,13 @@ A source-level port of *Unclaimed World* (Steam app 284100) from its shipped
 **MonoGame 3.6 / .NET Framework 4.5.1** build onto **.NET 8 + MonoGame 3.8.5.1**, so the
 game can be modified, rebuilt and run against your own original game assets.
 
-**You need to own the game.** Nothing here contains game content — no `Content/`, no `data/`,
-no art, audio, models or text. Those stay in your own Steam install. This is code and build
-tooling only.
+Refactored Games released the source **and the assets** under the Unclaimed World Community
+License, so the whole game is here: 3343 textures, 247 models, 235 sounds, the music, the fonts,
+the shaders, the maps, the string table. What is not here is compiled content — no `.xnb`,
+because that is a build output. Producing a runnable package therefore still reads `Content/`
+from your own install, and never writes to it.
+
+**Please [buy the game](https://store.steampowered.com/app/284100/)** if you have not.
 
 ## What works
 
@@ -42,7 +46,7 @@ XML — 56 of 69 tables, 3.2 MB — and `--data-from-xml` loads them back. See
 |---|---|
 | .NET SDK | 8.0 (`global.json` pins 8.0.420, rolls forward on feature band) |
 | OS | Windows, Linux or macOS - DesktopGL is the only target that ships |
-| A legal copy of the game | for `Content/` and `data/` |
+| A legal copy of the game | to build a runnable package - the compiled `Content/` is a build output and is not committed |
 
 No Visual Studio needed — `dotnet build` is enough. Everything else (the decompiler, the
 MonoGame effect compiler) installs as a repo-local dotnet tool.
@@ -60,8 +64,8 @@ sh tools/build/32-convert-media.sh                # WMA -> Ogg Vorbis
 sh tools/build/60-package-gl.sh Release           # -> artifacts/package/UnclaimedWorld-GL
 ```
 
-Nothing here writes to your Steam folder. It is only ever **read**, for the compiled content
-that is not in this repository. `game/` is the disposable run target, and Steam's *Verify
+Nothing here writes to your Steam folder. It is only ever **read**, for the compiled `Content/`
+- a build output, so not committed here. `game/` is the disposable run target, and Steam's *Verify
 integrity of game files* is always the final escape hatch.
 
 `sh tools/build/40-deploy.sh` deploys a build over `game/`, and
@@ -83,7 +87,11 @@ base_game/WindowSystem/          the UI layer (also the merged InputEventSystem 
 base_game/SpriteSheetRuntime/    sprite-sheet types - LOAD-CRITICAL, see below
 base_game/AnimationComponentRuntime/  skeletal animation (Xclna.Xna.Animationx86) - LOAD-CRITICAL
 mods/                            the gameplay mods themselves - compiled in, switchable
-assets/effects/                  the HLSL the effects are built from
+assets/Content/                  the studio's asset sources - textures, models, sounds, music,
+                                 fonts, the .fx originals, Content.mgcb
+assets/WindowSystem-Content/     the UI layer's own fonts and button sounds
+assets/effects/                  the HLSL the build compiles - SM3, and NOT the same files as
+                                 assets/Content/*.fx. See assets/README.md
 assets/MainMenuIntro.uwanim      the menu background animation
 scenarios/                       the studio's maps
 translations/                    string tables - see translations/README.md before starting
@@ -680,6 +688,9 @@ studio-modified forks of MS-PL XNA-era projects — Aaron MacDougall's WindowSys
 XNA Animation Component Library, Microsoft's Sprite Sheet and RoundLine samples — and keep their
 own terms.
 
-The game's compiled content is **not** here: no art, audio, models or `Content/`. That is not
-part of what the studio released, and you need your own copy of the game. Please keep it that
-way.
+No compiled content is committed — no `.xnb`, because that is a build output, not because it
+could not be. The studio released the sources it is built from, and they are all in `assets/`.
+
+**Please [buy the game](https://store.steampowered.com/app/284100/).** The licence that makes
+this possible was a gift from its authors, and a port of it should send people toward their work
+rather than around it.
