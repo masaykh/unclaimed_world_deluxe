@@ -67,6 +67,57 @@ jobs:
       - name: Documents are current
         run: sh tools/build/82-verify-docs-current.sh
 
+  # CORE DOES NOT DEPEND ON MODS, checked by deleting them.
+  #
+  # The repository is organised around one rule: base_game is the original game plus the port and
+  # its bugfixes, and anything that changes how the game PLAYS and is not a bugfix is a mod. That
+  # was an intention for a while and not a fact - the game called all six gameplay mods by name
+  # from fifteen places, and base_game would not compile without mods/ at all.
+  #
+  # It compiles now, because each mod has an Absent stub next to the framework in
+  # base_game/UnclaimedWorld/UWGame/Mods/ and the csproj picks the stubs when mods/ is not there.
+  # This job is what stops that quietly rotting: a new call into a mod from a core file, or a new
+  # mod without a stub, fails HERE rather than the next time somebody wants a clean base game.
+  #
+  # Its own job, not a step in the one above, so a deleted mods/ cannot leak into anything else.
+  core-without-mods:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # No flags. The csproj defaults off the DIRECTORY, so "delete mods/ and build" is the whole
+      # test and there is nothing for anyone to remember to keep in sync.
+      - name: Delete mods/ and build
+        run: |
+          rm -rf mods
+          dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj \
+            -c Release -p:UwPlatform=GL -warnaserror
+
+      # Compiling is not the claim. The claim is that the mods' content is NOT IN THE ASSEMBLY -
+      # "I did not install that" meaning the code is absent rather than switched off. Two literals
+      # that exist only inside a gameplay mod, and one of the studio's own for a control: if the
+      # control ever goes missing too, this test has stopped testing anything.
+      - name: The mods are not in the assembly
+        run: |
+          dll=artifacts/bin/UnclaimedWorld/release_gl/UnclaimedWorld.dll
+          test -f "$dll" || { echo "no assembly at $dll"; exit 1; }
+          rc=0
+          for s in "_disassemble" "The interface is laid out for at least"; do
+            if grep -qa "$s" "$dll"; then echo "STILL PRESENT: $s"; rc=1; else echo "absent: $s"; fi
+          done
+          grep -qa "Salvage" "$dll" || { echo "the studio's own strings are gone too - this check is not checking"; rc=1; }
+          exit $rc
+
   cross-publish:
     needs: build
     runs-on: ubuntu-latest

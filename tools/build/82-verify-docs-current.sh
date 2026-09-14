@@ -47,6 +47,14 @@ flag "you need to own the game.{0,40}for (its|the) .?Content" \
 flag "mgfxc.{0,40}(builds|compiles) the effects|run mgfxc" \
      "points at mgfxc; the effects are built by patched ShadowDusk"
 
+# There are three feature booleans now, and base_game builds with mods/ deleted. Both of those
+# sentences replaced one that had been true for months, which is the usual way this file grows.
+flag "two booleans" \
+     "says two feature booleans; there are three (UwHarmony, UwUnhiddenMod, UwGameplayMods)"
+
+flag "only UnhiddenMod and ModLoader have (one|a stub)|needs an Absent stub per mod" \
+     "says the Absent stubs are incomplete; every gameplay mod has one and CI builds with mods/ deleted"
+
 # Scripts that were pruned when the repository split from the porting tree.
 for s in 00-snapshot-game 10-decompile 30-transcode-effects 31-build-gl-effects \
          33-convert-effects-to-gl 61-package-dx 90-make-patch-kit verify-identities; do

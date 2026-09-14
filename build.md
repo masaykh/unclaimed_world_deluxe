@@ -44,12 +44,13 @@ directory.
 
 ## Building mods in or out
 
-**Two booleans, not a list:**
+**Booleans, not a list:**
 
 ```sh
-dotnet build … -p:UwHarmony=true  -p:UwUnhiddenMod=true      # default: both
-dotnet build … -p:UwHarmony=false -p:UwUnhiddenMod=true      # no external mod loading
-dotnet build … -p:UwHarmony=false -p:UwUnhiddenMod=false     # neither
+dotnet build … -p:UwHarmony=true -p:UwUnhiddenMod=true -p:UwGameplayMods=true  # default: all
+dotnet build … -p:UwHarmony=false -p:UwUnhiddenMod=true                        # no external mod loading
+dotnet build … -p:UwHarmony=false -p:UwUnhiddenMod=false                       # no bundled mod either
+dotnet build … -p:UwGameplayMods=false                                         # none of the six
 ```
 
 Not a list, because a list cannot be passed safely: both `;` and `,` delimit *properties* to the
@@ -65,8 +66,34 @@ Dropping `harmony` is a real guarantee, not a flag: that build references no Har
 no `0Harmony.dll`, so it **cannot** load third-party assemblies. A loader exists to run other
 people's code, and someone who does not want that should be able to have a build that can't.
 
-Each feature has an `.Absent.cs` stub with `const bool Enabled = false`, so the game's own call
+### Core does not depend on mods
+
+Delete `mods/` and build with no flags at all. The two mod defaults follow the directory, so
+this just works:
+
+```sh
+rm -rf mods
+dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL
+```
+
+`.github/workflows/publish.yml` runs exactly that on every push, in its own job so a deleted
+`mods/` cannot leak into anything else. Compiling is not the claim, so it then searches the built
+assembly for two strings that exist only inside a gameplay mod — plus one of the studio's own as
+a control, because a check that stops finding anything has stopped checking.
+
+Every feature has an `.Absent.cs` stub next to the framework in
+`base_game/UnclaimedWorld/UWGame/Mods/`, with `const bool Enabled = false`, so the game's own call
 sites are byte-identical whether a feature is in or out — no `#if` at forty call sites.
+
+What a stub must never do is return something merely *harmless*. It returns **the studio's own
+answer**: `HealingMod.Absent.RateFactor` returns `1` (not `0`, which would stop healing), and
+`MagnificationMod.Absent.Clamp` carries the studio's `ClampBottom(x, 1f)` rather than the
+identity. Each one is the expression that stood in the original source before the mod replaced
+it, and the mod's own comment names it.
+
+A bugfix in a core path a mod happens to reach stays in core regardless — it is a fix to the
+game, not a piece of the mod. `SimProcess.CreateOutputsFromInputs` is the worked example: a no-op
+on the studio's tables, and the thing that stopped the disassembly mod destroying items.
 
 ## Shaders
 

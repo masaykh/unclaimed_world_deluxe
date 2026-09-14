@@ -29,19 +29,23 @@
   </PropertyGroup>
 
   <!--
-    SELECTABLE FEATURES.  -p:UwHarmony=true -p:UwUnhiddenMod=true
+    SELECTABLE FEATURES.  -p:UwHarmony=true -p:UwUnhiddenMod=true -p:UwGameplayMods=true
 
     (NOT -p:UwFeatures="harmony;unhiddenmod" - that form is shown below as the one that FAILS,
-    and having it here as the headline cost a reader a build. See "THE INTERFACE IS TWO
-    BOOLEANS" in the next comment.)
+    and having it here as the headline cost a reader a build. See "THE INTERFACE IS BOOLEANS"
+    in the next comment.)
 
-    Build-time rather than runtime for the two that pull in code the user may not want in their
-    process at all: the Harmony mod loader (which loads third-party assemblies) and the bundled
-    Unhidden Mod (which changes simulation content, and therefore save compatibility). Leaving a
-    feature out means its code is not compiled in, not merely disabled - which is the honest
-    meaning of "I did not install that".
+    Build-time rather than runtime for everything that pulls in code the user may not want in
+    their process at all: the Harmony mod loader (which loads third-party assemblies), the bundled
+    Unhidden Mod, and the six per-request gameplay mods (all of which change simulation content,
+    and therefore save compatibility). Leaving a feature out means its code is not compiled in,
+    not merely disabled - which is the honest meaning of "I did not install that", and
+    .github/workflows/publish.yml checks it by searching the built assembly for strings that
+    exist only inside a mod.
 
-    Default is both ON, matching the archives. The installer in kit/ passes this explicitly.
+    Default is all three ON, matching the archives, EXCEPT that the two mod features default off
+    when the repository's mods/ directory is absent - see THE MODS DIRECTORY DECIDES THE DEFAULT
+    below. The installer in kit/ passes them explicitly.
 
     Deliberately NOT a feature: the menu animation. It needs no code fork, because the game
     already treats a missing MainMenuIntro.uwanim as "use the still background". So whether the
@@ -50,29 +54,46 @@
     that removing VideoPlayer fixed (PORT DEVIATIONS 5, 7, 11).
   -->
   <!--
-    THE INTERFACE IS TWO BOOLEANS, not a list:
+    THE INTERFACE IS BOOLEANS, not a list:
 
-        dotnet build ... -p:UwHarmony=true -p:UwUnhiddenMod=false
+        dotnet build ... -p:UwHarmony=true -p:UwUnhiddenMod=false -p:UwGameplayMods=false
 
     A list property cannot be passed safely through the dotnet CLI. Both separators are taken
     by the CLI itself - `-p:UwFeatures="harmony;unhiddenmod"` and the comma form both fail with
     "MSBUILD : error MSB1006: Property is not valid", because ; and , delimit properties at that
     level. Only %3B-escaping survives, which is not something to ask an installer script - or a
-    human - to remember. Two booleans need no escaping and cannot be silently mangled.
+    human - to remember. Separate booleans need no escaping and cannot be silently mangled.
 
     UwFeatures is still accepted as a convenience for human use, e.g. -p:UwFeatures=harmony to
-    get harmony only. When both are supplied the BOOLEAN WINS, because a command-line property
-    is a global one and MSBuild will not let the project reassign it.
+    get harmony only. When both forms are supplied the BOOLEAN WINS, because a command-line
+    property is a global one and MSBuild will not let the project reassign it.
+  -->
+  <!--
+    THE MODS DIRECTORY DECIDES THE DEFAULT, which is what makes "core does not depend on mods" a
+    fact rather than an intention: delete mods/ and the build switches to the Absent stubs on its
+    own, with no flag to remember and nothing to keep in sync. .github/workflows/publish.yml does
+    exactly that in one job.
+
+    An explicit -p: still wins over the directory, so asking for a mod that is not there fails
+    loudly at compile time rather than quietly producing a build without it.
   -->
   <PropertyGroup>
+    <UwModsDir>$(MSBuildThisFileDirectory)..\..\mods</UwModsDir>
+    <UwModsPresent Condition="Exists('$(UwModsDir)')">true</UwModsPresent>
+    <UwModsPresent Condition="'$(UwModsPresent)' == ''">false</UwModsPresent>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <UwHarmony Condition="'$(UwHarmony)' == ''">true</UwHarmony>
-    <UwUnhiddenMod Condition="'$(UwUnhiddenMod)' == ''">true</UwUnhiddenMod>
+    <UwUnhiddenMod Condition="'$(UwUnhiddenMod)' == ''">$(UwModsPresent)</UwUnhiddenMod>
+    <UwGameplayMods Condition="'$(UwGameplayMods)' == ''">$(UwModsPresent)</UwGameplayMods>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UwFeatures)' != ''">
     <UwFeatureList>;$(UwFeatures.ToLowerInvariant().Replace(' ',''));</UwFeatureList>
     <UwHarmony>$(UwFeatureList.Contains(';harmony;'))</UwHarmony>
     <UwUnhiddenMod>$(UwFeatureList.Contains(';unhiddenmod;'))</UwUnhiddenMod>
+    <UwGameplayMods>$(UwFeatureList.Contains(';gameplaymods;'))</UwGameplayMods>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -108,9 +129,17 @@
     They still compile INTO the game. Link metadata keeps them under "Mods\" in the IDE so the
     on-disk layout does not scatter the solution view.
 
-    Making base_game build with mods/ DELETED is a further step, not this one: it needs an Absent
-    stub per mod, and today only UnhiddenMod and ModLoader have one. Body.cs calls HealingMod
-    unconditionally, EvaluateAttackJobs calls SelfPreservationMod unconditionally, and so on.
+    base_game BUILDS WITH mods/ DELETED, and that is the point of the arrangement rather than a
+    nicety. Every one of the fifteen places the game calls a gameplay mod - Program.RegisterSettings
+    for all six, Body.RegainHitpoints, EvaluateAttackJobs, Controller, MapClient, BaseDataLoader -
+    is byte-identical either way, because each mod has an Absent stub beside this file that answers
+    what the studio's own code answered. What a stub must never do is return something merely
+    harmless: HealingMod.Absent.RateFactor returns 1 rather than 0, and MagnificationMod.Absent
+    carries the studio's ClampBottom(x, 1f) rather than the identity. See HealingMod.Absent.cs.
+
+    The fixes stay. A port bugfix in a path a mod happens to reach - SimProcess's salvage output
+    creation is the one that prompted this - belongs to core and is compiled in regardless; it is
+    a no-op on the studio's tables.
   -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\mods\**\*.cs"
@@ -125,8 +154,31 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\UnhiddenModSmithies.cs" />
   </ItemGroup>
 
+  <!--
+    The six per-request mods, in and out as a group. They are listed one by one rather than
+    globbed because a glob would silently include a mod nobody wrote a stub for, and the first
+    anyone would hear of it is a build with mods/ deleted failing on an unresolved name - which is
+    precisely the failure this whole arrangement exists to make impossible.
+  -->
+  <ItemGroup Condition="'$(UwGameplayMods)' == 'true'">
+    <Compile Remove="UWGame\Mods\BalancedDietMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\DisassemblyMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\HealingMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\MagnificationMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\MapEdgeMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\SelfPreservationMod.Absent.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\BalancedDietMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DisassemblyMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HealingMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MagnificationMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MapEdgeMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\SelfPreservationMod.cs" />
+  </ItemGroup>
+
   <Target Name="ReportUwFeatures" BeforeTargets="Build">
-    <Message Importance="high" Text="UwFeatures: harmony=$(UwHarmony) unhiddenmod=$(UwUnhiddenMod)" />
+    <Message Importance="high" Text="UwFeatures: harmony=$(UwHarmony) unhiddenmod=$(UwUnhiddenMod) gameplaymods=$(UwGameplayMods) (mods/ present: $(UwModsPresent))" />
   </Target>
 
   <ItemGroup>

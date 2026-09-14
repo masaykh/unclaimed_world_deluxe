@@ -106,6 +106,17 @@ The split is the thing to understand: **`base_game/` is the original game plus c
 port and bugfixes. `mods/` is everything that changes how the game plays.** A crash is a bug and
 is fixed in `base_game`; a balance change is a mod, however clearly it was a mistake.
 
+The split is **enforced, not intended**: `rm -rf mods` and `base_game/` still builds, and CI does
+that on every push. Each mod has an `.Absent.cs` stub in
+`base_game/UnclaimedWorld/UWGame/Mods/` answering what the studio's own code answered, so the
+fifteen places the game calls a gameplay mod are byte-identical either way. Add a mod, add a
+stub — otherwise that job is where you find out.
+
+The direction it does *not* go: a bugfix in a core path that only a mod currently reaches is
+still core. `SimProcess.CreateOutputsFromInputs` is the example — a salvage process hands back
+the destroyed input's parts, and an item with no declared parts got nothing back. That was the
+game's bug even though only `DisassemblyMod` could reach it, and it is fixed in `base_game`.
+
 At runtime, in the game folder:
 
 ```
