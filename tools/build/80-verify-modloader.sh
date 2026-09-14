@@ -393,6 +393,23 @@ echo "$report" | grep -q "item:clayJar_disassemble" \
   && fail "a fired clay jar came apart into its unfired self" \
   || pass "a fired item is left alone (item:clayJar)"
 
+# THAT THE RECIPE ACTUALLY GIVES ANYTHING BACK. This is the one line here that is about the sim
+# and not the table, and it earned its place: every recipe this mod generated shipped for weeks
+# destroying the item and producing nothing at all. A salvage process hands back the PARTS of the
+# entity it destroys rather than manufacturing its outputs (SimProcess.CreateOutputsFromInputs),
+# and this mod's items declare no parts - the studio's validator forbade that combination, the
+# port relaxed it to let these recipes load, and the half that got missed was the sim. Kastuk
+# ordered a flint-tipped spear disassembled and watched it vanish leaving no materials, with the
+# task still red on "Not in inventory" because the order it was placed against was never filled.
+#
+# ProcessType.SalvageOutputWillBeCreated is the sim's own predicate; dataexport asks it per output.
+if echo "$report" | grep -q "creates=NOTHING"; then
+  echo "$report" | grep 'creates=NOTHING' | sed 's/^/      /'
+  fail "a generated recipe destroys the item and produces none of its outputs"
+else
+  pass "every generated recipe actually yields what it promises"
+fi
+
 # Half the per-item production time, and never zero: a recipe that takes no time is a job that
 # finishes the instant it starts.
 echo "$report" | grep -q "days=0 " \

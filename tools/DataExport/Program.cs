@@ -362,12 +362,24 @@ internal static class Program
             string item = process.Inputs != null && process.Inputs.Length > 0
                 ? process.Inputs[0].Entity : "?";
 
+            // creates= is the one thing in this line that is about the SIM rather than the table.
+            // A salvage process does not manufacture its outputs, it hands back the parts of the
+            // entity it destroyed (SimProcess.CreateOutputsFromInputs), and for a long while a
+            // recipe over an item that declares no parts destroyed the item and produced NOTHING -
+            // reported from a game as a flint-tipped spear that vanished leaving no materials.
+            // ProcessType.SalvageOutputWillBeCreated is the sim's own predicate, asked here so a
+            // table can be checked without running a colony over it.
             var outputs = new List<string>();
+            var lost = new List<string>();
             if (process.Outputs != null)
             {
                 foreach (var output in process.Outputs)
                 {
                     outputs.Add(output.EntityTypeToCreate + " x" + (output.Amount?.NoOfItems ?? 1));
+                    if (!process.SalvageOutputWillBeCreated(output))
+                    {
+                        lost.Add(output.EntityTypeToCreate);
+                    }
                 }
             }
 
@@ -390,9 +402,10 @@ internal static class Program
             // registered as a way to PRODUCE its outputs (GameData.AddProcessToProductionGraph
             // sorts by that flag), so a colony ordered to make sticks could answer by taking its
             // tools apart.
+            string creates = lost.Count == 0 ? "creates=ok" : "creates=NOTHING:" + string.Join(",", lost);
             Console.WriteLine($"    {process.KeyName}  from={item}  skill={process.RequiredSkill}  " +
                               $"days={days}  {link}  salvage={(process.IsSalvageProcess ? "yes" : "NO")}  " +
-                              $"out={string.Join(", ", outputs)}");
+                              $"{creates}  out={string.Join(", ", outputs)}");
         }
     }
 

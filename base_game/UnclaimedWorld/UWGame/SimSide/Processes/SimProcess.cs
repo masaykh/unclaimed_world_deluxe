@@ -2015,7 +2015,25 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 			}
 			else if (process.IsSalvageProcess)
 			{
-				if (!output.IsWasteProduct)
+				// A salvage process normally hands back the input's OWN part entities: the input was
+				// destroyed with destroyParts:false just above, its parts were gathered into `parts`,
+				// and the branch above re-uses them. Reaching here means this output was not among
+				// them - the part had already been lost - and the studio's answer is that you do not
+				// get it back. Waste is the exception: it never was a part, so it is made fresh.
+				//
+				// PORT FIX. That answer only holds for an input type that DECLARES parts. The
+				// studio's validator guaranteed it did - ProcessType.PostDataCompleteValidate
+				// required every non-waste salvage output to appear in the one input's parts list -
+				// and the port relaxed that rule so UWGame.Mods.DisassemblyMod could add recipes to
+				// assembled tools, which declare no parts at all. Relaxing it here was the half that
+				// got missed: with no parts list there is nothing for `parts` to have matched, so
+				// EVERY non-waste output took the `return true` and was silently not created - after
+				// ConsumeInputsAndGatherParts had already destroyed the input. Reported as a
+				// flint-tipped spear that vanished without leaving any materials.
+				//
+				// So: keep the studio's behaviour wherever their rule applied, and create the output
+				// where it never could. Nothing is duplicated - the input is gone either way.
+				if (!process.SalvageOutputIsCreatedFresh(output))
 				{
 					return true;
 				}

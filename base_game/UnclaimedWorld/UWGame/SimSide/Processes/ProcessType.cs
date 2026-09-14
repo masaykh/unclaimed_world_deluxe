@@ -836,6 +836,76 @@ public class ProcessType : IGameData, IXmlSerializable
 		return false;
 	}
 
+	/// <summary>
+	/// Whether this salvage process's single input type declares a parts list.
+	///
+	/// It matters because a salvage process does not MAKE its non-waste outputs, it hands back
+	/// the input's own part entities - <c>SimProcess.ConsumeInputsAndGatherParts</c> destroys the
+	/// input with <c>destroyParts: false</c> and <c>SimProcess.CreateOutputsFromInputs</c> re-uses
+	/// what it collected. An input type that declares no parts has none to hand back, so a recipe
+	/// over one has to create its outputs instead. The studio's validator made that case
+	/// impossible; the port relaxed the rule for <c>UWGame.Mods.DisassemblyMod</c>, so it is real
+	/// now and both the sim and tools/DataExport ask this question rather than each guessing.
+	/// </summary>
+	public bool SalvageInputDeclaresParts()
+	{
+		if (Inputs == null || Inputs.Length != 1)
+		{
+			return false;
+		}
+		EntityType entityType = Inputs[0].EntityType;
+		return entityType?.NonLivingType?.Parts != null;
+	}
+
+	/// <summary>
+	/// Whether salvaging will actually produce <paramref name="output" />, as opposed to
+	/// destroying the input and quietly yielding nothing. Mirrors the three branches of
+	/// <c>SimProcess.CreateOutputsFromInputs</c> for a salvage process:
+	///
+	///   waste          created fresh - it never was a part of anything
+	///   a declared part handed back from the destroyed input, if the instance still has it
+	///   neither        created fresh, since there was no parts list it could have come from
+	///
+	/// The middle case is the studio's, and is why this asks about the TYPE's parts rather than
+	/// an instance's: a broken-off part that is gone at salvage time is a loss on purpose.
+	/// Offline callers use this to check a table without running the sim over it.
+	/// </summary>
+	public bool SalvageOutputWillBeCreated(Output output)
+	{
+		if (!IsSalvageProcess || output == null)
+		{
+			return true;
+		}
+		if (SalvageOutputIsCreatedFresh(output))
+		{
+			return true;
+		}
+		if (!SalvageInputDeclaresParts())
+		{
+			// Not created fresh and no parts to come from: the sim destroys the input and yields
+			// nothing. Unreachable while SalvageOutputIsCreatedFresh says what it says - and left
+			// here answering FALSE rather than throwing, because this is the shape the bug had and
+			// a report that cannot describe it is no use for catching it coming back.
+			return false;
+		}
+		Dictionary<EntityType, int> parts = Inputs[0].EntityType.NonLivingType.Parts;
+		return parts.ContainsKey(output.FinalEntityTypeToCreate);
+	}
+
+	/// <summary>
+	/// Whether salvaging has to MAKE <paramref name="output" /> rather than hand back one of the
+	/// destroyed input's part entities. True for waste, which never was a part of anything, and for
+	/// an input type that declares no parts, which has nothing to hand back.
+	///
+	/// <c>SimProcess.CreateOutputsFromInputs</c> asks this at the point where it has already failed
+	/// to find the output among the parts it gathered: false there means the part existed in the
+	/// type and is gone from this instance, and losing it is the studio's intent.
+	/// </summary>
+	public bool SalvageOutputIsCreatedFresh(Output output)
+	{
+		return output.IsWasteProduct || !SalvageInputDeclaresParts();
+	}
+
 	public void PreDataCompleteValidate(ref List<string> listOfErrors)
 	{
 		if (Inputs != null)
