@@ -20,6 +20,7 @@ internal static class Program
         bool readBack = args.Contains("--read-back");
         bool settingsSelfTest = args.Contains("--settings-selftest");
         bool disassemblyReport = args.Contains("--disassembly");
+        bool scenarioReport = args.Contains("--scenarios");
         printTraces = args.Contains("--traces");
 
         // The bundled Unhidden Mod is on by default and its content hooks run inside the data
@@ -57,6 +58,11 @@ internal static class Program
             Console.Error.WriteLine("  --disassembly");
             Console.Error.WriteLine("               load WITHOUT exporting and list the disassembly recipes the");
             Console.Error.WriteLine("               DisassemblyMod generated, one per line, with what each gives back.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("  --scenarios");
+            Console.Error.WriteLine("               write the nine built-in scenarios to data/Scenarios/<name>/ and");
+            Console.Error.WriteLine("               report each one separately. The game writes them too, but in one");
+            Console.Error.WriteLine("               unguarded loop, so the first failure hides every scenario after it.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --traces     print a stack trace for every table that fails to load or export.");
             return 2;
@@ -133,6 +139,18 @@ internal static class Program
             }
             DisassemblyReport();
             return loadRc;
+        }
+
+        if (scenarioReport)
+        {
+            // Load the way the GAME loads and only then switch modes, which is the order that
+            // makes the scenario writes the ONLY thing under test: an exporting load loses 13
+            // tables on the way past, and a scenario that then failed would be impossible to tell
+            // apart from a scenario that failed for its own reasons.
+            int loadRc = Run(Sim.SerializeMode.NoSerialize, "load (no export), for the scenario report");
+            if (loadRc != 0) return loadRc;
+            Sim.CurrentSerializeMode = Sim.SerializeMode.WriteAndRead;
+            return ScenarioReport();
         }
 
         int rc = Run(Sim.SerializeMode.WriteAndRead, "export (write, then read each file back)");
@@ -342,6 +360,66 @@ internal static class Program
     /// line per recipe with the item, the recipe it was derived from and what it gives back, so
     /// build/80-verify-modloader.sh can assert against it with grep.
     /// </summary>
+    /// <summary>
+    /// Writes each built-in scenario separately and says which ones survive.
+    ///
+    /// WHY THIS IS NOT JUST RGScenarioLoader.Serialize(). That method is what the game calls, and
+    /// it is one unguarded foreach over nine loaders calling WriteScenario(). DataLoader.SerializeObject
+    /// has no try/catch of its own, so the FIRST scenario that throws ends the loop and every
+    /// scenario after it is silently never written - which reads, from the outside, as "the export
+    /// only produced two scenarios" with nothing to say why. Same loaders, one try per scenario.
+    ///
+    /// Reflection into the private static list because it is the only handle on the loaders
+    /// individually - RGScenarioLoader exposes them only through that loop and through lookups by
+    /// a name you would have to know already. Same justification as the queueState field above:
+    /// not something the game should do, exactly what a diagnostic tool should.
+    /// </summary>
+    private static int ScenarioReport()
+    {
+        Console.WriteLine();
+        FieldInfo field = typeof(UWGame.SimSide.AllGameData.Scenarios.RGScenarioLoader)
+            .GetField("rgScenarioLoaders", BindingFlags.Static | BindingFlags.NonPublic);
+        if (field == null)
+        {
+            Console.Error.WriteLine("FATAL: RGScenarioLoader.rgScenarioLoaders not found; the field was renamed.");
+            return 1;
+        }
+
+        var loaders = (System.Collections.IEnumerable)field.GetValue(null);
+        int ok = 0, failed = 0;
+        foreach (UWGame.SimSide.AllGameData.Scenarios.ScenarioLoader loader in loaders)
+        {
+            string name = loader.FolderName;
+            try
+            {
+                loader.WriteScenario();
+                Console.WriteLine($"    ok      {name}");
+                ok++;
+            }
+            catch (Exception ex)
+            {
+                Exception root = ex;
+                while (root.InnerException != null) root = root.InnerException;
+                Console.WriteLine($"    FAILED  {name}  {root.GetType().Name}: {root.Message}");
+                if (printTraces)
+                {
+                    Console.WriteLine(root.StackTrace);
+                }
+                failed++;
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"==> scenarios: {ok} written, {failed} failed  -> data/Scenarios/<name>/");
+        Console.WriteLine("    Each folder holds scenario.xml (the header the menu lists) and scenarioData.xml");
+        Console.WriteLine("    (its settings). NOTE what scenarioData.xml does NOT contain: Actions and");
+        Console.WriteLine("    ConditionalEvents are string[] of KEYS into actionSets.xml, eventActionTypes.xml,");
+        Console.WriteLine("    allegianceEvents.xml and polledEventTypes.xml - and all four of those are among");
+        Console.WriteLine("    the 13 tables that do not export yet. The scenario file is complete; the content");
+        Console.WriteLine("    it points at is the part that is missing.");
+        return failed == 0 ? 0 : 1;
+    }
+
     private static void DisassemblyReport()
     {
         Console.WriteLine();

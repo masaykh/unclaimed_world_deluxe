@@ -9,6 +9,19 @@ namespace UWGame.SimSide.InGameEvents.Actions;
 
 public class ChangeCreditsAction : EventActionType
 {
+	// PORT FIX. XmlSerializer flattens nested types to their UNQUALIFIED name, so this and
+	// ChangeResourcesAction.Operation both wanted to be <Operation> in the same schema and it
+	// refused the whole graph:
+	//
+	//   "Types 'UWGame...ChangeCreditsAction+Operation' and
+	//    'UWGame...ChangeResourcesAction+Operation' both use the XML type name 'Operation'."
+	//
+	// That took out actionSets.xml, eventActionTypes.xml, allegianceEvents.xml and
+	// polledEventTypes.xml - which between them are what every scenario's Actions and
+	// ConditionalEvents point AT, so a scenario exported as a list of keys to content that could
+	// not be exported. Nothing in the shipped game ever serialized these types, so there is no
+	// existing XML for a rename to break.
+	[System.Xml.Serialization.XmlType("ChangeCreditsOperation")]
 	public enum Operation
 	{
 		Set,

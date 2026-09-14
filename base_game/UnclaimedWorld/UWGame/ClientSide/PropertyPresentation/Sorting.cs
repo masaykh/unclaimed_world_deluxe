@@ -3,6 +3,7 @@ using WindowSystem;
 
 namespace UWGame.ClientSide.PropertyPresentation;
 
+[System.Xml.Serialization.XmlType("PresentationSorting")]
 public class Sorting
 {
 	public Grid.Sorting? SortingDirection;

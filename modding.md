@@ -499,7 +499,7 @@ things.
 Checking it without launching: `dataexport <game-dir> --disassembly` loads the tables the way the
 *game* does and prints one line per generated recipe, with what each gives back and whether the
 item actually points at it. (It loads without exporting on purpose: the recipes are computed from
-the entity table, and `entityTypes.xml` is one of the 13 that cannot serialize — in an exporting
+the entity table, and `entityTypes.xml` is one of the 7 that cannot serialize — in an exporting
 run the entity table dies half-built.) `tools/build/80-verify-modloader.sh` case 12 asserts against that
 output, comparing each recovery against the production recipe it came from rather than against
 numbers written in the test.
@@ -589,7 +589,7 @@ into a .NET 8 process, and BepInEx 6's CoreCLR loader is pre-release. But the de
 that HarmonyLib exists to reach what you cannot name from outside an assembly — and from inside,
 the twelve patch targets, six reflected private methods and seven `___field` injections are just
 fields and methods. The port has the source, so the whole apparatus collapses into eleven `if
-(UnhiddenMod.Enabled)` call sites. See `src/UnclaimedWorld/UWGame/Mods/` for the implementation
+(UnhiddenMod.Enabled)` call sites. See `mods/` for the implementation
 and `patches/` for the contributed originals, kept verbatim as the record of intent.
 
 Two bugs were fixed in the translation. The scenario patch called
@@ -610,23 +610,33 @@ which is faster to iterate on and prints exactly which tables worked.
 
 ### What actually round-trips today
 
-**56 of the 69 tables export and re-import cleanly — 67 files, 3.2 MB.** `processTypes.xml`
+**62 of the 69 tables export and re-import cleanly — 75 files, 3.9 MB.** `processTypes.xml`
 alone is 2.17 MB, so the interesting content is very much in scope.
 
-**13 tables do not.** These are not port bugs — they are properties of the shipped data types,
+**7 tables do not.** These are not port bugs — they are properties of the shipped data types,
 and they would have failed the same way in retail had anyone flipped the switch. Grouped by
 cause:
 
 | what to fix | tables |
 |---|---|
-| Two nested types share an unqualified XML name, so `XmlSerializer` refuses the graph: `ChangeResourcesAction.Operation` vs `ChangeCreditsAction.Operation`, and `WindowSystem.Grid.Sorting` vs `PropertyPresentation.Sorting`. Put `[XmlType("...")]` on one of each pair | ActionSets, EventActionTypes, AllegianceEvents, PolledEventTypes, PresentationTypeCategories, GUI |
 | `BodyLayerType.DamageReductionFactor` is a `Dictionary<string, float>`; `XmlSerializer` cannot serialize `IDictionary`. Give the type a proxy, the way the other 29 have one | BodyLayerTypes |
 | A polymorphic member needs `[XmlInclude(typeof(MachineBodyPartType))]` | BodyTypes |
 | `TextureCollection` has no parameterless constructor — mark it `[XmlIgnore]`, it is runtime state, not data | Particles |
 | Cross-table references are not resolvable in this load order: `KeyNotFoundException` on `'humanoid'`, `'sentry'` and `'entity:human'`, plus a `NullReferenceException` out of `InitTypeList` | AttackTypes, EntityTypes, ResourceTypes, FilterSettingTypes |
 
-The first four rows are mechanical, a few lines each. The last needs a decision about load
-ordering.
+The first three rows are mechanical. The last needs a decision about load ordering.
+
+**Two rows came off this list with one attribute each.** `XmlSerializer` flattens a type to its
+UNQUALIFIED name, so `ChangeCreditsAction.Operation` collided with `ChangeResourcesAction.Operation`
+and `PropertyPresentation.Sorting` with `WindowSystem.Grid.Sorting` — and it refuses the whole
+graph rather than picking one. `[XmlType("ChangeCreditsOperation")]` and
+`[XmlType("PresentationSorting")]` took six tables with them: ActionSets, EventActionTypes,
+AllegianceEvents, PolledEventTypes, PresentationTypeCategories and GUI. That matters more than the
+count — `actionSets.xml` is 474 KB and is what every scenario's `Actions` list points at.
+
+Worth knowing if you try the same trick: the attribute has to go on the type that is **not**
+nested. Putting it on `Grid.Sorting` changed nothing; putting it on the top-level
+`PropertyPresentation.Sorting` fixed both tables.
 
 **The last row is mostly a cascade, not four separate problems.** A table whose *write* fails never
 reaches `InitTypeList`, so its collection stays empty and the next table that looks something up in
@@ -651,12 +661,12 @@ problem.
 ### If you add a proxied data type
 
 `CustomXmlSerializer` no longer compiles proxies at runtime — .NET 8 removed that — so they are
-generated at build time into `src/UnclaimedWorld/Generated/XmlProxies/`. If you give a type a
+generated at build time into `base_game/UnclaimedWorld/Generated/XmlProxies/`. If you give a type a
 `_proxyData` field, run:
 
 ```
-build/20-generate-xml-proxies.sh            regenerate
-build/20-generate-xml-proxies.sh --check    fail if what is committed is stale
+tools/build/20-generate-xml-proxies.sh            regenerate
+tools/build/20-generate-xml-proxies.sh --check    fail if what is committed is stale
 ```
 
 Run `--check` before you ship anything. A stale proxy does not error — the field just silently

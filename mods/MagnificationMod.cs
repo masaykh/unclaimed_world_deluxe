@@ -70,6 +70,24 @@ public static class MagnificationMod
     }
 
     /// <summary>
+    /// The lowest magnification the OPTIONS DIALOG will accept, in percent.
+    ///
+    /// A THIRD PLACE THE FLOOR OF 1 LIVED, and the one that mattered most: lifting the clamp in
+    /// Controller and fixing ZoomIsActive let a value below 1 WORK, but OptionsDialog.ValidateInput
+    /// refused to let anyone enter one - "Magnification must be at least 1." - so the feature was
+    /// reachable only by hand-editing Options.xml. Reported twice before it was found, because
+    /// setting it in the file did work and that looked like the feature working.
+    /// </summary>
+    public static int OptionsFloorPercent()
+    {
+        if (!AllowBelowOne.On)
+        {
+            return 100;
+        }
+        return (int)(Minimum * 100f);
+    }
+
+    /// <summary>
     /// The magnification to actually use, given what the options file asked for.
     ///
     /// The studio's line was <c>ClampBottom(ZoomFactor, 1f)</c>; this replaces it, so with the

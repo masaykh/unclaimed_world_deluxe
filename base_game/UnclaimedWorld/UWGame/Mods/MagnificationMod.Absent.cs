@@ -21,6 +21,12 @@ public static class MagnificationMod
     {
     }
 
+    /// <summary>The studio's options floor: 100%, and their exact wording for it.</summary>
+    public static int OptionsFloorPercent()
+    {
+        return 100;
+    }
+
     /// <summary>The studio's floor of 1, which is what their line did.</summary>
     public static float Clamp(float wanted)
     {

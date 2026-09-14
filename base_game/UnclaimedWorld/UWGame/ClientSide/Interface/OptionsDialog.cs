@@ -621,9 +621,14 @@ public class OptionsDialog : Panel
 				}
 			}
 		}
-		if ((float)fbZoom.Value < 100f)
+		// MOD: the floor here was a hard 100, which refused every magnification below 1 no matter
+		// what the rest of the game allowed - so the slider could not reach what Options.xml could.
+		// With the mod off this is 100 and the message is the studio's, character for character.
+		int minZoomPercent = UWGame.Mods.MagnificationMod.OptionsFloorPercent();
+		if ((float)fbZoom.Value < (float)minZoomPercent)
 		{
-			errorsAndMessages.ShowError("Magnification must be at least 1.");
+			errorsAndMessages.ShowError("Magnification must be at least "
+				+ (0.01f * (float)minZoomPercent).ToString("0.##") + ".");
 			return false;
 		}
 		errorsAndMessages.Hide();

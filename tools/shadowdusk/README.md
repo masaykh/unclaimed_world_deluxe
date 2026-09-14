@@ -2,7 +2,8 @@
 
 Local patches against [ShadowDusk](https://github.com/kaltinril/ShadowDusk), the cross-platform
 HLSL compiler evaluated here as a replacement for `mgfxc` (MonoGame OpenGL target) and as the
-effect compiler for the FNA target (`build/62-package-fna.sh`). Base commit: `e4b1c878`
+effect compiler for an FNA target (which lives on the porting tree's `fna-backend` branch,
+not here). Base commit: `e4b1c878`
 (2026-09-11).
 
 They live on the `uw-patches` branch of <https://github.com/masaykh/ShadowDusk> as six commits,
@@ -61,7 +62,7 @@ reproduce with every patch reverted):
 ```sh
 sh tools/shadowdusk/build-shadowdusk.sh
 export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
-sh build/34-build-gl-effects-shadowdusk.sh        # -> content/effects-gl-sd/
+sh tools/build/34-build-gl-effects-shadowdusk.sh  # -> artifacts/content/effects-gl
 ```
 
 That script is what CI runs. It fetches two different things from two different places, on
@@ -81,7 +82,7 @@ these are for reading without cloning anything, and for submitting upstream.
 
 **The pin is deliberate.** `UW_SHADOWDUSK_REF` in the script fixes the exact commit, so an
 upstream force-push cannot silently change what the effects are compiled with. Bump it on
-purpose, and re-run `build/34` plus the render comparison when you do.
+purpose, and re-run `tools/build/34-build-gl-effects-shadowdusk.sh` plus the render comparison when you do.
 
 Building by hand instead: ShadowDusk multi-targets `net8.0;net10.0`, so with only the .NET 8 SDK
 installed you must pass **both** `-f net8.0` and `-p:TargetFrameworks=net8.0` — `-f` alone still

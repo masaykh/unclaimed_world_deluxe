@@ -72,8 +72,14 @@ done
 # Matches the shapes this repository actually uses, so that prose like "the mods/ directory" is
 # checked while an unrelated slash in a sentence is not.
 echo "==> checking that the paths documents name exist"
-paths=$(grep -rhoE '\b(base_game|mods|tools|samples|assets|scenarios|translations)(/[A-Za-z0-9._-]+)+' $DOCS 2>/dev/null \
-        | sed 's/[.,)]*$//' | sort -u)
+#
+# perl rather than grep -oE for the negative lookbehind: without it "tools/build/env.sh" also
+# yields a match starting at "build/env.sh", which does not exist, and every correct path with a
+# top-level name inside it reports as broken. The first version of this check did exactly that.
+paths=$(perl -ne '
+    while (m{(?<![/\w.-])(base_game|mods|tools|samples|assets|scenarios|translations|src|build|kit|features|decomp)((?:/[A-Za-z0-9._-]+)+)}g) {
+      my $p = $1 . $2; $p =~ s/[.,)]+$//; print "$p\n";
+    }' $DOCS 2>/dev/null | sort -u)
 for path in $paths; do
   [ -e "$path" ] && continue
   case "$path" in */'*'*) continue ;; esac
