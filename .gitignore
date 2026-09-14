@@ -7,14 +7,20 @@
 
 # COMPILED CONTENT IS A BUILD OUTPUT.
 #
-# assets/ holds what a human edits - the .fx shader sources, and in time the .png, .wav and
-# .spritefont. The .xnb the pipeline produces from them does not belong in git: it would make
-# every texture tweak a binary diff, and it is reproducible from what is here.
+# assets/ holds what a human edits - the .png, .tga, .fbx, .wav, .mp3, .spritefont and the .fx
+# shader sources, all of which Refactored Games released and all of which ARE in this repository.
+# The .xnb the pipeline produces from them is not: it would make every texture tweak a binary
+# diff, and it is reproducible from what is here. See license.md and assets/README.md.
 #
-# The game's own art, audio and models are not here at all and never will be - they are not part
-# of what Refactored Games released, and you need your own copy of the game. See license.md.
+# Two things still come from your own copy of the game, and neither can be derived from assets/:
+# the shipped .xnb effect containers the GL shader build reuses for their parameter defaults, and
+# the .wma music the transcode step converts. That is why a release is cut locally and not by CI.
 /Content/
 *.xnb
+
+# A deployed installation, made by tools/build/40-deploy.sh. Disposable and rebuilt on demand -
+# and it contains a copy of the game's compiled Content once you have run anything against it.
+/game/
 
 # The shader compiler: a pinned clone of our ShadowDusk fork plus natives from NuGet, assembled
 # by tools/shadowdusk/build-shadowdusk.sh into artifacts/. Fetched, never vendored - 155 MB

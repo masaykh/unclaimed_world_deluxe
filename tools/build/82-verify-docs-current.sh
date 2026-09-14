@@ -61,6 +61,31 @@ for s in 00-snapshot-game 10-decompile 30-transcode-effects 31-build-gl-effects 
   flag "build/$s" "references $s, which is not in this repository"
 done
 
+# EVERY REPOSITORY PATH A DOCUMENT NAMES MUST EXIST.
+#
+# The list above names the pruned scripts one at a time, which only ever catches the ones somebody
+# thought to add. This catches the rest by asking the filesystem: modding.md told readers to copy
+# samples/FasterCharcoalMod/ for months after the split left it behind, and the mod-loader gate
+# published a project path that had moved to base_game/ - neither was in any list, and neither
+# was found by reading.
+#
+# Matches the shapes this repository actually uses, so that prose like "the mods/ directory" is
+# checked while an unrelated slash in a sentence is not.
+echo "==> checking that the paths documents name exist"
+paths=$(grep -rhoE '\b(base_game|mods|tools|samples|assets|scenarios|translations)(/[A-Za-z0-9._-]+)+' $DOCS 2>/dev/null \
+        | sed 's/[.,)]*$//' | sort -u)
+for path in $paths; do
+  [ -e "$path" ] && continue
+  case "$path" in */'*'*) continue ;; esac
+  # A documented path that .gitignore excludes is a BUILD OUTPUT, and absent because nothing has
+  # been built yet rather than because the document is wrong. Asking git beats keeping a second
+  # list of exceptions in step with the first one.
+  git check-ignore -q "$path" 2>/dev/null && continue
+  echo "  !! documented but not present: $path" >&2
+  grep -rn "$path" $DOCS 2>/dev/null | head -3 | sed 's/^/       /' >&2
+  fail=1
+done
+
 echo
 if [ "$fail" = 0 ]; then
   echo "==> documents are current"

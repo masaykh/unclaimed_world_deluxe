@@ -605,7 +605,7 @@ with `--data-from-xml`. Keep a copy of the pristine export to diff against; Stea
 integrity of game files* will not restore `data/BaseData` because those files were never part of
 the download.
 
-`tools/dataexport.exe <game-dir> --read-back` does the same thing without launching the game,
+`dataexport <game-dir> --read-back` does the same thing without launching the game,
 which is faster to iterate on and prints exactly which tables worked.
 
 ### What actually round-trips today

@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A working example mod, and the loader's regression test.
+
+    It is deliberately built the way a THIRD-PARTY mod is built - against the shipped DLLs in the
+    game folder, not against base_game/ in this repo - so that if the reference layout a modder
+    has to use ever breaks, this breaks with it. A ProjectReference here would compile happily
+    while the documented setup rotted.
+
+    Build it after publishing the game:
+      dotnet publish base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX
+      dotnet build samples/FasterCharcoalMod/FasterCharcoalMod.csproj -c Release
+    then copy the output DLL into <game>/user/Mods/.
+
+    tools/build/80-verify-modloader.sh does all of that and asserts the patch took effect.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>FasterCharcoalMod</AssemblyName>
+    <!-- A mod ships one DLL. Nothing it references belongs next to it: the game folder already
+         has the game and Harmony, and a second copy of either is actively harmful. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <EnableDynamicLoading>false</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <!--
+    Where the game's DLLs are. Override with -p:GameDir=... to build against an installed copy:
+      dotnet build ... -p:GameDir="C:\Program Files (x86)\Steam\steamapps\common\Unclaimed World"
+  -->
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\publish\UnclaimedWorld\release_dx</GameDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="UnclaimedWorld">
+      <HintPath>$(GameDir)\UnclaimedWorld.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(GameDir)\MonoGame.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GameDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(GameDir)\UnclaimedWorld.dll')"
+           Text="No UnclaimedWorld.dll under GameDir=$(GameDir). Publish the game first, or pass -p:GameDir=&lt;your game folder&gt;." />
+  </Target>
+
+</Project>

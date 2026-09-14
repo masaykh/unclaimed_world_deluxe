@@ -31,7 +31,7 @@ PLAT=$(echo "$UWPLATFORM" | tr 'A-Z' 'a-z')
 OUT="artifacts/publish/UnclaimedWorld/${LOWER}_${PLAT}"
 
 echo "==> publishing ($CFG, $UWPLATFORM)"
-"$DOTNET" publish src/UnclaimedWorld/UnclaimedWorld.csproj -c "$CFG" -p:UwPlatform="$UWPLATFORM" -v q --nologo
+"$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj -c "$CFG" -p:UwPlatform="$UWPLATFORM" -v q --nologo
 [ -d "$OUT" ] || { echo "FATAL: $OUT not found" >&2; ls artifacts/publish/UnclaimedWorld >&2; exit 1; }
 
 echo "==> copying $OUT -> game/ (including runtimes/)"

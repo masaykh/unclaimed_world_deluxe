@@ -1,5 +1,5 @@
 #!/bin/sh
-# Regenerates src/UnclaimedWorld/Generated/XmlProxies/ - the XML serialization proxy types
+# Regenerates base_game/UnclaimedWorld/Generated/XmlProxies/ - the XML serialization proxy types
 # CustomXmlSerializer used to build at runtime with CodeDom (PORT DEVIATION 12).
 #
 # Usage:
@@ -26,7 +26,7 @@ set -e
 cd "$UW_REPO"
 
 MODE=${1:-}
-OUT=src/UnclaimedWorld/Generated/XmlProxies
+OUT=base_game/UnclaimedWorld/Generated/XmlProxies
 BIN=artifacts/bin/UnclaimedWorld/release_dx
 
 mkdir -p "$OUT"
@@ -56,7 +56,7 @@ STUB
 fi
 
 echo "==> building the game (DX Release) so the generator has something to reflect over"
-"$DOTNET" build src/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX -v q --nologo
+"$DOTNET" build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX -v q --nologo
 
 echo "==> building the generator"
 "$DOTNET" build tools/XmlProxyGen/XmlProxyGen.csproj -c Release -v q --nologo \
@@ -91,7 +91,7 @@ echo "==> generating into $OUT"
 "$GEN" "$OUT"
 
 echo "==> rebuilding with the regenerated proxies"
-"$DOTNET" build src/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX -v q --nologo
+"$DOTNET" build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX -v q --nologo
 
 echo "==> verifying the regenerated files are self-consistent"
 "$GEN" "$OUT" --check

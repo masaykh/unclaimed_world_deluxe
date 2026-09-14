@@ -6,8 +6,8 @@
 # own data loader headlessly through tools/DataExport, and asserts the patch actually changed the
 # data the game would run with.
 #
-# Four cases, because a modding framework is judged on its failure behaviour more than its happy
-# path:
+# Twelve cases, and most of them are failure behaviour, because a modding framework is judged on
+# that more than on its happy path:
 #
 #   1. the mod loads and its patch takes effect
 #   2. -nomods suppresses it completely
@@ -24,9 +24,26 @@
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
 # cannot take out a player's session.
+#
+# RUN IT LOCALLY, NOT IN CI, and for the same structural reason as tools/build/70-make-release.sh:
+# it needs the game's compiled Content/. Every case builds a throwaway installation, and the data
+# loader resolves content paths against it - with no Content/ the tables do not load and there is
+# nothing to assert about. A runner has no copy of the game. publish.yml checks what it can from
+# source alone (every feature combination, base_game with mods/ deleted, the documents); this is
+# the half that needs your install.
+#
+#   sh tools/build/80-verify-modloader.sh        # nothing to set up first
 set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
+
+# Said here rather than discovered forty lines in as "cp: cannot stat".
+[ -d "$UW_STEAM/Content" ] || {
+  echo "FATAL: no Content/ under UW_STEAM=$UW_STEAM" >&2
+  echo "       This runs against YOUR copy of the game's compiled content - see license.md." >&2
+  echo "       export UW_STEAM=\"/path/to/Unclaimed World\"" >&2
+  exit 2
+}
 
 STOCK=0.033333335
 PATCHED=0.016666668
@@ -46,7 +63,7 @@ charcoal_days() {
 }
 
 say "==> building the game, the export tool and the example mod"
-"$DOTNET" publish src/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX -v q --nologo
+"$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=DX -v q --nologo
 "$DOTNET" build tools/DataExport/DataExport.csproj -c Release -v q --nologo
 # Built against the PUBLISHED DLLs on purpose - a ProjectReference would keep compiling even if
 # the layout a modder has to use broke.
@@ -66,10 +83,22 @@ if [ -f "$(dirname "$MOD")/0Harmony.dll" ]; then
   fail "the example mod's output contains 0Harmony.dll; references must be Private=false"
 fi
 
-# A throwaway installation. Content/ is needed because the data loader resolves content paths.
+# A throwaway installation, assembled the same way tools/build/70-make-release.sh assembles a
+# release: data/ from this repository - scenarios/ IS data/Maps and translations/ IS
+# data/BaseData/Strings - and Content/ from your own copy of the game, which is the one part
+# nobody can put in a repository.
+#
+# Built from the sources rather than copied out of game/ on purpose: game/ is a deployed
+# installation that something else has to create first, and a check with a setup step ahead of it
+# is a check people skip. This needs only UW_STEAM, which env.sh finds by itself.
+#
+# Content/ cannot be left out: the data loader resolves content paths against the installation,
+# and without it the tables do not load and there is nothing to assert about.
 new_install() {
-  d="$WORK/$1"; rm -rf "$d"; mkdir -p "$d/user/Mods"
-  cp -rp game/data "$d/data"; cp -rp game/Content "$d/Content"
+  d="$WORK/$1"; rm -rf "$d"; mkdir -p "$d/user/Mods" "$d/data/Maps" "$d/data/BaseData/Strings"
+  cp -rp scenarios/. "$d/data/Maps/"
+  cp -p  translations/*.xml "$d/data/BaseData/Strings/"
+  cp -rp "$UW_STEAM/Content" "$d/Content"
   printf '%s' "$d"
 }
 
@@ -102,7 +131,7 @@ peat_per_charcoal() {
 }
 # Whether a string literal is present in a compiled assembly.
 #
-# entityTypes.xml is one of the 13 tables that do NOT export (see MODDING.md), so an item cannot be
+# entityTypes.xml is one of the 13 tables that do NOT export (see modding.md), so an item cannot be
 # asserted absent from an export - the file is not there, and a grep against a missing file
 # "passes" while proving nothing. The assembly is where the item WOULD be if it still existed: a
 # C# string literal lands in the #US heap as UTF-16, so the check is for the literal encoded that
