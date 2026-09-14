@@ -5,10 +5,15 @@
 #     sh tools/build/70-make-release.sh 1.0             # explicit version
 #     sh tools/build/70-make-release.sh 1.0 linux-x64   # one platform
 #
-# THIS IS THE SAME CODE CI RUNS. .github/workflows/release.yml calls this script rather than
-# repeating it, so a local archive and a published one are built by one set of instructions and
-# cannot drift apart. That mattered enough to be worth the indirection: two copies of a packaging
-# recipe diverge silently, and the divergence only shows up in something a player downloads.
+# RELEASES ARE CUT LOCALLY, NOT BY CI, and that is structural rather than a preference. A usable
+# archive needs the compiled effects and the transcoded music, and both are built FROM YOUR COPY
+# OF THE GAME - the effects reuse the shipped XNB containers and take every parameter's initial
+# value from them, and the music is transcoded from the shipped WMAs. A runner has neither.
+#
+# There was a .github/workflows/release.yml that called this script. It could not work, and on
+# the first real tag it failed four times over with the message below. Deleted rather than
+# special-cased: a job that cannot do its job should not exist. CI still builds, cross-publishes
+# every RID and checks the docs (publish.yml) - it just does not pretend to make releases.
 #
 # Publishing is a separate script (71-publish-release.sh) because building is safe and publishing
 # is not.

@@ -17,7 +17,7 @@ cd "$UW_REPO"
 DOCS="README.md license.md build.md modding.md how_to_use_mods.md assets/README.md
       translations/README.md tools/shadowdusk/README.md
       tools/build/_release-install-md.sh tools/build/71-publish-release.sh
-      .github/workflows/release.yml"
+      "
 
 fail=0
 flag() {
