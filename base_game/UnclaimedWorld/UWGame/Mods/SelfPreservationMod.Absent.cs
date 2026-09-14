@@ -1,12 +1,12 @@
+using UWGame.SimSide.AI.Goals;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Jobs;
 
 namespace UWGame.Mods;
 
 /// <summary>
-/// The self-preservation mod, compiled OUT. See UnhiddenMod.Absent.cs for why this is a stub
-/// rather than an <c>#if</c> around EvaluateAttackJobs' single call site, and HealingMod.Absent.cs
-/// for why every member answers what the studio's code answered.
+/// The self-preservation mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern, and
+/// HealingMod.Absent.cs for why every member answers what the studio's code answered.
 /// </summary>
 public static class SelfPreservationMod
 {
@@ -28,5 +28,16 @@ public static class SelfPreservationMod
     public static bool DeclinesThreat(Entity entity, AttackJob job, bool isAssetThreat)
     {
         return false;
+    }
+
+    /// <summary>
+    /// The score unchanged. The studio's line was <c>result = bestScore</c> with nothing in
+    /// between, so the identity is their behaviour - and it is the trap this file exists to
+    /// avoid: returning 0 here would stop the colony defending itself in a build with no mod.
+    /// </summary>
+    public static double AdjustThreatDesirability(Entity entity, WeaponInstanceCombo combo,
+                                                  bool isAssetThreat, double score)
+    {
+        return score;
     }
 }

@@ -11,7 +11,7 @@ This build includes a set of mods, **on by default**, each individually switchab
 |---|---|
 | **Unhidden Mod** | EDIT and TEST buttons on the main menu, user scenarios in the picker, newest-first save sorting, mouse-wheel scrolling on data sheets, `O` toggles shadows — plus charcoal from peat and the resource-respawn fix |
 | **Healing** | wounds may heal fully rather than stopping halfway, and recovery speed depends on food, sleep and morale rather than muscle energy alone |
-| **Self-preservation** | a colonist not in a Bold stance, and an animal with nobody already on the job, will not go looking for a fight nobody ordered |
+| **Self-preservation** | colonists are reluctant to take a fight nobody ordered - the wounded and the unarmed stay out entirely, and an animal waits for a person. They still defend the camp |
 | **Disassembly** | salvage recipes generated from the recipes that made the thing, so metal tools, weapons, furniture and textiles can be taken apart instead of only the handful the studio hand-wrote |
 | **Balanced diet** | meat carries protein, plants carry micronutrients, and only a cooked meal carries both — so one food source no longer feeds a colonist indefinitely and the kitchen stops being optional |
 | **Magnification** | zoom *below* 1, which the stock game clamps away: the interface takes less of the screen and more of the world is visible. Costs fill rate — 0.5 is four times the pixels — so it warns when the interface will no longer fit |

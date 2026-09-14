@@ -205,6 +205,12 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 			if (jobAttackCombosToSelectFrom.Count > 0)
 			{
 				bestScore = jobAttackCombosToSelectFrom[0].Score;
+				// MOD: how hard an unordered fight argues against eating, sleeping and working.
+				// Applied to the finished score rather than anywhere inside the scoring, so every
+				// factor the game weighs still decides WHO the best candidate is; this decides
+				// only whether that candidate would rather be doing something else.
+				bestScore = UWGame.Mods.SelfPreservationMod.AdjustThreatDesirability(
+					entity, jobAttackCombosToSelectFrom[0], jobTypes == JobTypes.AssetThreat, bestScore);
 				result = bestScore;
 				bestCombo = jobAttackCombosToSelectFrom[0];
 				entityIntelligence.TopScoringJobs.Add(new GoalAndScore
@@ -237,8 +243,9 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 			for (int num = list.Count - 1; num >= 0; num--)
 			{
 				AttackJob attackJob = list[num] as AttackJob;
-				// MOD: a colonist who is not in a Bold stance, and an animal with no person
-				// already on the job, do not go looking for a fight nobody ordered.
+				// MOD: an animal of the colony with no person already on the job does not go
+				// looking for a fight. People are not filtered here - they are made reluctant
+				// where the score is decided, in CalculateDesirability below.
 				if (UWGame.Mods.SelfPreservationMod.DeclinesThreat(entity, attackJob, jobTypes == JobTypes.AssetThreat))
 				{
 					continue;

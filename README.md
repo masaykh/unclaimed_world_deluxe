@@ -42,7 +42,7 @@ default, each individually switchable** in the options menu under **MODS**, or a
 |---|---|
 | **Unhidden** | EDIT and TEST buttons the studio implemented and never wired up, user scenarios in the picker, newest-first saves, wheel-scrolling data sheets, `O` for shadows — plus charcoal from peat and a resource-respawn fix |
 | **Healing** | wounds can heal fully rather than stopping halfway, at a rate set by food, sleep and morale rather than muscle energy alone |
-| **Self-preservation** | a colonist not in a Bold stance, and an animal nobody is already handling, stop going looking for fights nobody ordered |
+| **Self-preservation** | colonists are reluctant to take fights nobody ordered, the wounded and unarmed stay out, and an animal waits for a person - without stopping them defending the camp |
 | **Disassembly** | salvage recipes generated from the recipes that built the thing, so metal tools, weapons, furniture and textiles come apart — not just the handful the studio hand-wrote |
 | **Balanced diet** | meat carries protein, plants carry micronutrients, only a cooked meal carries both; one food source stops feeding a colonist indefinitely |
 | **Magnification** | zoom *below* 1, which the stock game clamps away: less screen for the interface, more for the world |

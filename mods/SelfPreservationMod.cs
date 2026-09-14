@@ -1,11 +1,13 @@
+using UWGame.SimSide.AI.Goals;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Entities.Body;
 using UWGame.SimSide.Jobs;
-using UWGame.SimSide.Maps;
 
 namespace UWGame.Mods;
 
 /// <summary>
-/// Colonists stop walking into fights nobody sent them to.
+/// Colonists stop walking into fights nobody sent them to - by being reluctant to take the job,
+/// not by being forbidden from it.
 ///
 /// THE REPORT. "Non-combatant settlers sometimes is walking towards aggressive fauna and attack
 /// them while being alone, then taking damage in fight and sometimes dying foolishly. Even if
@@ -17,18 +19,35 @@ namespace UWGame.Mods;
 /// cook with a kitchen knife scores the job the same way a guard with a rifle does, and the
 /// nearest body wins.
 ///
-/// WHAT THIS CHANGES. A threat job is declined unless the colonist's threat stance is Bold. The
-/// stance is the game's own answer to "how much danger is this one willing to be in", it already
-/// moves with health, morale and orders, and it is what the player is adjusting when they set
-/// someone Vigilant and expect them to keep out of trouble.
+/// THE FIRST VERSION OF THIS MOD WAS WRONG, and how it was wrong is worth keeping written down.
+/// It declined a threat job unless the colonist's stance was already Bold. But the stance is an
+/// OUTPUT of taking the job, not an input to choosing it - CompositeGoal substitutes Bold for any
+/// goal whose <c>RequiresBoldStance()</c> is true, and <c>EvaluateChangeThreatStance</c> puts them
+/// back afterwards. So the gate was self-fulfilling: never chosen, therefore never Bold,
+/// therefore never chosen. tripleacoder spotted it on the thread - "usually a colonist will change
+/// their stance to Bold if the job requires it, not the other way around, and this stance is
+/// temporary" - and Kastuk had the symptom from play: with the mod on, colonists slept and ate
+/// peacefully while a Heapjaw walked through camp. Suppressing the colony's defence is a worse
+/// bug than the one being fixed.
 ///
-/// THREE THINGS IT DELIBERATELY LEAVES ALONE:
+/// WHAT IT DOES NOW, which is tripleacoder's suggestion: leave the threat jobs alone and make
+/// people RELUCTANT to pick them, by scaling the desirability the goal competes with and
+/// returning zero where going is plainly a mistake. A reluctant colonist still defends the camp
+/// when there is nothing better to do - which is the behaviour the stance gate removed.
 ///
-///   * ASSET threats - something attacking the colony's animals, crops or structures. Declining
-///     those would mean watching a vermin eat the harvest, which is not self-preservation.
-///   * Hunting, and anything else the player ordered. An order is the player saying "yes, you".
+/// FOUR THINGS IT DELIBERATELY LEAVES ALONE:
+///
+///   * ASSET threats - something attacking the colony's animals, crops or structures. Being
+///     reluctant about those would mean watching a vermin eat the harvest.
+///   * Hunting, and anything the player ordered. An order is the player saying "yes, you".
 ///   * The threat evaluation itself, which also drives fleeing and stance changes. Making people
 ///     less willing to ATTACK is one change; making them blind to danger would be another.
+///   * The scores themselves. Nothing here computes a rating - it scales the one the game
+///     produced, so every factor the studio weighs still decides who the best candidate is.
+///
+/// THE NUMBERS ARE NOT VERIFIED. 0.25 and 0.05 are the two multipliers and neither was measured
+/// against a colony, because there is no way to do that without playing. They are switchable for
+/// exactly that reason.
 ///
 /// NOT DONE, from the rest of the request: traits and professions as an input (a guard should
 /// answer a threat a cook should not - the game has no combat profession to read), and restricting
@@ -38,24 +57,50 @@ public static class SelfPreservationMod
 {
     public const string ModId = "selfpreservation";
 
-    private static ModSetting onlyBoldFight;
+    /// <summary>Below this fraction of hitpoints, an unordered fight is not this one's business.</summary>
+    public const float WoundedBelow = 0.75f;
+
+    private const string Normal = "normal";
+
+    private const string Reluctant = "reluctant";
+
+    private const string VeryReluctant = "very reluctant";
+
+    private static ModSetting unorderedThreats;
+
+    private static ModSetting injuredStayOut;
+
+    private static ModSetting unarmedStayOut;
 
     private static ModSetting animalsNeedCompany;
 
-    /// <summary>
-    /// Whether a colonist who is not in a Bold stance declines unordered fights.
-    /// </summary>
-    public static ModSetting OnlyBoldFight =>
-        onlyBoldFight ?? (onlyBoldFight = ModSettings.Toggle(
-            ModId, "onlyBoldFight", "ONLY BOLD COLONISTS PICK FIGHTS", defaultValue: true,
-            toolTip: "A colonist whose threat stance is not Bold ignores threats nobody ordered " +
-                     "them to deal with, instead of walking over to an aggressive animal alone. " +
-                     "Defending the colony's animals and structures is unaffected, and so is " +
-                     "anything you order."));
+    /// <summary>How much a colonist dislikes a fight nobody ordered.</summary>
+    public static ModSetting UnorderedThreats =>
+        unorderedThreats ?? (unorderedThreats = ModSettings.Choice(
+            ModId, "unorderedThreats", "UNORDERED FIGHTS",
+            new string[3] { Normal, Reluctant, VeryReluctant }, Reluctant,
+            toolTip: "How willing colonists are to take on a threat nobody ordered them to. " +
+                     "Reluctant means they go when there is nothing better to do, which still " +
+                     "defends the camp; very reluctant means almost never. Normal is the " +
+                     "studio's own behaviour."));
 
-    /// <summary>
-    /// Whether an animal of the colony waits for a person before joining a fight.
-    /// </summary>
+    /// <summary>Whether a wounded colonist stays out of an unordered fight entirely.</summary>
+    public static ModSetting InjuredStayOut =>
+        injuredStayOut ?? (injuredStayOut = ModSettings.Toggle(
+            ModId, "injuredStayOut", "THE WOUNDED STAY OUT", defaultValue: true,
+            toolTip: "A colonist below three quarters of their hitpoints will not take a fight " +
+                     "nobody ordered. They still defend the colony's things, and still do what " +
+                     "you tell them."));
+
+    /// <summary>Whether an unarmed colonist stays out of an unordered fight entirely.</summary>
+    public static ModSetting UnarmedStayOut =>
+        unarmedStayOut ?? (unarmedStayOut = ModSettings.Toggle(
+            ModId, "unarmedStayOut", "THE UNARMED STAY OUT", defaultValue: true,
+            toolTip: "A colonist whose best option is to attack with no weapon at all will not " +
+                     "take a fight nobody ordered. 'Sometimes without proper weapon' was half of " +
+                     "the original report."));
+
+    /// <summary>Whether the colony's animals wait for a person before joining a fight.</summary>
     public static ModSetting AnimalsNeedCompany =>
         animalsNeedCompany ?? (animalsNeedCompany = ModSettings.Toggle(
             ModId, "animalsNeedCompany", "DOGS FIGHT ONLY ALONGSIDE PEOPLE", defaultValue: true,
@@ -64,61 +109,112 @@ public static class SelfPreservationMod
 
     public static void RegisterSettings()
     {
-        _ = OnlyBoldFight;
+        _ = UnorderedThreats;
+        _ = InjuredStayOut;
+        _ = UnarmedStayOut;
         _ = AnimalsNeedCompany;
     }
 
-    /// <summary>Whether anything here is switched on. Cheap enough to test at every call site.</summary>
-    public static bool Enabled => OnlyBoldFight.On || AnimalsNeedCompany.On;
+    /// <summary>Whether anything here is switched on.</summary>
+    public static bool Enabled =>
+        UnorderedThreats.Value != Normal || InjuredStayOut.On || UnarmedStayOut.On
+        || AnimalsNeedCompany.On;
 
     /// <summary>
-    /// Whether <paramref name="entity"/> should refuse to consider this unordered threat job.
+    /// Whether <paramref name="entity"/> should refuse to consider this unordered threat job
+    /// outright, before it is scored at all.
     ///
-    /// Called from EvaluateAttackJobs while it collects the jobs a colonist could take, so a
-    /// declined job is simply never scored - no half-started walk, no cancelled order, and no
-    /// interaction with whatever they were doing instead.
+    /// ONLY THE COLONY'S ANIMALS decide anything here now. A dog joining a fight a person is
+    /// already handling is what a dog is for; a dog starting one is the thing being stopped, and
+    /// that is a yes/no about the job rather than a matter of degree. People go through
+    /// <see cref="AdjustThreatDesirability"/> instead - see the class comment for why a filter was
+    /// the wrong shape for them.
     /// </summary>
     public static bool DeclinesThreat(Entity entity, AttackJob job, bool isAssetThreat)
     {
-        if (!Enabled || entity == null || job == null)
+        if (entity == null || job == null || isAssetThreat)
         {
             return false;
         }
-
-        // Defending the colony's own things is not the behaviour being complained about.
-        if (isAssetThreat)
-        {
-            return false;
-        }
-
-        if (entity.Intelligence == null)
+        if (!AnimalsNeedCompany.On || entity.Intelligence == null)
         {
             return false;
         }
 
         // EntityType.Person is what the game itself uses to decide who counts as one of the
         // colony's people - Allegiance.Persons is filled from exactly this test.
-        bool isPerson = entity.EntityType?.Person != null;
-
-        if (!isPerson)
-        {
-            // An animal of the colony. It may join a fight that a person is already handling -
-            // which is what a dog is for - but does not start one.
-            if (!AnimalsNeedCompany.On)
-            {
-                return false;
-            }
-            return !HasHumanTaker(job);
-        }
-
-        if (!OnlyBoldFight.On)
+        if (entity.EntityType?.Person != null)
         {
             return false;
         }
+        return !HasHumanTaker(job);
+    }
 
-        // Bold is the stance of somebody who has accepted being in danger: it is what an attack
-        // order puts them in, and what a confident, healthy colonist reaches on their own.
-        return entity.Intelligence.ThreatStance != ThreatStance.Bold;
+    /// <summary>
+    /// The desirability an unordered threat job should compete with, given who is considering it.
+    ///
+    /// Called from <c>EvaluateAttackJobs.CalculateDesirability</c> with the score the game already
+    /// computed for the best weapon combo, so everything the studio weighs - distance, weapon,
+    /// fitness, the target's body - has already had its say. This decides only how hard that
+    /// result argues against eating, sleeping and working.
+    ///
+    /// Zero means the goal loses to everything, which is how a goal declines without a filter.
+    /// </summary>
+    public static double AdjustThreatDesirability(Entity entity, WeaponInstanceCombo combo,
+                                                  bool isAssetThreat, double score)
+    {
+        if (entity == null || isAssetThreat || score <= 0.0)
+        {
+            return score;
+        }
+
+        // Only the colony's people. An animal that got this far was let through by
+        // DeclinesThreat, and second-guessing it here would be the same rule applied twice.
+        if (entity.EntityType?.Person == null)
+        {
+            return score;
+        }
+
+        if (UnarmedStayOut.On && combo != null && combo.Weapon == null)
+        {
+            return 0.0;
+        }
+
+        if (InjuredStayOut.On && IsWounded(entity))
+        {
+            return 0.0;
+        }
+
+        string level = UnorderedThreats.Value;
+        if (level == VeryReluctant)
+        {
+            return score * 0.05;
+        }
+        if (level == Reluctant)
+        {
+            return score * 0.25;
+        }
+        return score;
+    }
+
+    /// <summary>
+    /// Whether this one has taken enough damage to sit an unordered fight out.
+    ///
+    /// Computed rather than read: Body.HitpointsFractionLeft is private, and the two values it
+    /// divides are not.
+    /// </summary>
+    private static bool IsWounded(Entity entity)
+    {
+        if (!entity.Find<BodyComponent>(out var component) || component?.Body == null)
+        {
+            return false;
+        }
+        Body body = component.Body;
+        if (body.MaxHitpoints <= 0f)
+        {
+            return false;
+        }
+        return body.GlobalHitpoints / body.MaxHitpoints < WoundedBelow;
     }
 
     /// <summary>Whether one of the colony's people is already working this job.</summary>

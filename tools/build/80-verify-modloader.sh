@@ -312,11 +312,24 @@ has_process "$d" makeFishingNetFromRawhide   && fail "the variant is still there
 # was never called is invisible in every other way until somebody notices the behaviour missing.
 say "==> 11. the per-request mods are registered and switchable"
 d=$(new_install case11)
-for id in mapedge.stopAtEdge healing.fullRecovery healing.needsDrivenRate           selfpreservation.onlyBoldFight selfpreservation.animalsNeedCompany           magnification.allowBelowOne magnification.warnWhenTooSmall diet.specialiseRawFood; do
+for id in mapedge.stopAtEdge healing.fullRecovery healing.needsDrivenRate selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany magnification.allowBelowOne magnification.warnWhenTooSmall diet.specialiseRawFood; do
   write_setting "$d" "$id" false
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = false"     && pass "$id is registered and reads from the file"     || fail "$id did not reach the registry (dataexport did not report it)"
 done
+
+# selfpreservation.unorderedThreats is a CHOICE, not a toggle, so the loop above cannot carry it -
+# "false" is not one of its values. Worth its own two lines rather than leaving the mod's main
+# switch unchecked: it is the one that replaced the stance gate, and the stance gate is the bug.
+d=$(new_install case11c); write_setting "$d" selfpreservation.unorderedThreats "very reluctant"
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+echo "$out" | grep -q "selfpreservation.unorderedThreats = very reluctant"   && pass "selfpreservation.unorderedThreats is registered and reads a choice from the file"   || { echo "$out" | grep -i unorderedThreats | sed 's/^/      /';        fail "selfpreservation.unorderedThreats did not reach the registry"; }
+
+# And that an unknown value falls back rather than being taken literally - a hand-edited file is
+# the normal way this setting gets changed, and "Reluctant" with a capital is the obvious typo.
+d=$(new_install case11d); write_setting "$d" selfpreservation.unorderedThreats nonsense
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "a bad choice value stopped the data load"; }
+pass "an unrecognised choice value does not stop the load"
 
 # The diet mod is the only one of the five whose effect is in the exported tables, so it is the
 # only one that can be checked offline rather than merely observed to exist.
