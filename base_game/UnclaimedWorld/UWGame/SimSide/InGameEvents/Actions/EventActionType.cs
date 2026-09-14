@@ -37,6 +37,11 @@ namespace UWGame.SimSide.InGameEvents.Actions;
 [XmlInclude(typeof(SetViewAction))]
 [XmlInclude(typeof(ParticleEffectAction))]
 [XmlInclude(typeof(ShowTutorialAction))]
+// PORT FIX. Missing from the studio's list, which nothing noticed because nothing ever
+// serialized these types. It is used by a scenario rather than the base tables, so it only
+// surfaced once dataexport --scenarios started driving the per-scenario data loaders:
+// "The type SpawnUpgradeAction was not expected" lost all of Making Headway's event actions.
+[XmlInclude(typeof(SpawnUpgradeAction))]
 public abstract class EventActionType : IGameData
 {
 	public string Comments;

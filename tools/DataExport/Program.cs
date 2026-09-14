@@ -392,8 +392,21 @@ internal static class Program
             string name = loader.FolderName;
             try
             {
+                // Two halves, and only the first one is what "export the scenario" used to mean.
+                // WriteScenario puts scenario.xml and scenarioData.xml down; the loader below
+                // puts down the tables those files REFER to, into the same folder.
                 loader.WriteScenario();
-                Console.WriteLine($"    ok      {name}");
+
+                // The header and its data are loaded separately - AllScenarioLoader keeps them
+                // apart - but DataLoader.QueueInitGameData reads scenario?.ScenarioData.EnableMissions,
+                // where the ?. guards the SCENARIO being null and not its ScenarioData. Hand it a
+                // header with no data attached and every table in the queue dies on that one line.
+                var header = loader.GetScenarioHeader();
+                header.ScenarioData = loader.GetScenarioData();
+
+                int rc = RunLoader(loader.GetDataLoader(), header, Sim.SerializeMode.WriteAndRead,
+                                   "    tables for " + name);
+                Console.WriteLine(rc == 0 ? $"    ok      {name}" : $"    PARTIAL {name}  (some tables failed above)");
                 ok++;
             }
             catch (Exception ex)
@@ -411,12 +424,13 @@ internal static class Program
 
         Console.WriteLine();
         Console.WriteLine($"==> scenarios: {ok} written, {failed} failed  -> data/Scenarios/<name>/");
-        Console.WriteLine("    Each folder holds scenario.xml (the header the menu lists) and scenarioData.xml");
-        Console.WriteLine("    (its settings). NOTE what scenarioData.xml does NOT contain: Actions and");
-        Console.WriteLine("    ConditionalEvents are string[] of KEYS into actionSets.xml, eventActionTypes.xml,");
-        Console.WriteLine("    allegianceEvents.xml and polledEventTypes.xml - and all four of those are among");
-        Console.WriteLine("    the 13 tables that do not export yet. The scenario file is complete; the content");
-        Console.WriteLine("    it points at is the part that is missing.");
+        Console.WriteLine("    Each folder holds scenario.xml and scenarioData.xml PLUS that scenario's own");
+        Console.WriteLine("    tables - its event actions, entity types, polled events and hooks.");
+        Console.WriteLine();
+        Console.WriteLine("    Those tables are the half that is easy to miss. scenarioData.xml names its start");
+        Console.WriteLine("    action ('spawnWorld') and its Actions as KEYS, and those keys are defined in the");
+        Console.WriteLine("    SCENARIO's loader, not the base one - so a scenarioData.xml copied on its own");
+        Console.WriteLine("    dies in Sim.ExecuteStartAction with KeyNotFoundException on the first one.");
         return failed == 0 ? 0 : 1;
     }
 
@@ -489,12 +503,28 @@ internal static class Program
 
     private static int Run(Sim.SerializeMode mode, string what)
     {
+        // The load screen is the data layer's only dependency on the UI, and it is null here.
+        // DataLoader.UpdateProgress tolerates that (PORT DEVIATION 13).
+        return RunLoader(new BaseDataLoader(), null, mode, what);
+    }
+
+    /// <summary>
+    /// Drives one DataLoader's queue to completion, stepping past any table that throws.
+    ///
+    /// Takes the loader rather than making one because there are TWO kinds. BaseDataLoader holds
+    /// the game-wide tables; every RG scenario has a second, complete DataLoader of its own
+    /// (Scenario1DataLoader and its eight siblings, Config.DataType.RGScenario) carrying that
+    /// scenario's entity types, event actions, polled events and hooks. The start action a
+    /// scenario names - "spawnWorld" for the tutorial - is defined in the SCENARIO's loader, not
+    /// the base one, which is why a scenarioData.xml copied on its own dies in
+    /// Sim.ExecuteStartAction with KeyNotFoundException.
+    /// </summary>
+    private static int RunLoader(DataLoader loader, UWGame.SimSide.Scenarios.Scenario scenario,
+                                 Sim.SerializeMode mode, string what)
+    {
         Console.WriteLine("==> " + what);
         Sim.CurrentSerializeMode = mode;
 
-        // The load screen is the data layer's only dependency on the UI, and it is null here.
-        // DataLoader.UpdateProgress tolerates that (PORT DEVIATION 13).
-        var loader = new BaseDataLoader();
         var sw = Stopwatch.StartNew();
         int steps = 0;
         var failures = new List<(DataLoaderQueueState State, string Error)>();
@@ -530,11 +560,10 @@ internal static class Program
             var before = (DataLoaderQueueState)queueStateField.GetValue(loader);
             try
             {
-                // scenario: null exports the BASE data tables only, which is what this tool is
-                // for. Game 1.0.4.8 added the parameter (Sim.QueueGameDataAndSimInit passes the
-                // scenario from StartGameParams, or null when there is none); scenario overlays
-                // are loaded by a second, per-scenario DataLoader that this tool does not drive.
-                if (loader.QueueInitGameData(null)) break;
+                // null here means the BASE tables only. Game 1.0.4.8 added the parameter
+                // (Sim.QueueGameDataAndSimInit passes the scenario from StartGameParams, or null
+                // when there is none); --scenarios passes a real one, for the per-scenario loader.
+                if (loader.QueueInitGameData(scenario)) break;
             }
             catch (Exception ex)
             {
