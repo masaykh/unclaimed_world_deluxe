@@ -42,7 +42,16 @@ if [ -z "$VERSION" ]; then
 fi
 shift 2>/dev/null || true
 
-RIDS=${*:-"win-x64 linux-x64 osx-x64 osx-arm64"}
+# win-x64-dx is a PSEUDO-RID: win-x64 built against MonoGame.Framework.WindowsDX instead of
+# DesktopGL. It exists because a recompiled shader can be rejected by a driver that would have
+# accepted the studio's own - reported from an Intel HD Graphics machine on a 2016 driver, where
+# skinFX's vertex shader failed to compile and every animated model took the game down. The DX
+# build runs the studio's DXBC unmodified (tools/build/35-make-dx-effects.sh rewrites the
+# container and copies the bytecode through), so it has no recompiled shader to be rejected.
+#
+# GL stays the default and the only cross-platform build. This is a fallback for old Windows
+# graphics drivers, not a second first-class target.
+RIDS=${*:-"win-x64 linux-x64 osx-x64 osx-arm64 win-x64-dx"}
 
 OUT="$UW_REPO/artifacts/release"
 STAGE="$UW_REPO/artifacts/release-stage"
@@ -53,6 +62,10 @@ mkdir -p "$OUT"
 # existing build rather than re-running the steps that produce them.
 EFFECTS_SRC=${UW_GL_EFFECTS:-$UW_REPO/artifacts/content/effects-gl}
 MEDIA_SRC=${UW_GL_MEDIA:-$UW_REPO/artifacts/content/media-gl}
+
+# The DX archive's effects are the studio's own bytecode in a v10 container, not a ShadowDusk
+# recompile. Different folder, different script, same override mechanism.
+EFFECTS_SRC_DX=${UW_DX_EFFECTS:-$UW_REPO/artifacts/content/effects-dx}
 
 # 7-Zip goes by four different names depending on how it was installed. Find one rather than
 # assume: this script is meant to run on all three platforms, same as the game.
@@ -78,15 +91,31 @@ for rid in $RIDS; do
   rm -rf "$STAGE/$rid"
   mkdir -p "$app"
 
+  # The pseudo-RID split. Everything downstream reads $UWPLATFORM rather than testing the name
+  # again, so one place knows what win-x64-dx means.
+  case "$rid" in
+    win-x64-dx) UWPLATFORM=DX; PUBRID=win-x64 ;;
+    *)          UWPLATFORM=GL; PUBRID=$rid ;;
+  esac
+
   # --- code -----------------------------------------------------------------------------------
   "$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj \
-    -c Release -p:UwPlatform=GL -r "$rid" --self-contained false -o "$app" -v q --nologo
+    -c Release -p:UwPlatform="$UWPLATFORM" -r "$PUBRID" --self-contained false -o "$app" -v q --nologo
   rm -f "$app"/*.pdb "$app"/*.dll.config
+  # 16.3 MB of SharpDX IntelliSense docs and MonoGame's 936 KB XML, shipped by accident once.
+  rm -f "$app"/SharpDX*.xml "$app"/MonoGame.Framework.xml
 
-  # A DesktopGL build carrying SharpDX has picked up the WindowsDX backend. That would fail at
-  # runtime, only on Linux and macOS, and only once a player ran it.
-  if ls "$app"/SharpDX* >/dev/null 2>&1; then
-    echo "  !! SharpDX in a DesktopGL build:" >&2; ls "$app"/SharpDX* >&2; exit 1
+  if [ "$UWPLATFORM" = "GL" ]; then
+    # A DesktopGL build carrying SharpDX has picked up the WindowsDX backend. That would fail at
+    # runtime, only on Linux and macOS, and only once a player ran it.
+    if ls "$app"/SharpDX* >/dev/null 2>&1; then
+      echo "  !! SharpDX in a DesktopGL build:" >&2; ls "$app"/SharpDX* >&2; exit 1
+    fi
+  else
+    # The mirror of it: a WindowsDX build WITHOUT SharpDX has picked up DesktopGL, which would
+    # leave the DX archive a second copy of the GL one - no use at all to the player it is for.
+    ls "$app"/SharpDX* >/dev/null 2>&1 || {
+      echo "  !! no SharpDX in a WindowsDX build - this is not a DX build" >&2; exit 1; }
   fi
 
   # --- the assets Refactored Games released ---------------------------------------------------
@@ -120,16 +149,37 @@ for rid in $RIDS; do
   #
   # Verified the hard way: an archive without these, installed exactly as install.md says,
   # fails at startup with 24 of 33 assets unloadable.
+  if [ "$UWPLATFORM" = "DX" ]; then
+    EFFECTS=$EFFECTS_SRC_DX
+    EFFECTS_HOWTO="sh tools/build/35-make-dx-effects.sh"
+  else
+    EFFECTS=$EFFECTS_SRC
+    EFFECTS_HOWTO="sh tools/build/34-build-gl-effects-shadowdusk.sh  (see below)"
+  fi
+
+  # MUSIC IS A GL PROBLEM ONLY, and finding that out cost an archive. The port transcodes the
+  # shipped WMA to Ogg Vorbis because DesktopGL has no MediaFoundation - but WindowsDX has
+  # nothing else, and MediaFoundation cannot play Ogg. A DX archive built with the GL music in it
+  # loads 32 of 33 assets and fails the 33rd with
+  #
+  #   SharpDXException HRESULT 0xC00D36C4 - "The byte stream type of the given URL is unsupported"
+  #
+  # So the DX build ships the studio's own .wma and their own Music XNBs, untouched, which is
+  # what MediaFoundation is there for.
   missing_pc=""
-  [ -d "$EFFECTS_SRC" ] || missing_pc="$missing_pc effects"
-  [ -d "$MEDIA_SRC" ]   || missing_pc="$missing_pc music"
+  [ -d "$EFFECTS" ] || missing_pc="$missing_pc effects"
+  if [ "$UWPLATFORM" != "DX" ]; then
+    [ -d "$MEDIA_SRC" ] || missing_pc="$missing_pc music"
+  fi
   if [ -n "$missing_pc" ]; then
     echo >&2
     echo "FATAL: cannot build a usable release - missing:$missing_pc" >&2
     echo >&2
-    echo "  effects: sh tools/shadowdusk/build-shadowdusk.sh" >&2
-    echo "           export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe\"" >&2
-    echo "           sh tools/build/34-build-gl-effects-shadowdusk.sh" >&2
+    echo "  effects: $EFFECTS_HOWTO" >&2
+    if [ "$UWPLATFORM" != "DX" ]; then
+      echo "           sh tools/shadowdusk/build-shadowdusk.sh" >&2
+      echo "           export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe\"" >&2
+    fi
     echo "  music:   sh tools/build/32-convert-media.sh" >&2
     echo >&2
     echo "  Both read your own copy of the game, so they cannot run on a machine without it -" >&2
@@ -150,10 +200,12 @@ for rid in $RIDS; do
     cp -rp "$UW_STEAM/Content" "$app/Content"
     cp -p  "$UW_STEAM/steam_appid.txt" "$app/" 2>/dev/null || true
 
-    ( cd "$EFFECTS_SRC" && find . -name '*.xnb' -exec cp -p {} "$app/Content/{}" \; )
-    cp -p "$MEDIA_SRC"/Music/*.ogg "$app/Content/Music/" 2>/dev/null || true
-    cp -p "$MEDIA_SRC"/Music/*.xnb "$app/Content/Music/" 2>/dev/null || true
-    rm -f "$app"/Content/Music/*.wma          # dead weight: the stubs point at the .ogg now
+    ( cd "$EFFECTS" && find . -name '*.xnb' -exec cp -p {} "$app/Content/{}" \; )
+    if [ "$UWPLATFORM" != "DX" ]; then
+      cp -p "$MEDIA_SRC"/Music/*.ogg "$app/Content/Music/" 2>/dev/null || true
+      cp -p "$MEDIA_SRC"/Music/*.xnb "$app/Content/Music/" 2>/dev/null || true
+      rm -f "$app"/Content/Music/*.wma        # dead weight: the stubs point at the .ogg now
+    fi
     rm -f "$app"/Content/MainMenu/*.wmv       # no DesktopGL VideoPlayer; the .uwanim replaces it
 
     [ -f native/steam/steam_api64.dll ] && cp -p native/steam/steam_api64.dll "$app/" || true
@@ -161,15 +213,37 @@ for rid in $RIDS; do
     echo "    Content: $(find "$app/Content" -name '*.xnb' | wc -l) xnb  ($(du -sh "$app/Content" | cut -f1))"
   else
     mkdir -p "$app/port-content/Music"
-    ( cd "$EFFECTS_SRC" && find . -name '*.xnb' -exec sh -c 'mkdir -p "$0/$(dirname "$1")" && cp -p "$1" "$0/$1"' "$app/port-content" {} \; )
-    cp -p "$MEDIA_SRC"/Music/*.ogg "$app/port-content/Music/" 2>/dev/null || true
-    cp -p "$MEDIA_SRC"/Music/*.xnb "$app/port-content/Music/" 2>/dev/null || true
+    ( cd "$EFFECTS" && find . -name '*.xnb' -exec sh -c 'mkdir -p "$0/$(dirname "$1")" && cp -p "$1" "$0/$1"' "$app/port-content" {} \; )
+    if [ "$UWPLATFORM" != "DX" ]; then
+      cp -p "$MEDIA_SRC"/Music/*.ogg "$app/port-content/Music/" 2>/dev/null || true
+      cp -p "$MEDIA_SRC"/Music/*.xnb "$app/port-content/Music/" 2>/dev/null || true
+    fi
     echo "    port-content: $(find "$app/port-content" -name '*.xnb' | wc -l) xnb, $(ls "$app/port-content/Music"/*.ogg 2>/dev/null | wc -l) ogg"
   fi
 
   # --- licences and instructions --------------------------------------------------------------
   cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md how_to_use_mods.md "$app/"
   sh "$(dirname "$0")/_release-install-md.sh" ${FULL:+--full} > "$app/install.md"
+
+  # The DX archive needs one paragraph the GL one does not, because a player who downloads it
+  # has usually already been sent here by a crash.
+  if [ "$UWPLATFORM" = "DX" ]; then
+    cat >> "$app/install.md" <<'DXNOTE'
+
+## This is the DirectX build
+
+Take the ordinary `win-x64` archive unless it does not work. This one exists for older Windows
+graphics drivers that reject a recompiled shader — the symptom is `Failed to compile vertex
+shader` in `Errors.txt`, and every animated model taking the game down as soon as a map loads.
+
+The difference is the shaders. The DesktopGL build recompiles all 19 effects from the studio's
+HLSL; this one runs the studio's own compiled shaders, with only the container header rewritten
+for MonoGame 3.8. Nothing else about the game differs.
+
+Windows only, and it is not the build the port is developed against — if something is wrong here
+that is right in the GL build, that is worth reporting rather than working around.
+DXNOTE
+  fi
 
   # --- archive ---------------------------------------------------------------------------------
   name="UnclaimedWorldDeluxe-$VERSION-$rid.7z"

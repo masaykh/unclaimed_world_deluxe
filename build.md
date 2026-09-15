@@ -39,7 +39,7 @@ directory.
 | value | backend | notes |
 |---|---|---|
 | `GL` | MonoGame DesktopGL | **what ships.** Windows, Linux, macOS |
-| `DX` | MonoGame WindowsDX | Windows only. Kept as a correctness oracle to compare renders against |
+| `DX` | MonoGame WindowsDX | Windows only. The correctness oracle to compare renders against — and now also a shipped fallback archive, see below |
 | `FNA` | FNA | a spike, on the `fna-backend` branch of the porting repository, not here |
 
 ## Building mods in or out
@@ -94,6 +94,33 @@ it, and the mod's own comment names it.
 A bugfix in a core path a mod happens to reach stays in core regardless — it is a fix to the
 game, not a piece of the mod. `SimProcess.CreateOutputsFromInputs` is the worked example: a no-op
 on the studio's tables, and the thing that stopped the disassembly mod destroying items.
+
+### The DirectX fallback archive
+
+`tools/build/70-make-release.sh` cuts five archives, not four. `win-x64-dx` is win-x64 built
+against `MonoGame.Framework.WindowsDX`, and it exists for one reason: **a recompiled shader can
+be rejected by a driver that would have accepted the studio's own.**
+
+Reported from an Intel HD Graphics machine on a 2016 driver — `Failed to compile vertex shader`
+out of `SkinnedAnimatedModel.DrawModel`, so every animated model took the game down as soon as a
+map loaded. ShadowDusk had in fact *warned* about that shader at build time (`SD0403`, twice on
+`skinFX`), and the warning was shipped past.
+
+The DX build has no recompiled shader to reject. `tools/build/35-make-dx-effects.sh` rewrites the
+shipped v8 container to v10 and copies every byte of DXBC through unchanged — the bytecode is
+the studio's.
+
+Two things differ from the GL archive, both forced:
+
+- **Music is the shipped `.wma`, not the transcoded Ogg.** DesktopGL has no MediaFoundation, so
+  GL needs Ogg; WindowsDX has nothing *but* MediaFoundation, and MediaFoundation cannot play
+  Ogg. A DX archive with the GL music in it loads 32 of 33 assets and fails the 33rd with
+  `SharpDXException 0xC00D36C4`.
+- **SharpDX ships with it.** The GL archive fails the build if SharpDX appears; the DX archive
+  fails if it does *not*.
+
+Verified with `tools/ContentProbe` against the staged archive: **33 of 33 assets load**, all 19
+effects among them.
 
 ## Shaders
 
