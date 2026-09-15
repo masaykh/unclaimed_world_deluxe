@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -141,9 +142,121 @@ internal static class Program
             }
         }
 
-        using var probe = new Probe(contentDir, probes, overrideDir);
-        probe.Run();
-        return probe.Failures;
+        // EVERYTHING BELOW USED TO BE TWO LINES, and on the one machine this tool was built to
+        // diagnose it produced NOTHING AT ALL - no output, no error, no exit message. Every
+        // Console.WriteLine in this program lives inside Probe.Initialize, which only runs once
+        // Game.Run has created a window and an OpenGL device. On a driver that cannot give
+        // MonoGame the device it asks for, Run throws (or SDL aborts in native code) before a
+        // single line is written, and the user is left with a silent exe.
+        //
+        // A diagnostic that is silent exactly where the fault is is worse than useless: it looks
+        // like the tool is broken, which is the one conclusion that is not true. So:
+        //
+        //   1. say what is about to happen BEFORE touching graphics, so there is always output
+        //   2. copy every line to contentprobe.log beside the exe, so it survives a console that
+        //      was never attached and a process that dies without flushing
+        //   3. catch what Run throws and print it, with inner exceptions unwrapped
+        //   4. fall back from HiDef to Reach and SAY SO - a Reach device that loads 30 of 33 is
+        //      a finding; no device at all is a mystery
+        string logPath = Path.Combine(AppContext.BaseDirectory, "contentprobe.log");
+        using (var tee = new TeeWriter(Console.Out, logPath))
+        {
+            Console.SetOut(tee);
+            Console.WriteLine($"contentprobe   {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"  content      {contentDir}");
+            Console.WriteLine($"  override     {overrideDir ?? "(none)"}");
+            Console.WriteLine($"  probes       {probes.Count}");
+            Console.WriteLine($"  runtime      .NET {Environment.Version}  {RuntimeInformation.OSDescription}"
+                              + $"  {RuntimeInformation.ProcessArchitecture}");
+            Console.WriteLine($"  log          {logPath}");
+            Console.WriteLine();
+
+            foreach (GraphicsProfile profile in new[] { GraphicsProfile.HiDef, GraphicsProfile.Reach })
+            {
+                try
+                {
+                    Console.WriteLine($"==> creating a graphics device ({profile})");
+                    using var probe = new Probe(contentDir, probes, overrideDir, profile);
+                    probe.Run();
+                    return probe.Failures;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"  !! {profile} FAILED before any asset was probed");
+                    for (Exception e = ex; e != null; e = e.InnerException)
+                    {
+                        Console.WriteLine($"     {e.GetType().Name}: {e.Message}");
+                    }
+                    if (profile == GraphicsProfile.HiDef)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("     HiDef is what the GAME asks for, so this alone would stop it starting.");
+                        Console.WriteLine("     Trying Reach, to find out whether ANY device can be made here.");
+                        Console.WriteLine();
+                        continue;
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine("     Neither profile works on this driver. That is the finding - the shaders");
+                    Console.WriteLine("     were never reached. Send this whole file.");
+                    Console.WriteLine(ex.StackTrace);
+                    return -1;
+                }
+            }
+            return -1;
+        }
+    }
+
+    /// <summary>
+    /// Writes to the console AND to a file. The file is the point: a console app launched by
+    /// double-click has nowhere to write, and a process that dies in native code never flushes -
+    /// either way the evidence is gone, which is how this tool managed to report nothing at all
+    /// on the machine it was built for. AutoFlush so a hard exit still leaves what was printed.
+    /// </summary>
+    private sealed class TeeWriter : System.IO.TextWriter
+    {
+        private readonly System.IO.TextWriter _console;
+        private readonly System.IO.StreamWriter _file;
+
+        public TeeWriter(System.IO.TextWriter console, string path)
+        {
+            _console = console;
+            try
+            {
+                _file = new System.IO.StreamWriter(path, append: false) { AutoFlush = true };
+            }
+            catch
+            {
+                // A read-only folder is not a reason to fail; the console still works.
+                _file = null;
+            }
+        }
+
+        public override System.Text.Encoding Encoding => _console.Encoding;
+
+        public override void Write(char value)
+        {
+            _console.Write(value);
+            _file?.Write(value);
+        }
+
+        public override void Write(string value)
+        {
+            _console.Write(value);
+            _file?.Write(value);
+        }
+
+        public override void WriteLine(string value)
+        {
+            _console.WriteLine(value);
+            _file?.WriteLine(value);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) _file?.Dispose();
+            base.Dispose(disposing);
+        }
     }
 
     private static byte[] ReadHead(string path, int count)
@@ -163,7 +276,8 @@ internal static class Program
 
         public int Failures { get; private set; }
 
-        public Probe(string contentDir, List<string> probes, string overrideDir = null)
+        public Probe(string contentDir, List<string> probes, string overrideDir = null,
+                     GraphicsProfile profile = GraphicsProfile.HiDef)
         {
             _contentDir = contentDir;
             _probes = probes;
@@ -172,7 +286,7 @@ internal static class Program
             {
                 // HiDef matches the game, which matters: the shipped content is HiDef profile
                 // and some of it will not load under Reach.
-                GraphicsProfile = GraphicsProfile.HiDef,
+                GraphicsProfile = profile,
                 PreferredBackBufferWidth = 64,
                 PreferredBackBufferHeight = 64,
             };
