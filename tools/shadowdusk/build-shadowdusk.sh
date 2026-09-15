@@ -25,7 +25,7 @@ set -e
 # Pinned so a build is reproducible and an upstream force-push cannot silently change what we
 # compile with. Bump deliberately, and re-run build/34 + the render comparison when you do.
 SD_REPO=${UW_SHADOWDUSK_REPO:-https://github.com/masaykh/ShadowDusk.git}
-SD_REF=${UW_SHADOWDUSK_REF:-956b9b1161a8e8cd07900e8c614566f91755101e}
+SD_REF=${UW_SHADOWDUSK_REF:-5e09e49dd12e4ea35d1cb1377c7c88dfac56c91e}
 SD_TOOL_VERSION=${UW_SHADOWDUSK_TOOL_VERSION:-0.20.0}
 
 REPO_ROOT=$(cd "$(dirname "$0")/../.." && pwd)
