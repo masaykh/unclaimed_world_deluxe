@@ -26,7 +26,25 @@ cd "$UW_REPO"
 SRC=${1:-$UW_STEAM/Content}
 OUT=${2:-artifacts/content/effects-dx}
 
-[ -d "$SRC" ] || { echo "FATAL: no such content directory: $SRC" >&2; exit 1; }
+if [ ! -d "$SRC" ]; then
+  echo "FATAL: no such content directory: $SRC" >&2
+  if [ -z "$UW_STEAM" ]; then
+    # THE ONE THAT ACTUALLY HAPPENS. A player set UW_STEAM in their shell WITHOUT export, saw
+    # `ls $UW_STEAM/` list the folder perfectly, and got "/Content" here - because a shell
+    # variable is not an environment variable and `sh script` is a child process. They edited the
+    # script to get past it. The old message printed "/Content" and left them to work that out.
+    echo >&2
+    echo "  UW_STEAM is empty, so that path is just \"/Content\"." >&2
+    echo "  It has to be EXPORTED - a plain assignment is not visible to this script:" >&2
+    echo >&2
+    echo "      export UW_STEAM=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
+    echo >&2
+    echo "  Or pass the folder directly, which needs no variable at all:" >&2
+    echo >&2
+    echo "      sh tools/build/35-make-dx-effects.sh \"<game>/Content\"" >&2
+  fi
+  exit 1
+fi
 
 "$DOTNET" build tools/MgfxTranscode/MgfxTranscode.csproj -c Release -v q --nologo
 TOOL=$(find artifacts/bin/MgfxTranscode -name 'mgfxtranscode.exe' -path '*release*' | head -1)

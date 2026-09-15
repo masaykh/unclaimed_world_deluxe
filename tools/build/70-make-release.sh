@@ -99,11 +99,33 @@ for rid in $RIDS; do
   esac
 
   # --- code -----------------------------------------------------------------------------------
-  "$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj \
-    -c Release -p:UwPlatform="$UWPLATFORM" -r "$PUBRID" --self-contained false -o "$app" -v q --nologo
+  # NO -r FOR THE DX BUILD, and this is not a preference. MonoGame.Framework.WindowsDX depends -
+  # mistakenly - on the legacy .NET Core 2.1 runtime packages, and publishing WITH a RID flattens
+  # RID assets into the output root. That drops .NET Core 2.1's hostfxr.dll and hostpolicy.dll
+  # beside the exe, the framework-dependent apphost loads that stale hostpolicy, and the process
+  # dies immediately with 'Could not resolve CoreCLR path' (0x80008087) - no window, no log,
+  # nothing at all. tools/build/40-deploy.sh has carried this warning since long before a DX
+  # archive existed; this script shipped one with -r anyway, and the v1.1 DX archive cannot start
+  # because of it. It reached a player, who spent an afternoon assembling a working build by hand.
+  #
+  # Without a RID those natives stay under runtimes/<rid>/native/ and the apphost uses the
+  # installed runtime. DesktopGL has no such dependency, so GL keeps its RID.
+  if [ "$UWPLATFORM" = "DX" ]; then
+    "$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj \
+      -c Release -p:UwPlatform=DX --self-contained false -o "$app" -v q --nologo
+  else
+    "$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj \
+      -c Release -p:UwPlatform=GL -r "$PUBRID" --self-contained false -o "$app" -v q --nologo
+  fi
   rm -f "$app"/*.pdb "$app"/*.dll.config
   # 16.3 MB of SharpDX IntelliSense docs and MonoGame's 936 KB XML, shipped by accident once.
   rm -f "$app"/SharpDX*.xml "$app"/MonoGame.Framework.xml
+  # Belt and braces, should a RID-flattened asset ever reach the root again. apphost.exe is the
+  # un-renamed template UnclaimedWorld.exe is made from and is pure confusion in a release; the
+  # rest are .NET Core 2.1 host and debugger binaries.
+  rm -f "$app"/apphost.exe "$app"/hostfxr.dll "$app"/hostpolicy.dll "$app"/dbgshim.dll \
+        "$app"/SOS.NETCore.dll "$app"/sos*.dll "$app"/mscordaccore*.dll "$app"/mscorrc*.dll \
+        "$app"/api-ms-win-*.dll "$app"/ucrtbase.dll "$app"/clretwrc.dll
 
   if [ "$UWPLATFORM" = "GL" ]; then
     # A DesktopGL build carrying SharpDX has picked up the WindowsDX backend. That would fail at
@@ -256,6 +278,15 @@ DXNOTE
   "$SEVENZ" t "$OUT/$name" >/dev/null
   for want in UnclaimedWorld.dll install.md LICENSE-UnclaimedWorld-Community.md MapData.xml; do
     "$SEVENZ" l "$OUT/$name" | grep -q "$want" || { echo "  !! missing from archive: $want" >&2; exit 1; }
+  done
+
+  # THE ARCHIVE MUST BE STARTABLE, which is a different question from whether it contains files.
+  # Both of these were true of the v1.1 DX archive and nothing noticed until a player could not
+  # run it.
+  [ -f "$app/UnclaimedWorld.exe" ] || [ -f "$app/UnclaimedWorld" ] || {
+    echo "  !! no launchable UnclaimedWorld executable in $rid" >&2; exit 1; }
+  for stale in hostfxr.dll hostpolicy.dll apphost.exe; do
+    [ -f "$app/$stale" ] && { echo "  !! $stale beside the exe - this build will not start" >&2; exit 1; }
   done
 
   size=$(du -h "$OUT/$name" | cut -f1)

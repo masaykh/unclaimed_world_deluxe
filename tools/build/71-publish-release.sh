@@ -104,8 +104,10 @@ you can switch off.
 
 ### If a map will not load on Windows
 
-If \`Errors.txt\` says **\`Failed to compile vertex shader\`** and the game dies as soon as a map
-loads, take the **\`win-x64-dx\`** archive instead. It is the same game built on DirectX, and it
+The game now checks at startup and **tells you** when this machine's OpenGL driver is too small
+for its shaders, naming the numbers. If you see that message - or if an older build died as soon
+as a map loaded, with \`Failed to compile vertex shader\` in \`Errors.txt\` - take the
+**\`win-x64-dx\`** archive instead. It is the same game built on DirectX, and it
 runs the studio's own compiled shaders rather than recompiled ones — which is what some older
 Intel drivers refuse. Reported on Intel HD Graphics with a 2016 driver.
 
