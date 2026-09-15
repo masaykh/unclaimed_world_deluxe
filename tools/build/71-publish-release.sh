@@ -96,10 +96,21 @@ you can switch off.
 
 | download | for |
 |---|---|
-| \`...-win-x64.7z\` | Windows |
+| \`...-win-x64.7z\` | **Windows — start here** |
 | \`...-linux-x64.7z\` | Linux |
 | \`...-osx-x64.7z\` | macOS, Intel |
 | \`...-osx-arm64.7z\` | macOS, Apple Silicon |
+| \`...-win-x64-dx.7z\` | Windows, older graphics drivers — see below |
+
+### If a map will not load on Windows
+
+If \`Errors.txt\` says **\`Failed to compile vertex shader\`** and the game dies as soon as a map
+loads, take the **\`win-x64-dx\`** archive instead. It is the same game built on DirectX, and it
+runs the studio's own compiled shaders rather than recompiled ones — which is what some older
+Intel drivers refuse. Reported on Intel HD Graphics with a 2016 driver.
+
+Everyone else should take \`win-x64\`. DirectX is Windows-only and is not the build this port is
+developed against.
 
 Needs the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0). macOS builds are
 unsigned, so Gatekeeper needs a word — \`install.md\` inside has the command.

@@ -197,6 +197,12 @@ internal static class Program
 
             Console.WriteLine($"content root: {_contentDir}");
             Console.WriteLine($"graphics:     {GraphicsDevice.Adapter.Description} ({_gdm.GraphicsProfile})");
+#if UW_GL
+            // What the DRIVER is, and the two limits an effect can exceed. The adapter
+            // description above is the OS's name for the card; this is the GL implementation that
+            // will actually be asked to compile the shaders, which is not the same question.
+            GlCapabilities.Report();
+#endif
             if (_overrideDir != null)
             {
                 Console.WriteLine($"override:     {_overrideDir}");
