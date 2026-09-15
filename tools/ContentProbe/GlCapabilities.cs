@@ -117,6 +117,24 @@ internal static class GlCapabilities
             }
 
             Console.Write(sb.ToString());
+
+#if UW_HAVE_GAME
+            // AND WHAT THE GAME WOULD DO ABOUT IT. Asking UWGame.Port.GlCapabilityCheck rather
+            // than re-deciding here is the point: the startup guard's verdict becomes something
+            // anyone can see on any machine, instead of a judgement only reachable by launching
+            // the game on hardware where launching it is the thing that fails.
+            string verdict = UWGame.Port.GlCapabilityCheck.Check();
+            Console.WriteLine();
+            Console.WriteLine(verdict == null
+                ? "  the game's startup check: OK - it would run here"
+                : "  the game's startup check: REFUSES, and here is what it would say:");
+            if (verdict != null)
+            {
+                // (char)10 rather than an escape: the newlines in that message are plain LF.
+                foreach (string line in verdict.Split((char)10))
+                    Console.WriteLine("      " + line);
+            }
+#endif
         }
         catch (Exception ex)
         {

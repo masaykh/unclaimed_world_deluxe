@@ -161,6 +161,21 @@ public class UnclaimedWorld : Game
 		base.Window.Title = GameName;
 
 		base.Initialize();
+
+#if UW_GL
+		// PORT DEVIATION 19. The first point at which there IS a GL context to ask, and still
+		// before anything loads an effect. A driver too small for the character shader is fatal
+		// and unfixable (see GlCapabilityCheck), so say so here rather than let it crash on the
+		// first animated model with a message that names neither the shader nor the reason.
+		string glProblem = UWGame.Port.GlCapabilityCheck.Check();
+		if (glProblem != null)
+		{
+			LogError(glProblem, "This graphics driver cannot run the OpenGL build");
+			UWGame.Port.PlatformWindow.ShowErrorDialog(IntPtr.Zero, glProblem,
+				"This graphics driver cannot run the OpenGL build");
+			Exit();
+		}
+#endif
 	}
 
 	private void SetWindowSize(int width, int height)
