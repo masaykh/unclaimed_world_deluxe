@@ -92,13 +92,37 @@ for name in $EFFECTS; do
   # assigns from code - Billboard's LightColor, skinFX's Alpha and AlphaFactor - are nothing but
   # their initialiser. Zeroed, they draw the world as black silhouettes and every character
   # invisible.
-  DEFAULTS="$UW_GAME/Content/$name.xnb"
-  [ -f "$DEFAULTS" ] || DEFAULTS=""
+  # WHERE THE DEFAULTS COME FROM, and why it is not $tmpl even though that is the same effect.
+  #
+  # MgfxDefaults reads the reference with the V10 reader, and the shipped effect is v8 - hand it
+  # the pristine .xnb and it dies with "Unable to read beyond the end of the stream". So the
+  # reference has to be a TRANSCODED copy: same parameter table, same defaults, v10 container.
+  #
+  # tools/build/35-make-dx-effects.sh produces exactly that, for the DX archive, and it is the
+  # only copy in this repository that is both v10 and still carries the studio's initial values.
+  # $UW_GAME/Content is the old answer and still works IF an earlier step transcoded it in place.
+  #
+  # THIS USED TO FAIL SILENTLY, and that is the reason for the check below rather than a
+  # fallback. It read $UW_GAME/Content, which does not exist in a fresh checkout, and
+  # `|| DEFAULTS=""` turned the miss into a skip: the effects built, loaded, and passed every
+  # gate with every parameter default ZEROED. The paragraph above says what that costs - black
+  # silhouettes, invisible characters. Nothing reported it; contentprobe printing "NO parameter
+  # carries a non-zero initial value" for skinFX is what eventually gave it away.
+  DEFAULTS="$UW_REPO/artifacts/content/effects-dx/$name.xnb"
+  [ -f "$DEFAULTS" ] || DEFAULTS="$UW_GAME/Content/$name.xnb"
+  if [ ! -f "$DEFAULTS" ]; then
+    echo "  !! $name: no v10 effect to take parameter defaults from." >&2
+    echo "     sh tools/build/35-make-dx-effects.sh   (transcodes the shipped effects to v10)" >&2
+    failed=$((failed + 1))
+    continue
+  fi
 
   # NOT piped into sed - `set -e` takes a pipeline's status from its last command, so piping
   # would report success whatever inject did. (build/31 learned this the hard way: it printed
   # "19 built, 0 failed" through nineteen consecutive failures and wrote not one file.)
-  if "$TOOL" inject "$tmpl" "$OBJ/$name.ogl.mgfxo" "$OUT/$name.xnb" $DEFAULTS >"$OBJ/$name.inject.log" 2>&1; then
+  # $DEFAULTS QUOTED. Unquoted it was harmless only while it was always empty; with a real path
+  # in it, "C:\Program Files (x86)\..." word-splits and the tool answers "Unrecognised arguments".
+  if "$TOOL" inject "$tmpl" "$OBJ/$name.ogl.mgfxo" "$OUT/$name.xnb" "$DEFAULTS" >"$OBJ/$name.inject.log" 2>&1; then
     sed 's/^/  -> /' "$OBJ/$name.inject.log"
     built=$((built + 1))
   else

@@ -1,0 +1,343 @@
+diff --git a/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs b/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs
+index b429270..f967557 100644
+--- a/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs
++++ b/src/ShadowDusk.Compiler/Internal/CompilationPipeline.cs
+@@ -2210,6 +2210,16 @@ internal sealed class CompilationPipeline
+                     MonoGameGlslResult rewritten =
+                         MonoGameGlslRewriter.Rewrite(transpileResult.Value.Text, stage, samplerSlots);
+                     glslText = rewritten.Glsl;
++
++                    // Lower the GLSL-1.30+ constructs SPIRV-Cross emits that the versionless
++                    // MonoGame dialect cannot declare - unsigned index types, and the non-square
++                    // matrix a direction-transform compiles to. Both have exact equivalents here;
++                    // without this they compile only on permissive drivers and fail at
++                    // Effect-load time elsewhere, which SD0403 warns about and could not fix.
++                    // Runs BEFORE the portability analyzer, so a construct that was lowered no
++                    // longer warns and SD0403 keeps meaning "still unhandled".
++                    Glsl110LoweringResult lowered = Glsl110Lowering.Apply(glslText);
++                    glslText = lowered.Glsl;
+                     // The shader's uniform register layout — the pipeline builds the
+                     // per-shader {vs,ps}_uniforms_vec4 cbuffer record from THIS, so
+                     // the .mgfx offsets and the GLSL indices share one allocation
+diff --git a/src/ShadowDusk.GLSL/Glsl110Lowering.cs b/src/ShadowDusk.GLSL/Glsl110Lowering.cs
+new file mode 100644
+index 0000000..b18e347
+--- /dev/null
++++ b/src/ShadowDusk.GLSL/Glsl110Lowering.cs
+@@ -0,0 +1,316 @@
++#nullable enable
++
++using System.Text;
++
++namespace ShadowDusk.GLSL;
++
++/// <summary>
++/// Lowers the two GLSL-1.30+ constructs SPIRV-Cross emits that the versionless MonoGame GL
++/// dialect cannot declare, so the shader compiles on a strict front end instead of only on a
++/// permissive one.
++///
++/// <para>WHY THIS EXISTS. <see cref="GlslPortabilityAnalyzer"/> already reports both of these as
++/// SD0403 and says, correctly, that "no ShadowDusk lowering exists for this construct yet -
++/// restructure the shader to avoid it". Restructuring is not available to a consumer compiling
++/// someone else's shipped HLSL, and both constructs have an EXACT equivalent in the dialect that
++/// is already being emitted. So they are lowered rather than merely reported.</para>
++///
++/// <para>Found the hard way: a skinned-model vertex shader that loaded on NVIDIA and on a recent
++/// Intel driver, and failed at Effect-load time on an older one with MonoGame's generic
++/// "Failed to compile vertex shader &lt;unknown&gt;. See &lt;unknown&gt;." - which is all the
++/// diagnostic a consumer gets, because the GLSL info log never reaches the exception.</para>
++///
++/// <para>BOTH REWRITES ARE EXACT, not approximations. Neither changes what the shader computes on
++/// a driver that accepted the original; that is the bar for doing this silently rather than
++/// behind a switch.</para>
++/// </summary>
++public static class Glsl110Lowering
++{
++    /// <summary>
++    /// Applies every lowering to one rewritten stage and reports what it changed.
++    /// </summary>
++    /// <summary>The fixed-point cap. Nesting this deep does not occur; a runaway would.</summary>
++    private const int MaxPasses = 8;
++
++    public static Glsl110LoweringResult Apply(string glsl)
++    {
++        int uintCount = 0;
++        int matCount = 0;
++        string text = LowerUnsignedIndices(glsl, ref uintCount);
++
++        // TO A FIXED POINT, because the matrix rewrite copies the operand through verbatim and a
++        // nested constructor inside that operand would never be rescanned. Billboard's shadow
++        // vertex shader is exactly that shape - one mat3x4 whose operand contains another - and
++        // the first version of this pass lowered the outer one and shipped the inner one
++        // untouched, which is the same failure it was written to fix, one level down.
++        for (int pass = 0; pass < MaxPasses; pass++)
++        {
++            int before = matCount;
++            text = LowerNonSquareMatrixProducts(text, ref matCount);
++            if (matCount == before)
++                break;
++        }
++        return new Glsl110LoweringResult(text, uintCount, matCount);
++    }
++
++    /// <summary>
++    /// <c>uint x = uint(y);</c> becomes <c>int x = y;</c>, and any remaining <c>uint(</c> cast
++    /// becomes <c>int(</c>.
++    ///
++    /// <para>GLSL 1.10 has no unsigned type at all, so there is nothing to preserve the
++    /// unsignedness WITH - the choice is int or nothing. SPIRV-Cross emits these for array
++    /// subscripts: the skinned-model case is <c>uint _78 = uint(_74);</c> where <c>_74</c> is the
++    /// induction variable of <c>for (int _74 = 0; _74 &lt; 3; _74++)</c>, used immediately as
++    /// <c>_60[_78]</c>. An index is non-negative and far below 2^31, so int represents every
++    /// value the original could hold and the two agree on all of them.</para>
++    ///
++    /// <para>What this does NOT cover, deliberately: arithmetic that relies on unsigned WRAPPING,
++    /// or on the shift/division semantics that differ for negative operands. Those have no exact
++    /// int equivalent. They also do not appear in transpiled D3D9-era HLSL, which has no unsigned
++    /// type either - every uint here is SPIRV-Cross's own index bookkeeping.</para>
++    /// </summary>
++    private static string LowerUnsignedIndices(string glsl, ref int count)
++    {
++        var sb = new StringBuilder(glsl.Length);
++        int i = 0;
++        while (i < glsl.Length)
++        {
++            if (IsWordAt(glsl, i, "uint"))
++            {
++                sb.Append("int");
++                i += 4;
++                count++;
++                continue;
++            }
++            if (IsWordAt(glsl, i, "uvec"))
++            {
++                // uvec2/3/4 -> ivec2/3/4, for the same reason and with the same limits.
++                sb.Append("ivec");
++                i += 4;
++                count++;
++                continue;
++            }
++            sb.Append(glsl[i]);
++            i++;
++        }
++        return sb.ToString();
++    }
++
++    /// <summary>
++    /// <c>mat3x4(M[0], M[1], M[2]) * v</c> becomes <c>(M * vec4(v, 0.0))</c>.
++    ///
++    /// <para>GLSL 1.10 has only square matrices. SPIRV-Cross builds a non-square one to express
++    /// "transform a direction by the rotation part, dropping the translation" - which is what
++    /// HLSL's <c>mul(float3, float3x4)</c> compiles to, and what a skinning shader does to a
++    /// normal. The three arguments are the first three COLUMNS of a mat4 that the emitter
++    /// re-materialises in full for each one.</para>
++    ///
++    /// <para>The identity used: for a mat4 M and a vec3 v,
++    /// <c>mat3x4(M[0], M[1], M[2]) * v</c> = <c>v.x*M[0] + v.y*M[1] + v.z*M[2]</c> =
++    /// <c>M * vec4(v, 0.0)</c>, since the fourth column is multiplied by zero. Exact, not
++    /// approximate - the same floating-point operations in the same order the driver would have
++    /// chosen for either form.</para>
++    ///
++    /// <para>It is also a large size win, which is why the summary calls it a lowering and not a
++    /// workaround: the mat4 expression appears FOUR times in the original line (three columns
++    /// plus the operand's own copy) and once afterwards. The skinned-model statement is 2.5 KB
++    /// before and a quarter of that after.</para>
++    ///
++    /// <para>When the three columns do NOT share one source - Billboard's shadow vertex shader
++    /// takes its first from a different expression than the other two - the general form is
++    /// <c>mat4(c0, c1, c2, vec4(0.0)) * vec4(v, 0.0)</c>, which is term-for-term the same product
++    /// and still writes the operand once. Same identity, no collapse.</para>
++    ///
++    /// <para>Conservative about the SHAPE it accepts: three arguments, followed by
++    /// <c>* operand</c>. Anything else is left exactly as it was, to be reported by SD0403 as
++    /// before - a partial lowering that silently mangled an unrecognised form would be far worse
++    /// than one that declines.</para>
++    /// </summary>
++    private static string LowerNonSquareMatrixProducts(string glsl, ref int count)
++    {
++        var sb = new StringBuilder(glsl.Length);
++        int i = 0;
++        while (i < glsl.Length)
++        {
++            if (!IsWordAt(glsl, i, "mat3x4") || !AtOpenParen(glsl, i + 6, out int open))
++            {
++                sb.Append(glsl[i]);
++                i++;
++                continue;
++            }
++
++            int close = MatchingParen(glsl, open);
++            if (close < 0)
++            {
++                sb.Append(glsl[i]);
++                i++;
++                continue;
++            }
++
++            List<string>? args = SplitArguments(glsl, open + 1, close);
++            if (args is not { Count: 3 })
++            {
++                sb.Append(glsl[i]);
++                i++;
++                continue;
++            }
++            // Preferred form when the three columns are E[0], E[1], E[2]: the whole constructor
++            // collapses to E, which is where the size win comes from.
++            string? matrix = CommonColumnSource(args);
++
++            // The operand: the constructor must be followed by '*' and an expression, which is
++            // the only shape this identity holds for.
++            int after = SkipSpace(glsl, close + 1);
++            if (after >= glsl.Length || glsl[after] != '*')
++            {
++                sb.Append(glsl[i]);
++                i++;
++                continue;
++            }
++            int operandStart = SkipSpace(glsl, after + 1);
++            int operandEnd = OperandEnd(glsl, operandStart);
++            if (operandEnd <= operandStart)
++            {
++                sb.Append(glsl[i]);
++                i++;
++                continue;
++            }
++
++            string operand = glsl[operandStart..operandEnd];
++            if (matrix != null)
++            {
++                sb.Append('(').Append(matrix).Append(" * vec4(").Append(operand).Append(", 0.0))");
++            }
++            else
++            {
++                // The general form, for columns that do NOT share one source - Billboard's
++                // shadow vertex shader takes its first column from a different expression than
++                // the other two. A fourth column of zeroes makes a legal mat4 whose product with
++                // vec4(v, 0.0) is term-for-term the mat3x4 product, and the operand is still
++                // written once, which matters when it is a 400-character expression.
++                sb.Append("(mat4(")
++                  .Append(args[0].Trim()).Append(", ")
++                  .Append(args[1].Trim()).Append(", ")
++                  .Append(args[2].Trim()).Append(", vec4(0.0)) * vec4(")
++                  .Append(operand).Append(", 0.0))");
++            }
++            i = operandEnd;
++            count++;
++        }
++        return sb.ToString();
++    }
++
++    /// <summary>
++    /// The E shared by arguments of the form <c>E[0]</c>, <c>E[1]</c>, <c>E[2]</c> in that order,
++    /// or null when they are not that shape. Character-identical is the test: these come from one
++    /// emitter re-printing the same expression, so anything subtler would be inventing a
++    /// requirement rather than meeting one.
++    /// </summary>
++    private static string? CommonColumnSource(List<string> args)
++    {
++        string? shared = null;
++        for (int c = 0; c < 3; c++)
++        {
++            string arg = args[c].Trim();
++            string suffix = "[" + c + "]";
++            if (!arg.EndsWith(suffix, StringComparison.Ordinal))
++                return null;
++            string body = arg[..^suffix.Length].TrimEnd();
++            if (body.Length == 0)
++                return null;
++            if (shared == null)
++                shared = body;
++            else if (!string.Equals(shared, body, StringComparison.Ordinal))
++                return null;
++        }
++        return shared;
++    }
++
++    /// <summary>The arguments between two parentheses, split on top-level commas.</summary>
++    private static List<string>? SplitArguments(string s, int start, int close)
++    {
++        var args = new List<string>();
++        int depth = 0;
++        int from = start;
++        for (int i = start; i < close; i++)
++        {
++            char c = s[i];
++            if (c is '(' or '[') depth++;
++            else if (c is ')' or ']') depth--;
++            else if (c == ',' && depth == 0)
++            {
++                args.Add(s[from..i]);
++                from = i + 1;
++            }
++            if (depth < 0) return null;
++        }
++        args.Add(s[from..close]);
++        return args;
++    }
++
++    /// <summary>
++    /// Where the operand of the <c>*</c> ends: a balanced primary expression plus any trailing
++    /// member/subscript, stopping at the first top-level operator or delimiter. Deliberately
++    /// narrow - it has to cover <c>vs_v1.xyz</c> and <c>(expr)</c> and nothing clever, because
++    /// taking too much would silently change precedence.
++    /// </summary>
++    private static int OperandEnd(string s, int start)
++    {
++        int i = start;
++        int depth = 0;
++        while (i < s.Length)
++        {
++            char c = s[i];
++            if (c is '(' or '[') { depth++; i++; continue; }
++            if (c is ')' or ']')
++            {
++                if (depth == 0) break;
++                depth--; i++; continue;
++            }
++            if (depth == 0 && (c is ',' or ';' or '*' or '/' or '+' or '-')) break;
++            i++;
++        }
++        return i;
++    }
++
++    private static bool IsWordAt(string s, int i, string word)
++    {
++        if (i + word.Length > s.Length) return false;
++        if (string.CompareOrdinal(s, i, word, 0, word.Length) != 0) return false;
++        if (i > 0 && (char.IsLetterOrDigit(s[i - 1]) || s[i - 1] == '_')) return false;
++        int after = i + word.Length;
++        // "uint" must not match the "uint" inside "uintBitsToFloat"; "mat3x4" is complete as-is.
++        if (after < s.Length && (char.IsLetterOrDigit(s[after]) || s[after] == '_')) return false;
++        return true;
++    }
++
++    private static bool AtOpenParen(string s, int i, out int open)
++    {
++        open = SkipSpace(s, i);
++        return open < s.Length && s[open] == '(';
++    }
++
++    private static int SkipSpace(string s, int i)
++    {
++        while (i < s.Length && char.IsWhiteSpace(s[i])) i++;
++        return i;
++    }
++
++    private static int MatchingParen(string s, int open)
++    {
++        int depth = 0;
++        for (int i = open; i < s.Length; i++)
++        {
++            if (s[i] == '(') depth++;
++            else if (s[i] == ')' && --depth == 0) return i;
++        }
++        return -1;
++    }
++}
++
++/// <summary>What <see cref="Glsl110Lowering.Apply"/> did, for the pipeline's diagnostics.</summary>
++public readonly record struct Glsl110LoweringResult(string Glsl, int UnsignedLowered, int MatrixLowered)
++{
++    /// <summary>Whether anything was rewritten.</summary>
++    public bool Changed => UnsignedLowered > 0 || MatrixLowered > 0;
++}

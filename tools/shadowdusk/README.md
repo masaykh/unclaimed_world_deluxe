@@ -6,7 +6,7 @@ effect compiler for an FNA target (which lives on the porting tree's `fna-backen
 not here). Base commit: `e4b1c878`
 (2026-09-11).
 
-They live on the `uw-patches` branch of <https://github.com/masaykh/ShadowDusk> as six commits,
+They live on the `uw-patches` branch of <https://github.com/masaykh/ShadowDusk> as seven commits,
 one per patch, each written to stand alone as an upstream pull request. **They belong upstream** —
 none of them is specific to this game. The include-ordering one (04) breaks any shader split
 across `.fxh` headers; the integer-uniform one (03b) fixes a diagnostic that prescribes the wrong
@@ -87,6 +87,37 @@ purpose, and re-run `tools/build/34-build-gl-effects-shadowdusk.sh` plus the ren
 Building by hand instead: ShadowDusk multi-targets `net8.0;net10.0`, so with only the .NET 8 SDK
 installed you must pass **both** `-f net8.0` and `-p:TargetFrameworks=net8.0` — `-f` alone still
 restores net10.0 and fails.
+
+### 07 - lower the GLSL 1.30+ constructs instead of only warning about them
+
+SPIRV-Cross emits GLSL 1.40; the rewriter strips the `#version` line, so the output is the
+versionless dialect MonoGame uses. `GlslPortabilityAnalyzer` already spots the constructs that
+survive that and cannot be declared in it — **SD0403** — and says, correctly, that "no ShadowDusk
+lowering exists for this construct yet; restructure the shader to avoid it". Restructuring is not
+available to anyone compiling a studio's shipped HLSL.
+
+Two of them have exact equivalents, so this lowers them:
+
+| construct | becomes | why it is exact |
+|---|---|---|
+| `uint` / `uvec`*n* | `int` / `ivec`*n* | GLSL 1.10 has no unsigned type. Every one of these is SPIRV-Cross's own array-index bookkeeping — D3D9-era HLSL has no unsigned type either — and an index is non-negative and far below 2³¹ |
+| `mat3x4(M[0], M[1], M[2]) * v` | `M * vec4(v, 0.0)` | the fourth column is multiplied by zero, so the two products are term-for-term identical. Columns from different sources use `mat4(c0, c1, c2, vec4(0.0))` instead |
+
+The matrix one is also a large size win, because the emitter re-materialises the whole `mat4`
+expression once per column: **skinFX's compiled bytecode drops from 75,243 to 55,741 bytes.**
+
+It runs to a **fixed point**. The rewrite copies the operand through verbatim, and a nested
+constructor inside that operand would never be rescanned — Billboard's shadow vertex shader is
+exactly that shape, and the first version lowered the outer one and shipped the inner one
+untouched, which is the same failure one level down.
+
+What is left after it: `transpose()` in one Vehicle vertex shader. That one needs a helper
+function emitted into the prologue rather than an expression rewrite.
+
+This is the patch that matters most in the field. An effect that uses these loads on NVIDIA and
+on recent Intel drivers and is rejected at Effect-load time on older ones, where MonoGame's only
+message is `Failed to compile vertex shader <unknown>. See <unknown>.` — the GLSL info log never
+reaches the exception.
 
 Patch 01 is for the **FNA** target; 02–06 are for the **MonoGame OpenGL** target, where the open
 question is whether ShadowDusk can replace `mgfxc` outright — which would give cross-platform
