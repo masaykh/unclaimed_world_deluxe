@@ -1,4 +1,5 @@
 using UWGame.SimSide.AI.Goals;
+using UWGame.SimSide.Allegiances;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Body;
 using UWGame.SimSide.Jobs;
@@ -144,6 +145,25 @@ public static class SelfPreservationMod
         // EntityType.Person is what the game itself uses to decide who counts as one of the
         // colony's people - Allegiance.Persons is filled from exactly this test.
         if (entity.EntityType?.Person != null)
+        {
+            return false;
+        }
+
+        // AND IT MUST BE THE COLONY'S ANIMAL. Without this line the rule reached the whole
+        // wildlife simulation, which is a far larger thing than it was asked to be.
+        //
+        // GoalThink gives EvaluateAttackJobs to EVERY entity whose IntelligenceType.CanAttack is
+        // not false, each against its OWN allegiance's threat jobs - so a Heapjaw, a Twinkler and
+        // a predator all evaluate threats exactly the way a colony dog does. "Not a person, and
+        // no person already on the job" is true of every one of them, permanently, because no
+        // person is ever on a wild allegiance's jobs. With animalsNeedCompany on by default, wild
+        // predators quietly stopped responding to threats.
+        //
+        // Kastuk and tripleacoder both caught it by reading - "I assume Twinklers is pretty
+        // intelligent", "any entity with attacking job will need a caretaker then?" - and
+        // tripleacoder's suggestion was to select the dog specifically. AllegianceType is the
+        // game's own version of that distinction and does not need a list of entity keys.
+        if (entity.Intelligence.Allegiance?.AllegianceType != AllegianceType.Player)
         {
             return false;
         }

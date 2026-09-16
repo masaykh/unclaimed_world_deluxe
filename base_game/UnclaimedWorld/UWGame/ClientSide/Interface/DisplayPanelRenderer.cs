@@ -87,7 +87,29 @@ public class DisplayPanelRenderer
 		CRTPanels.Add(Level.MessageBox, new List<CRTScreen>());
 		device = game.GraphicsDevice;
 		PresentationParameters presentationParameters = device.PresentationParameters;
-		DisplayPanelContentRenderTarget = new RenderTarget2D(device, presentationParameters.BackBufferWidth, presentationParameters.BackBufferHeight, mipMap: false, presentationParameters.BackBufferFormat, presentationParameters.DepthStencilFormat);
+		// PORT FIX. Sized from DrawArea, not the back buffer.
+		//
+		// The two are the same size at magnification 1 and ABOVE, which is every configuration the
+		// studio shipped - Controller clamped the factor to a floor of 1. Below it, the game
+		// renders LARGER than the window and scales down, so DrawArea is backBuffer / ZoomFactor
+		// and this target was too small for the interface being drawn into it. Everything laid out
+		// past BackBufferWidth had no pixels: the right-hand panels and the minimap came out
+		// black while staying clickable, because the LAYOUT was using DrawArea correctly and only
+		// the target was not.
+		//
+		// Reported by Kastuk against magnification 0.7 and then 0.75, and precise about it in a way
+		// that named the file: "only specific elements of UI become darkened, like these
+		// clipboard-designed windows of Settings, Briefing, Production and others on the right
+		// side of ingame ui. And minimap somehow." Those ARE the display panels; the world looked
+		// right because GameWorldRenderer sizes its own targets from DrawArea already.
+		//
+		// Magnification below 1 is UWGame.Mods.MagnificationMod, so this is a port fix serving a
+		// mod's feature - but the bug is in the game's own renderer, it is a no-op wherever the
+		// studio's clamp applied, and a mod cannot reach a render target created in a constructor.
+		Dimension drawArea = game.Controller.DrawArea;
+		int targetWidth = System.Math.Max(drawArea.Width, presentationParameters.BackBufferWidth);
+		int targetHeight = System.Math.Max(drawArea.Height, presentationParameters.BackBufferHeight);
+		DisplayPanelContentRenderTarget = new RenderTarget2D(device, targetWidth, targetHeight, mipMap: false, presentationParameters.BackBufferFormat, presentationParameters.DepthStencilFormat);
 	}
 
 	public void Destroy()
