@@ -47,7 +47,14 @@ public class Snapshotter
 		/// still pass Original still write Original, and a file written by an older build still
 		/// reads because the new field is guarded by a comparison against the version READ.
 		/// </summary>
-		ModsRecorded = 2u
+		ModsRecorded = 2u,
+		/// <summary>
+		/// RandomGenerator gained the number of internal samples it has drawn, so that loading a
+		/// save RESUMES the random stream instead of restarting it. Without this the generator was
+		/// rebuilt from its original seed on every load and replayed numbers it had already used -
+		/// see the comment on RandomGenerator.DoSnapshot.
+		/// </summary>
+		RandomStreamPosition = 3u
 	}
 
 	public struct TypeInformation

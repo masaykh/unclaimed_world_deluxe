@@ -6,7 +6,7 @@
 # own data loader headlessly through tools/DataExport, and asserts the patch actually changed the
 # data the game would run with.
 #
-# Twelve cases, and most of them are failure behaviour, because a modding framework is judged on
+# Thirteen cases, and most of them are failure behaviour, because a modding framework is judged on
 # that more than on its happy path:
 #
 #   1. the mod loads and its patch takes effect
@@ -20,6 +20,7 @@
 #  10. a fishing net can be made from rawhide string, which nothing else in the game consumes
 #  11. the five per-request mods register their switches, and the diet one changes the tables
 #  12. disassembly recipes are generated from the production recipes, linked, and switchable
+#  13. a seeded random stream resumes where it left off - the save/load assumption
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -504,6 +505,26 @@ echo "$report" | grep -q "^==> disassembly: 0 recipe" \
   && pass "switch off: nothing is generated and the tables are the studio's" \
   || { echo "$report" | grep '^==> disassembly'; fail "the switch did not suppress the generator"; }
 
+# ------------------------------------------------ 13. the random stream can be resumed
+#
+# Not about the mod loader, and here because this is the only gate that runs dataexport. It
+# checks an assumption about the RUNTIME that RandomGenerator's save/load resume is built on: a
+# seeded System.Random stream can be fast-forwarded by drawing and discarding, and the count to
+# draw is of VALUES, not of method calls - NextBytes consumes one per byte, and the game asks it
+# for 512 at a time once per colonist.
+#
+# If .NET ever changes that, every save written afterwards resumes in the wrong place and nothing
+# else would notice: a desynchronised random stream does not throw, it just quietly stops being
+# the same game.
+say "==> 13. a seeded random stream resumes where it left off"
+out=$( cd "$(new_install case13)" && "$EXPORT" . --random-selftest 2>&1 ) || true
+if echo "$out" | grep -q "the resume mechanism holds on this runtime"; then
+  pass "$(echo "$out" | grep -c "^  ok") assumption(s) hold"
+else
+  echo "$out" | sed "s/^/      /"
+  fail "the save/load random resume cannot work on this runtime"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -518,7 +539,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 12/12 cases passed."
+  say "mod loader OK - 13/13 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

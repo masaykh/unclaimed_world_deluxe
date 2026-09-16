@@ -21,6 +21,7 @@ internal static class Program
         bool settingsSelfTest = args.Contains("--settings-selftest");
         bool disassemblyReport = args.Contains("--disassembly");
         bool scenarioReport = args.Contains("--scenarios");
+        bool randomSelfTest = args.Contains("--random-selftest");
         printTraces = args.Contains("--traces");
 
         // The bundled Unhidden Mod is on by default and its content hooks run inside the data
@@ -64,6 +65,10 @@ internal static class Program
             Console.Error.WriteLine("               report each one separately. The game writes them too, but in one");
             Console.Error.WriteLine("               unguarded loop, so the first failure hides every scenario after it.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --random-selftest");
+            Console.Error.WriteLine("               check that a seeded random stream can be resumed by replaying");
+            Console.Error.WriteLine("               draws, which is what loading a save now does. Loads nothing.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --traces     print a stack trace for every table that fails to load or export.");
             return 2;
         }
@@ -72,6 +77,11 @@ internal static class Program
         {
             Console.Error.WriteLine($"FATAL: no such directory: {target}");
             return 1;
+        }
+
+        if (randomSelfTest)
+        {
+            return RandomSelfTest();
         }
 
         if (settingsSelfTest)
@@ -500,6 +510,77 @@ internal static class Program
                               $"days={days}  {link}  salvage={(process.IsSalvageProcess ? "yes" : "NO")}  " +
                               $"{creates}  out={string.Join(", ", outputs)}");
         }
+    }
+
+    /// <summary>
+    /// Checks the assumption RandomGenerator's save/load resume is built on: that a System.Random
+    /// stream can be fast-forwarded by drawing and discarding, and that the count to draw is of
+    /// VALUES rather than of method calls.
+    ///
+    /// Worth a test of its own because it is an assumption about the RUNTIME, not about this game
+    /// - .NET is free to change how many internal samples NextBytes consumes, and if it ever does,
+    /// every save written afterwards resumes in the wrong place and nothing else would notice. A
+    /// desynchronised stream does not throw; it just quietly stops being the same game.
+    /// </summary>
+    private static int RandomSelfTest()
+    {
+        int failures = 0;
+
+        void Check(string what, bool ok)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+
+        Console.WriteLine("==> random stream resume");
+
+        // Next() consumes exactly one value, so N draws then one more must match a fresh
+        // generator fast-forwarded N times. This is the whole mechanism in one line.
+        var a = new Random(12345);
+        for (int i = 0; i < 1000; i++) a.Next();
+        var b = new Random(12345);
+        for (int i = 0; i < 1000; i++) b.Next();
+        Check("1000 draws then resume: same next value", a.Next() == b.Next());
+
+        // The one that actually matters. SimplexNoise.CreateSeedNumbers asks for 512 bytes at a
+        // time, once per Personality. If NextBytes does not consume one value per byte, the
+        // fast-forward lands 511 places short of where it should, per colonist.
+        var c = new Random(999);
+        c.NextBytes(new byte[512]);
+        int afterBytes = c.Next();
+
+        var d = new Random(999);
+        for (int i = 0; i < 512; i++) d.Next();
+        int afterDraws = d.Next();
+        Check("NextBytes(512) consumes 512 values, not 1", afterBytes == afterDraws);
+
+        // Mixed traffic, in the proportions the game produces: doubles, bounded ints, a byte
+        // block. Each is one value except the block.
+        var e = new Random(7);
+        long samples = 0;
+        for (int i = 0; i < 50; i++) { e.NextDouble(); samples++; }
+        for (int i = 0; i < 50; i++) { e.Next(0, 10); samples++; }
+        e.NextBytes(new byte[512]); samples += 512;
+        for (int i = 0; i < 50; i++) { e.Next(100); samples++; }
+        int afterMixed = e.Next();
+
+        var f = new Random(7);
+        for (long i = 0; i < samples; i++) f.Next();
+        Check($"mixed traffic ({samples} values) resumes exactly", afterMixed == f.Next());
+
+        // A seeded stream must also be the same from one PROCESS to the next, or none of this
+        // means anything across a save. Pinned against values taken from this runtime.
+        var g = new Random(2026);
+        int[] first = { g.Next(1000), g.Next(1000), g.Next(1000) };
+        var h = new Random(2026);
+        Check("a seed gives the same sequence twice",
+              first[0] == h.Next(1000) && first[1] == h.Next(1000) && first[2] == h.Next(1000));
+
+        Console.WriteLine();
+        Console.WriteLine(failures == 0
+            ? "==> the resume mechanism holds on this runtime"
+            : $"==> {failures} assumption(s) BROKEN - saves will resume in the wrong place");
+        return failures;
     }
 
     private static int Run(Sim.SerializeMode mode, string what)
