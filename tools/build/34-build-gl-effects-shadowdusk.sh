@@ -36,6 +36,22 @@ SRCDIR=assets/effects
 OUT=artifacts/content/effects-gl
 OBJ=artifacts/obj/gl-effects-sd
 
+
+if [ ! -d "$UW_GAME/Content" ]; then
+  echo "FATAL: no such content directory: $UW_GAME/Content" >&2
+    # THE ONE THAT ACTUALLY HAPPENS. A player set UW_STEAM in their shell WITHOUT export, saw
+    # `ls $UW_STEAM/` list the folder perfectly, and got "/Content" here - because a shell
+    # variable is not an environment variable and `sh script` is a child process. They edited the
+    # script to get past it. The old message printed "/Content" and left them to work that out.
+    echo >&2
+    echo "  UW_GAME is empty, or not existed." >&2
+    echo "  It has to be EXPORTED - a plain assignment is not visible to this script:" >&2
+    echo >&2
+    echo "      export UW_GAME=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
+  fi
+  exit 1
+fi
+
 # The XNB CONTAINER to reuse, and the source of truth for every parameter's INITIAL VALUE. Both
 # come from a copy of the game, because both are compiled content and neither is in this
 # repository. UW_TEMPLATES lets a checkout that HAS a pristine snapshot use it instead.
