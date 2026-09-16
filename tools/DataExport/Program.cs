@@ -103,6 +103,7 @@ internal static class Program
         UWGame.Mods.MagnificationMod.RegisterSettings();
         UWGame.Mods.BalancedDietMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
+        UWGame.Mods.DebugMod.RegisterSettings();
         if (UWGame.Mods.UnhiddenMod.Enabled)
         {
             UWGame.Mods.UnhiddenMod.RegisterSettings();

@@ -331,6 +331,36 @@ d=$(new_install case11d); write_setting "$d" selfpreservation.unorderedThreats n
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "a bad choice value stopped the data load"; }
 pass "an unrecognised choice value does not stop the load"
 
+# The debug overlays are the only switches here that default to OFF, so the loop above cannot
+# test them: it writes false, which IS their default, and dataexport prints only what differs
+# from default. Written true instead - which is also the direction that matters, since an overlay
+# nobody can turn ON is the whole failure mode.
+for id in debug.overlayJobs debug.overlayRanges; do
+  d=$(new_install "case11${id#debug.}"); write_setting "$d" "$id" true
+  out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+  if echo "$out" | grep -q "$id = true"; then
+    pass "$id is registered and reads from the file"
+  else
+    fail "$id did not reach the registry (dataexport did not report it)"
+  fi
+done
+
+# The debug mod's test-scenario picker is a TEXT setting, so the toggle loop above cannot carry
+# it. Two things worth pinning, and the second is the whole reason the setting exists: a name the
+# game knows is kept, and one it does not must not stop the load.
+d=$(new_install case11e); write_setting "$d" debug.testScenario FightTest
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+if echo "$out" | grep -q "debug.testScenario = FightTest"; then
+  pass "debug.testScenario carries a real scenario name through"
+else
+  echo "$out" | grep -i testScenario | sed 's/^/      /'
+  fail "debug.testScenario did not reach the registry"
+fi
+
+d=$(new_install case11f); write_setting "$d" debug.testScenario NoSuchScenario
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "a bad scenario name stopped the data load"; }
+pass "an unknown scenario name does not stop the load"
+
 # The diet mod is the only one of the five whose effect is in the exported tables, so it is the
 # only one that can be checked offline rather than merely observed to exist.
 d=$(new_install case11b)

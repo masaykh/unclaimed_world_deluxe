@@ -990,6 +990,11 @@ public class Client : GameScreen
 		{
 			return;
 		}
+		// MOD: the developer overlays are read from Kensei.Dev.Options, which nothing in the
+		// shipped game ever wrote to - Client.InitDeveloperDialog, the only thing that would
+		// have, has no callers. This is what writes to it. It compares a composite of the
+		// switches and returns immediately unless one moved.
+		UWGame.Mods.DebugMod.ApplyOverlays();
 		bool limitFramerateWhenPaused = base.Controller.Options.LimitFramerateWhenPaused;
 		if (base.IsActive)
 		{

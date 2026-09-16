@@ -131,6 +131,17 @@ public class PlaceGameEntities
 
 	private static DebugScenarios GetDefaultScenario()
 	{
+		// MOD: which of the 94 prepared situations the main menu's TEST button loads.
+		//
+		// This was a bare `return DebugScenarios.TwinklerEatTest;` - so the button worked
+		// perfectly and always started the same scenario, which places a Twinkler and no colony.
+		// Reported as "it not load player-controlled entities and map is black"; the button was
+		// never broken, it just had one destination.
+		string name = UWGame.Mods.DebugMod.TestScenarioName("TwinklerEatTest");
+		if (Enum.TryParse<DebugScenarios>(name, ignoreCase: true, out var chosen))
+		{
+			return chosen;
+		}
 		return DebugScenarios.TwinklerEatTest;
 	}
 
