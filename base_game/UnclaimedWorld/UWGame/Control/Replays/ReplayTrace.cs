@@ -290,6 +290,7 @@ public sealed class ReplayTrace : IDisposable
             sb.AppendLine("representative entity's X and Y, the camera's X and Y, and the");
             sb.AppendLine("simulation's own clock in days.");
             sb.AppendLine();
+            DescribeDrawDifference(sb, expected, actual);
             sb.AppendLine("Read it like this:");
             sb.AppendLine("  draws differ      - the simulation asked for randomness a different");
             sb.AppendLine("                      number of times. A different decision was taken.");
@@ -307,7 +308,29 @@ public sealed class ReplayTrace : IDisposable
             sb.AppendLine("                      arithmetic. THIS is the floating-point case, and");
             sb.AppendLine("                      it is the only one of the four that is.");
             sb.AppendLine();
-            sb.AppendLine($"The last {RingSize} draw labels before the break, oldest first:");
+            sb.AppendLine($"The last {RingSize} draw labels before the break, by call site:");
+            var counts = new System.Collections.Generic.Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < RingSize; i++)
+            {
+                string label = ring[(ringNext + i) % RingSize];
+                if (string.IsNullOrEmpty(label))
+                {
+                    continue;
+                }
+                counts.TryGetValue(label, out int n);
+                counts[label] = n + 1;
+            }
+            var ordered = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, int>>(counts);
+            ordered.Sort((x, y) => y.Value != x.Value
+                ? y.Value.CompareTo(x.Value)
+                : string.CompareOrdinal(x.Key, y.Key));
+            foreach (var entry in ordered)
+            {
+                sb.Append("    ").Append(entry.Value.ToString(CultureInfo.InvariantCulture).PadLeft(4))
+                  .Append("  ").AppendLine(entry.Key);
+            }
+            sb.AppendLine();
+            sb.AppendLine("And in the order they happened, oldest first:");
             for (int i = 0; i < RingSize; i++)
             {
                 string label = ring[(ringNext + i) % RingSize];
@@ -379,6 +402,43 @@ public sealed class ReplayTrace : IDisposable
         {
             // Reporting must never be the thing that takes the run down.
         }
+    }
+
+    /// <summary>
+    /// Says in one line how many extra draws this frame made, when that is what differed.
+    ///
+    /// The count was already in the two lines above, and reading it off them meant subtracting
+    /// two six-digit numbers by eye. "3104 more" is the size of the thing that ran, and the size
+    /// is what says whether it is one decision taken differently or a whole population being
+    /// created.
+    /// </summary>
+    private static void DescribeDrawDifference(StringBuilder sb, string expected, string actual)
+    {
+        string[] e = expected == null ? null : expected.Split('\t');
+        string[] a = actual == null ? null : actual.Split('\t');
+        if (e == null || a == null || e.Length < 2 || a.Length < 2)
+        {
+            return;
+        }
+        if (!long.TryParse(e[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out long was)
+            || !long.TryParse(a[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out long now))
+        {
+            return;
+        }
+        if (was == now)
+        {
+            sb.AppendLine("The draw COUNT is the same on both sides.");
+        }
+        else
+        {
+            long diff = now - was;
+            sb.Append("This run made ").Append(Math.Abs(diff).ToString(CultureInfo.InvariantCulture))
+              .Append(diff > 0 ? " MORE" : " FEWER").AppendLine(" draws than the recording by this");
+            sb.AppendLine("frame. A number in the thousands is a bulk of work - a population being");
+            sb.AppendLine("created, a map being seeded - landing on a different frame, not one");
+            sb.AppendLine("decision going the other way.");
+        }
+        sb.AppendLine();
     }
 
     private static string Format(float value)
