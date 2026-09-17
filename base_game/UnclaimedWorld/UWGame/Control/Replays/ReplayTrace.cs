@@ -272,6 +272,16 @@ public sealed class ReplayTrace : IDisposable
         {
             var sb = new StringBuilder();
             sb.AppendLine("The replay diverged from what was recorded.").AppendLine();
+            if (frameIndex == 0)
+            {
+                sb.AppendLine("ON FRAME ZERO, which is not drift of any kind. The replay's first");
+                sb.AppendLine("frame is meant to be the scenario as it starts, the same as the");
+                sb.AppendLine("recording's first frame. If the clocks below are far apart, the");
+                sb.AppendLine("world this replay ran on was NOT rebuilt from GameParams.xml - it");
+                sb.AppendLine("was the previous game's world, already hours further on. Check");
+                sb.AppendLine("Errors.txt for 'Stale Sim reused'.");
+                sb.AppendLine();
+            }
             sb.AppendLine($"    frame     {frameIndex}");
             sb.AppendLine($"    recorded  {expected}");
             sb.AppendLine($"    this run  {actual}");

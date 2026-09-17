@@ -334,6 +334,24 @@ public class LoadingScreen : GameScreen
 				base.Controller.SaveScenarioForReplay(startGameParams);
 				The.Sim = new Sim(base.Controller, startGameParams, randomSeed);
 			}
+			else
+			{
+				// PORT DIAGNOSTIC. A Sim that survived the last game is reused here rather than
+				// rebuilt - and then it is not the scenario's world that is played, it is the
+				// previous one, clock and all. A replay loaded onto a reused Sim compares its
+				// first frame against a world that is already hours further on, which reads as a
+				// divergence on frame 0 with the clocks far apart. Sim.ClearData nulls this in
+				// Sim.Destroy, so reaching here at all means the game screen was not destroyed.
+				GameStateManagement.UnclaimedWorld.LogError(
+					"A Sim from the previous game was still alive when this one started, so the "
+					+ "world was NOT rebuilt. Its clock reads "
+					+ (The.Sim.DateAndTime == null
+						? "-"
+						: The.Sim.DateAndTime.CurrentTimeDateYear.TotalDays.ToString(
+							"R", System.Globalization.CultureInfo.InvariantCulture))
+					+ " days. Sim.Destroy did not run on the screen that was left.",
+					"Stale Sim reused");
+			}
 			if (The.Sim.QueueGameDataAndSimInit())
 			{
 				The.LoadScreen.Progress("ClientConstructor...", 140);

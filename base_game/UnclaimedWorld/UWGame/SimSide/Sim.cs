@@ -1214,6 +1214,8 @@ public class Sim : GameScreen, ISnapshot
 				+ "    debug scenario   " + scenario + System.Environment.NewLine
 				+ "    map              " + map + System.Environment.NewLine
 				+ "    colonists placed " + persons + "   (allegiance members " + members + ")"
+				+ System.Environment.NewLine
+				+ "    sim clock        " + (DateAndTime == null ? "-" : DateAndTime.CurrentTimeDateYear.TotalDays.ToString("R", System.Globalization.CultureInfo.InvariantCulture))
 				+ System.Environment.NewLine + System.Environment.NewLine
 				+ "Edit means the map editor or the TEST MAP button: a raw map, no colonists."
 				+ System.Environment.NewLine
