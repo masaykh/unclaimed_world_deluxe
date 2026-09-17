@@ -123,19 +123,45 @@ jobs:
             -c Release -p:UwPlatform=GL -warnaserror
 
       # Compiling is not the claim. The claim is that the mods' content is NOT IN THE ASSEMBLY -
-      # "I did not install that" meaning the code is absent rather than switched off. Two literals
-      # that exist only inside a gameplay mod, and one of the studio's own for a control: if the
-      # control ever goes missing too, this test has stopped testing anything.
+      # "I did not install that" meaning the code is absent rather than switched off.
+      #
+      # SEARCHED AS UTF-16, which is the whole correctness of this step. A C# string literal lands
+      # in the assembly's #US heap as UTF-16, so `grep -a "_disassemble"` finds nothing WHETHER OR
+      # NOT the mod is compiled in - and this check duly passed for weeks while proving exactly
+      # nothing. The control string hid it: "Salvage" happens to appear as ASCII in the metadata
+      # too, so the one line meant to catch a vacuous check was the one line that was not vacuous.
+      #
+      # Verified to discriminate: with mods the three markers are present and without them they
+      # are absent, while the control is present in both.
       - name: The mods are not in the assembly
         run: |
-          dll=artifacts/bin/UnclaimedWorld/release_gl/UnclaimedWorld.dll
-          test -f "$dll" || { echo "no assembly at $dll"; exit 1; }
-          rc=0
-          for s in "_disassemble" "The interface is laid out for at least"; do
-            if grep -qa "$s" "$dll"; then echo "STILL PRESENT: $s"; rc=1; else echo "absent: $s"; fi
-          done
-          grep -qa "Salvage" "$dll" || { echo "the studio's own strings are gone too - this check is not checking"; rc=1; }
-          exit $rc
+          python3 - <<'PY'
+          import sys
+          dll = "artifacts/bin/UnclaimedWorld/release_gl/UnclaimedWorld.dll"
+          blob = open(dll, "rb").read()
+
+          def present(s):
+              return s.encode("utf-16-le") in blob
+
+          bad = 0
+          # Strings that exist ONLY inside a gameplay mod.
+          for s in ["_disassemble",
+                    "The interface is laid out for at least",
+                    "WRITE A STATE DUMP"]:
+              if present(s):
+                  print("STILL PRESENT: " + s); bad = 1
+              else:
+                  print("absent: " + s)
+
+          # A string of the studio's own, to prove the search works at all. Without this a typo in
+          # the encoding turns the whole step into a pass.
+          if not present("Salvaging"):
+              print("the studio's own strings are gone too - this check is not checking"); bad = 1
+          else:
+              print("control present: Salvaging")
+
+          sys.exit(bad)
+          PY
 
   cross-publish:
     needs: build
