@@ -358,9 +358,23 @@ public class Controller : DrawableGameComponent
 			{
 				flag = true;
 			}
+			// PORT DEVIATION 20. The comparison above is the studio's and it works. What it did
+			// with the answer was throw "Sim and recorded data have diverged." - no frame, no
+			// count, nothing about WHAT diverged - and take the game down with it. That is a
+			// message you can only act on by already knowing the answer.
+			//
+			// The trace writes Divergence.txt first: the frame, the number of random draws, a hash
+			// of the draw-label sequence and the last sixty-four labels. Then the throw still
+			// happens, because a silently wrong replay is worse than a stopped one - but now
+			// there is something beside it to read.
+			if (!replayer.CompareFrame(replayer.CurrentReplay.currentFrameIndex, replayVerificationData))
+			{
+				flag = true;
+			}
 			if (flag)
 			{
-				throw new Exception("Sim and recorded data have diverged.");
+				throw new Exception("Sim and recorded data have diverged. See Divergence.txt "
+					+ "in the replay folder for the frame and the draws around it.");
 			}
 		}
 	}
@@ -369,8 +383,22 @@ public class Controller : DrawableGameComponent
 	{
 	}
 
+	/// <summary>
+	/// One random draw, by the label its call site passed. PORT DEVIATION 20: this was an empty
+	/// method, and every RandomGenerator method in the game has been calling it - with a label
+	/// naming the call site - since the studio wrote them. Recording one side and comparing the
+	/// other is the whole of what makes a divergence locatable.
+	/// </summary>
 	public void SaveOrVerifyRandomGet(string getMessage)
 	{
+		if (recorder.isRecording)
+		{
+			recorder.SaveRandomGet(getMessage);
+		}
+		else if (replayer.IsPlaying)
+		{
+			replayer.RecordDrawForComparison(getMessage);
+		}
 	}
 
 	public void StoreAndExecuteCommand(Command command)

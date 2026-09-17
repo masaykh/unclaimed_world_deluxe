@@ -37,6 +37,12 @@ public class Replayer
 
 	private List<string> savedAIStates = new List<string>();
 
+	/// <summary>PORT DEVIATION 20. The recorded draw trace this replay is compared against.</summary>
+	private ReplayTrace trace;
+
+	/// <summary>Whether this replay has already been found to differ from what was recorded.</summary>
+	public bool Diverged => trace != null && trace.Diverged;
+
 	public bool IsActive => isActive;
 
 	public Replayer(InputManager inputManager, Controller controller, UnclaimedWorld game)
@@ -91,7 +97,10 @@ public class Replayer
 		string replayFilePath = replayFolderPath + "\\Replay.UWRep";
 		string commandFilePath = replayFolderPath + "\\Commands.xml";
 		string gameParamsPath = replayFolderPath + "\\GameParams.xml";
-		_ = replayFolderPath + "\\RandomCalls.UWRepRand";
+		// Was: this path built and THROWN AWAY with a discard, which is how the trace came to be
+		// missing rather than absent by design. It is read now.
+		trace = new ReplayTrace();
+		trace.BeginComparing(replayFolderPath);
 		_ = replayFolderPath + "\\AIStates.UWRepStates";
 		CurrentReplay = new ReplayData(controller);
 		CurrentReplay.LoadReplay(replayFolderPath, replayFilePath, commandFilePath, gameParamsPath, timeToPause);
@@ -104,6 +113,25 @@ public class Replayer
 
 	public void DummyMethod(object sender, EventArgs e)
 	{
+	}
+
+	/// <summary>One random draw during a replay, for comparison against the recording.</summary>
+	public void RecordDrawForComparison(string getMessage)
+	{
+		trace?.Draw(getMessage);
+	}
+
+	/// <summary>
+	/// Closes off a replayed frame and compares it. False means this frame did not match what was
+	/// recorded; Divergence.txt beside the replay says how.
+	/// </summary>
+	public bool CompareFrame(int frameIndex, ReplayVerificationData world)
+	{
+		if (trace == null || !trace.HasRecording)
+		{
+			return true;
+		}
+		return trace.EndFrame(frameIndex, world);
 	}
 
 	public string GetCurrentSavedAIState()

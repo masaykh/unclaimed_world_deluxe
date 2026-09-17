@@ -36,6 +36,17 @@ public class Recorder
 
 	private int savedMessageIndex;
 
+	/// <summary>
+	/// PORT DEVIATION 20. The draw-label trace. randomWriter and stateWriter above are the
+	/// studio's own fields for this - declared, closed in StopRecording, and never once opened or
+	/// written to. Rather than revive two half-specified streams this writes one file, under the
+	/// name they chose for it, in a format something can diff. See ReplayTrace.
+	/// </summary>
+	private ReplayTrace trace;
+
+	/// <summary>The folder this recording is being written into, for the trace to share.</summary>
+	private string replayFolderPath;
+
 	public Recorder(Controller controller)
 	{
 		this.controller = controller;
@@ -92,7 +103,11 @@ public class Recorder
 		Directory.CreateDirectory(text5);
 		string dataFolderPath2 = Config.GetDataFolderPath(Config.DataType.Replays, text4, "Replay.UWRep");
 		string dataFolderPath3 = Config.GetDataFolderPath(Config.DataType.Replays, text4, "Commands.xml");
-		Config.GetDataFolderPath(Config.DataType.Replays, text4, "RandomCalls.UWRepRand");
+		// Was: both of these called, and both results DISCARDED. The paths were computed and
+		// thrown away, which is the clearest sign that the trace was cut rather than never
+		// planned. RandomCalls.UWRepRand is written now; AIStates.UWRepStates is still unwritten -
+		// see Recorder.SaveEntityAIState.
+		replayFolderPath = Config.GetDataFolderPath(Config.DataType.Replays, text4);
 		Config.GetDataFolderPath(Config.DataType.Replays, text4, "AIStates.UWRepStates");
 		DataLoader.SerializeObject(startGameParams, text4, "GameParams.xml", Config.DataType.Replays);
 		FileStream output = File.Create(dataFolderPath2);
@@ -116,8 +131,13 @@ public class Recorder
 	{
 	}
 
+	/// <summary>
+	/// One random draw, by the label its call site passed. Was empty; every RandomGenerator method
+	/// has been calling it, with a useful label, the whole time.
+	/// </summary>
 	public void SaveRandomGet(string getMessage)
 	{
+		trace?.Draw(getMessage);
 	}
 
 	public void Initialize()
@@ -146,6 +166,11 @@ public class Recorder
 		int backBufferWidth = The.Sim.Controller.GraphicsDevice.PresentationParameters.BackBufferWidth;
 		isRecording = true;
 		currentFrameIndex = 0;
+		if (replayFolderPath != null)
+		{
+			trace = new ReplayTrace();
+			trace.BeginRecording(replayFolderPath);
+		}
 		replayWriter.Write(backBufferHeight);
 		replayWriter.Write(backBufferWidth);
 		replayWriter.Write(randomSeed ?? 0);
@@ -200,6 +225,8 @@ public class Recorder
 	{
 		savedMessageIndex = 0;
 		isRecording = false;
+		trace?.Dispose();
+		trace = null;
 		if (replayWriter != null)
 		{
 			replayWriter.Close();
@@ -235,7 +262,9 @@ public class Recorder
 			}
 		}
 		replayWriter.Write(value: false);
-		controller.RetrieveVerificationData().Write(replayWriter);
+		ReplayVerificationData verificationData = controller.RetrieveVerificationData();
+		verificationData.Write(replayWriter);
 		replayWriter.Flush();
+		trace?.EndFrame(currentFrameIndex, verificationData);
 	}
 }
