@@ -86,6 +86,13 @@ jobs:
       - name: Documents are current
         run: sh tools/build/82-verify-docs-current.sh
 
+      # A debug scenario whose hard-coded tiles do not fit its map dies in MapManager.GetTile with
+      # an IndexOutOfRangeException and names nothing. Five were in that state and nobody could
+      # have known, because the only way to find out was to pick one from a menu that had never
+      # been reachable. This needs no game, no content and no graphics device.
+      - name: Debug scenarios fit their maps
+        run: sh tools/build/83-verify-debug-scenarios.sh
+
   # CORE DOES NOT DEPEND ON MODS, checked by deleting them.
   #
   # The repository is organised around one rule: base_game is the original game plus the port and

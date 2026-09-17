@@ -154,11 +154,32 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.WeaponsTest, "d Mezzomap MLo", WeaponsTest);
 		AddScenario(DebugScenarios.LightingTest, "d Mezzomap MLo", LightingTest);
 		AddScenario(DebugScenarios.EmptyMap, "d Mezzomap MLo", EmptyMap);
-		AddScenario(DebugScenarios.PlaceGameEntitiesMilestoneBuild, "d Mezzomap MLo", PlaceGameEntitiesMilestoneBuild);
-		AddScenario(DebugScenarios.PlaceGameEntitiesTestMap, "d Mezzomap MLo", PlaceGameEntitiesTestMap);
+		// PORT FIX, same fault as MapApril2013 below: hard-coded tiles that do not fit the map the
+		// table gives them, so the scenario ends in IndexOutOfRangeException inside GetTile.
+		//
+		// PlaceGameEntitiesMilestoneBuild reaches tile (223,100) and names its own map - "9
+		// Milestone Build" is 256x256 and is almost certainly the one it was written for. The
+		// other three below are not recoverable that way, so they follow one stated rule: the
+		// smallest shipped map with Soil and Vegetation layers that contains the coordinates,
+		// ties broken alphabetically. A wrong guess now shows as a strange layout rather than a
+		// crash, and BeginRun says which scenario and which map if it still does not fit.
+		AddScenario(DebugScenarios.PlaceGameEntitiesMilestoneBuild, "9 Milestone Build", PlaceGameEntitiesMilestoneBuild);
+		AddScenario(DebugScenarios.PlaceGameEntitiesTestMap, "9 Milestone Build", PlaceGameEntitiesTestMap);
 		AddScenario(DebugScenarios.CollisionTest, "d Mezzomap MLo", CollisionTest);
 		AddScenario(DebugScenarios.TestMicroMap, "d Mezzomap MLo", TestMicroMap);
-		AddScenario(DebugScenarios.MapApril2013, "d Mezzomap MLo", MapApril2013);
+		// PORT FIX. Was "d Mezzomap MLo", which is 64x64. This scenario places entities out to
+		// tile (114,122) - fifty-four hard-coded points - so every run ended in an
+		// IndexOutOfRangeException inside MapManager.GetTile. Reported by Kastuk, who had reached
+		// the same conclusion from the other end: "I wonder if MapManager.TileMap is not taken to
+		// got needful mapTileWidth and mapTileHeight at old scenarios".
+		//
+		// THE ORIGINAL MAP IS NOT RECOVERABLE. The table lost its per-scenario assignments at some
+		// point - 86 of the 90 scenarios point at "d Mezzomap MLo", and the only two that kept
+		// distinct names named folders that had since been renamed. So this is the smallest
+		// shipped map that actually contains the scenario's coordinates, not the map it was
+		// written for: 128x128, and it has the Soil and Vegetation layers so the ground is drawn.
+		// If the layout looks wrong, that is why, and any other 128x128 map is as good a guess.
+		AddScenario(DebugScenarios.MapApril2013, "b Halfsize", MapApril2013);
 		AddScenario(DebugScenarios.QuarterSizeMap, "d Mezzomap MLo", QuarterSizeMap);
 		AddScenario(DebugScenarios.DemoIslandMap, "d Mezzomap MLo", DemoIslandMap);
 		AddScenario(DebugScenarios.QuarterSizeMap_Alt_Test_v1, "d Mezzomap MLo", QuarterSizeMap_Alt_Test_v1);
@@ -169,7 +190,7 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.FindPreyTest, "d Mezzomap MLo", FindPreyTest);
 		AddScenario(DebugScenarios.AnimTweak, "d Mezzomap MLo", AnimTweak);
 		AddScenario(DebugScenarios.ModelTest, "d Mezzomap MLo", ModelTest);
-		AddScenario(DebugScenarios.WildernessCampScreenshot, "d Mezzomap MLo", WildernessCampScreenshot);
+		AddScenario(DebugScenarios.WildernessCampScreenshot, "b Halfsize", WildernessCampScreenshot);
 		AddScenario(DebugScenarios.HarvestTest, "d Mezzomap MLo", HarvestTest);
 		AddScenario(DebugScenarios.GeometryTest, "d Mezzomap MLo", GeometryTest);
 		AddScenario(DebugScenarios.CookingTest, "d Mezzomap MLo", CookingTest);
@@ -225,7 +246,7 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.MudBrick, "d Mezzomap MLo", MudBrickTest);
 		AddScenario(DebugScenarios.MusicTest, "d Mezzomap MLo", MusicTest);
 		AddScenario(DebugScenarios.FuelTest, "d Mezzomap MLo", FuelTest);
-		AddScenario(DebugScenarios.Recording, "d Mezzomap MLo", Recording);
+		AddScenario(DebugScenarios.Recording, "jx Hills Rivers Small", Recording);
 		AddScenario(DebugScenarios.QuaditeTest, "d Mezzomap MLo", QuaditeTest);
 		AddScenario(DebugScenarios.RemoveAttachablesBug, "d Mezzomap MLo", RemoveAttachablesBug);
 		AddScenario(DebugScenarios.DetectionTest, "d Mezzomap MLo", DetectionTest);
@@ -261,7 +282,71 @@ public class PlaceGameEntities
 
 	public static void BeginRun(DebugScenarios scenarioToRun)
 	{
-		loadScenarioFunctions[scenarioToRun].Item2();
+		// PORT DIAGNOSTIC. A debug scenario's tile coordinates are hard-coded and its map is
+		// chosen in the table above, so the two can disagree - and when they do, the failure is a
+		// bare IndexOutOfRangeException inside MapManager.GetTile, which does not say which
+		// scenario, which map, or how big the map is. Every one of those is known right here.
+		//
+		// This is not hypothetical. MapApril2013 places entities out to tile (114,122) and was
+		// registered against a 64x64 map; the table lost its original per-scenario map
+		// assignments at some point, which is the same damage that left two scenarios naming map
+		// folders that had been renamed.
+		try
+		{
+			loadScenarioFunctions[scenarioToRun].Item2();
+		}
+		catch (Exception ex)
+		{
+			string map = loadScenarioFunctions.TryGetValue(scenarioToRun, out var entry)
+				? entry.Item1.MapKey
+				: "?";
+			string size = The.Map == null
+				? "?"
+				: The.Map.mapTileWidth + "x" + The.Map.mapTileHeight;
+			GameStateManagement.UnclaimedWorld.LogError(
+				"The debug scenario " + scenarioToRun + " failed while placing its entities."
+				+ Environment.NewLine + Environment.NewLine
+				+ "    map          " + map + Environment.NewLine
+				+ "    map size     " + size + " tiles" + Environment.NewLine
+				+ "    failure      " + ex.GetType().Name + ": " + ex.Message + Environment.NewLine
+				+ Environment.NewLine
+				+ "An IndexOutOfRangeException here almost always means the scenario's hard-coded"
+				+ Environment.NewLine
+				+ "tiles do not fit the map it was given. A KeyNotFoundException naming a"
+				+ Environment.NewLine
+				+ "structure or process almost always means that type belongs to one SCENARIO's"
+				+ Environment.NewLine
+				+ "data loader rather than to AllGameData, and a debug start never runs those.",
+				"Debug scenario failed");
+			throw;
+		}
+	}
+
+	/// <summary>
+	/// Places a structure, or nothing at all if the game does not have that type loaded.
+	///
+	/// Some structure types belong to a single scenario - structure:skimmerHull and the rest of
+	/// the wreck are defined in Scenarios/Scenario_1/Data/StructureLoader.cs, which is Twinkler
+	/// Island's, not AllGameData's. A debug scenario start never runs a scenario data loader, so
+	/// asking for one throws KeyNotFoundException out of a dictionary indexer and takes the whole
+	/// scenario down before anything else is placed.
+	///
+	/// Moving the type into the common loader would fix the crash and put the wreck in every
+	/// scenario's production list, which is worse. So the scenario goes on without it and says
+	/// once what it left out.
+	/// </summary>
+	public static Entity AddFinishedStructureIfKnown(string entityType, Point? pos, IOwner owner, bool flipHorizontally = false, Vector3? location = null)
+	{
+		if (!GameData.Instance.AllStructureTypes.ContainsKey(entityType))
+		{
+			GameStateManagement.UnclaimedWorld.LogError(
+				"This debug scenario asked for " + entityType + ", which is not loaded. That type "
+				+ "belongs to a single scenario's data loader rather than to AllGameData, and a "
+				+ "debug scenario start does not run those. Placed nothing and carried on.",
+				"Debug scenario: structure not loaded");
+			return null;
+		}
+		return AddFinishedStructure(entityType, pos, owner, flipHorizontally, location);
 	}
 
 	/// <summary>
@@ -1594,16 +1679,16 @@ public class PlaceGameEntities
 		AddFinishedStructure("structure:domeShelterSpoakShingles", new Point(38, 19), expedition);
 		AddFinishedStructure("structure:wigwamSpoakShingles", new Point(30, 23), expedition);
 		AddFinishedStructure("structure:daysheenTipi", new Point(28, 23), expedition);
-		AddFinishedStructure("structure:skimmerHull", new Point(33, 22), expedition);
-		AddFinishedStructure("structure:skimmerTail", new Point(34, 24), expedition);
-		AddFinishedStructure("structure:skimmerEngineSide", new Point(28, 25), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerHull", new Point(33, 22), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(34, 24), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", new Point(28, 25), expedition);
 		AddFinishedStructure("structure:storageHole", new Point(30, 25), expedition);
 		AddFinishedStructure("structure:smokeOven", new Point(32, 25), expedition);
 		AddFinishedStructure("structure:abatis", new Point(34, 26), expedition);
 		AddFinishedStructure("structure:abatis", new Point(35, 26), expedition);
-		AddFinishedStructure("structure:skimmerHull", new Point(8, 2), expedition);
-		AddFinishedStructure("structure:skimmerTail", new Point(6, 4), expedition);
-		AddFinishedStructure("structure:skimmerEngineSide", new Point(9, 2), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerHull", new Point(8, 2), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(6, 4), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", new Point(9, 2), expedition);
 		AddFinishedStructure("structure:storageHole", new Point(8, 4), expedition);
 		AddFinishedStructure("structure:smokeOven", new Point(9, 3), expedition);
 		AddFinishedStructure("structure:lean-toTarp", new Point(10, 6), expedition);
@@ -1790,8 +1875,8 @@ public class PlaceGameEntities
 		AddFinishedStructure("structure:abatis", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(217, 100)) + new Vector3(24f, 0f, 0f));
 		AddFinishedStructure("structure:abatis", new Point(218, 100), expedition);
 		AddFinishedStructure("structure:A-frameTarp", new Point(217, 95), expedition);
-		AddFinishedStructure("structure:skimmerHull", new Point(215, 98), expedition);
-		AddFinishedStructure("structure:skimmerTail", new Point(213, 98), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerHull", new Point(215, 98), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(213, 98), expedition);
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:thunderChickenGuts"]), new Point(216, 97));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:firewood"]), new Point(213, 95));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:firewood"]), new Point(215, 96));
@@ -1835,8 +1920,8 @@ public class PlaceGameEntities
 		AddFinishedStructure("structure:abatis", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(217, 100)) + new Vector3(24f, 0f, 0f));
 		AddFinishedStructure("structure:abatis", new Point(218, 100), expedition);
 		AddFinishedStructure("structure:A-frameTarp", new Point(217, 95), expedition);
-		AddFinishedStructure("structure:skimmerHull", new Point(211, 98), expedition);
-		AddFinishedStructure("structure:skimmerTail", new Point(210, 99), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerHull", new Point(211, 98), expedition);
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(210, 99), expedition);
 		AddFinishedStructure("structure:storageHole", new Point(214, 96), expedition);
 		AddFinishedStructure("structure:smokeOven", new Point(217, 96), expedition);
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:thunderChickenGuts"]), new Point(216, 97));
@@ -1972,11 +2057,11 @@ public class PlaceGameEntities
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["medicine"], new Skill(0.3f, GameData.Instance.AllSkillTypes["medicine"]));
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["psychology"], new Skill(0.2f, GameData.Instance.AllSkillTypes["psychology"]));
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["biology"], new Skill(0.6f, GameData.Instance.AllSkillTypes["biology"]));
-		Entity entity5 = AddFinishedStructure("structure:skimmerHull", new Point(35, 25), expedition);
-		entity5.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
-		AddFinishedStructure("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
-		AddFinishedStructure("structure:skimmerTail", new Point(33, 25), expedition);
+		Entity entity5 = AddFinishedStructureIfKnown("structure:skimmerHull", new Point(35, 25), expedition);
+		entity5?.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"])?.DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(33, 25), expedition);
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedSnips"]), new Point(38, 25));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedKnife"]), new Point(38, 25));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedKnife"]), new Point(38, 25));
@@ -2020,11 +2105,11 @@ public class PlaceGameEntities
 		});
 		The.MapUI.ZoomToMapPosition(16, 51);
 		Expedition owner = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(15, 5)));
-		Entity entity = AddFinishedStructure("structure:skimmerHull", new Point(13, 51), owner);
-		entity.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
-		AddFinishedStructure("structure:skimmerEngineTop", null, owner, flipHorizontally: false, MapManager.TileToWorldPos(new Point(12, 50)) + new Vector3(32f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, owner, flipHorizontally: false, MapManager.TileToWorldPos(new Point(14, 52)) + new Vector3(-16f, -16f, 0f));
-		AddFinishedStructure("structure:skimmerTail", new Point(11, 51), owner);
+		Entity entity = AddFinishedStructureIfKnown("structure:skimmerHull", new Point(13, 51), owner);
+		entity?.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"])?.DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, owner, flipHorizontally: false, MapManager.TileToWorldPos(new Point(12, 50)) + new Vector3(32f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, owner, flipHorizontally: false, MapManager.TileToWorldPos(new Point(14, 52)) + new Vector3(-16f, -16f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(11, 51), owner);
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedSnips"]), new Point(16, 51));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedKnife"]), new Point(16, 51));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedKnife"]), new Point(16, 51));
@@ -2140,11 +2225,11 @@ public class PlaceGameEntities
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["medicine"], new Skill(0.3f, GameData.Instance.AllSkillTypes["medicine"]));
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["psychology"], new Skill(0.2f, GameData.Instance.AllSkillTypes["psychology"]));
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["biology"], new Skill(0.6f, GameData.Instance.AllSkillTypes["biology"]));
-		Entity entity5 = AddFinishedStructure("structure:skimmerHull", new Point(35, 25), expedition);
-		entity5.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
-		AddFinishedStructure("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
-		AddFinishedStructure("structure:skimmerTail", new Point(33, 25), expedition);
+		Entity entity5 = AddFinishedStructureIfKnown("structure:skimmerHull", new Point(35, 25), expedition);
+		entity5?.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"])?.DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(33, 25), expedition);
 		AddFinishedStructure("structure:lean-toTarp", null, expedition, flipHorizontally: false, new Vector3(1913f, 1167f, 0f));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedSnips"]), new Point(38, 25));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedKnife"]), new Point(38, 25));
@@ -2277,11 +2362,11 @@ public class PlaceGameEntities
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["medicine"], new Skill(0.3f, GameData.Instance.AllSkillTypes["medicine"]));
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["psychology"], new Skill(0.2f, GameData.Instance.AllSkillTypes["psychology"]));
 		entity4.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["biology"], new Skill(0.6f, GameData.Instance.AllSkillTypes["biology"]));
-		Entity entity5 = AddFinishedStructure("structure:skimmerHull", new Point(35, 25), expedition);
-		entity5.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
-		AddFinishedStructure("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
-		AddFinishedStructure("structure:skimmerTail", new Point(33, 25), expedition);
+		Entity entity5 = AddFinishedStructureIfKnown("structure:skimmerHull", new Point(35, 25), expedition);
+		entity5?.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"])?.DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(33, 25), expedition);
 		AddColonyItemToStorage(new Entity(GameData.Instance.AllEntityTypes["item:basicFireExtinguisher"]), entity5);
 		AddColonyItemToStorage(new Entity(GameData.Instance.AllEntityTypes["item:emptyCartridge"]), entity5);
 		AddColonyItemToStorage(new Entity(GameData.Instance.AllEntityTypes["item:coilRifle"]), entity5);
@@ -2350,11 +2435,11 @@ public class PlaceGameEntities
 		entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["psychology"], new Skill(0.1f, GameData.Instance.AllSkillTypes["psychology"]));
 		entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["biology"], new Skill(0.2f, GameData.Instance.AllSkillTypes["biology"]));
 		The.Sim.ExploreShroud(new TilePos(35, 25), new TilePos(0, 70), 9, 16, entity);
-		Entity entity2 = AddFinishedStructure("structure:skimmerHull", new Point(35, 25), expedition);
-		entity2.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
-		AddFinishedStructure("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
-		AddFinishedStructure("structure:skimmerTail", new Point(33, 25), expedition);
+		Entity entity2 = AddFinishedStructureIfKnown("structure:skimmerHull", new Point(35, 25), expedition);
+		entity2?.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"])?.DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(34, 24)) + new Vector3(32f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(36, 26)) + new Vector3(-16f, -16f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(33, 25), expedition);
 		AddColonyItemToStorage(new Entity(GameData.Instance.AllEntityTypes["item:basicFireExtinguisher"]), entity2);
 		AddColonyItemToStorage(new Entity(GameData.Instance.AllEntityTypes["item:emptyCartridge"]), entity2);
 		AddColonyItemToStorage(new Entity(GameData.Instance.AllEntityTypes["item:coilRifle"]), entity2);
@@ -2465,11 +2550,11 @@ public class PlaceGameEntities
 		entity4.BiologicalEntity.Needs.NeedsList["foodEnergy"].CurrentLevel = 0.4f;
 		entity4.BiologicalEntity.Needs.NeedsList["protein"].CurrentLevel = 0.5f;
 		entity4.BiologicalEntity.Needs.NeedsList["sleep"].CurrentLevel = 0.3f;
-		Entity entity5 = AddFinishedStructure("structure:skimmerHull", new Point(55, 41), expedition);
-		entity5.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
-		AddFinishedStructure("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(54, 40)) + new Vector3(32f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(56, 42)) + new Vector3(-16f, -20f, 0f));
-		AddFinishedStructure("structure:skimmerTail", new Point(53, 41), expedition);
+		Entity entity5 = AddFinishedStructureIfKnown("structure:skimmerHull", new Point(55, 41), expedition);
+		entity5?.Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"])?.DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(54, 40)) + new Vector3(32f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(56, 42)) + new Vector3(-16f, -20f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(53, 41), expedition);
 		_ = The.Client;
 		The.Client.ParticleManager.AddEmitter("smallFog", MapManager.TileToWorldPosVector2(new Point(61, 42)));
 		The.Client.ParticleManager.AddEmitter("smallFog", MapManager.TileToWorldPosVector2(new Point(63, 43)));
@@ -3061,7 +3146,7 @@ public class PlaceGameEntities
 		The.MapUI.ZoomToMapPosition(11, 5);
 		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(11, 8)));
 		PlacePerson("Karol", "Nikolaev", Reproduction.Male, new Point(10, 6), Color.White, 40f, noSkills: false, expedition).SetRotationAndDir((float)Math.PI / 2f);
-		AddFinishedStructure("structure:skimmerHull", new Point(8, 6), expedition).Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
+		AddFinishedStructureIfKnown("structure:skimmerHull", new Point(8, 6), expedition).Parts.Find((Entity p) => p.EntityType == GameData.Instance.AllEntityTypes["item:scrapMetal"]).DoDamage(1f);
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:stones"]), new Point(15, 5));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:thunderChickenGuts"]), new Point(15, 5));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:thunderChickenGuts"]), new Point(15, 5));
@@ -3448,10 +3533,10 @@ public class PlaceGameEntities
 		The.MapUI.ZoomToMapPosition(35, 25);
 		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(35, 20)));
 		Vector3 vector = new Vector3(576f, 2400f, 0f);
-		AddFinishedStructure("structure:skimmerHull", null, expedition, flipHorizontally: false, vector + new Vector3(96f, 48f, 0f));
-		AddFinishedStructure("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, vector + new Vector3(80f, 0f, 0f));
-		AddFinishedStructure("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, vector + new Vector3(128f, 80f, 0f));
-		AddFinishedStructure("structure:skimmerTail", null, expedition, flipHorizontally: false, vector + new Vector3(0f, 48f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerHull", null, expedition, flipHorizontally: false, vector + new Vector3(96f, 48f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, vector + new Vector3(80f, 0f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, vector + new Vector3(128f, 80f, 0f));
+		AddFinishedStructureIfKnown("structure:skimmerTail", null, expedition, flipHorizontally: false, vector + new Vector3(0f, 48f, 0f));
 		Entity entity = PlacePerson("Karol", "Nikolaev", Reproduction.Male, new Point(35, 20), Color.White, 40f, noSkills: false, expedition);
 		entity.Intelligence.Skills = new Dictionary<SkillType, Skill>();
 		entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["bushcraft"], new Skill(1f, GameData.Instance.AllSkillTypes["bushcraft"]));
