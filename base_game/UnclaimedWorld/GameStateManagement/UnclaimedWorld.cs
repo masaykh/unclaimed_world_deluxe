@@ -212,6 +212,31 @@ public class UnclaimedWorld : Game
 		}
 	}
 
+	/// <summary>
+	/// PORT FIX. Closes a recording when the window is closed.
+	///
+	/// Recorder.StopRecording had exactly one caller, Controller.GameEnded, which runs on RETURN
+	/// TO MAIN MENU and on QUIT from inside the game. Closing the window - alt+F4, the X, a
+	/// shutdown - reached none of it, so the draw trace's last buffer was never flushed: up to
+	/// six hundred frames of it lost, and the final line liable to be cut in half.
+	///
+	/// Replay.UWRep and Commands.xml were never at risk; both are flushed as they are written.
+	/// It is the trace that was, and a truncated trace is worse than a missing one, because it
+	/// reads as a divergence at the point where the file stops.
+	/// </summary>
+	protected override void OnExiting(object sender, ExitingEventArgs args)
+	{
+		try
+		{
+			Controller?.GameEnded();
+		}
+		catch (Exception)
+		{
+			// Nothing here may stop the game from closing.
+		}
+		base.OnExiting(sender, args);
+	}
+
 	protected override void Draw(GameTime gameTime)
 	{
 		GraphicsDeviceManager.GraphicsDevice.Clear(Color.Black);

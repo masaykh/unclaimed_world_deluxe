@@ -25,9 +25,12 @@ public class MainMenuDevPanel : Panel
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
 		textButton.Position = new Point(x, y);
-		textButton.Text = "TEST";
+		// DEBUG MOD: named apart from the main panel's TEST MAP. Two buttons said TEST, one
+		// started a debug SCENARIO and the other opened a MAP PICKER, and a person testing had
+		// no way to tell which was which - so the scenario setting looked inert for a day.
+		textButton.Text = "TEST SCENARIO";
 		textButton.Click += btContinueGame_Click;
-		textButton.ToolTip = "Start a test scenario";
+		textButton.ToolTip = "Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.";
 		textButton.Width = 106;
 		TextButton textButton2 = new TextButton(Interface.gui);
 		Window.Add(textButton2);

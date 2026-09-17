@@ -102,11 +102,56 @@ public sealed class ReplayTrace : IDisposable
         {
             string path = Path.Combine(replayFolder, FileName);
             recordedLines = File.Exists(path) ? File.ReadAllLines(path) : null;
+            DropTruncatedLastLine();
         }
         catch (Exception)
         {
             recordedLines = null;
         }
+    }
+
+    /// <summary>
+    /// Throws away a final line that was cut in half.
+    ///
+    /// The trace is flushed on an interval, so a session that ended by having its window closed,
+    /// or by crashing, can leave a partial last line behind. Compared as it stands it is unequal
+    /// to anything, and the replay reports a divergence at the exact frame where the file simply
+    /// stops - a fault in the recording read as a fault in the simulation, which is the most
+    /// misleading answer this can give.
+    /// </summary>
+    private void DropTruncatedLastLine()
+    {
+        if (recordedLines == null || recordedLines.Length == 0)
+        {
+            return;
+        }
+        int last = recordedLines.Length - 1;
+        if (CountFields(recordedLines[last]) != FieldsPerLine)
+        {
+            var trimmed = new string[last];
+            Array.Copy(recordedLines, trimmed, last);
+            recordedLines = trimmed;
+        }
+    }
+
+    /// <summary>frame, draws, hash, entityX, entityY, camX, camY.</summary>
+    private const int FieldsPerLine = 7;
+
+    private static int CountFields(string line)
+    {
+        if (line == null)
+        {
+            return 0;
+        }
+        int fields = 1;
+        for (int i = 0; i < line.Length; i++)
+        {
+            if (line[i] == '\t')
+            {
+                fields++;
+            }
+        }
+        return fields;
     }
 
     /// <summary>Whether there is a recorded trace to compare this replay against.</summary>
@@ -157,9 +202,11 @@ public sealed class ReplayTrace : IDisposable
         if (writer != null)
         {
             writer.WriteLine(line);
-            // Flushed every 600 frames rather than every frame: a crashed session keeps all but
-            // the last ten seconds, and the recording does not pay for a disk write per frame.
-            if ((frameIndex % 600) == 0)
+            // Flushed every 60 frames rather than every frame: a session that dies keeps all but
+            // the last second, and the recording does not pay for a disk write per frame. It was
+            // 600, which is ten seconds - too much to lose, and the window in which a half-written
+            // final line reads as a divergence.
+            if ((frameIndex % 60) == 0)
             {
                 writer.Flush();
             }
@@ -333,13 +380,33 @@ public sealed class ReplayTrace : IDisposable
             }
             else
             {
-                sb.AppendLine("MATCHED. This run was deterministic.");
-                sb.AppendLine();
-                sb.AppendLine("    frames compared   " + framesCompared);
-                sb.AppendLine("    random draws      " + drawsTotal);
-                sb.AppendLine();
-                sb.AppendLine("Every draw in the same order from the same call sites, and the world");
-                sb.AppendLine("in the same place at every frame.");
+                // A replay that ran past the end of the recorded trace was never compared over
+                // the tail, and saying MATCHED for frames nobody looked at is the one answer this
+                // file must never give. The usual cause is a session that ended by having its
+                // window closed before the trace's last buffer reached disk.
+                int recordedFrames = recordedLines.Length - 1;
+                if (framesCompared < recordedFrames)
+                {
+                    sb.AppendLine("MATCHED, AS FAR AS IT WENT.");
+                    sb.AppendLine();
+                    sb.AppendLine("    frames compared   " + framesCompared);
+                    sb.AppendLine("    frames recorded   " + recordedFrames);
+                    sb.AppendLine("    random draws      " + drawsTotal);
+                    sb.AppendLine();
+                    sb.AppendLine("Every frame that was compared agreed. The replay stopped before");
+                    sb.AppendLine("the end of the recording, so the rest is unmeasured rather than");
+                    sb.AppendLine("known to be good.");
+                }
+                else
+                {
+                    sb.AppendLine("MATCHED. This run was deterministic.");
+                    sb.AppendLine();
+                    sb.AppendLine("    frames compared   " + framesCompared);
+                    sb.AppendLine("    random draws      " + drawsTotal);
+                    sb.AppendLine();
+                    sb.AppendLine("Every draw in the same order from the same call sites, and the");
+                    sb.AppendLine("world in the same place at every frame.");
+                }
             }
             File.WriteAllText(Path.Combine(folder, VerdictFileName), sb.ToString());
         }

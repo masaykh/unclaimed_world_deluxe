@@ -118,7 +118,9 @@ public class MainMenuPanel : Panel
 			Window.Add(textButton7);
 			textButton7.Init(TextButton.TextButtonType.White);
 			textButton7.Position = new Point(198, 76);
-			textButton7.Text = "TEST";
+			// Named TEST MAP, not TEST: it opens a MAP PICKER and plays a raw map with no
+			// colonists on it. The DEBUG MOD dev panel's TEST SCENARIO is the other feature.
+			textButton7.Text = "TEST MAP";
 			textButton7.Click += btTestMap_Click;
 			textButton7.Width = 59;
 		}
