@@ -1028,13 +1028,21 @@ public static class Common
 		return false;
 	}
 
+	/// <summary>
+	/// PORT FIX. Was:
+	///
+	///     if (d1 &lt; d2 + 1E-07) { return d1 &gt; d2 - 1E-07; }
+	///     return false;
+	///
+	/// which is false for two IDENTICAL values as soon as the magnitude is large enough that
+	/// adding the epsilon rounds away - because the addition is done in the value's own precision.
+	/// See the float overload below, where it happens at 2048 and cost a day of chasing a replay
+	/// divergence that did not exist. A double's epsilon here survives to about 1e9, so nothing in
+	/// this game reached it, but the shape of the mistake is the same and so is the correction.
+	/// </summary>
 	public static bool IsEqual(double d1, double d2)
 	{
-		if (d1 < d2 + 1E-07)
-		{
-			return d1 > d2 - 1E-07;
-		}
-		return false;
+		return Math.Abs(d1 - d2) < 1E-07;
 	}
 
 	public static bool IsEqual(double? d1, double? d2)
@@ -1067,13 +1075,30 @@ public static class Common
 		return false;
 	}
 
+	/// <summary>
+	/// PORT FIX, AND THE ONE THAT MATTERED. Was:
+	///
+	///     if (d1 &lt; d2 + 0.0001f) { return d1 &gt; d2 - 0.0001f; }
+	///     return false;
+	///
+	/// A float has about seven significant digits. At 2048 its spacing is 0.000244, so
+	/// <c>d2 + 0.0001f</c> ROUNDS BACK TO d2 - and the test becomes <c>d1 &lt; d2</c>, which is
+	/// false when the two are equal. So this returned FALSE FOR IsEqual(v, v) for every v at or
+	/// above 2048. Measured, not reasoned: false at 2048, 2782 and 4096; true at 1024, 1124, 2047.
+	///
+	/// What it cost. ReplayVerificationData.Verify compares the representative entity's position
+	/// with this. On a colony at x = 2782 the very first replayed frame reported a divergence
+	/// between two identical numbers - and every replay of every map wider than 2048 world units
+	/// would have, which is most of them. The other sixty-one call sites are intervals, weights
+	/// and angles near zero, where the old form and this one agree exactly; they differ only
+	/// where the old form was answering that a number is not equal to itself.
+	///
+	/// The subtraction is exact for nearby floats (Sterbenz), so the absolute difference is the
+	/// honest form of what was meant.
+	/// </summary>
 	public static bool IsEqual(float d1, float d2)
 	{
-		if (d1 < d2 + 0.0001f)
-		{
-			return d1 > d2 - 0.0001f;
-		}
-		return false;
+		return Math.Abs(d1 - d2) < 0.0001f;
 	}
 
 	public static bool IsLessThan(float valueToTest, float valueToTestWith)

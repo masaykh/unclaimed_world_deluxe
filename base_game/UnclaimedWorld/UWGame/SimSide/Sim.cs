@@ -1178,7 +1178,54 @@ public class Sim : GameScreen, ISnapshot
 			PostLoadMap();
 			break;
 		}
+		ReportWhatStarted();
 		return true;
+	}
+
+	/// <summary>
+	/// PORT DIAGNOSTIC. One line in Errors.txt naming what was actually started.
+	///
+	/// Three different starts land in a playable game - a scenario, a debug scenario, and the map
+	/// editor's TEST MAP - and from a screenshot they are indistinguishable. A day was spent on
+	/// "the test scenarios are empty" that was TEST MAP loading a raw map with no colonists on it,
+	/// correctly, every time. The report is four facts and settles it without a screenshot.
+	/// </summary>
+	private void ReportWhatStarted()
+	{
+		try
+		{
+			int persons = 0;
+			int members = 0;
+			var allegiance = PlaySite?.PlayerAllegiance;
+			if (allegiance != null)
+			{
+				persons = allegiance.Persons?.Count ?? 0;
+				members = allegiance.Members?.Count ?? 0;
+			}
+			string scenario = StartGameParams?.StartDebugScenarioParams == null
+				? "-"
+				: StartGameParams.StartDebugScenarioParams.ScenarioKey.ToString();
+			string map = StartGameParams?.StartDebugScenarioParams?.MapKey
+				?? StartGameParams?.StartScenarioParams?.Scenario?.MapKey
+				?? "-";
+
+			GameStateManagement.UnclaimedWorld.LogError(
+				"    start mode       " + startGameMode + System.Environment.NewLine
+				+ "    debug scenario   " + scenario + System.Environment.NewLine
+				+ "    map              " + map + System.Environment.NewLine
+				+ "    colonists placed " + persons + "   (allegiance members " + members + ")"
+				+ System.Environment.NewLine + System.Environment.NewLine
+				+ "Edit means the map editor or the TEST MAP button: a raw map, no colonists."
+				+ System.Environment.NewLine
+				+ "DebugNewGame means the dev panel's TEST SCENARIO."
+				+ System.Environment.NewLine
+				+ "ScenarioNewGame means NEW GAME.",
+				"Game started");
+		}
+		catch (System.Exception)
+		{
+			// A note about what started must never be what stops it.
+		}
 	}
 
 	private bool StartGamePostLoadMapPrepareEventActions()
