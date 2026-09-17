@@ -336,7 +336,7 @@ pass "an unrecognised choice value does not stop the load"
 # test them: it writes false, which IS their default, and dataexport prints only what differs
 # from default. Written true instead - which is also the direction that matters, since an overlay
 # nobody can turn ON is the whole failure mode.
-for id in debug.overlayJobs debug.overlayRanges debug.recordGame; do
+for id in debug.overlayJobs debug.overlayRanges debug.recordGame statedump.enabled; do
   d=$(new_install "case11${id#debug.}"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   if echo "$out" | grep -q "$id = true"; then

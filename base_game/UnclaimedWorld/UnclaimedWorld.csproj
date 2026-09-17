@@ -163,6 +163,7 @@
   <ItemGroup Condition="'$(UwGameplayMods)' == 'true'">
     <Compile Remove="UWGame\Mods\BalancedDietMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DebugMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\StateDumpMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DisassemblyMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\HealingMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\MagnificationMod.Absent.cs" />
@@ -172,6 +173,7 @@
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\BalancedDietMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DebugMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StateDumpMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DisassemblyMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HealingMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MagnificationMod.cs" />

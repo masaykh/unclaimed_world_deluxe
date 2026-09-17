@@ -114,6 +114,7 @@ internal static class Program
         UWGame.Mods.BalancedDietMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
+        UWGame.Mods.StateDumpMod.RegisterSettings();
         if (UWGame.Mods.UnhiddenMod.Enabled)
         {
             UWGame.Mods.UnhiddenMod.RegisterSettings();

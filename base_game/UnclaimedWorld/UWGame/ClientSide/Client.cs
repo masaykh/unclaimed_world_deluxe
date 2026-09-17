@@ -995,6 +995,9 @@ public class Client : GameScreen
 		// have, has no callers. This is what writes to it. It compares a composite of the
 		// switches and returns immediately unless one moved.
 		UWGame.Mods.DebugMod.ApplyOverlays();
+		// MOD: samples the colony to a text file on a game-time interval, so a change can be
+		// checked by reading rather than by watching. Returns on its first line when off.
+		UWGame.Mods.StateDumpMod.Sample();
 		bool limitFramerateWhenPaused = base.Controller.Options.LimitFramerateWhenPaused;
 		if (base.IsActive)
 		{
