@@ -38,21 +38,6 @@ public class MainMenuInterface : CommonInterface
 		panel = new MainMenuPanel(this, new Point(left, top));
 		panel.Show();
 
-		// DEBUG MOD: the studio's own DEV OPTIONS panel, constructed.
-		//
-		// MainMenuDevPanel is finished work - a TEST button and a LOAD REPLAY button, both wired
-		// to MainMenuScreen.StartTest and MainMenuScreen.LoadReplay - and the field to hold it is
-		// declared at the top of this class. Nothing ever assigned it. LOAD REPLAY is the ONLY
-		// way into the replay system: MainMenuPanel has a btLoadReplay_Click handler too and
-		// nothing subscribes to that either, so in a shipped build a recorded session could not
-		// be played back at all.
-		//
-		// Left of the main panel, clamped so it stays on screen on a narrow window.
-		if (UWGame.Mods.DebugMod.ShowMainMenuDevPanel)
-		{
-			devPanel = new MainMenuDevPanel(this, new Point(System.Math.Max(8, left - 372), top));
-			devPanel.Show();
-		}
 		Window window = new Window(gui);
 		window.X = 100;
 		window.Y = 100;
@@ -117,9 +102,38 @@ public class MainMenuInterface : CommonInterface
 	{
 	}
 
+	/// <summary>
+	/// <summary>
+	/// DEBUG MOD: the studio's own DEV OPTIONS panel, constructed.
+	///
+	/// MainMenuDevPanel is finished work - a TEST button and a LOAD REPLAY button, both wired to
+	/// MainMenuScreen.StartTest and MainMenuScreen.LoadReplay - and the field to hold it is
+	/// declared at the top of this class. Nothing ever assigned it. LOAD REPLAY is the ONLY way
+	/// into the replay system: MainMenuPanel has a btLoadReplay_Click handler too and nothing
+	/// subscribes to that either, so in a shipped build a recorded session could not be played
+	/// back at all.
+	///
+	/// Built from Update rather than LoadContent, and that is the whole point of it being here:
+	/// LoadContent runs once when the menu screen is created, so a switch flipped on the options
+	/// screen did nothing until the menu was built again - which took starting a game and coming
+	/// back out. From here it appears as soon as the options screen is closed.
+	///
+	/// Left of the main panel, clamped so it stays on screen on a narrow window.
+	/// </summary>
+	private void BuildDevPanelIfWanted()
+	{
+		if (devPanel != null || !UWGame.Mods.DebugMod.ShowMainMenuDevPanel)
+		{
+			return;
+		}
+		devPanel = new MainMenuDevPanel(this, new Point(System.Math.Max(8, left - 372), top));
+		devPanel.Show();
+	}
+
 	public override void Update(GameTime gameTime)
 	{
 		base.Update(gameTime);
+		BuildDevPanelIfWanted();
 		Tooltip.Update(gameTime);
 	}
 

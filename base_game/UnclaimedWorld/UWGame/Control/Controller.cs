@@ -377,8 +377,17 @@ public class Controller : DrawableGameComponent
 			}
 			if (flag)
 			{
+				// PORT FIX. The throw below names Divergence.txt, and on the first replay anyone
+				// has ever played back that file did not exist: the STUDIO'S check had failed and
+				// the draw trace had not, so nothing wrote one. Nor was a verdict written, because
+				// Finish runs when a replay STOPS, and an exception is not stopping.
+				//
+				// Both are written now before the throw, whichever of the two checks found it.
+				replayer.ReportStateMismatchAndFinish(
+					replayer.CurrentReplay.currentFrameIndex, recordedVerificationData, replayVerificationData);
 				throw new Exception("Sim and recorded data have diverged. See Divergence.txt "
-					+ "in the replay folder for the frame and the draws around it.");
+					+ "and ReplayVerdict.txt in the replay folder for the frame, what differed "
+					+ "and the draws around it.");
 			}
 		}
 	}

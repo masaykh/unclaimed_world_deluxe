@@ -160,8 +160,8 @@ public static class DebugMod
             ModId, "devPanel", "DEV PANEL ON MAIN MENU", defaultValue: false,
             toolTip: "Shows the studio's DEV OPTIONS panel beside the main menu. Its TEST button "
                    + "starts the debug scenario chosen below, and its LOAD REPLAY button is the "
-                   + "only way to play a recorded session back. Takes effect next time the main "
-                   + "menu is built - leave to the options screen and come back."));
+                   + "only way to play a recorded session back. Appears as soon as you close "
+                   + "the options screen."));
 
     /// <summary>Whether the dev panel should be built, asked by the main menu.</summary>
     public static bool ShowMainMenuDevPanel

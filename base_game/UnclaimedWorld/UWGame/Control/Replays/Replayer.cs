@@ -130,6 +130,17 @@ public class Replayer
 	/// <summary>
 	/// Closes off a replayed frame and compares it. False means this frame did not match what was
 	/// recorded; Divergence.txt beside the replay says how.
+
+	/// <summary>
+	/// Hands the studio's own verification failure to the trace, so that the one case where the
+	/// two checks disagree still leaves a Divergence.txt behind, and closes the trace so a verdict
+	/// is written. Called just before the replay stops.
+	/// </summary>
+	public void ReportStateMismatchAndFinish(int frameIndex, ReplayVerificationData recorded, ReplayVerificationData live)
+	{
+		trace?.ReportStateMismatch(frameIndex, recorded, live);
+		trace?.Finish();
+	}
 	/// </summary>
 	public bool CompareFrame(int frameIndex, ReplayVerificationData world)
 	{

@@ -234,6 +234,68 @@ public sealed class ReplayTrace : IDisposable
         }
     }
 
+    /// <summary>
+    /// Reports a divergence that the STUDIO'S OWN check found and the draw trace did not.
+    ///
+    /// The two look at different things and are recorded through different channels.
+    /// ReplayVerificationData is written into Replay.UWRep frame by frame and compares the
+    /// representative entity and the camera with a tolerance; this trace is written into
+    /// RandomCalls.UWRepRand and compares the random-draw count, a hash of the draw labels, and
+    /// the same two positions exactly. Either can fail alone.
+    ///
+    /// Without this, that case threw an exception telling the reader to look in Divergence.txt -
+    /// a file nothing had written. Reported and observed on the first replay anyone has ever
+    /// played back.
+    /// </summary>
+    public void ReportStateMismatch(int frameIndex, ReplayVerificationData recorded, ReplayVerificationData live)
+    {
+        if (reportedDivergence)
+        {
+            return;
+        }
+        reportedDivergence = true;
+        try
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("The replay diverged from what was recorded.").AppendLine();
+            sb.AppendLine("Found by the game's own ReplayVerificationData check, NOT by the draw");
+            sb.AppendLine("trace - so at this frame the simulation asked for randomness exactly as");
+            sb.AppendLine("many times as it did when recording, in the same order, and the two");
+            sb.AppendLine("channels still disagree about where things are.").AppendLine();
+            sb.AppendLine($"    frame              {frameIndex}");
+            sb.AppendLine($"    recorded entity    {Format(recorded.RepresentativeEntityLocation.X)}, {Format(recorded.RepresentativeEntityLocation.Y)}");
+            sb.AppendLine($"    this run  entity    {Format(live.RepresentativeEntityLocation.X)}, {Format(live.RepresentativeEntityLocation.Y)}");
+            sb.AppendLine($"    recorded camera    {Format(recorded.MapWindowLocation.X)}, {Format(recorded.MapWindowLocation.Y)}");
+            sb.AppendLine($"    this run  camera    {Format(live.MapWindowLocation.X)}, {Format(live.MapWindowLocation.Y)}");
+            sb.AppendLine();
+            sb.AppendLine("If only the CAMERA differs, the simulation is fine and the view is not:");
+            sb.AppendLine("the camera is client state, driven by the window size and by scrolling,");
+            sb.AppendLine("and Verify only checks it outside CommandMode.");
+            sb.AppendLine();
+            sb.AppendLine($"Frames that matched before this one: {framesCompared}");
+            sb.AppendLine();
+            sb.AppendLine($"The last {RingSize} draw labels before the break, oldest first:");
+            for (int i = 0; i < RingSize; i++)
+            {
+                string label = ring[(ringNext + i) % RingSize];
+                if (!string.IsNullOrEmpty(label))
+                {
+                    sb.Append("    ").AppendLine(label);
+                }
+            }
+            File.WriteAllText(Path.Combine(folder ?? ".", DivergenceFileName), sb.ToString());
+        }
+        catch (Exception)
+        {
+            // Reporting must never be the thing that takes the run down.
+        }
+    }
+
+    private static string Format(float value)
+    {
+        return value.ToString("R", CultureInfo.InvariantCulture);
+    }
+
     /// <summary>The name of the file a finished replay leaves behind, matched or not.</summary>
     public const string VerdictFileName = "ReplayVerdict.txt";
 
