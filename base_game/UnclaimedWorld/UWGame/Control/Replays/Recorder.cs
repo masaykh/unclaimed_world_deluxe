@@ -240,6 +240,14 @@ public class Recorder
 	{
 		List<string> list = new List<string>();
 		directories = new List<DirectoryInfo>();
+		// PORT FIX. Was a bare Directory.GetDirectories, which throws DirectoryNotFoundException
+		// when user/Replays does not exist - and it does not exist until something has been
+		// recorded. So opening LOAD REPLAY before ever recording took the game down. Nobody met
+		// that in the retail game because the button that opens the dialog was never wired up.
+		if (string.IsNullOrEmpty(replayFolderPath) || !Directory.Exists(replayFolderPath))
+		{
+			return list;
+		}
 		string[] directories2 = Directory.GetDirectories(replayFolderPath);
 		for (int i = 0; i < directories2.Length; i++)
 		{
