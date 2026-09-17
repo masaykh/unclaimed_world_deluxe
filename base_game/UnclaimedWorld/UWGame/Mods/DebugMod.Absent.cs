@@ -15,6 +15,32 @@ public static class DebugMod
     /// <summary>Always false: no overlay can be on when there is no switch for one.</summary>
     public const bool AnyOverlayOn = false;
 
+    /// <summary>Zero: there are no developer overlays to put on the HUD panel.</summary>
+    public static int OverlayCount => 0;
+
+    /// <summary>Nothing to label.</summary>
+    public static string OverlayLabel(int index)
+    {
+        return string.Empty;
+    }
+
+    /// <summary>Nothing to describe.</summary>
+    public static string OverlayToolTip(int index)
+    {
+        return string.Empty;
+    }
+
+    /// <summary>Always off, as the studio shipped every Kensei.Dev overlay.</summary>
+    public static bool OverlayIsOn(int index)
+    {
+        return false;
+    }
+
+    /// <summary>Writes nothing.</summary>
+    public static void SetOverlay(int index, bool on)
+    {
+    }
+
     /// <summary>The prefix the mod's settings would carry.</summary>
     public const string ModId = "debug";
 

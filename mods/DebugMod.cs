@@ -266,6 +266,62 @@ public static class DebugMod
         }
     }
 
+    // ---- the in-game panel's view of the overlays --------------------------------------------
+    //
+    // The MODS options screen is the wrong place to work an overlay from: you switch one on,
+    // close two dialogs, look, and go back. These let the game's own HUD overlay panel carry the
+    // same switches, so they can be worked while looking at what they draw. The mod stays the
+    // single source of truth - the panel writes the ModSetting, not Kensei.Dev.Options, and
+    // ApplyOverlays pushes it on the next frame exactly as it does for the options screen.
+
+    /// <summary>How many developer overlays there are. Zero with the mod absent.</summary>
+    public static int OverlayCount
+    {
+        get
+        {
+            RegisterSettings();
+            return overlaySettings.Length;
+        }
+    }
+
+    /// <summary>The label for one, as the options screen shows it.</summary>
+    public static string OverlayLabel(int index)
+    {
+        RegisterSettings();
+        return index >= 0 && index < Overlays.Length ? Overlays[index][2] : string.Empty;
+    }
+
+    /// <summary>Its tooltip, naming the Kensei.Dev option it drives.</summary>
+    public static string OverlayToolTip(int index)
+    {
+        RegisterSettings();
+        return index >= 0 && index < Overlays.Length
+            ? "Draws the game's own '" + Overlays[index][1] + "' developer overlay."
+            : string.Empty;
+    }
+
+    /// <summary>Whether it is on.</summary>
+    public static bool OverlayIsOn(int index)
+    {
+        RegisterSettings();
+        return index >= 0 && index < overlaySettings.Length && overlaySettings[index].On;
+    }
+
+    /// <summary>
+    /// Switches one on or off and writes ModSettings.xml, so a choice made from the HUD persists
+    /// the same way one made on the options screen does.
+    /// </summary>
+    public static void SetOverlay(int index, bool on)
+    {
+        RegisterSettings();
+        if (index < 0 || index >= overlaySettings.Length)
+        {
+            return;
+        }
+        overlaySettings[index].Value = on ? "true" : "false";
+        ModSettings.Save(GameStateManagement.UnclaimedWorld.LogError);
+    }
+
     /// <summary>Whether anything here is doing something.</summary>
     public static bool Enabled
     {

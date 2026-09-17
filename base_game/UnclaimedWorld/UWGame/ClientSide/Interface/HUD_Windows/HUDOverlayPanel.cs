@@ -112,6 +112,7 @@ public class HUDOverlayPanel : HUDWindow
 			}
 			UpdateSingleItemRow(value);
 		}
+		AddDeveloperOverlayRows();
 		grdSingleItems.EndAddingEntries();
 	}
 
@@ -127,7 +128,59 @@ public class HUDOverlayPanel : HUDWindow
 			}
 			UpdateSingleItemRowEditor(value);
 		}
+		AddDeveloperOverlayRows();
 		grdSingleItems.EndAddingEntries();
+	}
+
+	/// <summary>
+	/// DEBUG MOD: the developer overlays, as rows in the game's own overlay panel.
+	///
+	/// They already have switches on the MODS options screen, and that is the wrong place to work
+	/// one from - switch it on, close two dialogs, look, go back. These sit beside the overlays a
+	/// player already uses, so they can be worked while looking at what they draw.
+	///
+	/// The row writes the MOD SETTING, not Kensei.Dev.Options directly. DebugMod.ApplyOverlays
+	/// pushes the dictionary on the next frame, so there is one source of truth and a switch
+	/// thrown here persists in ModSettings.xml exactly as one thrown on the options screen does.
+	///
+	/// Keyed by a string, so the keys cannot collide with the OverlayTypes and EditorOverlayTypes
+	/// values the rows above are keyed by. With the mod absent OverlayCount is zero and this adds
+	/// nothing at all.
+	/// </summary>
+	private void AddDeveloperOverlayRows()
+	{
+		int count = UWGame.Mods.DebugMod.OverlayCount;
+		for (int i = 0; i < count; i++)
+		{
+			string key = "uwdev:" + i;
+			if (!grdSingleItems.EntriesByKey.TryGetValue(key, out var row))
+			{
+				row = AddSingleItemRow(
+					key,
+					"DEV: " + UWGame.Mods.DebugMod.OverlayLabel(i),
+					null,
+					UWGame.Mods.DebugMod.OverlayToolTip(i),
+					null,
+					null,
+					cbSelectDeveloperOverlay_Click);
+			}
+			row.FindChildById<CheckBox>(UIComponent.DataControlID.Selector, out var check, firstLevelOnly: false);
+			if (check != null)
+			{
+				check.IsChecked = UWGame.Mods.DebugMod.OverlayIsOn(i);
+			}
+		}
+	}
+
+	private void cbSelectDeveloperOverlay_Click(UIComponent sender, EventArgs e)
+	{
+		CheckBox checkBox = (CheckBox)sender;
+		string key = sender.Tag1 as string;
+		if (key == null || !int.TryParse(key.Substring("uwdev:".Length), out int index))
+		{
+			return;
+		}
+		UWGame.Mods.DebugMod.SetOverlay(index, checkBox.IsChecked);
 	}
 
 	private void PopulateStructureTypes(SharedKnowledge sharedKnowledge, string checkboxTooltip)
