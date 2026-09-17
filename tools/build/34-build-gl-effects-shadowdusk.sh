@@ -37,18 +37,30 @@ OUT=artifacts/content/effects-gl
 OBJ=artifacts/obj/gl-effects-sd
 
 
-if [ ! -d "$UW_GAME/Content" ]; then
-  echo "FATAL: no such content directory: $UW_GAME/Content" >&2
-    # THE ONE THAT ACTUALLY HAPPENS. A player set UW_STEAM in their shell WITHOUT export, saw
-    # `ls $UW_STEAM/` list the folder perfectly, and got "/Content" here - because a shell
-    # variable is not an environment variable and `sh script` is a child process. They edited the
-    # script to get past it. The old message printed "/Content" and left them to work that out.
-    echo >&2
-    echo "  UW_GAME is empty, or not existed." >&2
-    echo "  It has to be EXPORTED - a plain assignment is not visible to this script:" >&2
-    echo >&2
-    echo "      export UW_GAME=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
-  fi
+# WHERE THE SHIPPED EFFECTS COME FROM, checked up front because the failure forty lines down is
+# nineteen copies of "no XNB container to use as a template" and says nothing about why.
+#
+# UW_TEMPLATES FIRST. That is the documented way to point this at a pristine copy without
+# deploying anything, it is what the release build uses, and a checkout that has never run
+# 40-deploy.sh has no game/Content at all - so testing UW_GAME alone rejects the normal case.
+if [ -n "$UW_TEMPLATES" ] && [ -d "$UW_TEMPLATES" ]; then
+  : # fine - the templates directory is set and real
+elif [ ! -d "$UW_GAME/Content" ]; then
+  echo "FATAL: no compiled Content to take the effect containers from." >&2
+  echo >&2
+  echo "  looked for:  \$UW_TEMPLATES   = ${UW_TEMPLATES:-<unset>}" >&2
+  echo "               \$UW_GAME/Content = $UW_GAME/Content" >&2
+  echo >&2
+  # THE ONE THAT ACTUALLY HAPPENS, and Kastuk hit it: a variable set WITHOUT export looks right in
+  # your own shell - `ls $UW_STEAM/` lists the folder perfectly - and is invisible to `sh script`,
+  # because that is a child process and a plain assignment is not an environment variable.
+  echo "  Point it at your own copy of the game - EXPORTED, or it will not reach this script:" >&2
+  echo >&2
+  echo "      export UW_TEMPLATES=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World/Content\"" >&2
+  echo >&2
+  echo "  Or deploy a working copy once, which populates \$UW_GAME:" >&2
+  echo >&2
+  echo "      sh tools/build/40-deploy.sh Release DX" >&2
   exit 1
 fi
 

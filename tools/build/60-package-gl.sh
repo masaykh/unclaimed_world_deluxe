@@ -17,20 +17,18 @@ set -e
 cd "$UW_REPO"
 
 if [ ! -d "$UW_STEAM/Content" ]; then
-  echo "FATAL: no such content directory: $UW_GAME/Content" >&2
-    # THE ONE THAT ACTUALLY HAPPENS. A player set UW_STEAM in their shell WITHOUT export, saw
-    # `ls $UW_STEAM/` list the folder perfectly, and got "/Content" here - because a shell
-    # variable is not an environment variable and `sh script` is a child process. They edited the
-    # script to get past it. The old message printed "/Content" and left them to work that out.
-    echo >&2
-    echo "  UW_STEAM iis empty, or not existed." >&2
-    echo "  It has to be EXPORTED - a plain assignment is not visible to this script:" >&2
-    echo >&2
-    echo "      export UW_STEAM=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
-	echo >&2
-	echo "  In case your UW_GAME is the same as UW_STEAM:" >&2
-    echo "      export UW_STEAM=\$UW_GAME" >&2
-  fi
+  echo "FATAL: no such content directory: $UW_STEAM/Content" >&2
+  echo >&2
+  # A variable set WITHOUT export looks right in your own shell - `ls $UW_STEAM/` lists the folder
+  # perfectly - and is invisible to `sh script`, because that is a child process and a plain
+  # assignment is not an environment variable. Kastuk lost an afternoon to exactly this.
+  echo "  UW_STEAM is empty or does not exist. It has to be EXPORTED:" >&2
+  echo >&2
+  echo "      export UW_STEAM=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
+  echo >&2
+  echo "  If your UW_GAME is the same folder:" >&2
+  echo >&2
+  echo "      export UW_STEAM=\"\$UW_GAME\"" >&2
   exit 1
 fi
 
