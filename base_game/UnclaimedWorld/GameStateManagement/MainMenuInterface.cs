@@ -37,6 +37,22 @@ public class MainMenuInterface : CommonInterface
 		base.LoadContent();
 		panel = new MainMenuPanel(this, new Point(left, top));
 		panel.Show();
+
+		// DEBUG MOD: the studio's own DEV OPTIONS panel, constructed.
+		//
+		// MainMenuDevPanel is finished work - a TEST button and a LOAD REPLAY button, both wired
+		// to MainMenuScreen.StartTest and MainMenuScreen.LoadReplay - and the field to hold it is
+		// declared at the top of this class. Nothing ever assigned it. LOAD REPLAY is the ONLY
+		// way into the replay system: MainMenuPanel has a btLoadReplay_Click handler too and
+		// nothing subscribes to that either, so in a shipped build a recorded session could not
+		// be played back at all.
+		//
+		// Left of the main panel, clamped so it stays on screen on a narrow window.
+		if (UWGame.Mods.DebugMod.ShowMainMenuDevPanel)
+		{
+			devPanel = new MainMenuDevPanel(this, new Point(System.Math.Max(8, left - 372), top));
+			devPanel.Show();
+		}
 		Window window = new Window(gui);
 		window.X = 100;
 		window.Y = 100;

@@ -264,6 +264,21 @@ public class PlaceGameEntities
 		loadScenarioFunctions[scenarioToRun].Item2();
 	}
 
+	/// <summary>
+	/// Every debug scenario and the map folder it loads, for the mod that writes the list out.
+	///
+	/// The names live in an enum and the maps in a private dictionary, so without this a person
+	/// choosing a scenario has no way to know which ones run on a map that has ground textures -
+	/// and 86 of the 90 do not.
+	/// </summary>
+	public static IEnumerable<KeyValuePair<DebugScenarios, string>> AllScenariosAndTheirMaps()
+	{
+		foreach (KeyValuePair<DebugScenarios, Tuple<StartDebugScenarioParams, LoadDebugScenario>> entry in loadScenarioFunctions)
+		{
+			yield return new KeyValuePair<DebugScenarios, string>(entry.Key, entry.Value.Item1.MapKey);
+		}
+	}
+
 	public static StartDebugScenarioParams GetNewScenarioParams()
 	{
 		StartDebugScenarioParams item = loadScenarioFunctions[GetDefaultScenario()].Item1;

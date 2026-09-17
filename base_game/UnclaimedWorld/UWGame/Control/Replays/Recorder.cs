@@ -162,6 +162,31 @@ public class Recorder
 
 	public void StartRecording(int? randomSeed)
 	{
+		// PORT FIX. replayWriter is opened by SaveStartGameParams, and
+		// Controller.SaveScenarioForReplay SKIPS that when startGameParams.StartGameEditorParams
+		// is set - the map editor and the TEST MAP button. Those start with Sim.Mode still Game,
+		// so Controller.LoadingFinished came straight here and dereferenced a null writer:
+		//
+		//   Object reference not set to an instance of an object.
+		//      at UWGame.Control.Replays.Recorder.StartRecording(Nullable`1 randomSeed)
+		//      at UWGame.Control.Controller.LoadingFinished()
+		//
+		// It could not happen in the retail game because neither Options.RecordGame nor the TEST
+		// MAP button was reachable; making both reachable made this reachable too. Nor can it be
+		// fixed by opening the files here: an editor start has no scenario to write into
+		// GameParams.xml, so the recording could never be loaded back. The session is not
+		// recorded, and says so once rather than taking the game down.
+		if (replayWriter == null)
+		{
+			isRecording = false;
+			UnclaimedWorld.LogError(
+				"This session is not being recorded. A recording needs a scenario to write into "
+				+ "GameParams.xml so the replay can be started again, and a game opened from the "
+				+ "map editor or the TEST MAP button has none. Start from NEW GAME, or from the "
+				+ "dev panel's TEST, to record.",
+				"Replay recording");
+			return;
+		}
 		int backBufferHeight = The.Sim.Controller.GraphicsDevice.PresentationParameters.BackBufferHeight;
 		int backBufferWidth = The.Sim.Controller.GraphicsDevice.PresentationParameters.BackBufferWidth;
 		isRecording = true;

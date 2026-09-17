@@ -9,6 +9,9 @@ public static class DebugMod
     /// <summary>Always false: the mod is not present in this build.</summary>
     public const bool Enabled = false;
 
+    /// <summary>Always false: the studio never constructed the dev panel and neither do we.</summary>
+    public const bool ShowMainMenuDevPanel = false;
+
     /// <summary>Always false: no overlay can be on when there is no switch for one.</summary>
     public const bool AnyOverlayOn = false;
 

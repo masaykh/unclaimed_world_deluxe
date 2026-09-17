@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UWGame.SimSide;
 
@@ -40,6 +42,9 @@ public static class DebugMod
     /// <summary>What the studio's own GetDefaultScenario returned before this mod existed.</summary>
     public const string StudioTestScenario = "TwinklerEatTest";
 
+    /// <summary>Where the list of every scenario is written, under the game folder.</summary>
+    public const string ScenarioListFileName = "DebugScenarios.txt";
+
     /// <summary>
     /// The overlays worth a switch, as (setting key, the name Kensei.Dev knows it by, label).
     ///
@@ -68,9 +73,13 @@ public static class DebugMod
 
     private static ModSetting recordGame;
 
+    private static ModSetting showDevPanel;
+
     private static string appliedSignature;
 
     private static bool reportedBadScenario;
+
+    private static bool wroteScenarioList;
 
     /// <summary>Which of the 94 prepared situations the main menu's TEST button loads.</summary>
     public static ModSetting TestScenario =>
@@ -116,6 +125,8 @@ public static class DebugMod
     {
         _ = TestScenario;
         _ = RecordGameSetting;
+        _ = ShowMainMenuDevPanelSetting;
+        WriteScenarioList();
         if (overlaySettings != null)
         {
             return;
@@ -130,6 +141,37 @@ public static class DebugMod
         }
     }
 
+
+    /// <summary>
+    /// Whether to construct the studio's DEV OPTIONS panel on the main menu.
+    ///
+    /// THIS IS THE ONLY WAY TO REACH TWO THINGS. MainMenuDevPanel carries a TEST button wired to
+    /// MainMenuScreen.StartTest - the debug SCENARIOS, which is what <see cref="TestScenario"/>
+    /// chooses - and a LOAD REPLAY button wired to MainMenuScreen.LoadReplay. The panel is
+    /// finished code and MainMenuInterface even declares a field to hold it; nothing ever
+    /// constructed it, so neither button existed in a shipped build.
+    ///
+    /// Not the same as the TEST button on the main panel. That one is btTestMap_Click ->
+    /// MainMenuScreen.TestMap, which opens a MAP PICKER and plays a raw map with no colonists on
+    /// it. Two different features with the same word on them.
+    /// </summary>
+    public static ModSetting ShowMainMenuDevPanelSetting =>
+        showDevPanel ?? (showDevPanel = ModSettings.Toggle(
+            ModId, "devPanel", "DEV PANEL ON MAIN MENU", defaultValue: false,
+            toolTip: "Shows the studio's DEV OPTIONS panel beside the main menu. Its TEST button "
+                   + "starts the debug scenario chosen below, and its LOAD REPLAY button is the "
+                   + "only way to play a recorded session back. Takes effect next time the main "
+                   + "menu is built - leave to the options screen and come back."));
+
+    /// <summary>Whether the dev panel should be built, asked by the main menu.</summary>
+    public static bool ShowMainMenuDevPanel
+    {
+        get
+        {
+            RegisterSettings();
+            return ShowMainMenuDevPanelSetting.On;
+        }
+    }
 
     /// <summary>
     /// Whether any overlay switch is on. Separate from <see cref="Enabled"/> because the core's
@@ -148,6 +190,78 @@ public static class DebugMod
                     return true;
                 }
             }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Writes DebugScenarios.txt beside the game: every debug scenario, the map it loads, and
+    /// whether that map has ground textures.
+    ///
+    /// WHY A FILE. The setting is free text and a mistyped name is indistinguishable from a
+    /// working one - LogError writes to Errors.txt and nothing on screen says so, which is how a
+    /// person concludes the feature is broken. Ninety names will not fit in a tooltip. So the
+    /// list is simply always there, next to the executable, before anyone needs it.
+    ///
+    /// The soil column matters more than it looks: 86 of the 90 scenarios run on a studio test
+    /// map that ships with no Soil or Vegetation folder, so the ground draws black. Knowing that
+    /// in advance is the difference between a test map and a broken port.
+    /// </summary>
+    private static void WriteScenarioList()
+    {
+        if (wroteScenarioList)
+        {
+            return;
+        }
+        wroteScenarioList = true;
+        try
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("# Debug scenarios, for debug.testScenario in user/ModSettings.xml or");
+            sb.AppendLine("# the TEST BUTTON SCENARIO box in OPTIONS -> MODS.");
+            sb.AppendLine("#");
+            sb.AppendLine("# Started by the TEST button on the DEV PANEL - not the TEST button on");
+            sb.AppendLine("# the main panel, which is a map picker and a different feature.");
+            sb.AppendLine("#");
+            sb.AppendLine("# GROUND: whether the map has a Soil folder. Without one every subtile");
+            sb.AppendLine("# ends with no surface type and the ground draws black. That is the");
+            sb.AppendLine("# studio's test map, not a fault in the game.");
+            sb.AppendLine();
+            sb.Append("scenario".PadRight(34)).Append("map".PadRight(26)).AppendLine("ground");
+
+            var rows = new List<string>();
+            foreach (var entry in PlaceGameEntities.AllScenariosAndTheirMaps())
+            {
+                string ground = HasGroundTextures(entry.Value) ? "yes" : "BLACK";
+                rows.Add(entry.Key.ToString().PadRight(34) + entry.Value.PadRight(26) + ground);
+            }
+            rows.Sort(StringComparer.OrdinalIgnoreCase);
+            foreach (string row in rows)
+            {
+                sb.AppendLine(row);
+            }
+
+            File.WriteAllText(ScenarioListFileName, sb.ToString());
+        }
+        catch (Exception)
+        {
+            // A list nobody can write is not worth failing a startup over.
+        }
+    }
+
+    /// <summary>
+    /// Whether a map folder carries the layer that gives the terrain a surface type. Missing is
+    /// the normal state for the studio's test maps and MapLoader returns quietly for it, which is
+    /// exactly why it needs saying out loud here.
+    /// </summary>
+    private static bool HasGroundTextures(string mapKey)
+    {
+        try
+        {
+            return Directory.Exists(Path.Combine("data", "Maps", mapKey, "Soil"));
+        }
+        catch (Exception)
+        {
             return false;
         }
     }

@@ -177,13 +177,19 @@ public static class StateDumpMod
     }
 
     /// <summary>
-    /// What this colonist is doing, by the game's own name for it.
+    /// What this colonist is doing, as the whole chain of goals rather than one of them.
     ///
     /// Goals nest: GoalThink is a CompositeGoal whose queue holds what it decided to do, and that
-    /// entry is normally composite in turn. The leaf of that chain is the live answer. Goal.GetStatus
-    /// is the studio's own description and the same text the interface shows - but the BASE returns
-    /// the empty string and most goals never override it, so the type name carries the report and
-    /// the description is appended only where a goal provides one.
+    /// entry is normally composite in turn. Reporting only the leaf loses the reason for it, and
+    /// reporting only the root says "GoalThink" for everyone - which is what the first two dumps
+    /// did. The chain, joined with '>', says both and is still one greppable field.
+    ///
+    /// Goal.GetStatus is the studio's own description and the same text the interface shows, but
+    /// the BASE returns the empty string and most goals never override it, so the type name
+    /// carries each link and a description is appended only where a goal provides one.
+    ///
+    /// A bare "GoalThink" now means what it says: the queue is empty and this colonist is between
+    /// decisions, rather than the dump having failed to look.
     /// </summary>
     private static string CurrentGoal(Entity person)
     {
@@ -194,12 +200,15 @@ public static class StateDumpMod
         }
         try
         {
-            // Descend to the leaf. GoalThink is a CompositeGoal and the front of its queue is what
-            // it decided to do - but that entry is usually composite in turn, and only the bottom
-            // of the chain names an actual activity rather than a category of one.
+            var chain = new StringBuilder();
             Goal goal = brain;
             for (int depth = 0; depth < 16; depth++)
             {
+                if (chain.Length > 0)
+                {
+                    chain.Append('>');
+                }
+                chain.Append(Describe(goal));
                 if (!(goal is CompositeGoal composite) || composite.Subgoals == null
                     || composite.Subgoals.Count == 0)
                 {
@@ -212,19 +221,30 @@ public static class StateDumpMod
                 }
                 goal = next;
             }
-
-            // Goal.GetStatus is virtual and the BASE returns "", so most goals answer nothing at
-            // all - which is why the first dump read "goal -" for every colonist. The type name
-            // always answers, so report that and append the description only where one exists.
-            string status = goal.GetStatus();
-            string name = goal.GetType().Name;
-            return string.IsNullOrWhiteSpace(status) ? name : name + ":" + status;
+            return chain.ToString();
         }
         catch (Exception)
         {
             return "?";
         }
     }
+
+    /// <summary>One link of the chain: its type, and its own words for itself where it has any.</summary>
+    private static string Describe(Goal goal)
+    {
+        string name = goal.GetType().Name;
+        string status;
+        try
+        {
+            status = goal.GetStatus();
+        }
+        catch (Exception)
+        {
+            return name;
+        }
+        return string.IsNullOrWhiteSpace(status) ? name : name + ":" + status;
+    }
+
 
     private static float HitpointFraction(Entity person)
     {
