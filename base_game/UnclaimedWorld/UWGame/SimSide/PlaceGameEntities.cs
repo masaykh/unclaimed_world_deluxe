@@ -173,13 +173,15 @@ public class PlaceGameEntities
 		// the same conclusion from the other end: "I wonder if MapManager.TileMap is not taken to
 		// got needful mapTileWidth and mapTileHeight at old scenarios".
 		//
-		// THE ORIGINAL MAP IS NOT RECOVERABLE. The table lost its per-scenario assignments at some
-		// point - 86 of the 90 scenarios point at "d Mezzomap MLo", and the only two that kept
-		// distinct names named folders that had since been renamed. So this is the smallest
-		// shipped map that actually contains the scenario's coordinates, not the map it was
-		// written for: 128x128, and it has the Soil and Vegetation layers so the ground is drawn.
-		// If the layout looks wrong, that is why, and any other 128x128 map is as good a guess.
-		AddScenario(DebugScenarios.MapApril2013, "b Halfsize", MapApril2013);
+		// THE MAP IS "a Demo", AND THAT IS RECOVERED RATHER THAN GUESSED. The table lost its
+		// per-scenario assignments at some point, so the source no longer says; this build first
+		// used the smallest map that merely contained the coordinates. Kastuk identified the real
+		// one from having played it: the 2013 Demo map is the only other scenario with a crashed
+		// ship, it has a large river through the middle, and he matched the layout against a
+		// surviving screenshot of the crash site camp and against this map's heightmap.
+		//
+		// 256x256, with Soil and Vegetation, so the ground draws.
+		AddScenario(DebugScenarios.MapApril2013, "a Demo", MapApril2013);
 		AddScenario(DebugScenarios.QuarterSizeMap, "d Mezzomap MLo", QuarterSizeMap);
 		AddScenario(DebugScenarios.DemoIslandMap, "d Mezzomap MLo", DemoIslandMap);
 		AddScenario(DebugScenarios.QuarterSizeMap_Alt_Test_v1, "d Mezzomap MLo", QuarterSizeMap_Alt_Test_v1);
