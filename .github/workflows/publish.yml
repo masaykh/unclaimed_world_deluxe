@@ -62,6 +62,25 @@ jobs:
             dotnet build "$p"/*.csproj -c Release -p:UwPlatform=GL
           done
 
+      # EVERY SHELL SCRIPT MUST PARSE.
+      #
+      # Two commits landed on main adding a guard to the effects build and the GL packaging step,
+      # each with a stray `fi`. Neither script parsed, so both died before their first line of
+      # work - and nothing noticed, because the only gate that runs them needs a copy of the game
+      # and therefore cannot run here. A script that cannot be parsed is the cheapest possible
+      # thing to catch and the most annoying to debug: the error names a line nowhere near the
+      # mistake, and the failure looks nothing like the problem.
+      #
+      # bash -n parses without executing, so this is safe on scripts that would otherwise want a
+      # game, a network or an hour.
+      - name: Shell scripts parse
+        run: |
+          rc=0
+          for f in $(find tools -name '*.sh' | sort); do
+            if bash -n "$f"; then echo "  ok    $f"; else echo "  FAIL  $f"; rc=1; fi
+          done
+          exit $rc
+
       # A document that is confidently wrong is worse than one that is missing - the reader has
       # no reason to doubt it. Four claims outlived what they described before this existed.
       - name: Documents are current
