@@ -319,6 +319,21 @@ for id in mapedge.stopAtEdge healing.fullRecovery healing.needsDrivenRate selfpr
   echo "$out" | grep -q "$id = false"     && pass "$id is registered and reads from the file"     || fail "$id did not reach the registry (dataexport did not report it)"
 done
 
+# agent.enabled is checked in the ON direction, and that is not fussiness. It defaults to false,
+# so writing false and looking for it proves only that the default is the default - the same trap
+# the debug overlay toggles fell into. Switching it ON is the only way to see the file reach the
+# registry.
+d=$(new_install case11e); write_setting "$d" agent.enabled true
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+echo "$out" | grep -q "agent.enabled = true"   && pass "agent.enabled is registered and reads from the file"   || { echo "$out" | grep -i "agent" | sed 's/^/      /';        fail "agent.enabled did not reach the registry"; }
+
+# agent.turnSeconds is a CHOICE, like unorderedThreats below, so it needs its own two lines. It
+# is the only control on how much game time passes between an agent's moves, and a mod whose turn
+# length silently fell back to the default would look like the agent being ignored.
+d=$(new_install case11d); write_setting "$d" agent.turnSeconds 300
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+echo "$out" | grep -q "agent.turnSeconds = 300"   && pass "agent.turnSeconds is registered and reads a choice from the file"   || { echo "$out" | grep -i turnSeconds | sed 's/^/      /';        fail "agent.turnSeconds did not reach the registry"; }
+
 # selfpreservation.unorderedThreats is a CHOICE, not a toggle, so the loop above cannot carry it -
 # "false" is not one of its values. Worth its own two lines rather than leaving the mod's main
 # switch unchecked: it is the one that replaced the stance gate, and the stance gate is the bug.

@@ -104,6 +104,7 @@ internal static class Program
 		UWGame.Mods.DisassemblyMod.RegisterSettings();
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();
+		UWGame.Mods.AgentMod.RegisterSettings();
 		if (UWGame.Mods.UnhiddenMod.Enabled)
 		{
 			UWGame.Mods.UnhiddenMod.RegisterSettings();

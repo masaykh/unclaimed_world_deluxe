@@ -998,6 +998,9 @@ public class Client : GameScreen
 		// MOD: samples the colony to a text file on a game-time interval, so a change can be
 		// checked by reading rather than by watching. Returns on its first line when off.
 		UWGame.Mods.StateDumpMod.Sample();
+		// MOD: pauses the game between turns and swaps files with whatever is playing it -
+		// agent/observe.txt out, agent/act.xml in. Returns on its first line when off.
+		UWGame.Mods.AgentMod.Tick(base.Controller);
 		bool limitFramerateWhenPaused = base.Controller.Options.LimitFramerateWhenPaused;
 		if (base.IsActive)
 		{

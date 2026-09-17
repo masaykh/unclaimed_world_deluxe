@@ -161,6 +161,7 @@
     precisely the failure this whole arrangement exists to make impossible.
   -->
   <ItemGroup Condition="'$(UwGameplayMods)' == 'true'">
+    <Compile Remove="UWGame\Mods\AgentMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\BalancedDietMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DebugMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\StateDumpMod.Absent.cs" />
@@ -171,6 +172,7 @@
     <Compile Remove="UWGame\Mods\SelfPreservationMod.Absent.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\BalancedDietMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DebugMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StateDumpMod.cs" />
