@@ -81,6 +81,12 @@ public class Replayer
 
 	public void EndReplay()
 	{
+		// PORT DEVIATION 20. A replay that ran to the end used to say nothing at all, which made
+		// "it matched" and "it was never compared" the same observable outcome. The verdict is
+		// written beside the replay now, so a run that proves determinism leaves evidence of it
+		// rather than merely not crashing.
+		trace?.Finish();
+		trace = null;
 		The.InGameUI.MenuDialog.QuitToMainMenu();
 		inputManager.SetToDefaultMode();
 		IsPlaying = false;

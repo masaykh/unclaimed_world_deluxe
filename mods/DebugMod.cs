@@ -66,6 +66,8 @@ public static class DebugMod
 
     private static ModSetting testScenario;
 
+    private static ModSetting recordGame;
+
     private static string appliedSignature;
 
     private static bool reportedBadScenario;
@@ -79,9 +81,38 @@ public static class DebugMod
                      "more. An unrecognised name writes the full list to Errors.txt and uses " +
                      "the studio's default."));
 
+    /// <summary>
+    /// Whether to record every session for replay.
+    ///
+    /// Options.RecordGame is the STUDIO'S switch and it works end to end - Controller reads it,
+    /// Recorder opens the files, LoadingFinished starts the recording, the dev panel's LOAD REPLAY
+    /// plays it back. What it never had is a control: it lives in Options.xml and nowhere else, so
+    /// recording a session meant knowing the field was there and editing a file by hand. That is
+    /// why a feature the studio finished went unused.
+    ///
+    /// Off by default, because a recording writes a file per session and most people want neither.
+    /// </summary>
+    public static ModSetting RecordGameSetting =>
+        recordGame ?? (recordGame = ModSettings.Toggle(
+            ModId, "recordGame", "RECORD SESSIONS FOR REPLAY", defaultValue: false,
+            toolTip: "Writes every session to user/Replays, with the commands you gave and a "
+                   + "trace of the simulation's random draws. LOAD REPLAY in the dev panel plays "
+                   + "one back and reports whether it came out identical."));
+
+    /// <summary>
+    /// Whether the game should record, given what Options.xml said. The studio's value is the
+    /// fallback, so with this mod out the behaviour is exactly theirs.
+    /// </summary>
+    public static bool RecordGame(bool studioValue)
+    {
+        RegisterSettings();
+        return RecordGameSetting.On || studioValue;
+    }
+
     public static void RegisterSettings()
     {
         _ = TestScenario;
+        _ = RecordGameSetting;
         if (overlaySettings != null)
         {
             return;
@@ -101,7 +132,8 @@ public static class DebugMod
     {
         get
         {
-            if (!string.Equals(TestScenario.Value, StudioTestScenario, StringComparison.Ordinal))
+            if (!string.Equals(TestScenario.Value, StudioTestScenario, StringComparison.Ordinal)
+                || RecordGameSetting.On)
             {
                 return true;
             }

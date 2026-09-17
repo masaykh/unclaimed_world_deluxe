@@ -157,7 +157,11 @@ public class Controller : DrawableGameComponent
 		StatsAndAchievements.Initialize();
 		LoadOptionSettings();
 		LoadProgress();
-		recorder.RecordDuringPlay = Options.RecordGame;
+		// MOD: Options.RecordGame is the studio's switch and it works - it is just not reachable.
+		// It lives in Options.xml with no control anywhere in the interface, so recording a
+		// session meant knowing the field existed and hand-editing a file. The mod puts it in the
+		// MODS menu; with the mod out this is Options.RecordGame exactly as before.
+		recorder.RecordDuringPlay = UWGame.Mods.DebugMod.RecordGame(Options.RecordGame);
 	}
 
 	public void UpdateNewStateFromInputDevices()

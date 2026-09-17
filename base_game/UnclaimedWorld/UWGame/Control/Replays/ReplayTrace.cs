@@ -179,6 +179,7 @@ public sealed class ReplayTrace : IDisposable
         }
         if (string.Equals(recordedLines[index], line, StringComparison.Ordinal))
         {
+            framesCompared++;
             return true;
         }
 
@@ -232,6 +233,60 @@ public sealed class ReplayTrace : IDisposable
             // Reporting must never be the thing that takes the run down.
         }
     }
+
+    /// <summary>The name of the file a finished replay leaves behind, matched or not.</summary>
+    public const string VerdictFileName = "ReplayVerdict.txt";
+
+    private int framesCompared;
+    /// <summary>
+    /// Writes the verdict of a finished replay.
+    ///
+    /// A replay that ran to the end used to say nothing, which made "it matched" and "it was never
+    /// compared" the same observable outcome - and the second is what happens when there is no
+    /// recorded trace to compare against. Saying which is the whole value of running one.
+    /// </summary>
+    public void Finish()
+    {
+        if (folder == null)
+        {
+            return;
+        }
+        try
+        {
+            var sb = new StringBuilder();
+            if (!HasRecording)
+            {
+                sb.AppendLine("NOT COMPARED.");
+                sb.AppendLine();
+                sb.AppendLine("This replay folder has no " + FileName + ", so there was nothing to");
+                sb.AppendLine("check the run against. A replay recorded before the trace existed is");
+                sb.AppendLine("in this state - record a new one to get a verdict.");
+            }
+            else if (reportedDivergence)
+            {
+                sb.AppendLine("DIVERGED.");
+                sb.AppendLine();
+                sb.AppendLine("See " + DivergenceFileName + " beside this file for the frame it");
+                sb.AppendLine("happened on and the draws around it.");
+            }
+            else
+            {
+                sb.AppendLine("MATCHED. This run was deterministic.");
+                sb.AppendLine();
+                sb.AppendLine("    frames compared   " + framesCompared);
+                sb.AppendLine("    random draws      " + drawsTotal);
+                sb.AppendLine();
+                sb.AppendLine("Every draw in the same order from the same call sites, and the world");
+                sb.AppendLine("in the same place at every frame.");
+            }
+            File.WriteAllText(Path.Combine(folder, VerdictFileName), sb.ToString());
+        }
+        catch (Exception)
+        {
+            // A verdict that cannot be written is not worth taking the run down for.
+        }
+    }
+
 
     public void Dispose()
     {

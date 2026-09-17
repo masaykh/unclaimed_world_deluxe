@@ -27,6 +27,15 @@ public static class DebugMod
     }
 
     /// <summary>
+    /// The studio's own Options.RecordGame, unchanged. Without the mod there is no control for it
+    /// and it stays exactly as reachable - or not - as the studio left it.
+    /// </summary>
+    public static bool RecordGame(bool studioValue)
+    {
+        return studioValue;
+    }
+
+    /// <summary>
     /// Writes nothing. Every Kensei.Dev overlay stays at its shipped value - which is off, since
     /// nothing in the retail game ever set one.
     /// </summary>
