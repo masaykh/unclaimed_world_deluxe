@@ -44,6 +44,9 @@ public class Recorder
 	/// </summary>
 	private ReplayTrace trace;
 
+	/// <summary>PORT DEVIATION 21. The per-frame count of time-sliced AI cycles. See CycleSchedule.</summary>
+	private CycleSchedule cycleSchedule;
+
 	/// <summary>The folder this recording is being written into, for the trace to share.</summary>
 	private string replayFolderPath;
 
@@ -195,6 +198,8 @@ public class Recorder
 		{
 			trace = new ReplayTrace();
 			trace.BeginRecording(replayFolderPath);
+			cycleSchedule = new CycleSchedule();
+			cycleSchedule.BeginRecording(replayFolderPath);
 		}
 		replayWriter.Write(backBufferHeight);
 		replayWriter.Write(backBufferWidth);
@@ -252,6 +257,8 @@ public class Recorder
 		isRecording = false;
 		trace?.Dispose();
 		trace = null;
+		cycleSchedule?.Dispose();
+		cycleSchedule = null;
 		if (replayWriter != null)
 		{
 			replayWriter.Close();
@@ -290,6 +297,7 @@ public class Recorder
 		ReplayVerificationData verificationData = controller.RetrieveVerificationData();
 		verificationData.Write(replayWriter);
 		replayWriter.Flush();
+		cycleSchedule?.Record(currentFrameIndex, The.Sim?.CycleManager == null ? 0 : The.Sim.CycleManager.CyclesLastUpdate);
 		trace?.EndFrame(currentFrameIndex, verificationData);
 	}
 }

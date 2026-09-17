@@ -513,6 +513,10 @@ public class Controller : DrawableGameComponent
 		}
 		if (!replayPaused)
 		{
+			// PORT DEVIATION 21. The work schedule, applied before anything in this frame runs.
+			// CycleManager would otherwise do as much time-sliced AI work as nine milliseconds
+			// buys, and a replay - with nothing to load - buys more of it than the recording did.
+			replayer.ApplyRecordedWorkSchedule(replayer.CurrentReplay.currentFrameIndex);
 			replayDisplayedTime = GetDisplayedReplayTime().Value.ToString();
 			gameTime = replayer.CurrentReplay.GetCurrentFrame().GameTime;
 		}

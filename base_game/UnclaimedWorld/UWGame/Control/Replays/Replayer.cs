@@ -40,6 +40,9 @@ public class Replayer
 	/// <summary>PORT DEVIATION 20. The recorded draw trace this replay is compared against.</summary>
 	private ReplayTrace trace;
 
+	/// <summary>PORT DEVIATION 21. The recorded work schedule this replay must follow.</summary>
+	private CycleSchedule cycleSchedule;
+
 	/// <summary>Whether this replay has already been found to differ from what was recorded.</summary>
 	public bool Diverged => trace != null && trace.Diverged;
 
@@ -86,6 +89,8 @@ public class Replayer
 		// written beside the replay now, so a run that proves determinism leaves evidence of it
 		// rather than merely not crashing.
 		trace?.Finish();
+		cycleSchedule?.Dispose();
+		cycleSchedule = null;
 		trace = null;
 		The.InGameUI.MenuDialog.QuitToMainMenu();
 		inputManager.SetToDefaultMode();
@@ -107,6 +112,8 @@ public class Replayer
 		// missing rather than absent by design. It is read now.
 		trace = new ReplayTrace();
 		trace.BeginComparing(replayFolderPath);
+		cycleSchedule = new CycleSchedule();
+		cycleSchedule.BeginReplaying(replayFolderPath);
 		_ = replayFolderPath + "\\AIStates.UWRepStates";
 		CurrentReplay = new ReplayData(controller);
 		CurrentReplay.LoadReplay(replayFolderPath, replayFilePath, commandFilePath, gameParamsPath, timeToPause);
@@ -141,6 +148,27 @@ public class Replayer
 		trace?.ReportStateMismatch(frameIndex, recorded, live);
 		trace?.Finish();
 	}
+
+	/// <summary>
+	/// PORT DEVIATION 21. Makes this frame run the same amount of time-sliced AI work the
+	/// recording ran, instead of as much as nine milliseconds happens to buy.
+	///
+	/// Called at the top of the frame, before anything updates. Past the end of the schedule, or
+	/// with no schedule recorded, the budget is cleared and the clock decides again - so an older
+	/// replay behaves exactly as it did.
+	/// </summary>
+	public void ApplyRecordedWorkSchedule(int frameIndex)
+	{
+		if (The.Sim?.CycleManager == null)
+		{
+			return;
+		}
+		The.Sim.CycleManager.CycleBudget = cycleSchedule?.For(frameIndex);
+	}
+
+
+	/// <summary>Whether this replay has a recorded work schedule to follow.</summary>
+	public bool HasWorkSchedule => cycleSchedule != null && cycleSchedule.HasRecording;
 	/// </summary>
 	public bool CompareFrame(int frameIndex, ReplayVerificationData world)
 	{
