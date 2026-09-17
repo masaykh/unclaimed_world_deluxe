@@ -49,7 +49,14 @@ public sealed class ReplayTrace : IDisposable
 
     private const int RingSize = 64;
 
-    private const string Header = "# frame\tdraws\thash\tentityX\tentityY\tcamX\tcamY";
+    // simDays is the SIMULATION'S OWN CLOCK, and it is here because of what the first real
+    // divergence turned out to be. Draws and hash matched and only the position differed, which by
+    // the legend in Divergence.txt reads as a floating-point difference - but laid against the
+    // recorded series the replay was simply four frames AHEAD in its movement, which is a
+    // different fault entirely. With the sim clock in the line, "the same decisions over a
+    // different amount of game time" can be told apart from "the same decisions over the same
+    // time, different arithmetic" without decoding Replay.UWRep by hand.
+    private const string Header = "# frame\tdraws\thash\tentityX\tentityY\tcamX\tcamY\tsimDays";
 
     private readonly string[] ring = new string[RingSize];
 
@@ -68,6 +75,9 @@ public sealed class ReplayTrace : IDisposable
     private ulong hash = 14695981039346656037uL;
 
     private bool reportedDivergence;
+
+    /// <summary>Set when the recorded trace was written by a build with different columns.</summary>
+    private bool wrongFormat;
 
     /// <summary>Whether a comparison has already failed. Once true, nothing more is reported.</summary>
     public bool Diverged => reportedDivergence;
@@ -102,6 +112,16 @@ public sealed class ReplayTrace : IDisposable
         {
             string path = Path.Combine(replayFolder, FileName);
             recordedLines = File.Exists(path) ? File.ReadAllLines(path) : null;
+            // A trace written by an older build has different columns, and comparing against it
+            // would report a divergence on the first frame - a change in this file read as a
+            // change in the simulation. Refused outright, which comes out as NOT COMPARED.
+            if (recordedLines != null
+                && (recordedLines.Length == 0
+                    || !string.Equals(recordedLines[0], Header, StringComparison.Ordinal)))
+            {
+                recordedLines = null;
+                wrongFormat = true;
+            }
             DropTruncatedLastLine();
         }
         catch (Exception)
@@ -134,8 +154,8 @@ public sealed class ReplayTrace : IDisposable
         }
     }
 
-    /// <summary>frame, draws, hash, entityX, entityY, camX, camY.</summary>
-    private const int FieldsPerLine = 7;
+    /// <summary>frame, draws, hash, entityX, entityY, camX, camY, simDays.</summary>
+    private const int FieldsPerLine = 8;
 
     private static int CountFields(string line)
     {
@@ -194,8 +214,15 @@ public sealed class ReplayTrace : IDisposable
     /// </summary>
     public bool EndFrame(int frameIndex, ReplayVerificationData world)
     {
+        // The simulation's own clock, not the frame's wall time: the replay substitutes the
+        // recorded GameTime, so comparing that would compare a number against itself. What can
+        // differ, and did, is how far the simulation actually advanced.
+        double simDays = UWGame.The.Sim?.DateAndTime == null
+            ? 0.0
+            : UWGame.The.Sim.DateAndTime.CurrentTimeDateYear.TotalDays;
+
         string line = string.Create(CultureInfo.InvariantCulture,
-            $"{frameIndex}\t{drawsTotal}\t{hash:x16}\t{world.RepresentativeEntityLocation.X:R}\t{world.RepresentativeEntityLocation.Y:R}\t{world.MapWindowLocation.X:R}\t{world.MapWindowLocation.Y:R}");
+            $"{frameIndex}\t{drawsTotal}\t{hash:x16}\t{world.RepresentativeEntityLocation.X:R}\t{world.RepresentativeEntityLocation.Y:R}\t{world.MapWindowLocation.X:R}\t{world.MapWindowLocation.Y:R}\t{simDays:R}");
 
         drawsThisFrame = 0;
 
@@ -250,7 +277,8 @@ public sealed class ReplayTrace : IDisposable
             sb.AppendLine($"    this run  {actual}");
             sb.AppendLine();
             sb.AppendLine("Columns: frame, total draws, hash of the draw-label sequence, the");
-            sb.AppendLine("representative entity's X and Y, the camera's X and Y.");
+            sb.AppendLine("representative entity's X and Y, the camera's X and Y, and the");
+            sb.AppendLine("simulation's own clock in days.");
             sb.AppendLine();
             sb.AppendLine("Read it like this:");
             sb.AppendLine("  draws differ      - the simulation asked for randomness a different");
@@ -259,10 +287,15 @@ public sealed class ReplayTrace : IDisposable
             sb.AppendLine("                    - the same number of draws from different call");
             sb.AppendLine("                      sites, so the order of work changed. Unordered");
             sb.AppendLine("                      iteration over a HashSet or Dictionary does this.");
-            sb.AppendLine("  draws and hash same, positions differ");
-            sb.AppendLine("                    - identical decisions, different arithmetic. THIS");
-            sb.AppendLine("                      is the floating-point case, and it is the only");
-            sb.AppendLine("                      one of the three that is.");
+            sb.AppendLine("  draws and hash same, simDays differs");
+            sb.AppendLine("                    - the same decisions over a DIFFERENT AMOUNT OF GAME");
+            sb.AppendLine("                      TIME. The positions will differ too and it will");
+            sb.AppendLine("                      look like arithmetic; it is not. Read the clock");
+            sb.AppendLine("                      column first.");
+            sb.AppendLine("  draws, hash and simDays all same, positions differ");
+            sb.AppendLine("                    - identical decisions over identical time, different");
+            sb.AppendLine("                      arithmetic. THIS is the floating-point case, and");
+            sb.AppendLine("                      it is the only one of the four that is.");
             sb.AppendLine();
             sb.AppendLine($"The last {RingSize} draw labels before the break, oldest first:");
             for (int i = 0; i < RingSize; i++)
@@ -367,9 +400,18 @@ public sealed class ReplayTrace : IDisposable
             {
                 sb.AppendLine("NOT COMPARED.");
                 sb.AppendLine();
-                sb.AppendLine("This replay folder has no " + FileName + ", so there was nothing to");
-                sb.AppendLine("check the run against. A replay recorded before the trace existed is");
-                sb.AppendLine("in this state - record a new one to get a verdict.");
+                if (wrongFormat)
+                {
+                    sb.AppendLine("This recording's " + FileName + " was written by an earlier build");
+                    sb.AppendLine("and does not have the same columns, so there was nothing this run");
+                    sb.AppendLine("could honestly be checked against. Record a new session.");
+                }
+                else
+                {
+                    sb.AppendLine("This replay folder has no " + FileName + ", so there was nothing to");
+                    sb.AppendLine("check the run against. A replay recorded before the trace existed is");
+                    sb.AppendLine("in this state - record a new one to get a verdict.");
+                }
             }
             else if (reportedDivergence)
             {
