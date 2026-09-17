@@ -78,8 +78,11 @@ public static class DebugMod
             ModId, "testScenario", "TEST BUTTON SCENARIO", StudioTestScenario,
             toolTip: "The name of one of the debug scenarios in PlaceGameEntities - NeedsTest, " +
                      "FightTest, CookingTest, FindPreyTest, StorageTest, RobotTest and ninety " +
-                     "more. An unrecognised name writes the full list to Errors.txt and uses " +
-                     "the studio's default."));
+                     "more. NOTE: 86 of the 90 run on 'd Mezzomap MLo', a studio test map that " +
+                     "ships with no Soil or Vegetation layer, so the GROUND IS BLACK on those - " +
+                     "that is the map, not the port. MidsizeTest and mineShowcase are the two " +
+                     "with real terrain. An unrecognised name writes the full list to Errors.txt " +
+                     "and uses the studio's default."));
 
     /// <summary>
     /// Whether to record every session for replay.
@@ -124,6 +127,28 @@ public static class DebugMod
                 ModId, Overlays[i][0], "OVERLAY: " + Overlays[i][2], defaultValue: false,
                 toolTip: "Draws the game's own '" + Overlays[i][1] + "' developer overlay. "
                        + "Off by default; costs nothing when off.");
+        }
+    }
+
+
+    /// <summary>
+    /// Whether any overlay switch is on. Separate from <see cref="Enabled"/> because the core's
+    /// draw path asks this question every frame: Enabled is also true for a changed test scenario
+    /// or for recording, neither of which should cost eleven dictionary lookups per frame.
+    /// </summary>
+    public static bool AnyOverlayOn
+    {
+        get
+        {
+            RegisterSettings();
+            foreach (ModSetting setting in overlaySettings)
+            {
+                if (setting.On)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

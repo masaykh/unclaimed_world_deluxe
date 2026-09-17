@@ -47,3 +47,6 @@ RenderTrace.txt
 *.suo
 .DS_Store
 Thumbs.db
+
+# The unpacked build handed over for testing. Game content; never committed.
+test_build/

@@ -1074,6 +1074,29 @@ public class MapClient
 		}
 		oldMapWindowWorldPosition = MapWindowWorldPosition;
 		UpdateHUD();
+		DrawDeveloperOverlays();
+	}
+
+	/// <summary>
+	/// PORT FIX. DrawDebugInfo reads all eleven Kensei.Dev overlay options and has NO CALLERS in
+	/// the shipped source, which is why switching one on did nothing: the dictionary was written
+	/// and never read into a draw. The switches were not the gate; this call was the missing part.
+	///
+	/// Here and not elsewhere because of ordering. The overlays queue into Kensei.Dev.Shape, whose
+	/// buffers are drained by Kensei.Dev.Manager.Draw, which runs inside Renderer.Draw - and
+	/// Client.Draw calls The.MapUI.Draw() immediately before Renderer.Draw(). Queueing any later
+	/// would leave the shapes to be flushed a frame late; any earlier and Shape is not initialised.
+	///
+	/// Guarded so that with the mod absent the condition is a compile-time false and the body is
+	/// never entered, which is exactly what the studio shipped.
+	/// </summary>
+	private void DrawDeveloperOverlays()
+	{
+		if (!UWGame.Mods.DebugMod.AnyOverlayOn)
+		{
+			return;
+		}
+		DrawDebugInfo();
 	}
 
 	public void DrawPathSearch()

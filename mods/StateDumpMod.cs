@@ -177,12 +177,13 @@ public static class StateDumpMod
     }
 
     /// <summary>
-    /// What this colonist is doing, by the game's own words for it.
+    /// What this colonist is doing, by the game's own name for it.
     ///
-    /// The front subgoal is the live answer - GoalThink is a CompositeGoal and its queue holds
-    /// what it decided to do - and Goal.GetStatus is the studio's own description of it, the same
-    /// text the interface shows. Falls back to the brain's own status when the queue is empty,
-    /// which is a colonist between decisions rather than an error.
+    /// Goals nest: GoalThink is a CompositeGoal whose queue holds what it decided to do, and that
+    /// entry is normally composite in turn. The leaf of that chain is the live answer. Goal.GetStatus
+    /// is the studio's own description and the same text the interface shows - but the BASE returns
+    /// the empty string and most goals never override it, so the type name carries the report and
+    /// the description is appended only where a goal provides one.
     /// </summary>
     private static string CurrentGoal(Entity person)
     {
@@ -193,15 +194,31 @@ public static class StateDumpMod
         }
         try
         {
-            if (brain.Subgoals != null && brain.Subgoals.Count > 0)
+            // Descend to the leaf. GoalThink is a CompositeGoal and the front of its queue is what
+            // it decided to do - but that entry is usually composite in turn, and only the bottom
+            // of the chain names an actual activity rather than a category of one.
+            Goal goal = brain;
+            for (int depth = 0; depth < 16; depth++)
             {
-                Goal front = brain.Subgoals.Peek();
-                if (front != null)
+                if (!(goal is CompositeGoal composite) || composite.Subgoals == null
+                    || composite.Subgoals.Count == 0)
                 {
-                    return front.GetStatus() ?? "?";
+                    break;
                 }
+                Goal next = composite.Subgoals.Peek();
+                if (next == null)
+                {
+                    break;
+                }
+                goal = next;
             }
-            return brain.GetStatus() ?? "idle";
+
+            // Goal.GetStatus is virtual and the BASE returns "", so most goals answer nothing at
+            // all - which is why the first dump read "goal -" for every colonist. The type name
+            // always answers, so report that and append the description only where one exists.
+            string status = goal.GetStatus();
+            string name = goal.GetType().Name;
+            return string.IsNullOrWhiteSpace(status) ? name : name + ":" + status;
         }
         catch (Exception)
         {

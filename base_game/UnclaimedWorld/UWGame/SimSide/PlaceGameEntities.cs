@@ -217,7 +217,10 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.ReloadTest, "d Mezzomap MLo", ReloadTest);
 		AddScenario(DebugScenarios.CarcassNoMeat, "d Mezzomap MLo", CarcassNoMeat);
 		AddScenario(DebugScenarios.TrapTest, "d Mezzomap MLo", TrapTest);
-		AddScenario(DebugScenarios.mineShowcase, "k Map Oasis Valley 2016", mineShowcase);
+		// PORT FIX. The shipped map folder is "k Oasis Valley"; the code still asked for the
+		// pre-rename "k Map Oasis Valley 2016", which does not exist in data/Maps, so this
+		// scenario could never load a map at all.
+		AddScenario(DebugScenarios.mineShowcase, "k Oasis Valley", mineShowcase);
 		AddScenario(DebugScenarios.WorldMapTest, "d Mezzomap MLo", WorldMapTest);
 		AddScenario(DebugScenarios.MudBrick, "d Mezzomap MLo", MudBrickTest);
 		AddScenario(DebugScenarios.MusicTest, "d Mezzomap MLo", MusicTest);
@@ -238,7 +241,8 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.StationaryToolTest, "d Mezzomap MLo", StationaryToolTest);
 		AddScenario(DebugScenarios.CommTest, "d Mezzomap MLo", CommTest);
 		AddScenario(DebugScenarios.PierTest, "d Mezzomap MLo", PierTest);
-		AddScenario(DebugScenarios.MidsizeTest, "jx Map Hills Rivers Small", MidsizeTest);
+		// PORT FIX. Same rename: the folder is "jx Hills Rivers Small".
+		AddScenario(DebugScenarios.MidsizeTest, "jx Hills Rivers Small", MidsizeTest);
 		AddScenario(DebugScenarios.RepairTest, "d Mezzomap MLo", RepairTest);
 		AddScenario(DebugScenarios.ClayPitTest, "d Mezzomap MLo", ClayPitTest);
 		AddScenario(DebugScenarios.UpgradeTest, "d Mezzomap MLo", UpgradeTest);

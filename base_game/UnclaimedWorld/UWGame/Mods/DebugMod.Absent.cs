@@ -9,6 +9,9 @@ public static class DebugMod
     /// <summary>Always false: the mod is not present in this build.</summary>
     public const bool Enabled = false;
 
+    /// <summary>Always false: no overlay can be on when there is no switch for one.</summary>
+    public const bool AnyOverlayOn = false;
+
     /// <summary>The prefix the mod's settings would carry.</summary>
     public const string ModId = "debug";
 
