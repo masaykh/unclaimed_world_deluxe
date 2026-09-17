@@ -324,24 +324,18 @@ public class LoadingScreen : GameScreen
 		switch (simClientQueueState)
 		{
 		case SimClientQueueState.BEGIN:
-			The.LoadScreen.Progress("Sim Constructor...", 62);
-			simClientQueueState = SimClientQueueState.SimConstructor;
-			break;
-		case SimClientQueueState.SimConstructor:
-			if (The.Sim == null)
+			// PORT DIAGNOSTIC, CHECKED ONCE. A Sim that survived the last game would be reused by
+			// the SimConstructor case below rather than rebuilt, and then it is not the scenario's
+			// world that is played but the previous one, clock and all.
+			//
+			// This belongs HERE and nowhere else. LoadDataInThread calls QueueSimAndClientCtors in
+			// a `while (true)` loop and the SimConstructor case runs on every pass until
+			// QueueGameDataAndSimInit finishes - so a check there sees the Sim it just built and
+			// reports it as stale, once per pass. It wrote 423 lines in one load, each one opening
+			// and closing a file from the loading thread, and made the game unplayable. BEGIN runs
+			// exactly once.
+			if (The.Sim != null)
 			{
-				int? randomSeed = base.Controller.GetRandomSeed();
-				base.Controller.SaveScenarioForReplay(startGameParams);
-				The.Sim = new Sim(base.Controller, startGameParams, randomSeed);
-			}
-			else
-			{
-				// PORT DIAGNOSTIC. A Sim that survived the last game is reused here rather than
-				// rebuilt - and then it is not the scenario's world that is played, it is the
-				// previous one, clock and all. A replay loaded onto a reused Sim compares its
-				// first frame against a world that is already hours further on, which reads as a
-				// divergence on frame 0 with the clocks far apart. Sim.ClearData nulls this in
-				// Sim.Destroy, so reaching here at all means the game screen was not destroyed.
 				GameStateManagement.UnclaimedWorld.LogError(
 					"A Sim from the previous game was still alive when this one started, so the "
 					+ "world was NOT rebuilt. Its clock reads "
@@ -351,6 +345,16 @@ public class LoadingScreen : GameScreen
 							"R", System.Globalization.CultureInfo.InvariantCulture))
 					+ " days. Sim.Destroy did not run on the screen that was left.",
 					"Stale Sim reused");
+			}
+			The.LoadScreen.Progress("Sim Constructor...", 62);
+			simClientQueueState = SimClientQueueState.SimConstructor;
+			break;
+		case SimClientQueueState.SimConstructor:
+			if (The.Sim == null)
+			{
+				int? randomSeed = base.Controller.GetRandomSeed();
+				base.Controller.SaveScenarioForReplay(startGameParams);
+				The.Sim = new Sim(base.Controller, startGameParams, randomSeed);
 			}
 			if (The.Sim.QueueGameDataAndSimInit())
 			{
