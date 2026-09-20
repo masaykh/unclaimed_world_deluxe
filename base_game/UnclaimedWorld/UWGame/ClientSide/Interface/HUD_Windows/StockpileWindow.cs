@@ -151,6 +151,9 @@ public class StockpileWindow : HUDWindow
 		cpCategory = new CollapsablePanel(gui, CollapsablePanel.PanelType.StockpileHUD);
 		cpCategory.CollapsedHeight = outerGrid.ItemHeight;
 		outerGrid.AddEntry(entityCategory, cpCategory);
+		// UNHIDDEN MOD: same for the category header. SortOrder rather than the name, so categories
+		// keep the order the data gives them and only the items inside go alphabetical.
+		cpCategory.OrderByTag1 = entityCategory.SortOrder;
 		cpCategory.Init();
 		cpCategory.Title = entityCategory.Name.ToUpper(Config.Culture);
 		cpCategory.Width = outerGrid.Width;
@@ -257,6 +260,12 @@ public class StockpileWindow : HUDWindow
 	{
 		UIComponent uIComponent = new UIComponent(gui);
 		categoryGrid.AddEntry(entityType, uIComponent);
+		// UNHIDDEN MOD: give the row a sort key. Without one, DoCategorySorting below orders every
+		// row by a null OrderByTag1 - OrderBy is stable, so nothing moved and the sort looked like it
+		// did nothing at all. Reported by Kastuk as "already tried in Unhidden mod without success".
+		// PluralName is what BuySellPanel uses for the same job, so the stockpile now reads the way
+		// the trade window already does.
+		uIComponent.OrderByTag1 = entityType.PluralName;
 		CreateItemGridRow(entityType, GoalEvaluator.GetOwnerID(owner), useUIOwner: false, uIComponent, DataSheet.InfoToShow.Data, usePluralName: true, isRoot: true, out var _);
 		Label label = new Label(gui);
 		uIComponent.Add(label);
