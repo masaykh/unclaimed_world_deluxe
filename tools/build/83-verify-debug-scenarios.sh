@@ -73,7 +73,20 @@ while IFS='|' read -r key map fn; do
 
   # The method body, to its closing brace at column zero plus one tab - the file is tab-indented
   # and every method ends on a line that is exactly one tab and a brace.
-  awk -v s="$start" 'NR>s { if ($0=="\t}") exit; print }' "$SRC" > "$WORK/body.txt"
+  #
+  # STRIP THE CR FIRST, and this is why this gate was red in CI from the day it landed.
+  # .gitattributes says `*.cs text eol=crlf`, so EVERY checkout gets CRLF C# - Linux runners
+  # included. msys2 gawk reads in text mode and strips it; Linux awk does not, so the line is
+  # a tab, a brace and a CR, which never equals the tab-brace this compares against. The exit
+  # never fires and the body runs to end of file.
+  #
+  # It does not fail loudly, it fails wrongly: every scenario then measures the largest Point
+  # in the REST OF THE FILE, so they all report the same coordinates and 91 of 94 "fail".
+  # HuntTest is 17 lines read correctly and 2697 read that way.
+  #
+  # Nothing local catches it - on Windows the CR is gone before awk sees it. Reproduce the
+  # runner with  awk -v BINMODE=3  , which turns that translation off.
+  awk -v s="$start" 'NR>s { sub(/\r$/, ""); if ($0=="\t}") exit; print }' "$SRC" > "$WORK/body.txt"
 
   set -- $(grep -o 'new Point([0-9]*, *[0-9]*)' "$WORK/body.txt" \
     | tr -d 'newPoint() ' \
