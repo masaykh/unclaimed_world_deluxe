@@ -53,6 +53,39 @@ shift 2>/dev/null || true
 # graphics drivers, not a second first-class target.
 RIDS=${*:-"win-x64 linux-x64 osx-x64 osx-arm64 win-x64-dx"}
 
+# THE VERSION THE GAME DISPLAYS MUST BE THE VERSION ON THE ARCHIVE.
+#
+# UnclaimedWorld.GetVersion() reads AssemblyVersion off the running assembly, and
+# base_game/Directory.Build.props sets GenerateAssemblyInfo=false - so -p:Version cannot reach
+# it and Properties/AssemblyInfo.cs is the only source. Nothing connected that file to the tag,
+# and it stayed at 1.0 while v1.1, v1.2 and v1.3 were cut: three archives named for a version
+# their own main menu, fatal-error title and save panel all denied.
+#
+# Checked against the SOURCE rather than the built assembly, which is worth stating plainly:
+# reading an AssemblyVersion out of a DLL needs a tool, and this script runs on three platforms.
+# With SDK generation off, the attribute below IS what the compiler emits, so the two agree - but
+# this checks intent, not the artifact.
+#
+# Dev and test cuts (0.0-dev, 1.3-dxtest) carry a non-numeric suffix and are exempt; a release
+# number is enforced, so cutting 1.4 fails until AssemblyInfo.cs says 1.4.
+ASMINFO="base_game/UnclaimedWorld/Properties/AssemblyInfo.cs"
+ASMVER=$(grep -o 'AssemblyVersion("[0-9][0-9.]*")' "$ASMINFO" | head -1 | tr -dc '0-9.')
+[ -n "$ASMVER" ] || { echo "FATAL: no AssemblyVersion found in $ASMINFO" >&2; exit 1; }
+case "$VERSION" in
+  *[!0-9.]*) echo "    version:   $VERSION (pre-release suffix - assembly says $ASMVER, not checked)" ;;
+  *)
+    want=$(echo "$VERSION" | cut -d. -f1,2)
+    got=$(echo "$ASMVER" | cut -d. -f1,2)
+    if [ "$want" != "$got" ]; then
+      echo "FATAL: cutting $VERSION, but the game would report $got." >&2
+      echo "       $ASMINFO declares AssemblyVersion $ASMVER." >&2
+      echo "       Bump BOTH AssemblyVersion and AssemblyFileVersion there to $want.0.0," >&2
+      echo "       in the same commit as the tag, then re-run." >&2
+      exit 1
+    fi
+    ;;
+esac
+
 OUT="$UW_REPO/artifacts/release"
 STAGE="$UW_REPO/artifacts/release-stage"
 rm -rf "$STAGE"
