@@ -37,9 +37,10 @@ of the Community License and identify itself as an unofficial community project.
 
 ## What is in this repository, and in a release
 
-**The repository** carries the studio's released source and their asset **sources** — 3343
-textures, 247 models, 235 sounds, the music, the fonts, the shaders — plus the maps, the string
-table, the port's own code, the build tooling and the mods. It carries no compiled content: no
+**The repository** carries the studio's released source — unmodified, in `original_src/`, under
+§1 — and their asset **sources** — 3343 textures, 247 models, 235 sounds, the music, the fonts,
+the shaders — plus the maps, the string table, the port's own code, the build tooling and the
+mods. It carries no compiled content: no
 `.xnb`, because that is a build output.
 
 **A release archive** carries the compiled `Content/` as well, so it runs on its own.

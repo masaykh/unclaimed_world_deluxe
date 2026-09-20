@@ -1,0 +1,12 @@
+<Project>
+
+  <!--
+    The same stop for NuGet, which walks up separately for Directory.Packages.props. The root one
+    switches on central package management, and these projects carry their own versions on every
+    PackageReference - the combination is NU1008, on a tree that is not meant to restore at all.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+</Project>

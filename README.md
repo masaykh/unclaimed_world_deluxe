@@ -102,10 +102,17 @@ What is **not** done:
 
 - **`base_game/` is still the decompiled tree, not the studio's own source.** Not for want of the
   source: Refactored Games released it, it is public at
-  [spunky44/UnclaimedWorld](https://github.com/spunky44/UnclaimedWorld), and it has been compared
-  against this tree — 1801 types, 25,974 members, **zero differences at declaration level**. The
-  port was simply built from ILSpy output first, and moving it onto the real source is pending
-  work rather than a missing input. The whole delta is 51 files and ~3,400 lines, and the
+  [spunky44/UnclaimedWorld](https://github.com/spunky44/UnclaimedWorld), it is **in this
+  repository** at `original_src/`, and it has been compared against this tree — 1801 types,
+  25,974 members, **zero differences at declaration level**. The port was simply built from ILSpy
+  output first, and moving it onto the real source is pending work rather than a missing input.
+
+  **The visible cost until then is the comments.** Decompilers cannot recover them — they are not
+  in IL — so `base_game/` carries almost none of the studio's own commentary, and none of the
+  commented-out unfinished features people go looking for. That is **68,420 comment lines** that
+  exist in `original_src/` and not in `base_game/`; `Sim/PlaceGameEntities.cs` alone is 14,666
+  lines there against 3,812 here. Read `original_src/` for the reasoning, `base_game/` for what
+  runs, and see `original_src/PORT-README.md`. The whole delta is 51 files and ~3,400 lines, and the
   released source is in places *more* correct — MonoGame added `MathHelper.Max(int, int)`
   overloads XNA never had, so the decompiler resolved them and dropped casts the studio actually
   wrote.

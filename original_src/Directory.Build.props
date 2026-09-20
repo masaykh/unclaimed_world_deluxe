@@ -1,0 +1,14 @@
+<Project>
+
+  <!--
+    DELIBERATELY EMPTY, AND IT MUST STAY THAT WAY.
+
+    MSBuild walks UP the directory tree for Directory.Build.props and stops at the first one it
+    finds. This file is that stop. Without it, the 11 .csproj files under original_src/ would
+    inherit the repository root's props - Nullable, PathMap, UseArtifactsOutput, ArtifactsPath -
+    and a stray `dotnet build` here would start writing into artifacts/ alongside the real build.
+
+    Nothing in this directory is built. It is reference material; see README.md next to this file.
+  -->
+
+</Project>
