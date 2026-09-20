@@ -220,7 +220,6 @@ for rid in $RIDS; do
       exit 1
     }
     cp -rp "$UW_STEAM/Content" "$app/Content"
-    cp -p  "$UW_STEAM/steam_appid.txt" "$app/" 2>/dev/null || true
 
     ( cd "$EFFECTS" && find . -name '*.xnb' -exec cp -p {} "$app/Content/{}" \; )
     if [ "$UWPLATFORM" != "DX" ]; then
@@ -229,8 +228,6 @@ for rid in $RIDS; do
       rm -f "$app"/Content/Music/*.wma        # dead weight: the stubs point at the .ogg now
     fi
     rm -f "$app"/Content/MainMenu/*.wmv       # no DesktopGL VideoPlayer; the .uwanim replaces it
-
-    [ -f native/steam/steam_api64.dll ] && cp -p native/steam/steam_api64.dll "$app/" || true
 
     echo "    Content: $(find "$app/Content" -name '*.xnb' | wc -l) xnb  ($(du -sh "$app/Content" | cut -f1))"
   else
@@ -242,6 +239,45 @@ for rid in $RIDS; do
     fi
     echo "    port-content: $(find "$app/port-content" -name '*.xnb' | wc -l) xnb, $(ls "$app/port-content/Music"/*.ogg 2>/dev/null | wc -l) ogg"
   fi
+
+  # --- Steam -----------------------------------------------------------------------------------
+  # Steamworks.NET P/Invokes steam_api64.dll. Without it SteamManager.Initialize catches the
+  # DllNotFoundException and turns achievements off - so the game still RUNS, quietly minus its
+  # Steam integration. That is precisely the "looks like a release and is not" this script
+  # refuses everywhere else, and it is the one failure a startability check cannot see.
+  #
+  # This copy used to sit INSIDE the --full branch. The published archives are all --full, so
+  # they were correct and nothing noticed; every archive built the default way - which is what
+  # anyone building from source gets - shipped without it. Reported against a hand-built
+  # win-x64-dx, and it was never specific to DX.
+  #
+  # win-x64 only, and not by omission: native/steam holds Valve's Windows binary, and
+  # 12-fetch-steam-natives.sh fetches nothing for linux or macOS. A .dll in those archives would
+  # be cargo.
+  case "$PUBRID" in
+    win-x64)
+      # Committed, so this should never fire - it guards against a deleted or LFS-less checkout,
+      # not against a missing fetch step.
+      [ -f native/steam/steam_api64.dll ] || {
+        echo "  !! native/steam/steam_api64.dll is missing from the checkout." >&2
+        echo "     The archive would start and run with Steam silently off. Restore it with" >&2
+        echo "     'git checkout -- native/steam' or re-fetch:" >&2
+        echo "         sh tools/build/12-fetch-steam-natives.sh" >&2
+        exit 1; }
+      cp -p native/steam/steam_api64.dll "$app/"
+
+      # The appid matters as much as the native does: SteamAPI_InitEx needs to know which app
+      # it is, and outside a Steam-launched process this file is the only thing that says so, so
+      # without it init fails NoSteamClient even when steam_api64.dll loaded perfectly.
+      #
+      # WRITTEN, NOT COPIED, and that is the point. It used to be read out of $UW_STEAM, which
+      # made Steam integration depend on having the game installed for no reason: 284100 is a
+      # public constant - it is already in _release-install-md.sh as the store URL - and the
+      # steam_api64.dll beside it is COMMITTED to this repository. So nothing about Steam needs
+      # your install any more. UW_STEAM is for --full's compiled Content/ and nothing else.
+      echo 284100 > "$app/steam_appid.txt"
+      ;;
+  esac
 
   # --- licences and instructions --------------------------------------------------------------
   cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md how_to_use_mods.md "$app/"
@@ -288,6 +324,28 @@ DXNOTE
   for stale in hostfxr.dll hostpolicy.dll apphost.exe; do
     [ -f "$app/$stale" ] && { echo "  !! $stale beside the exe - this build will not start" >&2; exit 1; }
   done
+
+  # Steam, both directions. Neither of these is visible by running the archive on the machine
+  # that built it: a Windows build with no native runs fine with achievements quietly off, and a
+  # Linux build with a stray .dll runs fine because nothing loads it.
+  #
+  # Both were real, and they were NOT symmetrical. The stray .dll actually shipped: all three of
+  # v1.3's linux and macOS archives carry steam_api64.dll and steam_appid.txt, 300 KB of Windows
+  # binary those platforms can never call. The missing native never reached a published archive,
+  # because releases are cut --full and the copy used to live in that branch - it hit only people
+  # building from source the documented way, which is how it was reported.
+  case "$PUBRID" in
+    win-x64)
+      [ -f "$app/steam_api64.dll" ] || {
+        echo "  !! no steam_api64.dll in $rid - Steam would be silently off" >&2; exit 1; } ;;
+    *)
+      [ -f "$app/steam_api64.dll" ] && {
+        echo "  !! steam_api64.dll in $rid - a Windows native in a non-Windows archive" >&2
+        exit 1; }
+      [ -f "$app/steam_appid.txt" ] && {
+        echo "  !! steam_appid.txt in $rid - Steam is win-x64 only here" >&2; exit 1; }
+      : ;;
+  esac
 
   size=$(du -h "$OUT/$name" | cut -f1)
   echo "    $name  ($size)"

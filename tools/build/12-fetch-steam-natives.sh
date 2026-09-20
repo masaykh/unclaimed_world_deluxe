@@ -9,8 +9,13 @@
 # SteamAPI_ManualDispatch_Init. Managed and native must move together.
 #
 # These are Valve's freely redistributable Steamworks binaries, bundled with the
-# MIT-licensed Steamworks.NET release. Every Steam game ships them. They are NOT
-# committed to this repo - run this script to (re)fetch.
+# MIT-licensed Steamworks.NET release. Every Steam game ships them.
+#
+# native/steam/steam_api64.dll IS COMMITTED to this repository - 300 KB, redistributable,
+# and it changes only when the Steamworks.NET pin does. This script is how it gets
+# REFRESHED, not how it arrives: a fresh clone already has it, and packaging needs no
+# Steam install to put Steam integration in a build. (An earlier version of this comment
+# said the opposite, and sent someone looking for a fetch step they did not need.)
 set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
