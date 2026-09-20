@@ -34,12 +34,36 @@ sh tools/build/60-package-gl.sh Release
 The result is `artifacts/package/UnclaimedWorld-GL/` — a self-contained, runnable game
 directory.
 
+### …and for DirectX
+
+There is no `61-package-dx.sh`, and looking for one is the obvious mistake — `60-package-gl.sh`
+is GL-only and refuses anything else. The DX package comes out of the release script, one
+platform at a time:
+
+```sh
+# 1. code + effects  (the studio's own DXBC, rewritten into a v10 container - no recompile)
+sh tools/build/35-make-dx-effects.sh
+
+# 2. package
+sh tools/build/70-make-release.sh 0.0-dev win-x64-dx          # code + data/ + port-content/
+sh tools/build/70-make-release.sh 0.0-dev win-x64-dx --full   # the above plus Content/
+```
+
+`70-make-release.sh` builds the code itself, so there is no separate `dotnet build` step — and
+**do not** build DX with `-r win-x64` by hand, which is what the script is carefully avoiding;
+see the comment at its `--- code ---` block. The archive lands in `artifacts/release/` and the
+staged directory it was cut from is in `artifacts/release-stage/win-x64-dx/`, which is the one to
+run from.
+
+Without `--full` the archive has no `Content/` — you point it at your own copy, exactly as the
+GL archives do. With `--full` it is standalone. Both need 7-Zip on `PATH` (or `SEVENZIP` set).
+
 ## `UwPlatform`
 
 | value | backend | notes |
 |---|---|---|
 | `GL` | MonoGame DesktopGL | **what ships.** Windows, Linux, macOS |
-| `DX` | MonoGame WindowsDX | Windows only. The correctness oracle to compare renders against — and now also a shipped fallback archive, see below |
+| `DX` | MonoGame WindowsDX | Windows only. The correctness oracle to compare renders against — and now also a shipped fallback archive. Build one with […and for DirectX](#and-for-directx) |
 | `FNA` | FNA | a spike, on the `fna-backend` branch of the porting repository, not here |
 
 ## Building mods in or out
