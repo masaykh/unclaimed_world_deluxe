@@ -239,6 +239,60 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 		Salvage.CreateSalvageJob(entityData, owner);
 	}
 
+	/// <summary>
+	/// Withdraws an upgrade job that this entity's order no longer asks for, in one category.
+	/// </summary>
+	/// <remarks>
+	/// MATERIALS ARE NOT LOST EITHER WAY, which is why this drops the job rather than refunding
+	/// by hand. A process consumes its inputs when it STARTS - SimProcess.Start calls
+	/// ConsumeAndCreateOutputs - not when it finishes, so there are two cases and both are paid:
+	///
+	///   not started - nothing has been consumed and there is nothing to hand back. Dropping the
+	///                 job is an exact refund by construction. This is the reported case: the
+	///                 order changes before anyone walks over to work on it.
+	///
+	///   started     - the inputs are already inside the part-built upgrade, and
+	///                 SimProcess.DestroyUnstartedOutputs deliberately leaves a STARTED output
+	///                 alive. It stays in the workshop's upgrade slot, so the branch above sees a
+	///                 contained upgrade that is not the type wanted and raises the studio's own
+	///                 salvage job for it next cycle. The materials come back through the salvage
+	///                 recipe - the game's own accounting rather than an invented one - and now,
+	///                 instead of after finishing an upgrade nobody asked for.
+	///
+	/// Job.Destroy cancels the takers, so a colonist already walking to it is told to stop.
+	/// </remarks>
+	private static void CancelSupersededUpgradeJobs(IKnownEntityData entityData, UpgradeCategory category, EntityType wantedType, List<Job> jobs)
+	{
+		ProcessType processTypeWanted = ((wantedType != null) ? GetUpgradeProcess(wantedType) : null);
+		for (int num = jobs.Count - 1; num >= 0; num--)
+		{
+			if (!(jobs[num] is ProcessJob processJob) || processJob.ProcessType == null || !processJob.ProcessType.IsUpgrade)
+			{
+				continue;
+			}
+			if (processJob.ProcessType == processTypeWanted)
+			{
+				continue;
+			}
+			if (!processJob.GetActingOnEntity(out EntityID? actingOnEntity) || !actingOnEntity.HasValue || actingOnEntity.Value != entityData.EntityID)
+			{
+				continue;
+			}
+			// Match the SLOT, not just the building: a workshop has several upgrade categories, and an
+			// order in one of them says nothing about the others.
+			if (!processJob.ProductionProcess.HasValue)
+			{
+				continue;
+			}
+			SimProcess simProcess = SimProcess.FindById(processJob.ProductionProcess);
+			if (simProcess == null || simProcess.UpgradeCategory != category)
+			{
+				continue;
+			}
+			processJob.Destroy(removeTakers: true, null);
+		}
+	}
+
 	private bool CreateUpgradeJob(IKnownEntityData entityData, ProcessType processType, UpgradeCategory upgradeCategory, EntityGroup owner)
 	{
 		if (processType != null && CreateProcessJob(entityData, owner, processType, canCancel: false, upgradeCategory, out var _))
@@ -439,6 +493,18 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 						}
 					}
 				}
+				// PORT FIX. Clearing or changing the order has to withdraw the job it asked for.
+				//
+				// This loop only ever CREATED jobs. Unchecking an upgrade writes null into
+				// EntityGroup.Upgrades - Commands.SetUpgrade, whose field is documented "set this to null
+				// to clear the upgrade order" - and nothing then looked at the job already queued. It
+				// stayed in Tasks, ran to completion, and the branch above salvaged it the moment it
+				// existed. Reported by Kastuk, reproduced by him on a clean save with no mods.
+				//
+				// It is not a missing cancel button either: ProcessJob.UserCanCancel returns false for
+				// every upgrade process and tells the player "Upgrade tasks can only be cancelled in the
+				// upgrade window". That window is this code path, and it did not cancel.
+				CancelSupersededUpgradeJobs(entityData, key2, value, otherJobs);
 				if (value != null && (entityData.ContainedUpgrades == null || !entityData.ContainedUpgrades.ContainsKey(key2)))
 				{
 					ProcessType upgradeProcess = GetUpgradeProcess(value);
