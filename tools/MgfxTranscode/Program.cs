@@ -177,7 +177,7 @@ internal static class Program
                     {
                         continue;   // already reported as missing
                     }
-                    if (candidateDefaults.TryGetValue(entry.Key, out string mine) &&
+                    if (candidateDefaults.TryGetValue(entry.Key, out string? mine) &&
                         string.Equals(mine, entry.Value, StringComparison.Ordinal))
                     {
                         continue;
@@ -447,7 +447,7 @@ internal static class Program
     /// shared-resource count and the primary type id are copied verbatim from a container the
     /// game already loads successfully, and only the length-prefixed effect payload changes.
     /// </summary>
-    private static int Inject(string templateXnb, string mgfxo, string outXnb, string defaultsFromXnb)
+    private static int Inject(string templateXnb, string mgfxo, string outXnb, string? defaultsFromXnb)
     {
         XnbFile template = XnbFile.Read(templateXnb);
 

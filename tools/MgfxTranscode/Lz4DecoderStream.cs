@@ -28,7 +28,12 @@ internal class Lz4DecoderStream : Stream
 
 	private long inputLength;
 
-	private Stream input;
+	// Null in exactly two windows: between the parameterless constructor and the first Reset,
+	// and after Dispose. Read() rejects both at its entry (see the input == null guard there),
+	// so every path that reaches the decode helpers has a stream. The compiler cannot see across
+	// that guard into the helpers, so the contract is stated here rather than with a null-
+	// forgiving operator at each of the five input.Read call sites.
+	private Stream input = null!;
 
 	private byte[] decodeBuffer = new byte[65664];
 
@@ -96,7 +101,7 @@ internal class Lz4DecoderStream : Stream
 
 	protected override void Dispose(bool disposing)
 	{
-		input = null;
+		input = null!;   // see the field: Read() turns a use-after-dispose into a thrown exception
 		base.Dispose(disposing);
 	}
 

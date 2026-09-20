@@ -108,7 +108,7 @@ internal static class GlslFixups
                 continue;
             }
 
-            string residual = ResidualBareUse(repaired);
+            string? residual = ResidualBareUse(repaired);
             if (residual != null)
             {
                 throw new InvalidDataException(
@@ -134,7 +134,7 @@ internal static class GlslFixups
     /// The first line still naming a boolean register outside its #define and outside a
     /// component access, or null if there is none.
     /// </summary>
-    private static string ResidualBareUse(string glsl)
+    private static string? ResidualBareUse(string glsl)
     {
         string withoutDefines = BoolDefine.Replace(glsl, string.Empty);
         Match m = BareUse.Match(withoutDefines);

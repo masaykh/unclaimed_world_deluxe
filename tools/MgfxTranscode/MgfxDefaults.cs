@@ -64,7 +64,7 @@ internal static class MgfxDefaults
             byName[span.Name] = span;
         }
 
-        byte[] patched = null;
+        byte[]? patched = null;
         int count = 0;
         var skipped = new List<string>();
 
