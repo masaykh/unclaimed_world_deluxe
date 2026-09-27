@@ -61,6 +61,6 @@ public class AllScenarioLoader
 		{
 			return RGScenarioLoader.GetScenarioLoader(scenario).GetDataLoader();
 		}
-		return new UserDataLoader();
+		return new UserDataLoader(scenario);
 	}
 }

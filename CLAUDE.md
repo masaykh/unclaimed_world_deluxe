@@ -139,6 +139,7 @@ iteration. A gap in the automated gates is a gap that reaches players.
 | `tools/build/80-verify-modloader.sh` | the mod loader, through a real `ContentManager` |
 | `tools/build/82-verify-docs-current.sh` | documents that assert something the repo stopped doing |
 | `tools/build/83-verify-debug-scenarios.sh` | every debug scenario fits the map it is registered against |
+| `tools/build/84-verify-user-scenarios.sh` | an exported scenario loads as a user scenario, and one with no tables is refused |
 | `tools/ContentProbe` | every asset loads on a real `GraphicsDevice` |
 
 **Three rules learned the hard way:**

@@ -431,12 +431,64 @@ public abstract class DataLoader
 		return list;
 	}
 
+	/// <summary>
+	/// PORT FIX. A loader that has no tables in code and takes them from its folder instead,
+	/// whatever the global serialize mode - UserDataLoader, for user scenarios.
+	///
+	/// The studio's own comments say this is what UserDataLoader was for ("this class can only
+	/// deserialize...", and in AllScenarioLoader.GetScenarioDataLoader: "user scenarios - only
+	/// the file folder exists / create an instance of DataLoader that can only deserialize?").
+	/// It was never finished: the game shipped with Sim.CurrentSerializeMode = NoSerialize
+	/// ("should be 'Read' when shipping!"), in which no loader opens any XML, and UserDataLoader
+	/// overrides none of the Init methods - so a user scenario got no tables at all, and its
+	/// scenarioData.xml died in Sim.ExecuteStartAction on its first key ('spawnWorld').
+	/// </summary>
+	protected virtual bool OnlyDeserializes => false;
+
+	/// <summary>
+	/// One table from this loader's folder, for a loader that <see cref="OnlyDeserializes"/>.
+	/// A missing file is not an error - a scenario ships the tables it changes and takes the rest
+	/// from the base game - and neither is an empty one: DataExport writes a table the scenario
+	/// does not define as xsi:nil, which reads back as null and adds nothing. A file that exists
+	/// and cannot be read IS an error, and says which file.
+	/// </summary>
+	private TData ReadOwnTable<TData>(string xmlFileName)
+	{
+		string filePath = Config.GetDataFolderPath(dataSource, FolderName, xmlFileName);
+		if (!File.Exists(filePath) || RootIsNil(filePath))
+		{
+			return default(TData);
+		}
+		try
+		{
+			DeserializeObject<TData>(filePath, out var result);
+			return result;
+		}
+		catch (Exception ex)
+		{
+			throw new Exception(dataSource.ToString() + "/" + FolderName + "/" + xmlFileName + " could not be read: " + ex.GetBaseException().Message, ex);
+		}
+	}
+
+	/// <summary>
+	/// Whether a table file is DataExport's placeholder for "not defined here" - a root element
+	/// with xsi:nil="true". Checked before deserializing rather than left to XmlSerializer,
+	/// because the types that read themselves (IXmlSerializable, e.g. GUIConstants) are handed
+	/// the nil element anyway and throw on it.
+	/// </summary>
+	private static bool RootIsNil(string filePath)
+	{
+		using System.Xml.XmlReader xmlReader = System.Xml.XmlReader.Create(filePath);
+		xmlReader.MoveToContent();
+		return xmlReader.GetAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance") == "true";
+	}
+
 	private List<T> HandleDataTypeList<T>(Func<List<T>> Init, Dictionary<string, T> finalDictionary, string xmlFileName) where T : IGameData
 	{
 		List<T> list = null;
 		if (Sim.CurrentSerializeMode != Sim.SerializeMode.Read)
 		{
-			list = Init();
+			list = ((OnlyDeserializes && Sim.CurrentSerializeMode == Sim.SerializeMode.NoSerialize) ? ReadOwnTable<List<T>>(xmlFileName) : Init());
 		}
 		SerializeAndDeserializeTypeList(list, finalDictionary, FolderName, xmlFileName);
 		return list;
@@ -447,7 +499,7 @@ public abstract class DataLoader
 		T objectToSerialize = default(T);
 		if (Sim.CurrentSerializeMode != Sim.SerializeMode.Read)
 		{
-			objectToSerialize = Init();
+			objectToSerialize = ((OnlyDeserializes && Sim.CurrentSerializeMode == Sim.SerializeMode.NoSerialize) ? ReadOwnTable<T>(xmlFileName) : Init());
 		}
 		SerializeAndDeserializeGameDataObject(objectToSerialize, ref finalObject, FolderName, xmlFileName, dataSource);
 	}

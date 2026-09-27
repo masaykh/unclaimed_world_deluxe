@@ -22,6 +22,8 @@ internal static class Program
         bool disassemblyReport = args.Contains("--disassembly");
         bool scenarioReport = args.Contains("--scenarios");
         bool randomSelfTest = args.Contains("--random-selftest");
+        string userScenario = args.FirstOrDefault(a => a.StartsWith("--user-scenario=", StringComparison.Ordinal))
+            ?.Substring("--user-scenario=".Length);
         printTraces = args.Contains("--traces");
 
         // The bundled Unhidden Mod is on by default and its content hooks run inside the data
@@ -64,6 +66,11 @@ internal static class Program
             Console.Error.WriteLine("               write the nine built-in scenarios to data/Scenarios/<name>/ and");
             Console.Error.WriteLine("               report each one separately. The game writes them too, but in one");
             Console.Error.WriteLine("               unguarded loop, so the first failure hides every scenario after it.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("  --user-scenario=<folder>");
+            Console.Error.WriteLine("               load user/Scenarios/<folder> the way NEW GAME does - base tables,");
+            Console.Error.WriteLine("               then the scenario's own through UserDataLoader - and check that every");
+            Console.Error.WriteLine("               key its scenarioData.xml names resolves, then run the validation pass.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --random-selftest");
             Console.Error.WriteLine("               check that a seeded random stream can be resumed by replaying");
@@ -152,6 +159,11 @@ internal static class Program
             }
             DisassemblyReport();
             return loadRc;
+        }
+
+        if (userScenario != null)
+        {
+            return UserScenarioCheck(userScenario);
         }
 
         if (scenarioReport)
@@ -373,6 +385,100 @@ internal static class Program
     /// line per recipe with the item, the recipe it was derived from and what it gives back, so
     /// build/80-verify-modloader.sh can assert against it with grep.
     /// </summary>
+    /// <summary>
+    /// Loads one user scenario exactly as NEW GAME does and fails if it could not start.
+    ///
+    /// Base tables in NoSerialize (the game's mode), then the scenario's DataLoader from
+    /// AllScenarioLoader.GetScenarioDataLoader - the game's own choice of loader, not one made
+    /// here - driven with no stepping past failures: a table that throws is a scenario that does
+    /// not load. Then every key scenarioData.xml names is looked up where the game will look it
+    /// up (Sim.ExecuteStartAction, Option.GetStartActions / GetEvents), and the validation pass
+    /// runs, because tables that build are not tables that survive.
+    ///
+    /// This is the check that a user scenario was never able to pass: UserDataLoader had no
+    /// tables and no folder, so 'spawnWorld' was not in AllEventActionTypes.
+    /// </summary>
+    private static int UserScenarioCheck(string folder)
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+
+        UWGame.SimSide.Scenarios.Scenario header;
+        try
+        {
+            DataLoader.DeserializeObject<UWGame.SimSide.Scenarios.Scenario>(
+                UWGame.Config.GetDataFolderPath(UWGame.Config.DataType.UserScenarios, folder, "scenario.xml"), out header);
+            if (header.Name != folder)
+            {
+                Console.WriteLine($"    FAIL scenario.xml says <Name>{header.Name}</Name>; it must be the folder name, '{folder}'");
+                return 1;
+            }
+            header.ScenarioData = UWGame.SimSide.AllGameData.Scenarios.AllScenarioLoader.LoadScenarioData(header);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("    FAIL reading the scenario header: " + ex.GetBaseException().Message);
+            return 1;
+        }
+
+        DataLoader loader = UWGame.SimSide.AllGameData.Scenarios.AllScenarioLoader.GetScenarioDataLoader(header);
+        Console.WriteLine($"==> scenario tables for '{folder}' through {loader.GetType().Name}");
+        Sim.CurrentSerializeMode = Sim.SerializeMode.NoSerialize;
+        try
+        {
+            for (int steps = 0; !loader.QueueInitGameData(header); steps++)
+            {
+                if (steps > 500)
+                {
+                    Console.WriteLine("    FAIL QueueInitGameData did not report completion within 500 steps.");
+                    return 1;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // The outer message first: DataLoader.ReadOwnTable wraps a table that will not read
+            // with the file's name, and the root exception alone does not say which file it was.
+            Exception root = ex.GetBaseException();
+            Console.WriteLine("    FAIL " + ex.Message);
+            if (root != ex) Console.WriteLine("         " + root.GetType().Name + ": " + root.Message);
+            if (printTraces) Console.WriteLine(root.StackTrace);
+            return 1;
+        }
+
+        var data = header.ScenarioData;
+        var missing = new List<string>();
+        void Need(string what, string key, System.Collections.IDictionary table)
+        {
+            if (!string.IsNullOrEmpty(key) && !table.Contains(key)) missing.Add(what + " '" + key + "'");
+        }
+        var actions = GameData.Instance.AllEventActionTypes;
+        var events = GameData.Instance.AllPolledEvents;
+        Need("SpawnWorldAction", data.SpawnWorldAction, actions);
+        Need("SpawnSiteAction", data.SpawnSiteAction, actions);
+        foreach (string key in data.Actions ?? Array.Empty<string>()) Need("Actions", key, actions);
+        foreach (string key in data.ConditionalEvents ?? Array.Empty<string>()) Need("ConditionalEvents", key, events);
+        int keys = 2 + (data.Actions?.Length ?? 0) + (data.ConditionalEvents?.Length ?? 0);
+        foreach (var set in data.OptionSets ?? Array.Empty<UWGame.SimSide.Scenarios.OptionSet>())
+        {
+            foreach (var option in set.Options ?? Array.Empty<UWGame.SimSide.Scenarios.Option>())
+            {
+                foreach (string key in option.ActionKeys ?? Array.Empty<string>()) Need("option " + option.Name, key, actions);
+                foreach (string key in option.ConditionalEvents ?? Array.Empty<string>()) Need("option " + option.Name, key, events);
+                keys += (option.ActionKeys?.Length ?? 0) + (option.ConditionalEvents?.Length ?? 0);
+            }
+        }
+        if (missing.Count > 0)
+        {
+            Console.WriteLine($"    FAIL {missing.Count} of {keys} keys named by scenarioData.xml are not defined:");
+            foreach (string m in missing.Take(20)) Console.WriteLine("         " + m);
+            return 1;
+        }
+        Console.WriteLine($"    ok - all {keys} keys named by scenarioData.xml resolve");
+
+        return ValidateDataComplete() ? 0 : 1;
+    }
+
     /// <summary>
     /// Writes each built-in scenario separately and says which ones survive.
     ///
