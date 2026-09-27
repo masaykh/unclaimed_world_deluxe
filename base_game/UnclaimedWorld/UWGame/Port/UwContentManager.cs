@@ -121,6 +121,11 @@ public sealed class UwContentManager : ContentManager
     {
         T asset = base.Load<T>(assetName);
 
+        if (asset is SpriteFont font)
+        {
+            GiveFallbackCharacter(font);
+        }
+
 #if UW_GL
         if (asset is Model model)
         {
@@ -132,5 +137,41 @@ public sealed class UwContentManager : ContentManager
 #endif
 
         return asset;
+    }
+
+    /// <summary>What a font draws for a character it does not have, in order of preference.</summary>
+    private static readonly char[] FallbackCandidates = { '?', '.', ' ' };
+
+    /// <summary>
+    /// PORT FIX. Gives a font with no DefaultCharacter one it can actually draw.
+    ///
+    /// Of the shipped fonts only LCDandHUDBody and LCDandHUDSubHeading set one ('.'); Arial,
+    /// DefaultHeading, LCD_bold and the three bitmap fonts have none, and MonoGame's SpriteFont
+    /// then THROWS on any character outside its glyph set - "Text contains characters that cannot
+    /// be resolved by this SpriteFont" - from MeasureString as much as from DrawString. So one
+    /// 'Ж' in a colonist's name, a mod's label, a translated string or a save from someone else's
+    /// machine took the game down. With a fallback, a missing character draws as '?' and the
+    /// game carries on.
+    ///
+    /// Here because every font the game uses is loaded through a UwContentManager - the GUI
+    /// manager's, the client's, the controller's - so this is one place instead of eleven load
+    /// sites. A font that already has a fallback keeps it; the candidate must exist in the font,
+    /// because the DefaultCharacter setter throws for a character it cannot resolve. Content
+    /// caches the instance, so this runs once per font.
+    /// </summary>
+    internal static void GiveFallbackCharacter(SpriteFont font)
+    {
+        if (font.DefaultCharacter.HasValue)
+        {
+            return;
+        }
+        foreach (char candidate in FallbackCandidates)
+        {
+            if (font.Characters.Contains(candidate))
+            {
+                font.DefaultCharacter = candidate;
+                return;
+            }
+        }
     }
 }

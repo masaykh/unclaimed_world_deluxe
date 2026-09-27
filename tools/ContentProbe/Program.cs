@@ -37,6 +37,12 @@ internal static class Program
     /// identity-critical assets' code paths. Each entry is "assetName:typeName", loaded with
     /// exactly the type the game asks for (see GameData.LoadContent / Client.LoadContent).
     /// </summary>
+    /// <summary>
+    /// A line in scripts no shipped font covers - Cyrillic, Greek, Chinese, Latin-extended - for
+    /// measuring each font against. It must not throw; see UwContentManager.GiveFallbackCharacter.
+    /// </summary>
+    internal const string ForeignTextProbe = "Жж Ωω 漢字 Łęşğ";
+
     private static readonly string[] DefaultProbes =
     {
         // ReflectiveReader over SpriteSheetRuntime types - the interesting inheritance cases.
@@ -51,8 +57,19 @@ internal static class Program
         "Models/skinnedtest_idle:Model",
         "Models/demonTree_idle:Model",
 
-        // A font, a sound and a texture, for breadth.
+        // Every font the game loads (GUIManager.LoadContent, Window's title font, Arial for the
+        // interface and the dev overlay) - each is also measured against ForeignTextProbe, which
+        // throws for any font left without a fallback character.
         "Arial:SpriteFont",
+        "Fonts/LCDandHUDBody:SpriteFont",
+        "Fonts/LCDandHUDSubHeading:SpriteFont",
+        "Fonts/LCD_bold:SpriteFont",
+        "Fonts/DefaultHeading:SpriteFont",
+        "Fonts/CRTGlow:SpriteFont",
+        "Fonts/CRT_18pt:SpriteFont",
+        "Fonts/newtown_8pt:SpriteFont",
+
+        // A sound and a texture, for breadth.
         "Sounds/BIP2:SoundEffect",
         "MainMenu/panorama_1920px:Texture2D",
 
@@ -336,6 +353,14 @@ internal static class Program
                 try
                 {
                     object loaded = Load(asset, typeName);
+                    // A font must survive text it has no glyphs for: without a DefaultCharacter,
+                    // MonoGame throws from MeasureString and DrawString alike, and one foreign
+                    // letter anywhere on screen ends the game. UwContentManager gives every font a
+                    // fallback on load; this is what proves it did.
+                    if (loaded is SpriteFont font)
+                    {
+                        font.MeasureString(ForeignTextProbe);
+                    }
                     Console.WriteLine($"  OK      {asset,-42} -> {Describe(loaded)}");
                     ok++;
                 }
@@ -716,7 +741,11 @@ internal static class Program
                 DescribeModelTag(m) + DescribeVertexLayouts(m),
             Effect fx => $"Effect, {fx.Techniques.Count} techniques, {fx.Parameters.Count} params" +
                 DescribeEffectInitialValues(fx),
-            SpriteFont f => $"SpriteFont, lineSpacing={f.LineSpacing}",
+            // Glyph count and which scripts have REAL glyphs rather than the fallback - the
+            // difference between a font rebuilt by tools/build/36-build-fonts.sh and the shipped one.
+            SpriteFont f => $"SpriteFont, lineSpacing={f.LineSpacing}, {f.Characters.Count} glyphs, " +
+                $"fallback={(f.DefaultCharacter.HasValue ? "'" + f.DefaultCharacter.Value + "'" : "none")}, " +
+                $"cyrillic={(f.Characters.Contains('Ж') ? "yes" : "no")}, greek={(f.Characters.Contains('Ω') ? "yes" : "no")}",
             Texture2D t => $"Texture2D {t.Width}x{t.Height} {t.Format}" + DescribeTextureContent(t),
             _ => o.GetType().Name,
         };
