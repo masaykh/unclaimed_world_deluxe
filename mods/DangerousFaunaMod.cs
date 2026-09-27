@@ -30,6 +30,7 @@ namespace UWGame.Mods;
 ///                                                 so BEFORE armour, as a stronger blow would be
 ///   toughness  AttackType.HitTarget              / target's factor, AFTER armour
 ///   aggro      Entity.GetAggroRange              x factor
+///   speed      Locomotor.CalculateSpeed          x factor, every gait
 ///
 /// Every value defaults to x1, which is the studio's game exactly: the mod does nothing until a
 /// row is changed. Settings affect the simulation, so they go into a save's settings signature.
@@ -44,12 +45,13 @@ public static class DangerousFaunaMod
         Fighting,
         Damage,
         Toughness,
-        Aggro
+        Aggro,
+        Speed
     }
 
-    private static readonly string[] StatKeys = { "fighting", "damage", "toughness", "aggro" };
+    private static readonly string[] StatKeys = { "fighting", "damage", "toughness", "aggro", "speed" };
 
-    private static readonly string[] StatLabels = { "HIT CHANCE", "DAMAGE", "TOUGHNESS", "AGGRO RANGE" };
+    private static readonly string[] StatLabels = { "HIT CHANCE", "DAMAGE", "TOUGHNESS", "AGGRO RANGE", "MOVE SPEED" };
 
     private static readonly string[] StatToolTips =
     {
@@ -57,7 +59,9 @@ public static class DangerousFaunaMod
         "How hard it hits, before armour - armour still takes its share, so a small increase can " +
         "turn a harmless blow into a wound (AttackType.HitTarget).",
         "How much it takes to bring down. Damage it receives is divided by this, after armour.",
-        "How far away it notices you and comes for you (Entity.GetAggroRange)."
+        "How far away it notices you and comes for you (Entity.GetAggroRange).",
+        "How fast it moves, in every gait - walking, running, chasing (Locomotor.CalculateSpeed). " +
+        "Its walk animation speeds up to match on its own."
     };
 
     /// <summary>Choices as shown and stored; "x1" is the studio's number.</summary>
@@ -178,6 +182,8 @@ public static class DangerousFaunaMod
     public static float DamageFactor(Entity attacker) => Factor(attacker?.EntityType, Stat.Damage);
 
     public static float ToughnessFactor(Entity target) => Factor(target?.EntityType, Stat.Toughness);
+
+    public static float SpeedFactor(Entity mover) => Factor(mover?.EntityType, Stat.Speed);
 
     public static float? ScaleAggroRange(Entity entity, float? range)
     {

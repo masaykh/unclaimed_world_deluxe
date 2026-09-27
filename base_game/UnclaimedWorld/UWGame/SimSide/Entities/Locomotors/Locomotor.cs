@@ -321,7 +321,9 @@ public class Locomotor : Component
 	public float CalculateSpeed(float? totalBulkForCalculation = null, bool calculateWithTerrain = true, bool calculateWithBurden = true)
 	{
 		float num = (calculateWithBurden ? GetTargetSpeed() : Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed);
-		float result = num;
+		// MOD: DangerousFaunaMod's per-species move speed - 1 unless a row is changed, and always 1
+		// for anything it does not list. See mods/DangerousFaunaMod.cs.
+		float result = num * UWGame.Mods.DangerousFaunaMod.SpeedFactor(Parent);
 		ApplyDisabilityModifier(ref result);
 		if (calculateWithBurden)
 		{
