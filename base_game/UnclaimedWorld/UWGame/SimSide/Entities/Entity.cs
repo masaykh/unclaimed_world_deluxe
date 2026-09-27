@@ -4498,15 +4498,17 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 
 	public float? GetAggroRange()
 	{
+		// MOD: DangerousFaunaMod scales the result per species; it passes the studio's value
+		// through untouched unless a row is changed. See mods/DangerousFaunaMod.cs.
 		if (EntityType.BiologicalType != null)
 		{
 			BioProperty bioProperty = BiologicalEntity.GetBioProperty("AggroRange");
 			if (bioProperty != null)
 			{
-				return bioProperty.NumberValue.Value;
+				return UWGame.Mods.DangerousFaunaMod.ScaleAggroRange(this, bioProperty.NumberValue.Value);
 			}
 		}
-		return EntityType.IntelligenceType.AggroRange;
+		return UWGame.Mods.DangerousFaunaMod.ScaleAggroRange(this, EntityType.IntelligenceType.AggroRange);
 	}
 
 	public float? GetAssistanceRange()

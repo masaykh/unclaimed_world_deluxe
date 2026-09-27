@@ -270,11 +270,16 @@ public class AttackType : IGameData, IXmlSerializable
 		}
 		float energyLevelFactorOnDamage = GoalDoAttack.GetEnergyLevelFactorOnDamage(entity, this);
 		BodyPart bodyPart = targetAsEntity.Body.FindBodyPart(bodyPartToAttackID);
-		ComputeDamage(bodyPart.BodyPartType, out var damage, out var _, out var reductionConstant, out var armorLayer, doAttackRoll: true, energyLevelFactorOnDamage);
+		// MOD: DangerousFaunaMod. The attacker's damage multiplier goes in with the energy factor,
+		// which ComputeDamage applies to the roll BEFORE armour - a stronger blow, not a bigger
+		// number after the suit has had its say. The target's toughness divides what is left.
+		// Both are 1 unless a row is changed. See mods/DangerousFaunaMod.cs.
+		ComputeDamage(bodyPart.BodyPartType, out var damage, out var _, out var reductionConstant, out var armorLayer, doAttackRoll: true, energyLevelFactorOnDamage * UWGame.Mods.DangerousFaunaMod.DamageFactor(entity));
 		StartImpactEffects(targetAsEntity, entity);
 		string text = "";
 		if (damage > 0f)
 		{
+			damage /= UWGame.Mods.DangerousFaunaMod.ToughnessFactor(targetAsEntity);
 			damage = bodyPart.DoDamage(damage);
 			if (entity != null)
 			{

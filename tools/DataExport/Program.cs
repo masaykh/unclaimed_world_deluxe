@@ -24,6 +24,7 @@ internal static class Program
         bool randomSelfTest = args.Contains("--random-selftest");
         string userScenario = args.FirstOrDefault(a => a.StartsWith("--user-scenario=", StringComparison.Ordinal))
             ?.Substring("--user-scenario=".Length);
+        bool faunaSelfTest = args.Contains("--fauna-selftest");
         printTraces = args.Contains("--traces");
 
         // The bundled Unhidden Mod is on by default and its content hooks run inside the data
@@ -72,6 +73,10 @@ internal static class Program
             Console.Error.WriteLine("               then the scenario's own through UserDataLoader - and check that every");
             Console.Error.WriteLine("               key its scenarioData.xml names resolves, then run the validation pass.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --fauna-selftest");
+            Console.Error.WriteLine("               check that every species DangerousFaunaMod names is a creature in the");
+            Console.Error.WriteLine("               table, and that a setting reaches that species and nothing else.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --random-selftest");
             Console.Error.WriteLine("               check that a seeded random stream can be resumed by replaying");
             Console.Error.WriteLine("               draws, which is what loading a save now does. Loads nothing.");
@@ -119,6 +124,7 @@ internal static class Program
         UWGame.Mods.SelfPreservationMod.RegisterSettings();
         UWGame.Mods.MagnificationMod.RegisterSettings();
         UWGame.Mods.BalancedDietMod.RegisterSettings();
+        UWGame.Mods.DangerousFaunaMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -164,6 +170,11 @@ internal static class Program
         if (userScenario != null)
         {
             return UserScenarioCheck(userScenario);
+        }
+
+        if (faunaSelfTest)
+        {
+            return FaunaSelfTest();
         }
 
         if (scenarioReport)
@@ -375,16 +386,72 @@ internal static class Program
     }
 
     /// <summary>
-    /// Prints every disassembly recipe <c>UWGame.Mods.DisassemblyMod</c> generated on this load,
-    /// one line each, in the order it generated them.
+    /// Checks DangerousFaunaMod against the creature table the game actually builds.
     ///
-    /// This is the mod's offline witness. Its recipes are computed from the item table and the
-    /// production recipes rather than written down, so "what does it actually produce" is a
-    /// question about a running data load and not about a source file - and answering it by
-    /// launching the game would mean reading twenty tooltips. The format is deliberately flat, one
-    /// line per recipe with the item, the recipe it was derived from and what it gives back, so
-    /// build/80-verify-modloader.sh can assert against it with grep.
+    /// The mod names its species by key and scales them where combat numbers are used, so the
+    /// failure it cannot report for itself is a key that no longer matches anything: the row would
+    /// sit in the menu and change nothing. This loads the base tables and asserts that every key
+    /// is a real creature with an intelligence, that a setting reaches exactly the species it names
+    /// - not the domesticated twinkler that shares the swarmer's attacks and body, not a person -
+    /// and that a value the mod does not recognise falls back to x1.
     /// </summary>
+    private static int FaunaSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+
+        Console.WriteLine("==> dangerous fauna self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+
+        var keys = UWGame.Mods.DangerousFaunaMod.SpeciesKeys.ToList();
+        if (keys.Count == 0)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        foreach (string key in keys)
+        {
+            Check(types.TryGetValue(key, out var t) && t.IntelligenceType != null,
+                  key + " is a creature in the table");
+        }
+
+        foreach (UWGame.Mods.DangerousFaunaMod.Stat stat in Enum.GetValues(typeof(UWGame.Mods.DangerousFaunaMod.Stat)))
+        {
+            Check(UWGame.Mods.DangerousFaunaMod.Factor(types["entity:swarmer"], stat) == 1f,
+                  $"swarmer {stat} is x1 by default");
+        }
+
+        UWGame.Mods.ModSetting damage = UWGame.Mods.DangerousFaunaMod.Setting("entity:swarmer", UWGame.Mods.DangerousFaunaMod.Stat.Damage);
+        string before = damage.Value;
+        damage.Value = "x2";
+        Check(UWGame.Mods.DangerousFaunaMod.Factor(types["entity:swarmer"], UWGame.Mods.DangerousFaunaMod.Stat.Damage) == 2f,
+              "swarmer DAMAGE x2 reaches the swarmer");
+        Check(UWGame.Mods.DangerousFaunaMod.Factor(types["entity:twinkler"], UWGame.Mods.DangerousFaunaMod.Stat.Damage) == 1f,
+              "...and not the twinkler, whose attacks it shares");
+        if (types.TryGetValue("entity:domesticatedTwinkler", out var pet))
+        {
+            Check(UWGame.Mods.DangerousFaunaMod.Factor(pet, UWGame.Mods.DangerousFaunaMod.Stat.Damage) == 1f,
+                  "...and not the domesticated twinkler, which shares its body and attacks");
+        }
+        Check(UWGame.Mods.DangerousFaunaMod.Factor(types["entity:human"], UWGame.Mods.DangerousFaunaMod.Stat.Damage) == 1f,
+              "...and not a person");
+        Check(UWGame.Mods.DangerousFaunaMod.Factor(types["entity:swarmer"], UWGame.Mods.DangerousFaunaMod.Stat.Fighting) == 1f,
+              "...and not the swarmer's other stats");
+        damage.Value = "x7";
+        Check(damage.Value == "x1" && UWGame.Mods.DangerousFaunaMod.Factor(types["entity:swarmer"], UWGame.Mods.DangerousFaunaMod.Stat.Damage) == 1f,
+              "an unknown value ('x7') falls back to x1");
+        damage.Value = before;
+
+        Console.WriteLine(failures == 0 ? "dangerous fauna self-test OK" : $"dangerous fauna self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
     /// <summary>
     /// Loads one user scenario exactly as NEW GAME does and fails if it could not start.
     ///
@@ -553,6 +620,17 @@ internal static class Program
         return failed == 0 ? 0 : 1;
     }
 
+    /// <summary>
+    /// Prints every disassembly recipe <c>UWGame.Mods.DisassemblyMod</c> generated on this load,
+    /// one line each, in the order it generated them.
+    ///
+    /// This is the mod's offline witness. Its recipes are computed from the item table and the
+    /// production recipes rather than written down, so "what does it actually produce" is a
+    /// question about a running data load and not about a source file - and answering it by
+    /// launching the game would mean reading twenty tooltips. The format is deliberately flat, one
+    /// line per recipe with the item, the recipe it was derived from and what it gives back, so
+    /// build/80-verify-modloader.sh can assert against it with grep.
+    /// </summary>
     private static void DisassemblyReport()
     {
         Console.WriteLine();

@@ -6,7 +6,7 @@
 # own data loader headlessly through tools/DataExport, and asserts the patch actually changed the
 # data the game would run with.
 #
-# Thirteen cases, and most of them are failure behaviour, because a modding framework is judged on
+# Fourteen cases, and most of them are failure behaviour, because a modding framework is judged on
 # that more than on its happy path:
 #
 #   1. the mod loads and its patch takes effect
@@ -21,6 +21,7 @@
 #  11. the five per-request mods register their switches, and the diet one changes the tables
 #  12. disassembly recipes are generated from the production recipes, linked, and switchable
 #  13. a seeded random stream resumes where it left off - the save/load assumption
+#  14. every dangerous-fauna species exists, and a multiplier reaches only its own species
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -132,7 +133,7 @@ peat_per_charcoal() {
 }
 # Whether a string literal is present in a compiled assembly.
 #
-# entityTypes.xml is one of the 13 tables that do NOT export (see modding.md), so an item cannot be
+# entityTypes.xml is one of the 13 tables that do NOT export (see docs/modding.md), so an item cannot be
 # asserted absent from an export - the file is not there, and a grep against a missing file
 # "passes" while proving nothing. The assembly is where the item WOULD be if it still existed: a
 # C# string literal lands in the #US heap as UTF-16, so the check is for the literal encoded that
@@ -540,6 +541,25 @@ else
   fail "the save/load random resume cannot work on this runtime"
 fi
 
+# The dangerous fauna mod scales species by KEY where combat numbers are used, so the failure it
+# cannot report for itself is a key that no longer matches a creature - a menu row that changes
+# nothing. The self-test loads the real table and checks each key, and that a setting reaches its
+# species and not the domesticated twinkler that shares the swarmer's attacks and body. Then that
+# a multiplier written to the file reaches the registry, because it is a CHOICE and "false" is not
+# one of its values.
+say "==> 14. every dangerous-fauna species exists, and a multiplier reaches only its own species"
+d=$(new_install case14)
+out=$( cd "$d" && "$EXPORT" . --fauna-selftest 2>&1 ) || true
+if echo "$out" | grep -q "dangerous fauna self-test OK"; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the dangerous fauna self-test reported failures"
+fi
+write_setting "$d" fauna.swarmer.damage x2
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+echo "$out" | grep -q "fauna.swarmer.damage = x2"   && pass "fauna.swarmer.damage is registered and reads a choice from the file"   || { echo "$out" | grep -i fauna | sed 's/^/      /';        fail "fauna.swarmer.damage did not reach the registry"; }
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -554,7 +574,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 13/13 cases passed."
+  say "mod loader OK - 14/14 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1
