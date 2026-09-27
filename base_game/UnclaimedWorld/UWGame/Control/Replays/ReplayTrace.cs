@@ -56,7 +56,14 @@ public sealed class ReplayTrace : IDisposable
     // different fault entirely. With the sim clock in the line, "the same decisions over a
     // different amount of game time" can be told apart from "the same decisions over the same
     // time, different arithmetic" without decoding Replay.UWRep by hand.
-    private const string Header = "# frame\tdraws\thash\tentityX\tentityY\tcamX\tcamY\tsimDays";
+    //
+    // simState is the game speed at the end of the frame and whether the simulation was allowed to
+    // run at all (screen active and loading finished). It is here because of the Muckroot Mining
+    // Site replay: frame 1 recorded no step and replayed one, and the clock column could say THAT
+    // the sim advanced but not whether it was paused on one side and running on the other, or
+    // still behind the loading screen. The first Pause of that recording is on frame 1 - the
+    // scenario's opening dialog - and this column says on which side of the step it landed.
+    private const string Header = "# frame\tdraws\thash\tentityX\tentityY\tcamX\tcamY\tsimDays\tsimState";
 
     private readonly string[] ring = new string[RingSize];
 
@@ -220,9 +227,13 @@ public sealed class ReplayTrace : IDisposable
         double simDays = UWGame.The.Sim?.DateAndTime == null
             ? 0.0
             : UWGame.The.Sim.DateAndTime.CurrentTimeDateYear.TotalDays;
+        string simState = UWGame.The.Sim == null
+            ? "none"
+            : UWGame.The.Sim.Speed + "/"
+                + (UWGame.The.Sim.IsActive && UWGame.The.LoadScreen != null && UWGame.The.LoadScreen.IsLoadFinished ? "run" : "held");
 
         string line = string.Create(CultureInfo.InvariantCulture,
-            $"{frameIndex}\t{drawsTotal}\t{hash:x16}\t{world.RepresentativeEntityLocation.X:R}\t{world.RepresentativeEntityLocation.Y:R}\t{world.MapWindowLocation.X:R}\t{world.MapWindowLocation.Y:R}\t{simDays:R}");
+            $"{frameIndex}\t{drawsTotal}\t{hash:x16}\t{world.RepresentativeEntityLocation.X:R}\t{world.RepresentativeEntityLocation.Y:R}\t{world.MapWindowLocation.X:R}\t{world.MapWindowLocation.Y:R}\t{simDays:R}\t{simState}");
 
         drawsThisFrame = 0;
 
@@ -287,8 +298,10 @@ public sealed class ReplayTrace : IDisposable
             sb.AppendLine($"    this run  {actual}");
             sb.AppendLine();
             sb.AppendLine("Columns: frame, total draws, hash of the draw-label sequence, the");
-            sb.AppendLine("representative entity's X and Y, the camera's X and Y, and the");
-            sb.AppendLine("simulation's own clock in days.");
+            sb.AppendLine("representative entity's X and Y, the camera's X and Y, the");
+            sb.AppendLine("simulation's own clock in days, and the game speed at the end of the");
+            sb.AppendLine("frame with whether the simulation could run (\"held\" = screen not");
+            sb.AppendLine("active or still loading).");
             sb.AppendLine();
             DescribeDrawDifference(sb, expected, actual);
             sb.AppendLine("Read it like this:");
