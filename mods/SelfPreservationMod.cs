@@ -110,6 +110,7 @@ public static class SelfPreservationMod
 
     public static void RegisterSettings()
     {
+        ModSettings.SetCategoryLabel(ModId, "SELF-PRESERVATION");
         _ = UnorderedThreats;
         _ = InjuredStayOut;
         _ = UnarmedStayOut;

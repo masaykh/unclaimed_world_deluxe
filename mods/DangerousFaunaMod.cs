@@ -118,6 +118,7 @@ public static class DangerousFaunaMod
 
     public static void RegisterSettings()
     {
+        ModSettings.SetCategoryLabel(ModId, "DANGEROUS FAUNA");
         if (byKey != null)
         {
             return;

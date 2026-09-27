@@ -78,6 +78,7 @@ public static class StateDumpMod
 
     public static void RegisterSettings()
     {
+        ModSettings.SetCategoryLabel(ModId, "STATE DUMP");
         _ = Enabled;
         _ = EverySeconds;
     }

@@ -444,6 +444,30 @@ public static class ModSettings
         return s;
     }
 
+    private static readonly Dictionary<string, string> categoryLabels =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Names a mod's group in the MODS menu. Optional: a mod that never calls this is listed under
+    /// its id in capitals ("healing" -> HEALING), which is fine for most and wrong only for ids
+    /// that were written as one word ("selfpreservation").
+    /// </summary>
+    public static void SetCategoryLabel(string modId, string label)
+    {
+        if (!string.IsNullOrEmpty(modId) && !string.IsNullOrEmpty(label))
+        {
+            categoryLabels[modId] = label;
+        }
+    }
+
+    /// <summary>What the MODS menu calls a mod's group: its registered label, else its id in capitals.</summary>
+    public static string CategoryLabel(string modId)
+    {
+        return categoryLabels.TryGetValue(modId ?? "", out string label)
+            ? label
+            : (modId ?? "").ToUpperInvariant();
+    }
+
     public static ModSetting Find(string id)
     {
         byId.TryGetValue(id ?? "", out ModSetting s);

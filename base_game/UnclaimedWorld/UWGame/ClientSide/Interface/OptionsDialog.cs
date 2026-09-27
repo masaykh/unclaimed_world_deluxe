@@ -334,21 +334,32 @@ public class OptionsDialog : Panel
 	}
 
 	/// <summary>
-	/// The MODS section: one control per registered <see cref="ModSetting"/>, in registration
-	/// order.
+	/// The MODS section: the registered <see cref="ModSetting"/>s, grouped into folding categories.
 	///
 	/// It is built from the registry rather than from a list of fields because a third-party mod
 	/// cannot add a field to this class - which is the whole reason mod settings do not live in
-	/// Options.xml. A build with no mods still gets the section, because the port registers two
+	/// Options.xml. A build with no mods still gets the section, because the port registers
 	/// entries of its own (see PortSettings), so this code is exercised everywhere rather than
 	/// only where someone has installed something.
 	///
-	/// The surface grows to fit; it is inside a scrolling grid, so a long list scrolls rather than
-	/// being cut off.
+	/// CATEGORIES. Kastuk: "Currently all mods going into same list of Settings. But its too big
+	/// and chaotic list." One category per mod, named by the first part of the setting id
+	/// (debug.testScenario -> DEBUG, or the label the mod registered with
+	/// ModSettings.SetCategoryLabel); a mod with a single setting goes under OTHER. Each is the
+	/// game's own folding header - CollapsablePanel.DropDownBig, as the trade window's categories
+	/// use - and folded by default; the fold state is remembered while the game runs. The header
+	/// carries a checkbox, like the stockpile window's category headers: unticking puts the whole
+	/// category back to the studio's game, ticking switches every switch in it on. And a count of
+	/// what differs from the stock game, so a folded category still says whether it is doing
+	/// anything.
+	///
+	/// The surface grows and shrinks with the categories; it is inside a scrolling grid, which
+	/// re-lays itself out when an entry changes height (Grid.item_Resize), so a long list scrolls.
 	/// </summary>
 	private void BuildModsSection(UIComponent panel, int y)
 	{
 		modControls.Clear();
+		modCategoryPanels.Clear();
 		if (ModSettings.All.Count == 0)
 		{
 			return;
@@ -374,100 +385,331 @@ public class OptionsDialog : Panel
 			lineY = note.Bottom + 6;
 		}
 
+		// Categories in the order their first setting was registered, so the menu keeps the order
+		// the mods were written down in; OTHER last.
+		var byMod = new List<KeyValuePair<string, List<ModSetting>>>();
 		foreach (ModSetting setting in ModSettings.All)
 		{
-			string toolTip = setting.ToolTip;
-			if (setting.AffectsSimulation)
+			int index = byMod.FindIndex((KeyValuePair<string, List<ModSetting>> g) => g.Key == setting.ModId);
+			if (index < 0)
 			{
-				toolTip += " Changes what a save contains: saves made with it on are marked MODDED.";
+				byMod.Add(new KeyValuePair<string, List<ModSetting>>(setting.ModId, new List<ModSetting> { setting }));
 			}
-
-			switch (setting.Kind)
+			else
 			{
-			case ModSettingKind.Toggle:
-			{
-				CheckBox checkBox = new CheckBox(Interface.gui);
-				panel.Add(checkBox);
-				checkBox.Init(CheckBoxType.LCD, CheckBoxFlavor.Green);
-				checkBox.Text = setting.Label;
-				checkBox.FitToText();
-				checkBox.X = 6;
-				checkBox.Y = lineY;
-				checkBox.ToolTip = toolTip;
-				checkBox.TooltipWidth = 320;
-				checkBox.IsChecked = setting.On;
-				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, checkBox));
-				lineY = checkBox.Bottom + 8;
-				break;
-			}
-			case ModSettingKind.Choice:
-			{
-				Label caption = new Label(Interface.gui);
-				panel.Add(caption);
-				caption.Init(Label.LabelType.LCDSmallHeadingBanner);
-				caption.Text = setting.Label + ":";
-				caption.FitToText();
-				caption.X = 6;
-				caption.Y = lineY;
-				caption.ToolTip = toolTip;
-				caption.TooltipWidth = 320;
-				ComboBox comboBox = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
-				panel.Add(comboBox);
-				comboBox.Init(ComboBoxTypes.LCD);
-				comboBox.X = 128;
-				comboBox.Width = 200;
-				comboBox.CenterThisVertically(caption.Y + caption.Height / 2);
-				comboBox.ToolTip = toolTip;
-				foreach (string choice in setting.Choices ?? new string[0])
-				{
-					comboBox.AddEntry(choice, choice);
-				}
-				if (comboBox.EntriesByKey.ContainsKey(setting.Value))
-				{
-					comboBox.SelectedKey = setting.Value;
-				}
-				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, comboBox));
-				lineY = Math.Max(caption.Bottom, comboBox.Bottom) + 8;
-				break;
-			}
-			default:
-			{
-				Label caption2 = new Label(Interface.gui);
-				panel.Add(caption2);
-				caption2.Init(Label.LabelType.LCDSmallHeadingBanner);
-				caption2.Text = setting.Label + ":";
-				caption2.FitToText();
-				caption2.X = 6;
-				caption2.Y = lineY;
-				caption2.ToolTip = toolTip;
-				TextBox textBox = new TextBox(Interface.gui);
-				panel.Add(textBox);
-				textBox.Init(TextBox.TextBoxType.LCD);
-				textBox.X = 128;
-				textBox.Width = 200;
-				textBox.Height = 20;
-				textBox.VMargin = 1;
-				textBox.IsEditable = true;
-				textBox.Text = setting.Value;
-				textBox.CenterThisVertically(caption2.Y + caption2.Height / 2);
-				textBox.ToolTip = toolTip;
-				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, textBox));
-				lineY = Math.Max(caption2.Bottom, textBox.Bottom) + 8;
-				break;
-			}
+				byMod[index].Value.Add(setting);
 			}
 		}
-
-		if (lineY + 12 > panel.Height)
+		var other = new List<ModSetting>();
+		modsSurface = panel;
+		modsTop = lineY;
+		modsSurfaceMinHeight = panel.Height;
+		foreach (KeyValuePair<string, List<ModSetting>> group in byMod)
 		{
-			panel.Height = lineY + 12;
+			if (group.Value.Count == 1)
+			{
+				other.AddRange(group.Value);
+			}
+			else
+			{
+				BuildModCategory(panel, group.Key, ModSettings.CategoryLabel(group.Key), group.Value);
+			}
+		}
+		if (other.Count > 0)
+		{
+			BuildModCategory(panel, "\u0001other", "OTHER", other);
+		}
+		LayOutModCategories();
+	}
+
+	/// <summary>Categories folded open while the game runs, by key. Folded is the default.</summary>
+	private static readonly HashSet<string> expandedModCategories = new HashSet<string>();
+
+	private readonly List<CollapsablePanel> modCategoryPanels = new List<CollapsablePanel>();
+
+	private UIComponent modsSurface;
+
+	private int modsTop;
+
+	private int modsSurfaceMinHeight;
+
+	private void BuildModCategory(UIComponent panel, string key, string label, List<ModSetting> settings)
+	{
+		CollapsablePanel cp = new CollapsablePanel(Interface.gui, CollapsablePanel.PanelType.DropDownBig);
+		panel.Add(cp);
+		cp.Init();
+		cp.Title = label;
+		cp.X = 6;
+		cp.Width = surfaceGrid.SurfaceWidth - cp.X;
+		cp.CollapsedHeight = cp.ExpandedPanelYPos + 5;
+		cp.Height = cp.CollapsedHeight;
+		modCategoryPanels.Add(cp);
+
+		UIComponent content = new UIComponent(Interface.gui)
+		{
+			Width = cp.ExpandedPanel.Width
+		};
+		cp.AddContent(content);
+		int lineY = 0;
+		foreach (ModSetting setting in settings)
+		{
+			lineY = AddModSettingControl(content, setting, lineY);
+		}
+		// Fires Resize, which is what sizes the expanded panel (CollapsablePanel.content_Resize).
+		content.Height = lineY + 4;
+
+		// The category switch, on the header's left where DropDownBig leaves room before the title.
+		ImageButton categorySwitch = new ImageButton(Interface.gui);
+		cp.Add(categorySwitch);
+		categorySwitch.Init(ImageButtonType.LCDCheckbox);
+		categorySwitch.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
+		categorySwitch.X = 8;
+		cp.CenterOnHeader(categorySwitch);
+		categorySwitch.ToolTip = "Untick: everything in " + label + " back to the studio's game. " +
+			"Tick: every switch in it on. Nothing is applied until OK.";
+
+		void Refresh()
+		{
+			int changed = settings.Count((ModSetting s) => !string.Equals(ReadModControl(s), s.StockValue, StringComparison.Ordinal));
+			categorySwitch.IsChecked = changed > 0;
+			cp.Summary = changed > 0 ? changed + " CHANGED" : "";
+		}
+
+		categorySwitch.Click += delegate
+		{
+			bool on = categorySwitch.IsChecked;
+			foreach (ModSetting s in settings)
+			{
+				string value;
+				if (!on)
+				{
+					value = s.StockValue;
+				}
+				else if (s.Kind == ModSettingKind.Toggle)
+				{
+					value = "true";
+				}
+				else
+				{
+					// A choice has no "on"; the mod's own default is the nearest thing, and where
+					// that is the stock value too (DangerousFaunaMod's x1) it is left as it is.
+					value = string.Equals(s.DefaultValue, s.StockValue, StringComparison.Ordinal) ? ReadModControl(s) : s.DefaultValue;
+				}
+				WriteModControl(s, value);
+			}
+			Refresh();
+		};
+		foreach (ModSetting s in settings)
+		{
+			UIComponent control = FindModControl(s);
+			if (control is CheckBox checkBox)
+			{
+				checkBox.Click += delegate
+				{
+					Refresh();
+				};
+			}
+			else if (control is ComboBox comboBox)
+			{
+				comboBox.SelectionChanged += delegate
+				{
+					Refresh();
+				};
+			}
+		}
+		Refresh();
+
+		if (expandedModCategories.Contains(key))
+		{
+			cp.IsExpanded = true;
+		}
+		cp.HeightResize += delegate
+		{
+			// By height, not IsExpanded: CollapsablePanel.IsExpanded calls Expand() - which is
+			// what changes the height and raises this - before it updates its own flag.
+			if (cp.Height > cp.CollapsedHeight)
+			{
+				expandedModCategories.Add(key);
+			}
+			else
+			{
+				expandedModCategories.Remove(key);
+			}
+			LayOutModCategories();
+		};
+	}
+
+	/// <summary>Stacks the categories under the MODS header and sizes the surface to fit them.</summary>
+	private void LayOutModCategories()
+	{
+		if (modsSurface == null)
+		{
+			return;
+		}
+		int y = modsTop;
+		foreach (CollapsablePanel cp in modCategoryPanels)
+		{
+			cp.Y = y;
+			y = cp.Bottom + 4;
+		}
+		modsSurface.Height = Math.Max(modsSurfaceMinHeight, y + 12);
+	}
+
+	/// <summary>One setting's row inside a category; returns the Y below it.</summary>
+	private int AddModSettingControl(UIComponent panel, ModSetting setting, int lineY)
+	{
+		string toolTip = setting.ToolTip;
+		if (setting.AffectsSimulation)
+		{
+			toolTip += " Changes what a save contains: saves made with it on are marked MODDED.";
+		}
+		int valueX = 124;
+		int valueWidth = panel.Width - valueX - 4;
+
+		switch (setting.Kind)
+		{
+		case ModSettingKind.Toggle:
+		{
+			CheckBox checkBox = new CheckBox(Interface.gui);
+			panel.Add(checkBox);
+			checkBox.Init(CheckBoxType.LCD, CheckBoxFlavor.Green);
+			checkBox.Text = setting.Label;
+			checkBox.FitToText();
+			checkBox.X = 6;
+			checkBox.Y = lineY;
+			checkBox.ToolTip = toolTip;
+			checkBox.TooltipWidth = 320;
+			checkBox.IsChecked = setting.On;
+			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, checkBox));
+			return checkBox.Bottom + 8;
+		}
+		case ModSettingKind.Choice:
+		{
+			Label caption = new Label(Interface.gui);
+			panel.Add(caption);
+			caption.Init(Label.LabelType.LCDSmallHeadingBanner);
+			caption.Text = setting.Label + ":";
+			caption.FitToText();
+			caption.X = 6;
+			caption.Y = lineY;
+			caption.ToolTip = toolTip;
+			caption.TooltipWidth = 320;
+			ComboBox comboBox = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
+			panel.Add(comboBox);
+			comboBox.Init(ComboBoxTypes.LCD);
+			// Beside the caption when it fits, under it when it does not: category rows are
+			// narrower than the old flat list, and "NORTHERN BUSH DRAGON AGGRO RANGE:" is long.
+			if (caption.Right + 6 <= valueX)
+			{
+				comboBox.X = valueX;
+				comboBox.Width = valueWidth;
+				comboBox.CenterThisVertically(caption.Y + caption.Height / 2);
+			}
+			else
+			{
+				comboBox.X = valueX;
+				comboBox.Width = valueWidth;
+				comboBox.Y = caption.Bottom + 2;
+			}
+			comboBox.ToolTip = toolTip;
+			foreach (string choice in setting.Choices ?? new string[0])
+			{
+				comboBox.AddEntry(choice, choice);
+			}
+			if (comboBox.EntriesByKey.ContainsKey(setting.Value))
+			{
+				comboBox.SelectedKey = setting.Value;
+			}
+			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, comboBox));
+			return Math.Max(caption.Bottom, comboBox.Bottom) + 8;
+		}
+		default:
+		{
+			Label caption2 = new Label(Interface.gui);
+			panel.Add(caption2);
+			caption2.Init(Label.LabelType.LCDSmallHeadingBanner);
+			caption2.Text = setting.Label + ":";
+			caption2.FitToText();
+			caption2.X = 6;
+			caption2.Y = lineY;
+			caption2.ToolTip = toolTip;
+			TextBox textBox = new TextBox(Interface.gui);
+			panel.Add(textBox);
+			textBox.Init(TextBox.TextBoxType.LCD);
+			textBox.X = valueX;
+			textBox.Width = valueWidth;
+			textBox.Height = 20;
+			textBox.VMargin = 1;
+			textBox.IsEditable = true;
+			textBox.Text = setting.Value;
+			if (caption2.Right + 6 <= valueX)
+			{
+				textBox.CenterThisVertically(caption2.Y + caption2.Height / 2);
+			}
+			else
+			{
+				textBox.Y = caption2.Bottom + 2;
+			}
+			textBox.ToolTip = toolTip;
+			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, textBox));
+			return Math.Max(caption2.Bottom, textBox.Bottom) + 8;
+		}
+		}
+	}
+
+	private UIComponent FindModControl(ModSetting setting)
+	{
+		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
+		{
+			if (pair.Key == setting)
+			{
+				return pair.Value;
+			}
+		}
+		return null;
+	}
+
+	/// <summary>What a setting's control currently shows - which is not yet what the setting holds.</summary>
+	private string ReadModControl(ModSetting setting)
+	{
+		UIComponent control = FindModControl(setting);
+		if (control is CheckBox checkBox)
+		{
+			return checkBox.IsChecked ? "true" : "false";
+		}
+		if (control is ComboBox comboBox)
+		{
+			return comboBox.SelectedKey as string ?? setting.Value;
+		}
+		if (control is TextBox textBox)
+		{
+			return textBox.Text;
+		}
+		return setting.Value;
+	}
+
+	private void WriteModControl(ModSetting setting, string value)
+	{
+		UIComponent control = FindModControl(setting);
+		if (control is CheckBox checkBox)
+		{
+			checkBox.IsChecked = ModSetting.ParseBool(value, false);
+		}
+		else if (control is ComboBox comboBox && value != null && comboBox.EntriesByKey.ContainsKey(value))
+		{
+			comboBox.SelectedKey = value;
+		}
+		else if (control is TextBox textBox)
+		{
+			textBox.Text = value ?? "";
 		}
 	}
 
 	/// <summary>
 	/// Reads the MODS controls back into the settings and writes the file. Called from OK, with
 	/// the rest of the dialog - a setting the player changed and then cancelled must not have
-	/// taken effect, which is why nothing here happens as the controls are clicked.
+	/// taken effect, which is why nothing here happens as the controls are clicked. That includes
+	/// the category switches: they only move the controls.
 	/// </summary>
 	private void ApplyModSettings()
 	{
@@ -477,18 +719,7 @@ public class OptionsDialog : Panel
 		}
 		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
 		{
-			if (pair.Value is CheckBox checkBox)
-			{
-				pair.Key.Value = checkBox.IsChecked ? "true" : "false";
-			}
-			else if (pair.Value is ComboBox comboBox)
-			{
-				pair.Key.Value = comboBox.SelectedKey as string ?? pair.Key.Value;
-			}
-			else if (pair.Value is TextBox textBox)
-			{
-				pair.Key.Value = textBox.Text;
-			}
+			pair.Key.Value = ReadModControl(pair.Key);
 		}
 		ModSettings.Save(GameStateManagement.UnclaimedWorld.LogError);
 	}

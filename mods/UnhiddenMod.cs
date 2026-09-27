@@ -190,6 +190,7 @@ public static class UnhiddenMod
     /// </summary>
     public static void RegisterSettings()
     {
+        ModSettings.SetCategoryLabel(ModId, "UNHIDDEN MOD");
         _ = CharcoalFromPeat;
         _ = PeatBuilding;
         _ = StringAlternatives;
