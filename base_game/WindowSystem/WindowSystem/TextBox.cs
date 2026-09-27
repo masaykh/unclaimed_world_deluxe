@@ -308,6 +308,20 @@ public class TextBox : UIComponent
 		}
 	}
 
+	/// <summary>
+	/// PORT FIX. One character of text input from the operating system - any layout, any
+	/// language (see GUIManager.UseTextInput). Control characters are left to OnKeyDown, which
+	/// already handles Backspace; numeric boxes keep their own digit handling there too.
+	/// </summary>
+	public void OnTextInput(char character)
+	{
+		if (!IsEditable || IsNumericBox || char.IsControl(character))
+		{
+			return;
+		}
+		label.Text += character;
+	}
+
 	protected override void OnKeyDown(KeyEventArgs args)
 	{
 		base.OnKeyDown(args);
@@ -319,14 +333,21 @@ public class TextBox : UIComponent
 		{
 			if (label.Text.Length > 0)
 			{
-				label.Text = label.Text.Substring(0, label.Text.Length - 1);
+				// Both halves of a surrogate pair, which text input can now deliver.
+				int remove = (label.Text.Length > 1 && char.IsLowSurrogate(label.Text[label.Text.Length - 1]) && char.IsHighSurrogate(label.Text[label.Text.Length - 2])) ? 2 : 1;
+				label.Text = label.Text.Substring(0, label.Text.Length - remove);
 			}
 		}
 		else if (!args.Alt && !args.Control)
 		{
 			if (!IsNumericBox)
 			{
-				label.Text += GUIManager.KeyToString(args);
+				// With text input on, the character arrives through OnTextInput instead - taking
+				// it here as well would type every letter twice. See GUIManager.UseTextInput.
+				if (!GUIManager.UseTextInput)
+				{
+					label.Text += GUIManager.KeyToString(args);
+				}
 				return;
 			}
 			label.Text += GUIManager.NumberKeyToString(args, NoOfDecimals > 0);

@@ -167,8 +167,36 @@ public class GUIManager
 			InputData.MouseMove += InputData_MouseMove;
 			InputData.MouseDown += InputData_MouseDown;
 			InputData.MouseUp += InputData_MouseUp;
+			if (game?.Window != null)
+			{
+				game.Window.TextInput += Window_TextInput;
+			}
 		}
 		LoadContent();
+	}
+
+	/// <summary>
+	/// PORT FIX. Whether text boxes take their characters from the operating system's text input
+	/// (<see cref="GameWindow.TextInput"/>) rather than from <see cref="KeyToString"/>.
+	///
+	/// KeyToString maps a KEY to a hard-coded US-layout character: A is "a", Shift+2 is "@". It
+	/// cannot produce a letter outside ASCII, it ignores the player's keyboard layout (a French
+	/// AZERTY player pressing the key marked A got "q"), and it skips anything typed with Ctrl+Alt,
+	/// which is AltGr - so Polish, Czech or German letters behind AltGr could not be typed at all.
+	/// TextInput delivers the character the OS actually produced, for any layout and language.
+	///
+	/// Off during a replay: InputManager.SetToReplayMode clears it, because a replay feeds back
+	/// recorded keyboard STATES, and text input events are not part of what is recorded - the old
+	/// key mapping is what can reproduce typing from them.
+	/// </summary>
+	public static bool UseTextInput = true;
+
+	private void Window_TextInput(object sender, TextInputEventArgs e)
+	{
+		if (UseTextInput && focusedControl is TextBox textBox)
+		{
+			textBox.OnTextInput(e.Character);
+		}
 	}
 
 	private void InputData_KeyDown(KeyEventArgs args)
@@ -239,6 +267,10 @@ public class GUIManager
 			InputData.KeyUp -= InputData_KeyUp;
 			InputData.MouseDown -= InputData_MouseDown;
 			InputData.MouseUp -= InputData_MouseUp;
+		}
+		if (Game?.Window != null)
+		{
+			Game.Window.TextInput -= Window_TextInput;
 		}
 		foreach (KeyValuePair<Level, List<UIComponent>> control in controls)
 		{

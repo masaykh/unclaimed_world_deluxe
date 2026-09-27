@@ -87,10 +87,14 @@ public class InputManager
 	public void SetToReplayMode()
 	{
 		isReplaying = true;
+		// PORT FIX: typing during a replay comes from the recorded key states, which only the old
+		// key mapping can turn back into text. See WindowSystem.GUIManager.UseTextInput.
+		WindowSystem.GUIManager.UseTextInput = false;
 	}
 
 	public void SetToDefaultMode()
 	{
 		isReplaying = false;
+		WindowSystem.GUIManager.UseTextInput = true;
 	}
 }
