@@ -492,9 +492,11 @@ public class UpgradeWindow : HUDWindow
 			checkBox.IsChecked = isChecked;
 		}
 		bool flag = false;
+		IKnownEntityData installedData = null;
 		if (entityData.ContainedUpgrades != null && entityData.ContainedUpgrades.TryGetValue(category, out var value) && !GoalEvaluator.EntityDataResultCausesSkip(The.InGameUI.UIAllegiance.SharedKnowledge.GetKnownData(value, out var data)) && data.EntityType == entityType)
 		{
 			flag = true;
+			installedData = data;
 		}
 		if (!bestProcessForDisplay && !flag)
 		{
@@ -503,7 +505,21 @@ public class UpgradeWindow : HUDWindow
 			return;
 		}
 		label.Visible = true;
-		if (flag)
+		// PORT FIX. The studio's slot only ever held an unfinished upgrade while its job was
+		// running, so "in the slot" meant "installed". Since unchecking withdraws that job
+		// (00dc513), a part-built upgrade can stay in the slot - and it was labelled INSTALLED
+		// although nothing can use it (InventoryPanel.HasValidTool requires IsCompleted).
+		if (flag && !installedData.IsCompleted())
+		{
+			label.Text = "PART-BUILT";
+			label.ToolTip = "Construction of this upgrade was started but not finished. It cannot be used.";
+		}
+		else if (flag && !Entity.IsFunctional(installedData))
+		{
+			label.Text = "BROKEN";
+			label.ToolTip = "The upgrade is installed but broken. It cannot be used.";
+		}
+		else if (flag)
 		{
 			label.Text = "INSTALLED";
 			label.ToolTip = "The upgrade is installed.";

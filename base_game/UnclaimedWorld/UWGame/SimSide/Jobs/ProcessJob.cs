@@ -672,6 +672,21 @@ public class ProcessJob : Job, IIDEventSubscriber
 					return GoalEvaluator.CalculateResult.Done;
 				}
 			}
+			// PORT FIX. The studio's "don't allow salvage before all upgrades are done" guard above
+			// could never fire: it sits inside `if (ActingOnEntity.HasValue)`, and a salvage job never
+			// sets ActingOnEntity - Salvage.CreateSalvageJob passes processActingOn: null and names its
+			// target through AssignImmovableInput. So removing an upgraded workshop raced the removal
+			// of its own upgrade, and when the workshop won it was destroyed at process start
+			// (SimProcess.ConsumeInputsAndGatherParts) and the upgrade was left behind with no
+			// location, still offered as a tool. The same test, on the target it actually has.
+			// Reported by Kastuk on a clean save with no mods.
+			if (SalvageJob != null && !processData.ActingOnEntity.HasValue && processData.ImmovableInput.HasValue
+				&& !GoalEvaluator.EntityDataResultCausesSkip(sharedKnowledge.GetKnownData(processData.ImmovableInput.Value, out var salvageTargetData))
+				&& salvageTargetData.ContainedUpgrades != null && salvageTargetData.ContainedUpgrades.Count > 0)
+			{
+				rating = 0.0;
+				return GoalEvaluator.CalculateResult.Done;
+			}
 			double num = EstimatePowerAndMaterialsReady(entity, sharedKnowledge, foundInputItem, processData, progress);
 			if (num == 0.0)
 			{
