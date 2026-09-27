@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Reads a TrueType/OpenType font's cmap and says which of the requested code points it
+       actually has glyphs for. Used by tools/build/36-build-fonts.sh so a rebuilt SpriteFont asks
+       for only what its typeface can draw - mgcb renders the rest as empty boxes, which is worse
+       than the font's fallback character. No dependencies: it is a table reader. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>fontcoverage</AssemblyName>
+    <RootNamespace>UW.Tools.FontCoverage</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
