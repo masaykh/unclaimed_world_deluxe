@@ -75,8 +75,6 @@ public static class DebugMod
 
     private static ModSetting showDevPanel;
 
-    private static string appliedSignature;
-
     private static bool reportedBadScenario;
 
     private static bool wroteScenarioList;
@@ -396,30 +394,27 @@ public static class DebugMod
     /// <summary>
     /// Pushes the overlay switches into Kensei.Dev.Options, which is where the game reads them.
     ///
-    /// Called every client update and does nothing on almost all of them: the settings have no
-    /// change notification, so the cheapest correct thing is to notice when the composite value
-    /// differs from what was last written. Eleven dictionary writes on the frame a switch moves,
-    /// and a string comparison on every other.
+    /// Called every client update. It compares each switch against what the game will actually
+    /// read and writes only the ones that differ - eleven dictionary lookups a frame.
+    ///
+    /// It used to compare against a cached copy of what it had last written, and that was wrong:
+    /// <c>Client.BeginRun</c> calls <c>Kensei.Dev.Manager.Initialise</c> -> <c>Options.Initialise</c>
+    /// on every new game and every load - including the reload that follows a save
+    /// (<c>SaveLoadMessageBox.LoadGameDirectlyInGame</c>) - and that replaces the option
+    /// dictionary with an empty one. The cache still matched the settings, so nothing was pushed
+    /// back, and the overlays read as off until a switch was toggled.
     /// </summary>
     public static void ApplyOverlays()
     {
         RegisterSettings();
 
-        var signature = new StringBuilder(overlaySettings.Length);
-        foreach (ModSetting setting in overlaySettings)
-        {
-            signature.Append(setting.On ? '1' : '0');
-        }
-        string now = signature.ToString();
-        if (string.Equals(now, appliedSignature, StringComparison.Ordinal))
-        {
-            return;
-        }
-        appliedSignature = now;
-
         for (int i = 0; i < overlaySettings.Length; i++)
         {
-            Kensei.Dev.Options.SetOption(Overlays[i][1], overlaySettings[i].On);
+            bool on = overlaySettings[i].On;
+            if (Kensei.Dev.Options.GetOption(Overlays[i][1]) != on)
+            {
+                Kensei.Dev.Options.SetOption(Overlays[i][1], on);
+            }
         }
     }
 }
