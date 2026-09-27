@@ -1428,11 +1428,20 @@ public class MapClient
 	{
 		foreach (Entity person in The.InGameUI.UIAllegiance.Persons)
 		{
+			// FIX: an allegiance member who is not on the map (the rest of the crew on
+			// Mountain Pass, a trader away) has no Location, and PlaySiteLocation is
+			// Location.Value - so this overlay threw "Nullable object must have a value"
+			// the first time such a person had something to look at. Same for a target
+			// that has left the map.
+			if (!person.Location.HasValue)
+			{
+				continue;
+			}
 			Vector2? vector = null;
 			if (person.Intelligence.EntityIDToLookAt != EntityID.Invalid)
 			{
 				Entity entity = Entity.FindByID(person.Intelligence.EntityIDToLookAt);
-				if (entity != null)
+				if (entity != null && entity.Location.HasValue)
 				{
 					vector = entity.PlaySiteLocation.ToVector2();
 				}
