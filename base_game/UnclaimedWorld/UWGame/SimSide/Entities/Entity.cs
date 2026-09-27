@@ -3531,6 +3531,42 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		ResetAfterEmigrating(allegiance);
 	}
 
+	/// <summary>
+	/// PORT FIX. Makes a creature that has just become <paramref name="expedition"/>'s property
+	/// one of its members too - out of the trader's stock and into the colony. Does nothing to
+	/// anything that does not think.
+	///
+	/// A creature for sale is spawned as a MEMBER of the trader's expedition
+	/// (TradeManager.ProduceItems passes the trader's keys as memberOf). EntityGroup.Buy changes
+	/// its OWNER and nothing else - ChangeOwnership never touches allegiance - and the delivery,
+	/// UnloadAction, unloads dogs and robots as cargo into the Port's storage. So the dog you paid
+	/// for stayed the trader's, and stayed in the port: Kastuk's "cannot move any way and stay at
+	/// Port. Can discard them like an item, and cannot Claim them back." It could not have walked
+	/// out even once it was ours: GoalExit treats its container as IExit / IGarrison, and a
+	/// TerminalContainer is neither.
+	///
+	/// So both halves, in this order: out of the terminal onto the ground at its access point,
+	/// then ChangeExpedition - the studio's own complete operation (allegiance, their
+	/// SwitchedToPlayerAllegiance hook, expedition membership, household). Taken out first so the
+	/// creature joins from a place on the map rather than from inside a shop's storage. Called by
+	/// UnloadAction on delivery and by Claim.
+	///
+	/// The terminal is only left on the play site; off it, this is ChangeExpedition alone, which
+	/// is what PlaceEntityOnPlaySite -> SetOwnerAndExpedition would do on arrival anyway.
+	/// </summary>
+	public void JoinOwningExpedition(Expedition expedition)
+	{
+		if (expedition == null || EntityType.IntelligenceType == null || Intelligence?.Allegiance == null)
+		{
+			return;
+		}
+		if (IsOnPlaySite() && GetContainedBy(out Entity container) && container != null && container.Contains is TerminalContainer)
+		{
+			container.Contains.Uncontain(this, destroy: false, shouldQueue: false, null, null, null, null, null, container.AccessPoint);
+		}
+		ChangeExpedition(expedition, simulateJoinedNow: true);
+	}
+
 	public void ChangeOwnership(IOwner newOwner, GiveNewOwnerKnowledge giveNewOwnerKnowledge = GiveNewOwnerKnowledge.Yes)
 	{
 		ChangeOwnership(this, newOwner, giveNewOwnerKnowledge);

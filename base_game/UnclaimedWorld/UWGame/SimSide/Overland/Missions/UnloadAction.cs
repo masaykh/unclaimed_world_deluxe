@@ -3,6 +3,7 @@ using UWGame.SimSide.AI.Goals;
 using UWGame.SimSide.Allegiances;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Containers;
+using UWGame.SimSide.Entities.Owners;
 using UWGame.SimSide.Expeditions;
 using UWGame.SimSide.Overland.Missions.Templates;
 using UWGame.SimSide.Snapshots;
@@ -56,6 +57,20 @@ public class UnloadAction : MissionAction
 					if (e.AssignedToJob == parent.MissionJob)
 					{
 						e.AssignedToJob = null;
+					}
+					// PORT FIX. The studio unloads dogs and robots as cargo on purpose ("// dogs +
+					// robots", "// NEW: dogs also" in LoadAsTradeGood), so a bought one lands in
+					// the Port's storage like a crate. What was never added is the other half:
+					// EntityGroup.Buy made it the buyer's PROPERTY while it stayed a MEMBER of the
+					// trader's expedition (TradeManager.ProduceItems spawns it as one), and nothing
+					// on this path changes that. Kastuk: "Dogs which appear by Port (by Trade),
+					// cannot move any way and stay at Port." Joining the owner happens here, on
+					// arrival, where the studio's TODO in Buy says ownership changes should really
+					// take effect. Items and colonists are untouched: JoinOwningExpedition does
+					// nothing to what does not think, and passengers leave through DisembarkAction.
+					if (e.EntityType.IntelligenceType != null && LookUpOwners.FindByID(e.OwnedBy) is Expedition owningExpedition)
+					{
+						e.JoinOwningExpedition(owningExpedition);
 					}
 				}
 			});

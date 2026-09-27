@@ -67,10 +67,16 @@ public class Claim : Command
 			// when EntityType.IntelligenceType is null, so claiming an ITEM still does exactly
 			// what it did before. That guard is why this needs no test of its own for what is
 			// alive and what is not.
-			if (newOwner is Expedition expedition && entity.EntityType?.IntelligenceType != null
-				&& entity.Intelligence?.Allegiance != null)
+			//
+			// That was half of it: a creature still in the Port's trade storage joined and could
+			// not leave, because GoalExit needs an IExit and a TerminalContainer is not one.
+			// Entity.JoinOwningExpedition takes it out of the terminal first, and is the same call
+			// UnloadAction now makes when a bought one is delivered - so buying and claiming
+			// cannot drift apart. It is also how a creature bought before that fix is recovered:
+			// discard it, then claim it.
+			if (newOwner is Expedition expedition)
 			{
-				entity.ChangeExpedition(expedition, simulateJoinedNow: true);
+				entity.JoinOwningExpedition(expedition);
 			}
 			return true;
 		}
