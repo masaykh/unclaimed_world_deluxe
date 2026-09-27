@@ -164,6 +164,7 @@
     <Compile Remove="UWGame\Mods\AgentMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\BalancedDietMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DangerousFaunaMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\FishStockMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DebugMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\StateDumpMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DisassemblyMod.Absent.cs" />
@@ -176,6 +177,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\BalancedDietMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DangerousFaunaMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\FishStockMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DebugMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StateDumpMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DisassemblyMod.cs" />

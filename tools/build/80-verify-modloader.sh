@@ -6,7 +6,7 @@
 # own data loader headlessly through tools/DataExport, and asserts the patch actually changed the
 # data the game would run with.
 #
-# Fourteen cases, and most of them are failure behaviour, because a modding framework is judged on
+# Fifteen cases, and most of them are failure behaviour, because a modding framework is judged on
 # that more than on its happy path:
 #
 #   1. the mod loads and its patch takes effect
@@ -22,6 +22,7 @@
 #  12. disassembly recipes are generated from the production recipes, linked, and switchable
 #  13. a seeded random stream resumes where it left off - the save/load assumption
 #  14. every dangerous-fauna species exists, and a multiplier reaches only its own species
+#  15. fish traps get a stock only when the fish stock mod is on
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -560,6 +561,22 @@ write_setting "$d" fauna.swarmer.damage x2
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
 echo "$out" | grep -q "fauna.swarmer.damage = x2"   && pass "fauna.swarmer.damage is registered and reads a choice from the file"   || { echo "$out" | grep -i fauna | sed 's/^/      /';        fail "fauna.swarmer.damage did not reach the registry"; }
 
+# The fish stock mod EXTENDS the studio's fishTrapSpawningLoop at load, and leaves an event it no
+# longer recognises alone - so the failure it cannot report for itself is quietly doing nothing.
+# On: the stock condition and action are there, the studio's conditions are still there, every
+# trap has a fishing place and a best rate. Off (the default): the event is exactly the studio's.
+say "==> 15. fish traps get a stock only when the fish stock mod is on"
+for mode in on off; do
+  flag=--fish-selftest; [ "$mode" = off ] && flag=--fish-selftest=off
+  out=$( cd "$(new_install case15$mode)" && "$EXPORT" . "$flag" 2>&1 ) || true
+  if echo "$out" | grep -q "fish stock self-test OK"; then
+    pass "mod $mode: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    fail "the fish stock self-test (mod $mode) reported failures"
+  fi
+done
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -574,7 +591,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 14/14 cases passed."
+  say "mod loader OK - 15/15 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

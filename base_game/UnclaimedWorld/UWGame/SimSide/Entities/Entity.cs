@@ -4738,6 +4738,19 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		return null;
 	}
 
+	/// <summary>
+	/// For mods: adds a computed property the event system can read off any entity, alongside the
+	/// studio's own (freeStorage, owningAllegiance, ...). A key that is already registered is left
+	/// as it is - the studio's properties cannot be replaced this way.
+	/// </summary>
+	public static void AddExposedProperty(string key, GetPropertyValue getter)
+	{
+		if (!string.IsNullOrEmpty(key) && getter != null && !exposedPropertyValueFunctions.ContainsKey(key))
+		{
+			exposedPropertyValueFunctions.Add(key, getter);
+		}
+	}
+
 	public PropertyResult? GetPropertyValue(string propertyKey, SharedKnowledge getterKnowledge, IHasExposedProperties parent = null)
 	{
 		PropertyResult? result = null;

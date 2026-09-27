@@ -25,6 +25,7 @@ internal static class Program
         string userScenario = args.FirstOrDefault(a => a.StartsWith("--user-scenario=", StringComparison.Ordinal))
             ?.Substring("--user-scenario=".Length);
         bool faunaSelfTest = args.Contains("--fauna-selftest");
+        string fishSelfTest = args.Contains("--fish-selftest") ? "on" : args.Contains("--fish-selftest=off") ? "off" : null;
         printTraces = args.Contains("--traces");
 
         // The bundled Unhidden Mod is on by default and its content hooks run inside the data
@@ -72,6 +73,11 @@ internal static class Program
             Console.Error.WriteLine("               load user/Scenarios/<folder> the way NEW GAME does - base tables,");
             Console.Error.WriteLine("               then the scenario's own through UserDataLoader - and check that every");
             Console.Error.WriteLine("               key its scenarioData.xml names resolves, then run the validation pass.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("  --fish-selftest[=off]");
+            Console.Error.WriteLine("               with FishStockMod on: check fishTrapSpawningLoop gained its stock");
+            Console.Error.WriteLine("               condition and action, and each trap's best-for-its-place rate. With");
+            Console.Error.WriteLine("               =off: check the event is exactly the studio's.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --fauna-selftest");
             Console.Error.WriteLine("               check that every species DangerousFaunaMod names is a creature in the");
@@ -125,6 +131,7 @@ internal static class Program
         UWGame.Mods.MagnificationMod.RegisterSettings();
         UWGame.Mods.BalancedDietMod.RegisterSettings();
         UWGame.Mods.DangerousFaunaMod.RegisterSettings();
+        UWGame.Mods.FishStockMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -175,6 +182,11 @@ internal static class Program
         if (faunaSelfTest)
         {
             return FaunaSelfTest();
+        }
+
+        if (fishSelfTest != null)
+        {
+            return FishSelfTest(fishSelfTest == "on");
         }
 
         if (scenarioReport)
@@ -382,6 +394,100 @@ internal static class Program
             Console.WriteLine("    FAIL " + root.GetType().Name + ": " + root.Message);
             Console.WriteLine(root.StackTrace);
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Checks FishStockMod against the tables the game builds.
+    ///
+    /// With the mod on: fishTrapSpawningLoop's spawning set must carry exactly one extra condition
+    /// on fishStockAvailable and one extra SetPropertyAction on fishStock - the mod EXTENDS the
+    /// studio's event, and a studio event it no longer recognises is left alone, which this would
+    /// catch as a mod that silently does nothing. Every fish trap must have a fishing place in the
+    /// tables, traps sharing a place must share one best rate, and the regrowth arithmetic must
+    /// grow, cap, and ignore time running backwards. With it off (the default): the event must be
+    /// the studio's, untouched.
+    /// </summary>
+    private static int FishSelfTest(bool on)
+    {
+        UWGame.Mods.ModSetting enabled = UWGame.Mods.ModSettings.Find("fishstock.enabled");
+        if (enabled == null)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        enabled.Value = on ? "true" : "false";
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+
+        Console.WriteLine($"==> fish stock self-test (mod {(on ? "on" : "off")})");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+
+        GameData.Instance.AllPolledEvents.TryGetValue("fishTrapSpawningLoop", out var loop);
+        var spawning = loop?.ActionSets?.SetsOfActions?.FirstOrDefault(
+            s => s.Actions != null && s.Actions.Any(a => a is UWGame.SimSide.InGameEvents.Actions.SpawnEntityAction));
+        Check(spawning != null, "fishTrapSpawningLoop has its spawning action set");
+        if (spawning == null) return 1;
+
+        bool hasStockAction = spawning.Actions.OfType<UWGame.SimSide.InGameEvents.Actions.SetPropertyAction>().Any(a => a.PropertyKey == "fishStock");
+        bool hasStockCondition = ConditionMentions(spawning.Condition, "fishStockAvailable");
+        if (on)
+        {
+            Check(hasStockCondition, "the spawn requires fishStockAvailable >= amountOfFish");
+            Check(hasStockAction, "the spawn is followed by fishStock = fishStockAvailable - amountOfFish");
+            Check(ConditionMentions(spawning.Condition, "freeStorage") && ConditionMentions(spawning.Condition, "spawnChance"),
+                  "...and the studio's own conditions (freeStorage, spawnChance) are still there");
+
+            var traps = GameData.Instance.AllEntityTypes.Values.Where(UWGame.Mods.FishStockMod.IsFishTrap).ToList();
+            Check(traps.Count > 0, $"{traps.Count} fish trap types in the table");
+            foreach (var trap in traps)
+            {
+                var places = UWGame.Mods.FishStockMod.PlacesFor(trap).ToList();
+                float own = UWGame.Mods.FishStockMod.CatchPerPoll(trap);
+                float best = UWGame.Mods.FishStockMod.BestCatchPerPoll(trap);
+                Check(places.Count > 0 && best >= own && own > 0f,
+                      FormattableString.Invariant($"{trap.KeyName,-34} own {own:0.###}/poll, best {best:0.###}/poll at {string.Join(", ", places.Select(p => p.KeyName))}"));
+                foreach (var place in places)
+                {
+                    foreach (var sibling in UWGame.Mods.FishStockMod.TrapsBuiltAt(place))
+                    {
+                        if (UWGame.Mods.FishStockMod.BestCatchPerPoll(sibling) != best)
+                        {
+                            Check(false, $"  {sibling.KeyName} shares {place.KeyName} but not its best rate");
+                        }
+                    }
+                }
+            }
+
+            Check(UWGame.Mods.FishStockMod.Regrow(0f, 0, 100, 10f, 0.05f) == 5f, "regrowth: 100 s at 0.05/s from empty is 5");
+            Check(UWGame.Mods.FishStockMod.Regrow(9f, 0, 100, 10f, 0.05f) == 10f, "regrowth: capped at the maximum");
+            Check(UWGame.Mods.FishStockMod.Regrow(4f, 100, 50, 10f, 0.05f) == 4f, "regrowth: time running backwards changes nothing");
+        }
+        else
+        {
+            Check(!hasStockCondition && !hasStockAction, "with the mod off, fishTrapSpawningLoop is the studio's, untouched");
+        }
+
+        Console.WriteLine(failures == 0 ? "fish stock self-test OK" : $"fish stock self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>Whether a condition tree tests the named property anywhere.</summary>
+    private static bool ConditionMentions(UWGame.SimSide.InGameEvents.Conditions.Condition condition, string propertyKey)
+    {
+        switch (condition)
+        {
+            case UWGame.SimSide.InGameEvents.Conditions.ConditionFunction f:
+                return ConditionMentions(f.Left, propertyKey) || ConditionMentions(f.Right, propertyKey);
+            case UWGame.SimSide.InGameEvents.Conditions.CustomCondition c:
+                return c.PropertyCondition?.PropertyKey == propertyKey;
+            default:
+                return false;
         }
     }
 

@@ -1553,7 +1553,11 @@ public class BaseDataLoader : DataLoader
 
 	protected override List<PolledEventType> InitGlobalConditionalEvents()
 	{
-		return PolledEventsLoader.Init();
+		// MOD: FishStockMod gives fish traps a stock to fish down, by extending the studio's
+		// fishTrapSpawningLoop in this table. Does nothing unless switched on.
+		List<PolledEventType> list = PolledEventsLoader.Init();
+		UWGame.Mods.FishStockMod.AdjustPolledEvents(list);
+		return list;
 	}
 
 	protected override List<ProcessToolSet> InitProcessToolSets()
