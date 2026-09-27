@@ -347,16 +347,33 @@ public abstract class AttackJob : Job
 
 	public static bool IsCorrectMeleeDistanceRoundedToSubtiles(Entity attacker, Entity target)
 	{
-		Vector3 pos;
+		// PORT FIX. The studio leads a moving target - "if we are attacking a moving target, let's
+		// add a displacement amount equal to movement over 0.5 s" - and then tests ONLY the led
+		// position. That is right for an attacker meeting the target from the front or the side,
+		// and wrong for one chasing it from behind: a pursuer at melee distance from where the
+		// target IS stands half a second of the target's speed short of where it WILL BE. A rat at
+		// ~50 units/s is led 25 units; the tolerance is DistanceToleranceInMeleeCombat, 10. So a
+		// chaser could never be "at melee distance" while its quarry kept moving - neither to start
+		// the attack (GoalDoAttack.IsInStrikingPosition) nor to finish the approach
+		// (GoalMoveToPosition.IsWithinRangeOfEntity) - and struck only once it stopped. Kastuk: "when
+		// animal is chasing escaping prey, it cannot land any hits ... when dog is attacking moving
+		// vermins, and cannot damage it until vermin stopped somewhere."
+		//
+		// Either position now counts: the led one, for the intercepts the studio wrote this for,
+		// and the current one, for the chase. A stationary target is tested exactly as before.
 		if (target.Locomotor.IsMoving())
 		{
 			Vector3 vector = target.Locomotor.MoveSpeed * target.FacingNormal * 0.5f;
-			pos = target.PlaySiteLocation + vector;
+			if (IsCorrectMeleeDistanceToPositionRoundedToSubtiles(attacker, target, target.PlaySiteLocation + vector))
+			{
+				return true;
+			}
 		}
-		else
-		{
-			pos = target.PlaySiteLocation;
-		}
+		return IsCorrectMeleeDistanceToPositionRoundedToSubtiles(attacker, target, target.PlaySiteLocation);
+	}
+
+	private static bool IsCorrectMeleeDistanceToPositionRoundedToSubtiles(Entity attacker, Entity target, Vector3 pos)
+	{
 		Point p = MapManager.WorldPosToSubtile(attacker.PlaySiteLocation);
 		Point p2 = MapManager.WorldPosToSubtile(pos);
 		if (Math.Abs(Common.DistanceOctile(p, p2) * 16f - (attacker.EntityType.LocomotorType.MeleeRadius + target.EntityType.LocomotorType.MeleeRadius)) <= GameData.Instance.AIConstants.Combat.DistanceToleranceInMeleeCombat)
