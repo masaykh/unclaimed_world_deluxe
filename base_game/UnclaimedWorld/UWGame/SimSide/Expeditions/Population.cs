@@ -126,10 +126,14 @@ public class Population : ISnapshot
 			return;
 		}
 		float num = (float)(millisecondsSinceLastReady / 1000.0 / DateAndTime.secondsPerDay);
-		int amountToFill = MaxMembers - Expedition.Members.Count;
+		// MOD: PestMod raises a rat or field-quadite population's ceiling and growth while the
+		// player's food lies exposed - added here, never written into the population. 0 and x1
+		// for every other population, and for these unless switched on. See mods/PestMod.cs.
+		int extraMembers = UWGame.Mods.PestMod.ExtraMembers(Expedition);
+		int amountToFill = MaxMembers + extraMembers - Expedition.Members.Count;
 		if (GrowthInMembersPerDay.HasValue)
 		{
-			membersToSpawn = GetNoToSpawn(GrowthInMembersPerDay.Value, num, ref timeInDaysElapsedSinceMemberSpawn, amountToFill);
+			membersToSpawn = GetNoToSpawn(GrowthInMembersPerDay.Value * UWGame.Mods.PestMod.GrowthFactor(Expedition, extraMembers), num, ref timeInDaysElapsedSinceMemberSpawn, amountToFill);
 			if (SpawnMembers(ref membersToSpawn, ignoreDanger: false) == SpawnResult.Processing)
 			{
 				isWaitingForRegions = true;

@@ -134,6 +134,7 @@ internal static class Program
         UWGame.Mods.FishStockMod.RegisterSettings();
         UWGame.Mods.HudMod.RegisterSettings();
         UWGame.Mods.RegrowthMod.RegisterSettings();
+        UWGame.Mods.PestMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -199,6 +200,11 @@ internal static class Program
         if (args.Contains("--regrowth-selftest"))
         {
             return RegrowthSelfTest();
+        }
+
+        if (args.Contains("--pest-selftest"))
+        {
+            return PestSelfTest();
         }
 
         if (scenarioReport)
@@ -407,6 +413,48 @@ internal static class Program
             Console.WriteLine(root.StackTrace);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Checks PestMod against the tables: both pests are creatures, every nutrient profile the
+    /// real items use is classified the way the mod means (meat to rats, crops and berries to
+    /// quadites, meals to neither) - a profile renamed out from under it would silently stop
+    /// drawing pests - and the bonus is 0 below the threshold, grows with the pile and stops at
+    /// the cap.
+    /// </summary>
+    private static int PestSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> pest self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        if (UWGame.Mods.PestMod.RatKey == null)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        Check(types.ContainsKey(UWGame.Mods.PestMod.RatKey) && types.ContainsKey(UWGame.Mods.PestMod.QuaditeKey),
+              "entity:binalRat and entity:fieldQuadite are creatures in the table");
+        string ProfileOf(string key) => types.TryGetValue(key, out var t) ? t.ItemType?.FoodType?.FoodNutrientProfile?.KeyName : null;
+        Check(UWGame.Mods.PestMod.Classify(ProfileOf("item:smokedStreakFin")) > 0, $"smoked streak fin ({ProfileOf("item:smokedStreakFin")}) draws rats");
+        Check(UWGame.Mods.PestMod.Classify(ProfileOf("item:binalRatChunk")) > 0, $"rat meat ({ProfileOf("item:binalRatChunk")}) draws rats");
+        Check(UWGame.Mods.PestMod.Classify(ProfileOf("item:fingerFruit")) < 0, $"finger fruit ({ProfileOf("item:fingerFruit")}) draws field quadites");
+        Check(UWGame.Mods.PestMod.Classify(ProfileOf("item:crystalBerries")) < 0, $"crystal berries ({ProfileOf("item:crystalBerries")}) draw field quadites");
+        int unclassified = types.Values.Count(t => t.ItemType?.FoodType?.FoodNutrientProfile != null
+            && UWGame.Mods.PestMod.Classify(t.ItemType.FoodType.FoodNutrientProfile.KeyName) == 0);
+        Console.WriteLine($"  info  {unclassified} food types draw neither (meals, drinks, stimulants)");
+        float threshold = UWGame.Mods.PestMod.Threshold("normal");
+        Check(threshold == 10f && UWGame.Mods.PestMod.ExtraFor(9.9f, threshold) == 0, "normal: nothing below 10 bulk");
+        Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
+        Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
+        Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
     }
 
     /// <summary>

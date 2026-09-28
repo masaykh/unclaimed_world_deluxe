@@ -6,7 +6,7 @@
 # own data loader headlessly through tools/DataExport, and asserts the patch actually changed the
 # data the game would run with.
 #
-# Seventeen cases, and most of them are failure behaviour, because a modding framework is judged on
+# Eighteen cases, and most of them are failure behaviour, because a modding framework is judged on
 # that more than on its happy path:
 #
 #   1. the mod loads and its patch takes effect
@@ -25,6 +25,7 @@
 #  15. fish traps get a stock only when the fish stock mod is on
 #  16. preserved food and alcohol get the balanced diet mod's profiles, and still validate
 #  17. every wood the regrowth mod slows is a real resource, and its curve is smooth
+#  18. exposed food is classified for the pest mod as meant, and its bonus is bounded
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -609,6 +610,19 @@ else
   fail "the regrowth self-test reported failures"
 fi
 
+# The pest mod reads what kind of food is lying about from its nutrient profile, and swells rat or
+# field-quadite populations by name - so a renamed profile or creature would silently stop drawing
+# pests. Both pests exist; real meat, fruit and berries classify as meant; the bonus is 0 below the
+# threshold and stops at its cap.
+say "==> 18. exposed food is classified for the pest mod as meant, and its bonus is bounded"
+out=$( cd "$(new_install case18)" && "$EXPORT" . --pest-selftest 2>&1 ) || true
+if echo "$out" | grep -q "pest self-test OK"; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the pest self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -623,7 +637,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 17/17 cases passed."
+  say "mod loader OK - 18/18 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1
