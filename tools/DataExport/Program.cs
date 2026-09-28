@@ -140,6 +140,7 @@ internal static class Program
         UWGame.Mods.ReserveMod.RegisterSettings();
         UWGame.Mods.SafeSleepMod.RegisterSettings();
         UWGame.Mods.GatherOnDemandMod.RegisterSettings();
+        UWGame.Mods.HuntingMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -220,6 +221,11 @@ internal static class Program
         if (args.Contains("--safesleep-selftest"))
         {
             return SafeSleepSelfTest();
+        }
+
+        if (args.Contains("--hunting-selftest"))
+        {
+            return HuntingSelfTest();
         }
 
         if (scenarioReport)
@@ -474,6 +480,39 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks HuntingMod with its prey switch as the settings file has it: on, the swarmer reaches
+    /// the human Prey list - which becomes the PreyTypes the Hunt window reads - and its carcass is an item, so a hunt
+    /// order has something to keep; off, the list is the studio's sixteen. The gate runs it both ways.
+    /// </summary>
+    private static int HuntingSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> hunting self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        types.TryGetValue("entity:human", out var human);
+        types.TryGetValue("entity:swarmer", out var swarmer);
+        // Prey, not PreyTypes: IntelligenceType.PostLoadContentInitialize builds the set from these
+        // strings one for one, in the game's post-load pass, which this tool does not run.
+        Check(human?.IntelligenceType?.Prey != null && swarmer != null, "entity:human has a prey list and entity:swarmer exists");
+        bool on = UWGame.Mods.HuntingMod.SwarmersInZones.On;
+        bool listed = human?.IntelligenceType?.Prey?.Contains("entity:swarmer") == true;
+        Check(listed == on, on ? "switch on: the swarmer is human prey" : "switch off: the swarmer is not human prey (the studio's list)");
+        Check(swarmer?.BiologicalType?.Carcass != null && types.TryGetValue(swarmer.BiologicalType.Carcass, out var carcass) && carcass.ItemType != null,
+              "the swarmer's carcass (" + swarmer?.BiologicalType?.Carcass + ") is an item type, so ProductionOrders has an order for it");
+        Check(UWGame.Mods.HuntingMod.ParseFactor("x1") == 1f && UWGame.Mods.HuntingMod.ParseFactor("x1.5") == 1.5f
+              && UWGame.Mods.HuntingMod.ParseFactor("nonsense") == 1f, "the chase range choices parse, and a bad value is x1");
+        Console.WriteLine(failures == 0 ? "hunting self-test OK" : $"hunting self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

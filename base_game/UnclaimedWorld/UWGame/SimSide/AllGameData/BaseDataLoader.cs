@@ -8547,6 +8547,8 @@ public class BaseDataLoader : DataLoader
 		UWGame.Mods.DisassemblyMod.CaptureItems(list);
 		// MOD: smoked/dried food and alcohol onto the balanced diet mod's own profiles.
 		UWGame.Mods.BalancedDietMod.AdjustItems(list);
+		// MOD: the swarmer onto the human prey list, before PostLoadContentInitialize reads it.
+		UWGame.Mods.HuntingMod.AdjustCreatures(list);
 		return list;
 	}
 

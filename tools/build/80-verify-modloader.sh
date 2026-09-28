@@ -28,6 +28,7 @@
 #  18. exposed food is classified for the pest mod as meant, and its bonus is bounded
 #  19. a reserve is kept in the expedition's saved fields, and its command survives a replay
 #  20. the safe sleep mod counts swarmer and whipjaw nests as dangerous, and quadite nests not
+#  21. the swarmer becomes human prey only with the hunting mod's switch on
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -341,7 +342,7 @@ echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is r
 
 # The nature mods default to off as well - checked ON.
 # So is self-preservation: it changes the studio's AI rather than fixing it, so it is opt-in.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"
@@ -658,6 +659,26 @@ else
   fail "the safe sleep self-test reported failures"
 fi
 
+# The hunting mod edits the human prey list while the tables are built. Checked both ways: on, the
+# swarmer is prey; off, the list is exactly the studio's - a switch that leaked would change every
+# hunting zone in every game.
+say "==> 21. the swarmer becomes human prey only with the hunting mod's switch on"
+d=$(new_install case21); write_setting "$d" hunting.swarmersInZones true
+out=$( cd "$d" && "$EXPORT" . --hunting-selftest 2>&1 ) || true
+if echo "$out" | grep -q "hunting self-test OK" && echo "$out" | grep -q "switch on: the swarmer is human prey"; then
+  pass "switch on: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the hunting self-test reported failures with the switch on"
+fi
+out=$( cd "$(new_install case21b)" && "$EXPORT" . --hunting-selftest 2>&1 ) || true
+if echo "$out" | grep -q "hunting self-test OK" && echo "$out" | grep -q "switch off: the swarmer is not human prey"; then
+  pass "switch off: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the hunting self-test reported failures with the switch off"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -672,7 +693,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 20/20 cases passed."
+  say "mod loader OK - 21/21 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

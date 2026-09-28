@@ -111,6 +111,7 @@ internal static class Program
 		UWGame.Mods.ReserveMod.RegisterSettings();
 		UWGame.Mods.SafeSleepMod.RegisterSettings();
 		UWGame.Mods.GatherOnDemandMod.RegisterSettings();
+		UWGame.Mods.HuntingMod.RegisterSettings();
 		UWGame.Mods.DisassemblyMod.RegisterSettings();
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();

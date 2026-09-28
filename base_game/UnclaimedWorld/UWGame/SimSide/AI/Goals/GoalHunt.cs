@@ -94,7 +94,8 @@ internal class GoalHunt : CompositeGoal, ITopLevelGoal
 	public static bool TargetIsTooFarFromExpedition(Entity entity, Vector3 targetLocation, float addToDistance = 0f)
 	{
 		Vector3 value = entity.Intelligence.CurrentExpedition.Center.Value;
-		if (Common.DistanceOctile(targetLocation, value) + addToDistance > GameData.Instance.AIConstants.MaximumDistanceFromExpeditionToChasePrey)
+		// MOD: HuntingMod multiplies the studio's chase distance; 1 unless changed.
+		if (Common.DistanceOctile(targetLocation, value) + addToDistance > GameData.Instance.AIConstants.MaximumDistanceFromExpeditionToChasePrey * UWGame.Mods.HuntingMod.ChaseRangeFactor())
 		{
 			return true;
 		}
