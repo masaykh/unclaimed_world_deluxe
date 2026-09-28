@@ -362,7 +362,10 @@ public class MapClient
 					if (The.InGameUI.InterfaceMode == InGameInterface.InterfaceState.None)
 					{
 						HandleMouseDragCaptureRectangle();
-						The.InGameUI.ShowOverlaysAndMarkerWindows = true;
+						if (!UWGame.Mods.HudMod.MarkersOnAlt)
+						{
+							The.InGameUI.ShowOverlaysAndMarkerWindows = true;
+						}
 					}
 					TilePos mouseTilePosition = MouseTilePosition;
 					TilePos? tilePos = previousMouseTilePosition;
@@ -846,7 +849,11 @@ public class MapClient
 			Microsoft.Xna.Framework.Point contextMenuOpenerPosFromMouse = GetContextMenuOpenerPosFromMouse();
 			ShowContextMenuOpener(contextMenuOpenerPosFromMouse.X, contextMenuOpenerPosFromMouse.Y);
 			The.InGameUI.ShowSelectedMapAreaPanel();
-			The.InGameUI.ShowOverlaysAndMarkerWindows = true;
+			// MOD: with HudMod's hold-LeftAlt mode the key drives this, not the click.
+			if (!UWGame.Mods.HudMod.MarkersOnAlt)
+			{
+				The.InGameUI.ShowOverlaysAndMarkerWindows = true;
+			}
 		}
 	}
 

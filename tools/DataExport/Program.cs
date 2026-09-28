@@ -132,6 +132,7 @@ internal static class Program
         UWGame.Mods.BalancedDietMod.RegisterSettings();
         UWGame.Mods.DangerousFaunaMod.RegisterSettings();
         UWGame.Mods.FishStockMod.RegisterSettings();
+        UWGame.Mods.HudMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();

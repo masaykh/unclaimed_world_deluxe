@@ -1558,6 +1558,9 @@ public class InGameInterface : CommonInterface
 		{
 			return;
 		}
+		// MOD: names, markers and labels while LeftAlt is held, instead of on every ground click.
+		// Returns at once unless switched on. See mods/HudMod.cs.
+		UWGame.Mods.HudMod.UpdateMarkers(this, The.Client?.Controller?.Game?.IsActive ?? true);
 		UpdateUISimPerspective();
 		string text = The.Client.Controller.GetReplayTime();
 		if (text != null)
