@@ -337,6 +337,13 @@ d=$(new_install case11h); write_setting "$d" hud.markersOnAlt true
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
 echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is registered and reads from the file"   || { echo "$out" | grep -i "hud" | sed 's/^/      /';        fail "hud.markersOnAlt did not reach the registry"; }
 
+# The nature mods default to off as well - checked ON.
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled; do
+  d=$(new_install "case11-$id"); write_setting "$d" "$id" true
+  out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+  echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"
+done
+
 # agent.turnSeconds is a CHOICE, like unorderedThreats below, so it needs its own two lines. It
 # is the only control on how much game time passes between an agent's moves, and a mod whose turn
 # length silently fell back to the default would look like the agent being ignored.

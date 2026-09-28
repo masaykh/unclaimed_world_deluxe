@@ -135,6 +135,7 @@ internal static class Program
         UWGame.Mods.HudMod.RegisterSettings();
         UWGame.Mods.RegrowthMod.RegisterSettings();
         UWGame.Mods.PestMod.RegisterSettings();
+        UWGame.Mods.BirdHopMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -494,6 +495,17 @@ internal static class Program
             rising &= UWGame.Mods.RegrowthMod.Curve(i / 100f) >= UWGame.Mods.RegrowthMod.Curve((i - 1) / 100f);
         }
         Check(rising, "never goes down as more is left");
+
+        // BirdHopMod, the other nature mod: its premise is that each hopper is a real creature the
+        // studio made immobile but gave legs. If a data change made one mobile, the mod's branch
+        // would silently stop mattering; if one lost its legs, the step would go nowhere.
+        foreach (string key in UWGame.Mods.BirdHopMod.HopperKeys)
+        {
+            GameData.Instance.AllEntityTypes.TryGetValue(key, out var hopper);
+            Check(hopper?.IntelligenceType != null && !hopper.IntelligenceType.IsMobile
+                  && hopper.LocomotorType?.LeggedLocomotorType != null,
+                  key + " is an immobile creature with legs (BirdHopMod)");
+        }
         Console.WriteLine(failures == 0 ? "regrowth self-test OK" : $"regrowth self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }

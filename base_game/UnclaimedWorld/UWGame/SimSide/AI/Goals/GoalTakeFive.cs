@@ -65,11 +65,14 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 
 	private void MoveShortDistance()
 	{
-		if (entity.ContainedBy.HasValue || !entity.EntityType.IntelligenceType.IsMobile)
+		// MOD: BirdHopMod lets an immobile creature it lists take this same short step - to a free
+		// neighbouring cell, weighted back towards where it spawned. See mods/BirdHopMod.cs.
+		bool hop = !entity.EntityType.IntelligenceType.IsMobile && UWGame.Mods.BirdHopMod.MayHop(entity);
+		if (entity.ContainedBy.HasValue || (!entity.EntityType.IntelligenceType.IsMobile && !hop))
 		{
 			return;
 		}
-		float? chanceToIdleWalkShortDistanceAway = entity.GetChanceToIdleWalkShortDistanceAway();
+		float? chanceToIdleWalkShortDistanceAway = entity.GetChanceToIdleWalkShortDistanceAway() ?? (hop ? new float?(UWGame.Mods.BirdHopMod.HopChance) : null);
 		float moveAbility = entity.Locomotor.MoveAbility;
 		if (!chanceToIdleWalkShortDistanceAway.HasValue || !(moveAbility > 0.15f))
 		{
@@ -85,8 +88,8 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 			return;
 		}
 		MovementMap movementMap = entityIntelligence.Allegiance.SharedKnowledge.GetMovementMap(entity.Intelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance);
-		float innerRadius = entity.GetShortIdleWalkMinDistance() ?? 48f;
-		float num2 = entity.GetShortIdleWalkMaxDistance() ?? 110f;
+		float innerRadius = (hop ? UWGame.Mods.BirdHopMod.HopMinDistance : (entity.GetShortIdleWalkMinDistance() ?? 48f));
+		float num2 = (hop ? UWGame.Mods.BirdHopMod.HopMaxDistance : (entity.GetShortIdleWalkMaxDistance() ?? 110f));
 		int sizeOfMapInSubtiles = (int)(num2 * 2.5f * 0.0625f);
 		SubtileInfluence subtileInfluence = new SubtileInfluence(entity.Location.Value, sizeOfMapInSubtiles);
 		subtileInfluence.DrawRadius(entity.PlaySiteLocation, innerRadius, num2, 4);
@@ -158,6 +161,11 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		RemoveAllSubgoals();
 		if (!entity.EntityType.IntelligenceType.IsMobile)
 		{
+			// MOD: in the same order as the mobile branch below - the step, then the rest.
+			if (UWGame.Mods.BirdHopMod.MayHop(entity))
+			{
+				MoveShortDistance();
+			}
 			GoalDoTakeFive goalDoTakeFive = new GoalDoTakeFive(entity);
 			goalDoTakeFive.TestForDanger = false;
 			AddSubgoal(goalDoTakeFive);
