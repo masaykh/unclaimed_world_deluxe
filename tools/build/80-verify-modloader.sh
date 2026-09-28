@@ -338,7 +338,7 @@ out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned
 echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is registered and reads from the file"   || { echo "$out" | grep -i "hud" | sed 's/^/      /';        fail "hud.markersOnAlt did not reach the registry"; }
 
 # The nature mods default to off as well - checked ON.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"

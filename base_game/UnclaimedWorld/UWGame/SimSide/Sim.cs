@@ -1537,6 +1537,9 @@ public class Sim : GameScreen, ISnapshot
 			The.Client.MarkPerformanceTime("World.Update", Color.Blue);
 			entities.GetItem((Entity e) => e.EntityID == (EntityID)14180L);
 			entities.Update(gameTime);
+			// MOD: big predators breaking into homes and stores. Returns at once unless switched
+			// on. See mods/HomeRaidMod.cs.
+			UWGame.Mods.HomeRaidMod.Update(this);
 			The.Client.MarkPerformanceTime("Entities.Update", Color.Beige);
 			LookUp<EntityGroup, EntityGroupID>.IterateMembers(delegate(EntityGroup g)
 			{

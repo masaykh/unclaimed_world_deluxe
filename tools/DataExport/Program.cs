@@ -136,6 +136,7 @@ internal static class Program
         UWGame.Mods.RegrowthMod.RegisterSettings();
         UWGame.Mods.PestMod.RegisterSettings();
         UWGame.Mods.BirdHopMod.RegisterSettings();
+        UWGame.Mods.HomeRaidMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -505,6 +506,16 @@ internal static class Program
             Check(hopper?.IntelligenceType != null && !hopper.IntelligenceType.IsMobile
                   && hopper.LocomotorType?.LeggedLocomotorType != null,
                   key + " is an immobile creature with legs (BirdHopMod)");
+        }
+
+        // HomeRaidMod: every raider must be a mobile creature that can attack, with an aggro range
+        // to look for buildings in - a key that stopped matching would silently raid nothing.
+        foreach (string key in UWGame.Mods.HomeRaidMod.RaiderKeys)
+        {
+            GameData.Instance.AllEntityTypes.TryGetValue(key, out var raider);
+            Check(raider?.IntelligenceType != null && raider.IntelligenceType.IsMobile
+                  && raider.IntelligenceType.CanAttack == true && (raider.IntelligenceType.AggroRange ?? 0f) > 0f,
+                  key + " is a mobile creature that attacks, with an aggro range (HomeRaidMod)");
         }
         Console.WriteLine(failures == 0 ? "regrowth self-test OK" : $"regrowth self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
