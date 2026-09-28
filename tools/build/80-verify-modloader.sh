@@ -319,7 +319,7 @@ has_process "$d" makeFishingNetFromRawhide   && fail "the variant is still there
 # was never called is invisible in every other way until somebody notices the behaviour missing.
 say "==> 11. the per-request mods are registered and switchable"
 d=$(new_install case11)
-for id in mapedge.stopAtEdge healing.fullRecovery healing.needsDrivenRate selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany magnification.allowBelowOne magnification.warnWhenTooSmall diet.specialiseRawFood diet.preservedLosesVitamins diet.alcoholHasEnergy diet.monotony; do
+for id in mapedge.stopAtEdge healing.fullRecovery healing.needsDrivenRate magnification.allowBelowOne magnification.warnWhenTooSmall diet.specialiseRawFood diet.preservedLosesVitamins diet.alcoholHasEnergy diet.monotony; do
   write_setting "$d" "$id" false
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = false"     && pass "$id is registered and reads from the file"     || fail "$id did not reach the registry (dataexport did not report it)"
@@ -339,7 +339,8 @@ out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned
 echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is registered and reads from the file"   || { echo "$out" | grep -i "hud" | sed 's/^/      /';        fail "hud.markersOnAlt did not reach the registry"; }
 
 # The nature mods default to off as well - checked ON.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled; do
+# So is self-preservation: it changes the studio's AI rather than fixing it, so it is opt-in.
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"

@@ -79,7 +79,7 @@ public static class SelfPreservationMod
     public static ModSetting UnorderedThreats =>
         unorderedThreats ?? (unorderedThreats = ModSettings.Choice(
             ModId, "unorderedThreats", "UNORDERED FIGHTS",
-            new string[3] { Normal, Reluctant, VeryReluctant }, Reluctant,
+            new string[3] { Normal, Reluctant, VeryReluctant }, Normal,
             toolTip: "How willing colonists are to take on a threat nobody ordered them to. " +
                      "Reluctant means they go when there is nothing better to do, which still " +
                      "defends the camp; very reluctant means almost never. Normal is the " +
@@ -88,7 +88,7 @@ public static class SelfPreservationMod
     /// <summary>Whether a wounded colonist stays out of an unordered fight entirely.</summary>
     public static ModSetting InjuredStayOut =>
         injuredStayOut ?? (injuredStayOut = ModSettings.Toggle(
-            ModId, "injuredStayOut", "THE WOUNDED STAY OUT", defaultValue: true,
+            ModId, "injuredStayOut", "THE WOUNDED STAY OUT", defaultValue: false,
             toolTip: "A colonist below three quarters of their hitpoints will not take a fight " +
                      "nobody ordered. They still defend the colony's things, and still do what " +
                      "you tell them."));
@@ -96,7 +96,7 @@ public static class SelfPreservationMod
     /// <summary>Whether an unarmed colonist stays out of an unordered fight entirely.</summary>
     public static ModSetting UnarmedStayOut =>
         unarmedStayOut ?? (unarmedStayOut = ModSettings.Toggle(
-            ModId, "unarmedStayOut", "THE UNARMED STAY OUT", defaultValue: true,
+            ModId, "unarmedStayOut", "THE UNARMED STAY OUT", defaultValue: false,
             toolTip: "A colonist whose best option is to attack with no weapon at all will not " +
                      "take a fight nobody ordered. 'Sometimes without proper weapon' was half of " +
                      "the original report."));
@@ -104,7 +104,7 @@ public static class SelfPreservationMod
     /// <summary>Whether the colony's animals wait for a person before joining a fight.</summary>
     public static ModSetting AnimalsNeedCompany =>
         animalsNeedCompany ?? (animalsNeedCompany = ModSettings.Toggle(
-            ModId, "animalsNeedCompany", "DOGS FIGHT ONLY ALONGSIDE PEOPLE", defaultValue: true,
+            ModId, "animalsNeedCompany", "DOGS FIGHT ONLY ALONGSIDE PEOPLE", defaultValue: false,
             toolTip: "A colony animal joins a fight only once one of your people is already on " +
                      "it, instead of charging anything it sees on its own."));
 

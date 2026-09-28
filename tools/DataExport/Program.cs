@@ -289,6 +289,11 @@ internal static class Program
 
         Check(dateFormat.Value == dateFormat.DefaultValue, "an unset setting reads as its default");
 
+        // Self-preservation changes the studio's AI rather than fixing it, so a fresh file must leave it
+        // off (Kastuk, 2026-09-27).
+        UWGame.Mods.SelfPreservationMod.RegisterSettings();
+        Check(!UWGame.Mods.SelfPreservationMod.Enabled, "self-preservation is off on a fresh settings file");
+
         dateFormat.Value = "dd-MM-yyyy HH:mm";
         Check(UWGame.Mods.ModSettings.Save((m, t) => Console.WriteLine("    " + t + ": " + m)),
               "the file was written");
