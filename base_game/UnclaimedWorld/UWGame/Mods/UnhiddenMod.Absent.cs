@@ -31,6 +31,10 @@ public static class UnhiddenMod
     /// <summary>Kept assignable because Client.HandleInput writes to it inside a dead branch.</summary>
     public static bool ShadowsDisabled;
 
+    /// <summary>Kept because Client.HandleInput reads it inside the same dead branch. Registered with nothing.</summary>
+    public static readonly ModSetting ShadowsKey =
+        new ModSetting(ModId, "shadowsKey", ModSettingKind.Key, "O");
+
     /// <summary>
     /// Kept because ResourceReplenish reads it inside a dead branch - the guard there is
     /// <c>UnhiddenMod.Enabled &amp;&amp; UnhiddenMod.CapResourceRespawn.On</c>, and although

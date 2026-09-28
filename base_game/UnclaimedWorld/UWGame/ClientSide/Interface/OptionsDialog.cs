@@ -388,9 +388,18 @@ public class OptionsDialog : Panel
 
 		// Categories in the order their first setting was registered, so the menu keeps the order
 		// the mods were written down in; OTHER last.
+		// KeybindMod: every key - the studio's and the mods' - in one KEYS category, first.
+		if (KeybindMod.Enabled)
+		{
+			BuildKeysCategory(panel);
+		}
 		var byMod = new List<KeyValuePair<string, List<ModSetting>>>();
 		foreach (ModSetting setting in ModSettings.All)
 		{
+			if (KeybindMod.Enabled && setting.Kind == ModSettingKind.Key)
+			{
+				continue;
+			}
 			int index = byMod.FindIndex((KeyValuePair<string, List<ModSetting>> g) => g.Key == setting.ModId);
 			if (index < 0)
 			{
@@ -540,6 +549,186 @@ public class OptionsDialog : Panel
 		};
 	}
 
+	// ---- KEYS (KeybindMod) ------------------------------------------------------------------
+
+	/// <summary>The key each button currently shows - not yet what Options or the setting holds.</summary>
+	private readonly Dictionary<TextButton, string> keyButtonValues = new Dictionary<TextButton, string>();
+
+	/// <summary>The studio's bindings: the Options field each button edits.</summary>
+	private readonly List<KeyValuePair<System.Reflection.FieldInfo, TextButton>> vanillaKeyButtons =
+		new List<KeyValuePair<System.Reflection.FieldInfo, TextButton>>();
+
+	/// <summary>The button waiting for a key press, or null.</summary>
+	private TextButton capturingKeyButton;
+
+	private Color keyButtonColor;
+
+	private void BuildKeysCategory(UIComponent panel)
+	{
+		keyButtonValues.Clear();
+		vanillaKeyButtons.Clear();
+		capturingKeyButton = null;
+		CollapsablePanel cp = new CollapsablePanel(Interface.gui, CollapsablePanel.PanelType.DropDownBig);
+		panel.Add(cp);
+		cp.Init();
+		cp.Title = "KEYS";
+		cp.X = 6;
+		cp.Width = surfaceGrid.SurfaceWidth - cp.X;
+		cp.CollapsedHeight = cp.ExpandedPanelYPos + 5;
+		cp.Height = cp.CollapsedHeight;
+		modCategoryPanels.Add(cp);
+		UIComponent content = new UIComponent(Interface.gui)
+		{
+			Width = cp.ExpandedPanel.Width
+		};
+		cp.AddContent(content);
+		int lineY = 0;
+		Options options = Interface.Game.Controller.Options;
+		foreach ((System.Reflection.FieldInfo field, string label) in KeybindMod.VanillaFields())
+		{
+			TextButton button = AddKeyRow(content, label, field.GetValue(options).ToString(), "The studio's binding, saved in Options.xml.", ref lineY);
+			vanillaKeyButtons.Add(new KeyValuePair<System.Reflection.FieldInfo, TextButton>(field, button));
+		}
+		foreach (ModSetting setting in ModSettings.All)
+		{
+			if (setting.Kind == ModSettingKind.Key)
+			{
+				string category = ModSettings.CategoryLabel(setting.ModId);
+				TextButton button = AddKeyRow(content, setting.Label, setting.Value, (category != null ? category + ": " : "") + setting.ToolTip, ref lineY);
+				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, button));
+			}
+		}
+		content.Height = lineY + 4;
+		MarkDuplicateKeys();
+		const string key = "\u0002keys";
+		if (expandedModCategories.Contains(key))
+		{
+			cp.IsExpanded = true;
+		}
+		cp.HeightResize += delegate
+		{
+			if (cp.Height > cp.CollapsedHeight)
+			{
+				expandedModCategories.Add(key);
+			}
+			else
+			{
+				expandedModCategories.Remove(key);
+			}
+			LayOutModCategories();
+		};
+	}
+
+	private TextButton AddKeyRow(UIComponent panel, string label, string keyName, string toolTip, ref int lineY)
+	{
+		Label caption = new Label(Interface.gui);
+		panel.Add(caption);
+		caption.Init(Label.LabelType.LCDSmallHeadingBanner);
+		caption.Text = label + ":";
+		caption.FitToText();
+		caption.X = 6;
+		caption.Y = lineY;
+		caption.ToolTip = toolTip;
+		caption.TooltipWidth = 320;
+		TextButton button = new TextButton(Interface.gui);
+		panel.Add(button);
+		button.Init(TextButton.TextButtonType.LCDToolTipBlack);
+		button.CheckedMode = CheckedModes.CannotBeChecked;
+		button.X = Math.Max(caption.Right + 6, 176);
+		button.Width = Math.Max(80, panel.Width - button.X - 4);
+		button.CenterThisVertically(caption.Y + caption.Height / 2);
+		button.ToolTip = "Click, then press the new key. Escape cancels.";
+		keyButtonColor = button.LabelColor;
+		keyButtonValues[button] = keyName;
+		button.Text = KeybindMod.DisplayName(keyName);
+		button.Click += delegate
+		{
+			StartKeyCapture(button);
+		};
+		lineY = Math.Max(caption.Bottom, button.Bottom) + 6;
+		return button;
+	}
+
+	private void StartKeyCapture(TextButton button)
+	{
+		if (capturingKeyButton != null)
+		{
+			capturingKeyButton.Text = KeybindMod.DisplayName(keyButtonValues[capturingKeyButton]);
+		}
+		capturingKeyButton = button;
+		button.Text = "PRESS A KEY...";
+	}
+
+	/// <summary>While a key button waits: the first key pressed is its new key, Escape cancels. Returns whether it waited.</summary>
+	private bool CaptureKey(InputEventSystem.InputData input)
+	{
+		TextButton button = capturingKeyButton;
+		if (button == null)
+		{
+			return false;
+		}
+		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
+		{
+			capturingKeyButton = null;
+			button.Text = KeybindMod.DisplayName(keyButtonValues[button]);
+			return true;
+		}
+		foreach (Microsoft.Xna.Framework.Input.Keys key in KeybindMod.Bindable)
+		{
+			if (input.IsKeyTapped(key))
+			{
+				capturingKeyButton = null;
+				keyButtonValues[button] = key.ToString();
+				button.Text = KeybindMod.DisplayName(key.ToString());
+				MarkDuplicateKeys();
+				break;
+			}
+		}
+		return true;
+	}
+
+	/// <summary>A key on two buttons turns both red; nothing stops it, since two keys for PAUSE is the studio's own design.</summary>
+	private void MarkDuplicateKeys()
+	{
+		var counts = keyButtonValues.Values.GroupBy((string k) => k).ToDictionary((IGrouping<string, string> g) => g.Key, (IGrouping<string, string> g) => g.Count());
+		foreach (KeyValuePair<TextButton, string> pair in keyButtonValues)
+		{
+			pair.Key.LabelColor = (counts[pair.Value] > 1) ? UIComponent.errorColor : keyButtonColor;
+		}
+	}
+
+	/// <summary>On OK: the studio's bindings back into Options, which OK then writes to Options.xml.</summary>
+	private void ApplyKeyBindings(Options options)
+	{
+		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
+		{
+			if (Enum.TryParse(keyButtonValues[pair.Value], out Microsoft.Xna.Framework.Input.Keys key))
+			{
+				pair.Key.SetValue(options, key);
+			}
+		}
+	}
+
+	/// <summary>
+	/// On showing the dialog: every control back to what is stored. Without it, a change made and
+	/// then CANCELLED was still showing the next time the dialog opened.
+	/// </summary>
+	private void RefillModControls()
+	{
+		capturingKeyButton = null;
+		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
+		{
+			WriteModControl(pair.Key, pair.Key.Value);
+		}
+		Options options = Interface.Game.Controller.Options;
+		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
+		{
+			keyButtonValues[pair.Value] = pair.Key.GetValue(options).ToString();
+			pair.Value.Text = KeybindMod.DisplayName(keyButtonValues[pair.Value]);
+		}
+		MarkDuplicateKeys();
+	}
+
 	/// <summary>Stacks the categories under the MODS header and sizes the surface to fit them.</summary>
 	private void LayOutModCategories()
 	{
@@ -686,6 +875,10 @@ public class OptionsDialog : Panel
 		{
 			return textBox.Text;
 		}
+		if (control is TextButton keyButton && keyButtonValues.TryGetValue(keyButton, out string keyName))
+		{
+			return keyName;
+		}
 		return setting.Value;
 	}
 
@@ -703,6 +896,11 @@ public class OptionsDialog : Panel
 		else if (control is TextBox textBox)
 		{
 			textBox.Text = value ?? "";
+		}
+		else if (control is TextButton keyButton && keyButtonValues.ContainsKey(keyButton))
+		{
+			keyButtonValues[keyButton] = value;
+			keyButton.Text = KeybindMod.DisplayName(value);
 		}
 	}
 
@@ -905,6 +1103,7 @@ public class OptionsDialog : Panel
 				options.SoundFXVolume = SliderValueToVolumeQuad(fbSoundVolume.Value);
 			}
 			options.ZoomFactor = 0.01f * (float)fbZoom.Value;
+			ApplyKeyBindings(options);
 			ApplyModSettings();
 			ApplyAndSaveOptionsToFile();
 			Hide();
@@ -935,6 +1134,7 @@ public class OptionsDialog : Panel
 	{
 		base.ShowDialog(modal);
 		Fill();
+		RefillModControls();
 		shown = this;
 	}
 
@@ -953,6 +1153,11 @@ public class OptionsDialog : Panel
 		if (dialog == null || input == null || dialog.Window == null || !dialog.Window.IsVisibleAndActive)
 		{
 			return false;
+		}
+		// A key button waiting for its key takes every key first - Enter included.
+		if (dialog.CaptureKey(input))
+		{
+			return true;
 		}
 		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Enter))
 		{

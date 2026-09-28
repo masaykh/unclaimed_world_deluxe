@@ -141,6 +141,7 @@ internal static class Program
         UWGame.Mods.SafeSleepMod.RegisterSettings();
         UWGame.Mods.GatherOnDemandMod.RegisterSettings();
         UWGame.Mods.HuntingMod.RegisterSettings();
+        UWGame.Mods.KeybindMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -373,6 +374,26 @@ internal static class Program
         Check(UWGame.Mods.ModSettings.Explain("selftest.notregistered=true")[0].Value
                   == UWGame.Mods.ModContentState.Missing,
               "a setting from a mod that is not installed is grey, not red");
+
+        // A key setting (KeybindMod's KEYS section, HudMod's reveal key) holds a Keys name.
+        UWGame.Mods.ModSetting keySetting = UWGame.Mods.ModSettings.Key(
+            "selftest", "key", "SELF TEST KEY", Microsoft.Xna.Framework.Input.Keys.LeftAlt);
+        Check(keySetting.KeyValue == Microsoft.Xna.Framework.Input.Keys.LeftAlt, "a key setting reads as its default key");
+        keySetting.Value = "o";
+        Check(keySetting.Value == "O" && keySetting.KeyValue == Microsoft.Xna.Framework.Input.Keys.O,
+              "a key typed in any case is stored the way the enum spells it");
+        keySetting.Value = "NotAKey";
+        Check(keySetting.Value == "LeftAlt", "a name that is no key falls back to the default");
+        if (UWGame.Mods.KeybindMod.Enabled)
+        {
+            var vanilla = UWGame.Mods.KeybindMod.VanillaFields();
+            Check(vanilla.Count >= 12 && vanilla.All(v => !string.IsNullOrEmpty(v.Label)),
+                  $"the KEYS section finds the studio's {vanilla.Count} bindings on Options, all labelled");
+            Check(UWGame.Mods.KeybindMod.DisplayName("D1") == "1" && UWGame.Mods.KeybindMod.DisplayName("LeftAlt") == "LEFT ALT"
+                  && UWGame.Mods.KeybindMod.DisplayName("PageUp") == "PAGE UP", "keys display as 1, LEFT ALT, PAGE UP");
+            Check(!UWGame.Mods.KeybindMod.Bindable.Contains(Microsoft.Xna.Framework.Input.Keys.Escape),
+                  "Escape cancels a rebinding, so it is not offered as a key");
+        }
 
         Console.WriteLine();
         if (failures == 0)

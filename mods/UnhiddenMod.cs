@@ -80,8 +80,16 @@ public static class UnhiddenMod
         Enabled = false;
     }
 
-    /// <summary>Toggled by "O" in Client.HandleInput, read by DateAndTime.ComputeSunAndLight.</summary>
+    /// <summary>Toggled by <see cref="ShadowsKey"/> in Client.HandleInput, read by DateAndTime.ComputeSunAndLight.</summary>
     public static bool ShadowsDisabled;
+
+    private static ModSetting shadowsKey;
+
+    /// <summary>The contributed patch's "O", now rebindable in the KEYS section.</summary>
+    public static ModSetting ShadowsKey =>
+        shadowsKey ?? (shadowsKey = ModSettings.Key(
+            ModId, "shadowsKey", "TOGGLE SHADOWS", Microsoft.Xna.Framework.Input.Keys.O,
+            toolTip: "Switches the sun's shadows off and on, in game."));
 
     // ---------------------------------------------------------------------------- settings
     //
@@ -197,6 +205,7 @@ public static class UnhiddenMod
         _ = CapResourceRespawn;
         _ = Culture;
         _ = Experimental;
+        _ = ShadowsKey;
     }
 
     /// <summary>

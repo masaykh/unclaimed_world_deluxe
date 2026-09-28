@@ -33,9 +33,20 @@ public static class HudMod
             toolTip: "Colonist names, status icons, point-of-interest labels and the zone grid show " +
                      "only while LeftAlt is held, instead of appearing on every ground click."));
 
+    private static ModSetting revealKey;
+
+    /// <summary>The key held to show them. LeftAlt, as asked; rebindable in the KEYS section.</summary>
+    public static ModSetting RevealKey =>
+        revealKey ?? (revealKey = ModSettings.Key(
+            ModId, "revealKey", "SHOW NAMES AND MARKERS (HOLD)", Keys.LeftAlt,
+            toolTip: "The key held to show colonist names, status icons, labels and the zone grid, " +
+                     "when HOLD LEFT ALT FOR NAMES AND MARKERS is on. Drag-select still uses LeftAlt."));
+
     public static void RegisterSettings()
     {
+        ModSettings.SetCategoryLabel(ModId, "HUD");
         _ = MarkersOnAltSetting;
+        _ = RevealKey;
     }
 
     /// <summary>Whether the click sites should leave the markers switch alone.</summary>
@@ -48,6 +59,7 @@ public static class HudMod
         {
             return;
         }
-        ui.ShowOverlaysAndMarkerWindows = windowIsActive && Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
+        Keys key = RevealKey.KeyValue == Keys.None ? Keys.LeftAlt : RevealKey.KeyValue;
+        ui.ShowOverlaysAndMarkerWindows = windowIsActive && Keyboard.GetState().IsKeyDown(key);
     }
 }

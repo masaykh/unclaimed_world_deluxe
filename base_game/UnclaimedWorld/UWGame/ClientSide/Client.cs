@@ -2750,10 +2750,9 @@ public class Client : GameScreen
 		if (EnableKeyboardShortcuts)
 		{
 			flag = inputData.IsKeyTapped(options.ToggleIngameMenu);
-			// UNHIDDEN MOD: "O" toggles shadows. Read by DateAndTime.ComputeSunAndLight.
-			// Hard-coded rather than an Options binding, as the contributed patch had it - it is
-			// not in the key-rebinding UI, so there is no setting to collide with.
-			if (UWGame.Mods.UnhiddenMod.Enabled && inputData.IsKeyTapped(Keys.O))
+			// UNHIDDEN MOD: its key (O unless rebound in the KEYS section) toggles shadows. Read by
+			// DateAndTime.ComputeSunAndLight.
+			if (UWGame.Mods.UnhiddenMod.Enabled && inputData.IsKeyTapped(UWGame.Mods.UnhiddenMod.ShadowsKey.KeyValue))
 			{
 				UWGame.Mods.UnhiddenMod.ShadowsDisabled = !UWGame.Mods.UnhiddenMod.ShadowsDisabled;
 			}

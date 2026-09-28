@@ -18,7 +18,13 @@ public enum ModSettingKind
     Choice,
 
     /// <summary>Free text. Drawn as a text box.</summary>
-    Text
+    Text,
+
+    /// <summary>
+    /// A keyboard key, stored by its Keys name ("LeftAlt"). Drawn as a key button in the KEYS
+    /// section when KeybindMod is built in, as a text box otherwise.
+    /// </summary>
+    Key
 }
 
 /// <summary>
@@ -120,12 +126,24 @@ public sealed class ModSetting
                 // falls back rather than throwing. A config file cannot be allowed to stop the game.
                 candidate = DefaultValue;
             }
+            else if (Kind == ModSettingKind.Key)
+            {
+                // A key name, spelt the way the enum spells it; anything else is the default.
+                candidate = Enum.TryParse(candidate, ignoreCase: true, out Microsoft.Xna.Framework.Input.Keys key)
+                            && Enum.IsDefined(typeof(Microsoft.Xna.Framework.Input.Keys), key)
+                    ? key.ToString()
+                    : DefaultValue;
+            }
             this.value = candidate;
         }
     }
 
     /// <summary>The value as a bool. Meaningful for <see cref="ModSettingKind.Toggle"/>.</summary>
     public bool On => ParseBool(value, false);
+
+    /// <summary>The value as a key. Meaningful for <see cref="ModSettingKind.Key"/>; None if unreadable.</summary>
+    public Microsoft.Xna.Framework.Input.Keys KeyValue =>
+        Enum.TryParse(value, ignoreCase: true, out Microsoft.Xna.Framework.Input.Keys key) ? key : Microsoft.Xna.Framework.Input.Keys.None;
 
     public bool IsDefault => string.Equals(value, DefaultValue, StringComparison.Ordinal);
 
@@ -408,6 +426,18 @@ public static class ModSettings
         {
             s.StockValue = stockValue;
         }
+        return Add(s);
+    }
+
+    /// <summary>Registers a key setting and returns it bound to the stored value.</summary>
+    public static ModSetting Key(string modId, string key, string label, Microsoft.Xna.Framework.Input.Keys defaultKey,
+                                 string toolTip = null)
+    {
+        ModSetting s = new ModSetting(modId, key, ModSettingKind.Key, defaultKey.ToString())
+        {
+            Label = label,
+            ToolTip = toolTip
+        };
         return Add(s);
     }
 
