@@ -920,7 +920,7 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 					{
 						num = The.Client.ClientRandomGenerator.RandomBetween(-0.01f, 0.01f);
 					}
-					StartAnimation(randomAnimToSwitchTo, mainAnimation, SelectedAnimInfo.Playback, SelectedAnimInfo.StartingPoint, SelectedAnimInfo.BlendMode, SelectedAnimInfo.SpeedFactor + num, SelectedAnimInfo.Looping, SelectedAnimInfo.StartingPointInSeconds, value, PickNewRandomAnim);
+					StartAnimation(randomAnimToSwitchTo, mainAnimation, SelectedAnimInfo.Playback, SelectedAnimInfo.StartingPoint, SelectedAnimInfo.BlendMode, (SelectedAnimInfo.SpeedFactor + num) * ActionSpeedFactor(SelectedAnimInfo), SelectedAnimInfo.Looping, SelectedAnimInfo.StartingPointInSeconds, value, PickNewRandomAnim);
 					if (SelectedAnimInfo.SoundAndAnimationSet.SoundData != null)
 					{
 						newSound = SelectedAnimInfo.SoundAndAnimationSet.SoundData[newSelectedIndex.Value];
@@ -946,6 +946,20 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 			AdoptAttachedTransformationChanges(selectedAnimInfo);
 		}
 		return true;
+	}
+
+	/// <summary>
+	/// MOD: DangerousFaunaMod's per-species attack speed, for an attacking animation only - so the
+	/// swing plays as fast as GoalDoAttack now times it, and still lines up with the hit. 1 for
+	/// every other animation and every creature the mod does not list. See mods/DangerousFaunaMod.cs.
+	/// </summary>
+	private float ActionSpeedFactor(AnimConditionInfo info)
+	{
+		if (info?.ConditionSet != null && info.ConditionSet.Action == AnimAction.Attacking)
+		{
+			return UWGame.Mods.DangerousFaunaMod.AttackSpeedFactor(base.ParentEntity);
+		}
+		return 1f;
 	}
 
 	public void StartAnimation(string animKey, AnimationTrack track, Playback playback, StartingPoint startingPoint, BlendMode mode, float speedFactor = 1f, Looping looping = Looping.No, float? startOffsetToAdd = null, bool? setCallback = false, EventHandler pickNewRandomAnim = null)
@@ -978,7 +992,7 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 		}
 		int? newSelectedIndex = null;
 		string randomAnimToSwitchTo = GetRandomAnimToSwitchTo(mainAnimation, SelectedAnimInfo.SoundAndAnimationSet.BaseAnimations, out newSelectedIndex);
-		StartAnimation(randomAnimToSwitchTo, mainAnimation, SelectedAnimInfo.Playback, SelectedAnimInfo.StartingPoint, SelectedAnimInfo.BlendMode, SelectedAnimInfo.SpeedFactor, SelectedAnimInfo.Looping, SelectedAnimInfo.StartingPointInSeconds, true, PickNewRandomAnim);
+		StartAnimation(randomAnimToSwitchTo, mainAnimation, SelectedAnimInfo.Playback, SelectedAnimInfo.StartingPoint, SelectedAnimInfo.BlendMode, SelectedAnimInfo.SpeedFactor * ActionSpeedFactor(SelectedAnimInfo), SelectedAnimInfo.Looping, SelectedAnimInfo.StartingPointInSeconds, true, PickNewRandomAnim);
 		if (newSelectedIndex.HasValue)
 		{
 			SoundData newSound = null;

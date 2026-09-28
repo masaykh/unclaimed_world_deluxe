@@ -14,8 +14,9 @@ namespace UWGame.Mods;
 /// own numbers (unarmedFighting 0.2; the twinkler's attacks, average 8 piercing, against a suit
 /// that takes 30% and then 5 more - about 0.6 damage a hit): "Need to be separated mod with sliders
 /// or field of modifiers for mentioned parameters of aggressive fauna ... twinkler, swarmer,
-/// patrician, that one four-legged one and poison leafy one." Every animal with an AggroRange in
-/// CreatureLoader is listed, so an extra row at x1 costs nothing.
+/// patrician, that one four-legged one and poison leafy one." Every wild animal with an
+/// AggroRange in CreatureLoader is listed, so an extra row at x1 costs nothing - and, at his later
+/// request, the player's own fighters: the dog and the guard robot (HOUND).
 ///
 /// WHY AT RUNTIME AND NOT IN THE TABLES. The obvious version scales the creature table at load,
 /// and it would be wrong three ways. The swarmer uses the twinkler's attacks (twinklerLowRight,
@@ -31,6 +32,9 @@ namespace UWGame.Mods;
 ///   toughness  AttackType.HitTarget              / target's factor, AFTER armour
 ///   aggro      Entity.GetAggroRange              x factor
 ///   speed      Locomotor.CalculateSpeed          x factor, every gait
+///   sensor     Entity.GetDay/NightSensorRange    x factor
+///   attack     GoalDoAttack timings              / factor, and RenderAsModel plays the attack
+///   speed                                        animation x factor so it still meets the hit
 ///
 /// Every value defaults to x1, which is the studio's game exactly: the mod does nothing until a
 /// row is changed. Settings affect the simulation, so they go into a save's settings signature.
@@ -46,12 +50,14 @@ public static class DangerousFaunaMod
         Damage,
         Toughness,
         Aggro,
-        Speed
+        Speed,
+        Sensor,
+        AttackSpeed
     }
 
-    private static readonly string[] StatKeys = { "fighting", "damage", "toughness", "aggro", "speed" };
+    private static readonly string[] StatKeys = { "fighting", "damage", "toughness", "aggro", "speed", "sensor", "attackspeed" };
 
-    private static readonly string[] StatLabels = { "HIT CHANCE", "DAMAGE", "TOUGHNESS", "AGGRO RANGE", "MOVE SPEED" };
+    private static readonly string[] StatLabels = { "HIT CHANCE", "DAMAGE", "TOUGHNESS", "AGGRO RANGE", "MOVE SPEED", "SENSOR RANGE", "ATTACK SPEED" };
 
     private static readonly string[] StatToolTips =
     {
@@ -61,7 +67,10 @@ public static class DangerousFaunaMod
         "How much it takes to bring down. Damage it receives is divided by this, after armour.",
         "How far away it notices you and comes for you (Entity.GetAggroRange).",
         "How fast it moves, in every gait - walking, running, chasing (Locomotor.CalculateSpeed). " +
-        "Its walk animation speeds up to match on its own."
+        "Its walk animation speeds up to match on its own.",
+        "How far it sees and hears, day and night (Entity.GetDaySensorRange / GetNightSensorRange).",
+        "How fast it attacks: wind-up, swing, miss and the rest after, with the attack animation " +
+        "played at the same speed so it still lines up with the hit (GoalDoAttack, RenderAsModel)."
     };
 
     /// <summary>Choices as shown and stored; "x1" is the studio's number.</summary>
@@ -80,7 +89,9 @@ public static class DangerousFaunaMod
         { "entity:spikePlant", "URSINIX" },
         { "entity:bushDragon", "NORTHERN BUSH DRAGON" },
         { "entity:spoakDendront", "SPOAK DENDRONT" },
-        { "entity:swampDendront", "SWAMP DENDRONT" }
+        { "entity:swampDendront", "SWAMP DENDRONT" },
+        { "entity:dog", "DOG" },
+        { "entity:guardRobot", "GUARD ROBOT (HOUND)" }
     };
 
     /// <summary>One species' four settings, with the last parsed value of each.</summary>
@@ -184,6 +195,10 @@ public static class DangerousFaunaMod
     public static float ToughnessFactor(Entity target) => Factor(target?.EntityType, Stat.Toughness);
 
     public static float SpeedFactor(Entity mover) => Factor(mover?.EntityType, Stat.Speed);
+
+    public static float SensorFactor(Entity sensing) => Factor(sensing?.EntityType, Stat.Sensor);
+
+    public static float AttackSpeedFactor(Entity attacker) => Factor(attacker?.EntityType, Stat.AttackSpeed);
 
     public static float? ScaleAggroRange(Entity entity, float? range)
     {

@@ -89,7 +89,7 @@ internal class GoalDoAttack : CompositeGoal
 			else
 			{
 				willHitTarget = false;
-				float num = attackType.MissDurationInSeconds ?? GetAttackTypeDurationOrDefault();
+				float num = (attackType.MissDurationInSeconds.HasValue ? (attackType.MissDurationInSeconds.Value / AttackSpeed()) : GetAttackTypeDurationOrDefault());
 				AddSubgoal(new GoalWait(base.entity, num, AnimAction.Attacking, AnimModifier.Fail, scaleAnimationToFillWaitPeriod: true));
 			}
 			attackType.StartStartEffects(targetEntity, base.entity);
@@ -111,22 +111,33 @@ internal class GoalDoAttack : CompositeGoal
 		AddSubgoal(new GoalWait(entity, attackTypeActionPointOrDefault, AnimAction.Attacking, attackType.AnimationStatesList, scaleAnimationToFillWaitPeriod: false, GoalWait.OnExitFlagAction.Leave));
 	}
 
+	/// <summary>
+	/// MOD: DangerousFaunaMod's per-species attack speed - 1 unless a row is changed. Every timing
+	/// of the attack is divided by it: the wind-up to the hit, the swing, a miss and the rest
+	/// after; RenderAsModel plays the attack animation at the same factor, so it still meets the
+	/// hit. See mods/DangerousFaunaMod.cs.
+	/// </summary>
+	private float AttackSpeed()
+	{
+		return UWGame.Mods.DangerousFaunaMod.AttackSpeedFactor(entity);
+	}
+
 	private float GetAttackTypeActionPointOrDefault()
 	{
 		if (attackType.ActionPointInSeconds > 0f)
 		{
-			return attackType.ActionPointInSeconds;
+			return attackType.ActionPointInSeconds / AttackSpeed();
 		}
-		return 0.5f;
+		return 0.5f / AttackSpeed();
 	}
 
 	private float GetAttackTypeDurationOrDefault()
 	{
 		if (attackType.DurationInSeconds > 0f)
 		{
-			return attackType.DurationInSeconds;
+			return attackType.DurationInSeconds / AttackSpeed();
 		}
-		return 1f;
+		return 1f / AttackSpeed();
 	}
 
 	private void WakeUpNearbyAllies()
@@ -379,7 +390,7 @@ internal class GoalDoAttack : CompositeGoal
 			}
 			if (num2.HasValue && num3.HasValue && The.Sim.GameplayRandomGenerator.NextDouble(null) < num.Value)
 			{
-				double value = The.Sim.GameplayRandomGenerator.RandomNormalDistribution(num2.Value, num3.Value);
+				double value = The.Sim.GameplayRandomGenerator.RandomNormalDistribution(num2.Value, num3.Value) / AttackSpeed();
 				AddSubgoal(new GoalWait(entity, value, AnimAction.Idle, AnimModifier.Bold));
 				ClearAttackAnimFlags();
 				return true;

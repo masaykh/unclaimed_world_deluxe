@@ -22,7 +22,9 @@ public static class DangerousFaunaMod
         Damage,
         Toughness,
         Aggro,
-        Speed
+        Speed,
+        Sensor,
+        AttackSpeed
     }
 
     public static void RegisterSettings()
@@ -42,6 +44,10 @@ public static class DangerousFaunaMod
     public static float ToughnessFactor(Entity target) => 1f;
 
     public static float SpeedFactor(Entity mover) => 1f;
+
+    public static float SensorFactor(Entity sensing) => 1f;
+
+    public static float AttackSpeedFactor(Entity attacker) => 1f;
 
     public static float? ScaleAggroRange(Entity entity, float? range) => range;
 }

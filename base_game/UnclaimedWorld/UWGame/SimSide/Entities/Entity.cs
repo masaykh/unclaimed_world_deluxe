@@ -4563,15 +4563,16 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 
 	public float GetDaySensorRange()
 	{
+		// MOD: DangerousFaunaMod scales both sensor ranges per species - 1 unless a row is changed.
 		if (EntityType.BiologicalType != null)
 		{
 			BioProperty bioProperty = BiologicalEntity.GetBioProperty("SensorRange");
 			if (bioProperty != null)
 			{
-				return bioProperty.NumberValue.Value;
+				return bioProperty.NumberValue.Value * UWGame.Mods.DangerousFaunaMod.SensorFactor(this);
 			}
 		}
-		return EntityType.SensorType.Range;
+		return EntityType.SensorType.Range * UWGame.Mods.DangerousFaunaMod.SensorFactor(this);
 	}
 
 	public float GetNightSensorRange()
@@ -4586,7 +4587,7 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 			}
 		}
 		num = num ?? EntityType.SensorType.RangeAtNight;
-		return new float?(GetEffect(AffectsNumbers.NightSensorRange, num.Value)).Value;
+		return new float?(GetEffect(AffectsNumbers.NightSensorRange, num.Value)).Value * UWGame.Mods.DangerousFaunaMod.SensorFactor(this);
 	}
 
 	public int GetVisionRangeInTiles(float lightLevels)
