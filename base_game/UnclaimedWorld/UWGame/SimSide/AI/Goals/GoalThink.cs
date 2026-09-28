@@ -187,6 +187,12 @@ public class GoalThink : CompositeGoal
 			}
 		}
 		AddEvaluator(new EvaluateChangeThreatStance(entity));
+		// MOD: HomeRaidMod's raiders may break into buildings. Only those species get it, and it
+		// scores 0 while the mod is off; the stub's IsRaider is always false.
+		if (UWGame.Mods.HomeRaidMod.IsRaider(entity.EntityType))
+		{
+			AddEvaluator(new EvaluateBreakIn(entity));
+		}
 	}
 
 	private Sim.DayPhases GetSleepPhase()

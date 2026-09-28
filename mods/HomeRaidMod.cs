@@ -23,18 +23,19 @@ namespace UWGame.Mods;
 /// animal can ever pick a sleeper as a target. And the combat path cannot hit a structure at all:
 /// AttackType.HitTarget needs a Body, and buildings have none.
 ///
-/// WHAT THIS DOES. Every few game seconds, each listed predator that is idle (nothing but its
-/// resting goal) looks for the nearest player building within its aggro range that has colonists
-/// inside at night, or food in storage. It walks there (the studio's GoalMoveToPosition) and, once
-/// at the door, wears the building down (Entity.DoDamage, which already damages integrity and parts)
-/// playing its attack animation. When the building breaks it is destroyed through the studio's own
-/// path - HomeContainer / UpgradableBuildingContainer.Destroy - which already ejects the occupants
-/// and drops the stored items. From there the ordinary AI takes over: sleepers are visible targets,
-/// and food is on the ground.
+/// HOW. tripleacoder's shape: an evaluator and a top-level goal, both in core because goals are
+/// saved by type name (EvaluateBreakIn, GoalBreakIn). GoalThink gives the evaluator to the raider
+/// species only. It scores a raid just above idling, so the brain chooses it when the predator has
+/// nothing better to do, and leaves it for anything that scores higher - eating, sleeping,
+/// answering an attack. The goal walks to the door (GoalMoveToPosition), then wears the building
+/// down (Entity.DoDamage, which already damages integrity and parts) playing the attack animation.
+/// When it breaks it is destroyed through the studio's own path - HomeContainer /
+/// UpgradableBuildingContainer.Destroy - which already ejects the occupants and drops the stored
+/// items. From there the ordinary AI takes over: sleepers are visible targets, and food is on the
+/// ground. The raid is part of the predator's saved brain, so it carries on after a load.
 ///
-/// A raid gives up if the predator is attacked or turns to anything else, if the building is gone,
-/// or after a minute without reaching it. The raid list is kept in memory only - after a load, raids
-/// simply start again; the damage done is already in the building's saved integrity. Off by default.
+/// This file keeps the rules: who raids, what is worth raiding, how fast a building gives way.
+/// Off by default.
 /// </summary>
 public static class HomeRaidMod
 {
@@ -43,7 +44,7 @@ public static class HomeRaidMod
     private static ModSetting enabled;
     private static ModSetting breakInSeconds;
 
-    public static ModSetting Enabled =>
+    public static ModSetting EnabledSetting =>
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "PREDATORS BREAK INTO HOMES AND STORES", defaultValue: false,
             toolTip: "Patricians, whipjaws, megapods and bush dragons nearby may break into a home " +
@@ -60,143 +61,81 @@ public static class HomeRaidMod
     public static void RegisterSettings()
     {
         ModSettings.SetCategoryLabel(ModId, "HOME RAIDS");
-        _ = Enabled;
+        _ = EnabledSetting;
         _ = BreakInSeconds;
     }
+
+    /// <summary>Whether raids happen at all. Read by EvaluateBreakIn and GoalBreakIn.</summary>
+    public static bool Enabled => EnabledSetting.On;
 
     /// <summary>The raiders: the big hunters, all around 100 bulk.</summary>
     public static readonly string[] RaiderKeys = { "entity:patrician", "entity:whipjaw", "entity:megapod", "entity:bushDragon" };
 
+    /// <summary>Whether this species gets EvaluateBreakIn. By species only, so switching the mod on mid-game works.</summary>
+    public static bool IsRaider(EntityType type) => type != null && Array.IndexOf(RaiderKeys, type.KeyName) >= 0;
+
     /// <summary>How close to the door counts as at it.</summary>
     public const float ReachDistance = 72f;
 
-    private const double CheckEverySeconds = 5.0;
-    private const double GiveUpAfterSeconds = 60.0;
+    /// <summary>A raid that has not reached the door by then is given up.</summary>
+    public const double GiveUpAfterSeconds = 60.0;
+
+    private const double RebuildEverySeconds = 5.0;
     private const float NightBelowLightLevel = 0.3f;
 
-    private sealed class Raid
+    /// <summary>A building's integrity lost per second of one predator at its door: a sound one breaks in BREAK IN seconds.</summary>
+    public static float DamagePerSecond() => 1f / Math.Max(1f, ParseSeconds(BreakInSeconds.Value));
+
+    private static readonly List<Entity> raidable = new List<Entity>();
+    private static double builtAt = double.MinValue;
+    private static object builtFor;
+
+    /// <summary>
+    /// The building this predator would raid: the nearest raidable one within its aggro range, or
+    /// null. Called from EvaluateBreakIn.
+    /// </summary>
+    public static Entity FindTarget(Entity predator)
     {
-        public EntityID Target;
-        public double StartedAt;
-        public bool AtDoor;
+        if (!Enabled || predator?.Location == null)
+        {
+            return null;
+        }
+        List<Entity> buildings = RaidableBuildings();
+        Entity best = null;
+        float bestDistance = predator.GetAggroRange() ?? 0f;
+        foreach (Entity building in buildings)
+        {
+            if (building.AccessPoint == null || Entity.FindByID(building.EntityID) == null)
+            {
+                continue;
+            }
+            float d = Vector3.Distance(predator.PlaySiteLocation, building.PlaySiteLocation);
+            if (d <= bestDistance)
+            {
+                best = building;
+                bestDistance = d;
+            }
+        }
+        return best;
     }
 
-    private static readonly Dictionary<EntityID, Raid> raids = new Dictionary<EntityID, Raid>();
-    private static double lastCheck = double.MinValue;
-    private static double lastTick = double.MinValue;
-
-    /// <summary>Called from Sim.Update every frame; returns at once unless switched on.</summary>
-    public static void Update(Sim sim)
+    /// <summary>The player's buildings with colonists asleep inside (at night) or food in storage, rebuilt every few seconds.</summary>
+    private static List<Entity> RaidableBuildings()
     {
-        if (!Enabled.On || sim?.PlaySite?.PlayerAllegiance == null || sim.Mode != Sim.EngineMode.Game)
+        Sim sim = The.Sim;
+        if (sim?.PlaySite?.PlayerAllegiance == null || sim.Mode != Sim.EngineMode.Game)
         {
-            return;
+            raidable.Clear();
+            return raidable;
         }
         double now = sim.TotalUnPausedGameTimeInSeconds;
-        double dt = lastTick == double.MinValue || now < lastTick ? 0.0 : now - lastTick;
-        lastTick = now;
-        ContinueRaids(now, dt);
-        if (now - lastCheck < CheckEverySeconds && now >= lastCheck)
+        if (builtFor == sim.PlaySite && now >= builtAt && now - builtAt < RebuildEverySeconds)
         {
-            return;
+            return raidable;
         }
-        lastCheck = now;
-        StartRaids(sim, now);
-    }
-
-    private static void StartRaids(Sim sim, double now)
-    {
-        List<Entity> targets = null;
-        foreach (string key in RaiderKeys)
-        {
-            if (!sim.PlaySite.EntitiesByType.TryGetValue(key, out var ids))
-            {
-                continue;
-            }
-            foreach (EntityID id in ids)
-            {
-                Entity predator = Entity.FindByID(id);
-                if (predator == null || raids.ContainsKey(id) || !IsIdle(predator) || !predator.Location.HasValue)
-                {
-                    continue;
-                }
-                targets = targets ?? RaidableBuildings(sim);
-                Entity target = Nearest(predator, targets, predator.GetAggroRange() ?? 0f);
-                if (target?.AccessPoint == null)
-                {
-                    continue;
-                }
-                predator.Intelligence.Brain.RemoveAllSubgoals();
-                predator.Intelligence.Brain.AddSubgoal(new GoalMoveToPosition(predator, target.AccessPoint.Value, null));
-                raids[id] = new Raid { Target = target.EntityID, StartedAt = now };
-            }
-        }
-    }
-
-    private static void ContinueRaids(double now, double dt)
-    {
-        if (raids.Count == 0)
-        {
-            return;
-        }
-        float perSecond = 1f / Math.Max(1f, ParseSeconds(BreakInSeconds.Value));
-        var finished = new List<EntityID>();
-        foreach (var pair in raids)
-        {
-            Entity predator = Entity.FindByID(pair.Key);
-            Entity target = Entity.FindByID(pair.Value.Target);
-            bool attacked = predator?.Intelligence?.Memory?.GetLastAttacker() != null;
-            if (predator == null || target == null || !predator.Location.HasValue || attacked
-                || (!pair.Value.AtDoor && now - pair.Value.StartedAt > GiveUpAfterSeconds))
-            {
-                finished.Add(pair.Key);
-                continue;
-            }
-            float distance = Vector3.Distance(predator.PlaySiteLocation, target.AccessPoint ?? target.PlaySiteLocation);
-            if (distance > ReachDistance)
-            {
-                // Still on its way - unless its own brain has moved on to something else.
-                if (!(Front(predator) is GoalMoveToPosition))
-                {
-                    finished.Add(pair.Key);
-                }
-                continue;
-            }
-            pair.Value.AtDoor = true;
-            predator.Renderable?.SetAnimationActionStateFlag(AnimAction.Attacking);
-            if (target.DoDamage(perSecond * (float)dt) && Entity.FindByID(pair.Value.Target) != null)
-            {
-                // Broken: out through the studio's own Destroy, which throws out who and what was inside.
-                target.Destroy();
-                finished.Add(pair.Key);
-            }
-        }
-        foreach (EntityID id in finished)
-        {
-            Entity.FindByID(id)?.Renderable?.ClearAnimationActionStateFlag(AnimAction.Attacking);
-            raids.Remove(id);
-        }
-    }
-
-    /// <summary>Resting, or doing nothing: the only state a raid may interrupt.</summary>
-    private static bool IsIdle(Entity predator)
-    {
-        var brain = predator.Intelligence?.Brain;
-        if (brain == null) return false;
-        Goal front = Front(predator);
-        return front == null || front is GoalTakeFive;
-    }
-
-    private static Goal Front(Entity entity)
-    {
-        var goals = entity.Intelligence?.Brain?.Subgoals;
-        return goals != null && goals.Count > 0 ? goals.Peek() : null;
-    }
-
-    /// <summary>The player's buildings with colonists asleep inside (at night) or food in storage.</summary>
-    private static List<Entity> RaidableBuildings(Sim sim)
-    {
-        var found = new List<Entity>();
+        builtFor = sim.PlaySite;
+        builtAt = now;
+        raidable.Clear();
         bool night = sim.DateAndTime != null && sim.DateAndTime.LightLevel < NightBelowLightLevel;
         var holdingFood = new HashSet<EntityID>();
         foreach (Expedition expedition in sim.PlaySite.PlayerAllegiance.Expeditions)
@@ -225,28 +164,12 @@ public static class HomeRaidMod
                     bool sleepers = night && building.Contains is IGarrison garrison && garrison.GetNoOfAgentsInside() > 0;
                     if (sleepers || holdingFood.Contains(id))
                     {
-                        found.Add(building);
+                        raidable.Add(building);
                     }
                 }
             }
         }
-        return found;
-    }
-
-    private static Entity Nearest(Entity predator, List<Entity> buildings, float range)
-    {
-        Entity best = null;
-        float bestDistance = range;
-        foreach (Entity building in buildings)
-        {
-            float d = Vector3.Distance(predator.PlaySiteLocation, building.PlaySiteLocation);
-            if (d <= bestDistance)
-            {
-                best = building;
-                bestDistance = d;
-            }
-        }
-        return best;
+        return raidable;
     }
 
     public static float ParseSeconds(string value) =>
