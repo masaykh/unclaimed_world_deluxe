@@ -14,7 +14,7 @@ set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
 
-DOCS="README.md license.md build.md modding.md how_to_use_mods.md assets/README.md
+DOCS="README.md license.md CLAUDE.md docs/build.md docs/modding.md docs/how_to_use_mods.md assets/README.md
       translations/README.md tools/shadowdusk/README.md
       tools/build/_release-install-md.sh tools/build/71-publish-release.sh
       "
@@ -64,7 +64,7 @@ done
 # EVERY REPOSITORY PATH A DOCUMENT NAMES MUST EXIST.
 #
 # The list above names the pruned scripts one at a time, which only ever catches the ones somebody
-# thought to add. This catches the rest by asking the filesystem: modding.md told readers to copy
+# thought to add. This catches the rest by asking the filesystem: docs/modding.md told readers to copy
 # samples/FasterCharcoalMod/ for months after the split left it behind, and the mod-loader gate
 # published a project path that had moved to base_game/ - neither was in any list, and neither
 # was found by reading.
@@ -77,7 +77,7 @@ echo "==> checking that the paths documents name exist"
 # yields a match starting at "build/env.sh", which does not exist, and every correct path with a
 # top-level name inside it reports as broken. The first version of this check did exactly that.
 paths=$(perl -ne '
-    while (m{(?<![/\w.-])(base_game|mods|tools|samples|assets|scenarios|translations|src|build|kit|features|decomp)((?:/[A-Za-z0-9._-]+)+)}g) {
+    while (m{(?<![/\w.-])(base_game|mods|tools|samples|assets|scenarios|translations|src|build|kit|features|decomp|docs|original_src)((?:/[A-Za-z0-9._-]+)+)}g) {
       my $p = $1 . $2; $p =~ s/[.,)]+$//; print "$p\n";
     }' $DOCS 2>/dev/null | sort -u)
 for path in $paths; do

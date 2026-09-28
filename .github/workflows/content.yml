@@ -62,7 +62,7 @@ jobs:
       #
       # Those come from a copy of the game, which CI does not have and must not contain. Until
       # that is resolved this job compiles the effects and checks they compile; it cannot
-      # produce shippable XNBs. See the note in build.md.
+      # produce shippable XNBs. See the note in docs/build.md.
       - name: Compile effects
         run: |
           export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.dll"

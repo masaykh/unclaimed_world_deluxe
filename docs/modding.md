@@ -695,7 +695,7 @@ never had a menu animation before, and now it does.
 
 ## Licensing, briefly
 
-Full version in [license.md](license.md). Short version: the game is under the **Unclaimed World
+Full version in [license.md](../license.md). Short version: the game is under the **Unclaimed World
 Community License**, which Refactored Games wrote to permit exactly this — use, modify,
 distribute, build derivative projects — with three conditions that matter to anything you make
 from it:

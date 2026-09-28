@@ -313,7 +313,12 @@ for rid in $RIDS; do
   esac
 
   # --- licences and instructions --------------------------------------------------------------
-  cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md how_to_use_mods.md "$app/"
+  # Same shape as the repository: what a player opens first stays at the top level, everything
+  # else is one directory down. install.md is the archive's README - it is written for the folder
+  # it lands in, and burying it would be the one change nobody wants.
+  cp LICENSE-UnclaimedWorld-Community.md LICENSE-port-MIT.txt license.md "$app/"
+  mkdir -p "$app/docs"
+  cp docs/how_to_use_mods.md "$app/docs/"
   sh "$(dirname "$0")/_release-install-md.sh" ${FULL:+--full} > "$app/install.md"
 
   # The DX archive needs one paragraph the GL one does not, because a player who downloads it

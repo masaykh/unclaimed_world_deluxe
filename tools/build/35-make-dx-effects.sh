@@ -10,7 +10,7 @@
 # WHY THIS MATTERS BEYOND CONVENIENCE. The GL build recompiles all 19 from the HLSL in
 # assets/effects/ through ShadowDusk, and a recompile is where a shader can come out subtly
 # different from the one the studio shipped. This path cannot: the bytecode IS the studio's.
-# That is why build.md calls WindowsDX the correctness oracle, and it is why a DX archive is the
+# That is why docs/build.md calls WindowsDX the correctness oracle, and it is why a DX archive is the
 # fallback when a GL driver rejects a recompiled shader - see tools/build/70-make-release.sh.
 #
 # The output is an OVERRIDE folder, not a replacement Content/: UwContentManager searches it

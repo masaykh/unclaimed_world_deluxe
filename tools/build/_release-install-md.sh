@@ -47,7 +47,7 @@ options menu → **MODS**, or `user/ModSettings.xml`. `-nomods` turns all of the
 UnclaimedWorld.exe -nomods
 ```
 
-`how_to_use_mods.md` describes each one, and the two things worth knowing about saves.
+`docs/how_to_use_mods.md` describes each one, and the two things worth knowing about saves.
 
 ## Where your things are kept
 
@@ -140,7 +140,7 @@ options menu → **MODS**, or `user/ModSettings.xml`. `-nomods` turns all of the
 UnclaimedWorld.exe -nomods
 ```
 
-`how_to_use_mods.md` describes each one, and the two things worth knowing about saves.
+`docs/how_to_use_mods.md` describes each one, and the two things worth knowing about saves.
 
 ## Licensing
 

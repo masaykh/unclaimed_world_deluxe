@@ -29,7 +29,7 @@ You will need the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/
 are unsigned — signing needs a paid Apple Developer account — so Gatekeeper needs a word;
 `install.md` inside the archive has the command.
 
-**Or build it**, on any of the three platforms: [build.md](build.md).
+**Or build it**, on any of the three platforms: [build.md](docs/build.md).
 
 ## What is different from the stock game
 
@@ -51,7 +51,7 @@ default, each individually switchable** in the options menu under **MODS**, or a
 | **Map edge** | the camera stops at the edge of the map instead of allowing half a screen of empty grid |
 
 Most exist because **Kastuk** asked for them, and each mod's source opens with the report that
-prompted it. [how_to_use_mods.md](how_to_use_mods.md) has the switches and the two things worth
+prompted it. [how_to_use_mods.md](docs/how_to_use_mods.md) has the switches and the two things worth
 knowing about saves.
 
 ## How this repository is organised
@@ -87,9 +87,9 @@ ASCII FBX 6.1, which no version of Assimp reads. So the release archives ship th
 
 | | |
 |---|---|
-| [build.md](build.md) | building and packaging, on any of the three platforms |
-| [modding.md](modding.md) | writing a mod: the hook points, the settings system, the data export |
-| [how_to_use_mods.md](how_to_use_mods.md) | installing and switching mods, for players |
+| [build.md](docs/build.md) | building and packaging, on any of the three platforms |
+| [modding.md](docs/modding.md) | writing a mod: the hook points, the settings system, the data export |
+| [how_to_use_mods.md](docs/how_to_use_mods.md) | installing and switching mods, for players |
 | [license.md](license.md) | which licence covers what, and what they require |
 
 ## Status, honestly

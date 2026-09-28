@@ -3,7 +3,7 @@
 Notes for anyone — human or agent — changing code here. Everything below was learned by getting
 it wrong first; each rule names the failure that produced it.
 
-`build.md`, `modding.md` and `license.md` describe what the project *is*. This file is about how
+`docs/build.md`, `docs/modding.md` and `license.md` describe what the project *is*. This file is about how
 not to break it.
 
 ---
@@ -179,7 +179,7 @@ install: `native/steam/steam_api64.dll` is committed, and the appid is written f
 
 **There is no `61-package-dx.sh`.** It was pruned at the split, and `82-verify-docs-current.sh`
 fails any document that names it. The DirectX route is the release script, one platform at a time
-— see the DirectX section of `build.md`. `35-make-dx-effects.sh` compiles nothing; it rewrites the
+— see the DirectX section of `docs/build.md`. `35-make-dx-effects.sh` compiles nothing; it rewrites the
 studio's v8 MGFX container to v10 and copies the DXBC through, so DX needs no shader compiler at
 all.
 
