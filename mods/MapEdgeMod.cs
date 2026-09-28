@@ -42,8 +42,11 @@ public static class MapEdgeMod
         _ = StopAtEdge;
     }
 
-    /// <summary>Whether the call site should use <see cref="Clamp"/> rather than the studio's.</summary>
-    public static bool Enabled => StopAtEdge.On;
+    /// <summary>
+    /// Whether the call site should use <see cref="Clamp"/> rather than the studio's. Never in the
+    /// map editor: building or painting at the very edge needs the studio's overscroll.
+    /// </summary>
+    public static bool Enabled => StopAtEdge.On && The.Sim?.Mode != UWGame.SimSide.Sim.EngineMode.Edit;
 
     /// <summary>
     /// The wanted position, held inside the map.

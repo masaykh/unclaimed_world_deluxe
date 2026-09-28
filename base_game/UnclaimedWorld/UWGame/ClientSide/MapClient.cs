@@ -507,6 +507,16 @@ public class MapClient
 		float num2 = Math.Max(mapWindowHeight, noOfTilesToDisplayVertically * 48);
 		float x = worldLocation.X - num / 2f;
 		float y = worldLocation.Y - num2 / 2f;
+		// MOD: a jump - the minimap, "go to", following a colonist - obeys the map edge too. The
+		// centred position is clamped the way scrolling is, so a target near the edge ends with
+		// the view flush against it and the target on screen, rather than centred over the empty
+		// grid. Kastuk: "jump to item near edge must just fit it on screen".
+		if (UWGame.Mods.MapEdgeMod.Enabled)
+		{
+			MapWindowWorldPosition = UWGame.Mods.MapEdgeMod.Clamp(new Vector2(x, y), The.Sim.Controller.DrawArea,
+				The.Map.MapWorldWidth, The.Map.MapWorldHeight);
+			return;
+		}
 		MapWindowWorldPosition = new Vector2(x, y);
 	}
 
