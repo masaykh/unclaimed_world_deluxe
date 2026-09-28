@@ -6,7 +6,7 @@
 # own data loader headlessly through tools/DataExport, and asserts the patch actually changed the
 # data the game would run with.
 #
-# Sixteen cases, and most of them are failure behaviour, because a modding framework is judged on
+# Seventeen cases, and most of them are failure behaviour, because a modding framework is judged on
 # that more than on its happy path:
 #
 #   1. the mod loads and its patch takes effect
@@ -24,6 +24,7 @@
 #  14. every dangerous-fauna species exists, and a multiplier reaches only its own species
 #  15. fish traps get a stock only when the fish stock mod is on
 #  16. preserved food and alcohol get the balanced diet mod's profiles, and still validate
+#  17. every wood the regrowth mod slows is a real resource, and its curve is smooth
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -596,6 +597,18 @@ else
   fail "the balanced diet self-test reported failures"
 fi
 
+# The regrowth mod names its woods by resource key and slows their respawn by a curve - so a key
+# that no longer matches silently exempts that wood, and a curve with a step or a dip would be felt
+# in play. Keys in the table; x0.5 with nothing left, x1 from 40%, never falling.
+say "==> 17. every wood the regrowth mod slows is a real resource, and its curve is smooth"
+out=$( cd "$(new_install case17)" && "$EXPORT" . --regrowth-selftest 2>&1 ) || true
+if echo "$out" | grep -q "regrowth self-test OK"; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the regrowth self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -610,7 +623,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 16/16 cases passed."
+  say "mod loader OK - 17/17 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

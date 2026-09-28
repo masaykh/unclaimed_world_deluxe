@@ -133,6 +133,7 @@ internal static class Program
         UWGame.Mods.DangerousFaunaMod.RegisterSettings();
         UWGame.Mods.FishStockMod.RegisterSettings();
         UWGame.Mods.HudMod.RegisterSettings();
+        UWGame.Mods.RegrowthMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -193,6 +194,11 @@ internal static class Program
         if (args.Contains("--diet-selftest"))
         {
             return DietSelfTest();
+        }
+
+        if (args.Contains("--regrowth-selftest"))
+        {
+            return RegrowthSelfTest();
         }
 
         if (scenarioReport)
@@ -401,6 +407,47 @@ internal static class Program
             Console.WriteLine(root.StackTrace);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Checks RegrowthMod: every wood key it names is a resource in the table - a renamed key would
+    /// silently exclude that wood - and its curve is 0.5 with nothing left, 1 from 40% up, and
+    /// never goes down as more is left. The resource table only half-builds in this tool (its
+    /// renderables need a client), but the keys are in it before that step fails.
+    /// </summary>
+    private static int RegrowthSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> regrowth self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var keys = UWGame.Mods.RegrowthMod.WoodKeys;
+        if (keys.Length == 0)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        foreach (string key in keys)
+        {
+            Check(GameData.Instance.AllResourceTypes.ContainsKey(key), key + " is a resource in the table");
+        }
+        Check(UWGame.Mods.RegrowthMod.Curve(0f) == 0.5f, "nothing left: x0.5");
+        Check(UWGame.Mods.RegrowthMod.Curve(0.4f) == 1f && UWGame.Mods.RegrowthMod.Curve(1f) == 1f, "40% left and above: x1");
+        float mid = UWGame.Mods.RegrowthMod.Curve(0.3f);
+        Check(mid > 0.8f && mid < 1f, FormattableString.Invariant($"30% left: x{mid:0.##}, between"));
+        bool rising = true;
+        for (int i = 1; i <= 100; i++)
+        {
+            rising &= UWGame.Mods.RegrowthMod.Curve(i / 100f) >= UWGame.Mods.RegrowthMod.Curve((i - 1) / 100f);
+        }
+        Check(rising, "never goes down as more is left");
+        Console.WriteLine(failures == 0 ? "regrowth self-test OK" : $"regrowth self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
     }
 
     /// <summary>

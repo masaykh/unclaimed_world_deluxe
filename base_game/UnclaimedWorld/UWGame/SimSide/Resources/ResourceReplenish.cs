@@ -15,6 +15,9 @@ public class ResourceReplenish : ISnapshot
 
 	private Snapshotter.Version version;
 
+	/// <summary>The most items this tile has ever held - its "full". Read-only, for mods.</summary>
+	public int MaxItemsEverSet => maxResourceItemsEverSet;
+
 	public bool IsSnapshotted { get; set; }
 
 	public void SetNextReplenishTimepoint(ResourceContainer parent)
@@ -81,6 +84,9 @@ public class ResourceReplenish : ISnapshot
 			{
 				num = clamped;
 			}
+			// MOD: RegrowthMod slows wood's respawn where its zone has been cut down. Returns num
+			// untouched unless switched on. See mods/RegrowthMod.cs.
+			num = UWGame.Mods.RegrowthMod.AdjustReplenish(parent, num);
 			parent.AddResourceItems(num);
 		}
 		SetNextReplenishTimepoint(parent);

@@ -27,6 +27,9 @@ public abstract class ResourceContainer : ILookUp<ResourceContainer, ResourceID>
 
 	public ResourceType ResourceType => resourceType;
 
+	/// <summary>This tile's respawn state, or null for a resource that does not replenish. For mods.</summary>
+	public ResourceReplenish Replenish => resourceReplenish;
+
 	public DetectableID DetectableID => detectableID;
 
 	public abstract Renderable Renderable { get; }
