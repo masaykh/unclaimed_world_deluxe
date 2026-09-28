@@ -3965,9 +3965,46 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 			{
 				killer = Intelligence.Memory.GetLastAttacker();
 			}
-			Intelligence.Brain.AddSubgoal(new GoalCollapse(this, OwnedBy, killer));
-			Intelligence.Brain.AddSubgoal(new GoalIsDying(this, OwnedBy, flag2));
+			OwnerID? carcassOwner = OwnedBy ?? CarcassOwnerAfterWounds(killer);
+			Intelligence.Brain.AddSubgoal(new GoalCollapse(this, carcassOwner, killer));
+			Intelligence.Brain.AddSubgoal(new GoalIsDying(this, carcassOwner, flag2));
 		}
+	}
+
+	/// <summary>
+	/// PORT FIX. Who gets the carcass of a creature that owned nothing, when it dies of wounds
+	/// here rather than through the killing blow's own message.
+	///
+	/// Two paths react to a lethal hit. AttackType.HitTarget sends the target HitAndCollapse,
+	/// carrying the attacker's ownerOfCarcass - its expedition, set in GoalThink for fights and in
+	/// GoalHunt for hunts - and the brain handles that later. UpdateBiological, just above, sees the
+	/// creature dead or unconscious on its next update and, unless the brain has ALREADY started
+	/// GoalCollapse / GoalIsDying, clears the brain and starts them itself with the dying
+	/// creature's own OwnedBy. A wild animal's is null. Whichever ran first decided, and when this
+	/// one did, the carcass lay unclaimed. Kastuk, v1.3, no mods: "Twinklers killed by sentry near
+	/// camp, or by colonists during fight (not hunt), prey taken down by dog or HOUND robot - all
+	/// of them remains unclaimed." Hunts escaped it because the hunting job claims its prey itself.
+	///
+	/// The killer is known when the cause is wounds (HitTarget now remembers it on the lethal
+	/// blow), so the carcass goes where the blow would have sent it: the killer's current
+	/// expedition, if its allegiance respects ownership - GoalThink's own rule for ownerOfCarcass -
+	/// and otherwise the killer's owner, which is how a sentry gun's kill reaches its expedition.
+	/// </summary>
+	private static OwnerID? CarcassOwnerAfterWounds(EntityID? killerID)
+	{
+		Entity killer = killerID.HasValue ? FindByID(killerID.Value) : null;
+		if (killer == null)
+		{
+			return null;
+		}
+		Intelligence intelligence = killer.Intelligence;
+		if (intelligence?.Allegiance?.RepresentativeEntityType?.IntelligenceType != null
+			&& intelligence.Allegiance.RepresentativeEntityType.IntelligenceType.RespectsOwnership
+			&& intelligence.CurrentExpedition != null)
+		{
+			return ((ILookUp<IOwner, OwnerID>)intelligence.CurrentExpedition).ID;
+		}
+		return killer.OwnedBy;
 	}
 
 	public void SetNotDirty()

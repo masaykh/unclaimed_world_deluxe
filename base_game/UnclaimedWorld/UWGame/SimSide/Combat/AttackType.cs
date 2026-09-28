@@ -301,6 +301,15 @@ public class AttackType : IGameData, IXmlSerializable
 		targetAsEntity.GetStatus(out var isDead, out var isUnconscious, out var _, out var _);
 		if (isDead || isUnconscious)
 		{
+			// PORT FIX: remember who struck the blow NOW. It is otherwise only remembered when the
+			// target's brain handles a Hit message (GoalThink -> Memory.RememberAttacker), and a
+			// lethal blow sends HitAndCollapse instead - so Entity.UpdateBiological, which may start
+			// the collapse before that message is read, had no killer to give the carcass to. See
+			// Entity.CarcassOwnerAfterWounds.
+			if (entity != null)
+			{
+				targetAsEntity.Intelligence?.Memory?.RememberAttacker(entity.EntityID);
+			}
 			if (isDead)
 			{
 				FireEventActionsWhenKillingTarget(job, targetAsEntity, entity);
