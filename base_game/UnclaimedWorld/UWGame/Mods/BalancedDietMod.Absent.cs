@@ -19,6 +19,11 @@ public static class BalancedDietMod
     {
     }
 
+    /// <summary>Leaves every item on the profile the studio gave it.</summary>
+    public static void AdjustItems(List<UWGame.SimSide.Entities.EntityType> types)
+    {
+    }
+
     /// <summary>
     /// Leaves the studio's nutrient profiles exactly as the table declared them. The real mod
     /// edits the list in place, so doing nothing here is the whole of "not installed".

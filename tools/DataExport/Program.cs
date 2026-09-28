@@ -189,6 +189,11 @@ internal static class Program
             return FishSelfTest(fishSelfTest == "on");
         }
 
+        if (args.Contains("--diet-selftest"))
+        {
+            return DietSelfTest();
+        }
+
         if (scenarioReport)
         {
             // Load the way the GAME loads and only then switch modes, which is the order that
@@ -395,6 +400,53 @@ internal static class Program
             Console.WriteLine(root.StackTrace);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Checks the balanced diet mod's preserved-food and alcohol profiles on the items themselves,
+    /// with its switches as the file has them (both on by default): smoked and dried items on
+    /// preserved copies with 40% of the fresh micronutrients, wine and brandy on 'alcohol' with the
+    /// studio's stimulant plus a third of the crystal berries' energy, pickled food untouched - and
+    /// then the validation pass, because new profiles are new data.
+    /// </summary>
+    private static int DietSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> balanced diet self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var items = GameData.Instance.AllEntityTypes;
+        var profiles = GameData.Instance.AllFoodNutrientProfiles;
+        UWGame.SimSide.Items.FoodNutrientProfile ProfileOf(string key) =>
+            items.TryGetValue(key, out var t) ? t.ItemType?.FoodType?.FoodNutrientProfile : null;
+        float Amount(UWGame.SimSide.Items.FoodNutrientProfile p, string nutrient) =>
+            p?.FoodNutrientTypes?.Where(a => a?.Nutrient?.KeyName == nutrient).Sum(a => a.Amount) ?? 0f;
+
+        var fresh = profiles.TryGetValue("richMeat", out var r) ? r : null;
+        var smoked = ProfileOf("item:smokedStreakFin");
+        Check(smoked?.KeyName == "preservedRichMeat", $"smokedStreakFin uses {smoked?.KeyName ?? "nothing"}");
+        Check(fresh != null && Math.Abs(Amount(smoked, "micronutrients") - 0.4f * Amount(fresh, "micronutrients")) < 1e-6f
+              && Amount(smoked, "protein") == Amount(fresh, "protein") && Amount(smoked, "foodEnergy") == Amount(fresh, "foodEnergy"),
+              "...with 40% of richMeat's micronutrients and the same protein and energy");
+        Check(ProfileOf("item:smokedAlabasterRay")?.KeyName == "preservedMediumMeat", "smokedAlabasterRay uses preservedMediumMeat");
+        Check(ProfileOf("item:pickledCarbonTail")?.KeyName == "richMeat", "pickledCarbonTail is untouched (richMeat)");
+
+        var wine = ProfileOf("item:crystalWine");
+        var berries = profiles.TryGetValue("highEnergy", out var h) ? h : null;
+        var stimulant = profiles.TryGetValue("lowStimulant", out var s) ? s : null;
+        Check(wine?.KeyName == "alcohol" && ProfileOf("item:crystalBrandy")?.KeyName == "alcohol", "wine and brandy use 'alcohol'");
+        Check(Math.Abs(Amount(wine, "foodEnergy") - Amount(berries, "foodEnergy") / 3f) < 1e-6f && Amount(wine, "foodEnergy") > 0f,
+              FormattableString.Invariant($"...with a third of the crystal berries' energy ({Amount(wine, "foodEnergy"):0.###} of {Amount(berries, "foodEnergy"):0.###})"));
+        Check(Amount(wine, "stimulants") == Amount(stimulant, "stimulants") && Amount(wine, "stimulants") > 0f, "...and the studio's stimulant");
+
+        bool valid = ValidateDataComplete();
+        Console.WriteLine(failures == 0 && valid ? "balanced diet self-test OK" : $"balanced diet self-test FAILED - {failures} check(s)");
+        return failures == 0 && valid ? 0 : 1;
     }
 
     /// <summary>

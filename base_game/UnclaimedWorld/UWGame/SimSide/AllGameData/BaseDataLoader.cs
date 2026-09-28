@@ -8545,6 +8545,8 @@ public class BaseDataLoader : DataLoader
 		// DISASSEMBLY MOD: it needs the entity table when the PROCESS table is built, several
 		// steps later. See DisassemblyMod.CaptureItems for why it cannot read GameData for it.
 		UWGame.Mods.DisassemblyMod.CaptureItems(list);
+		// MOD: smoked/dried food and alcohol onto the balanced diet mod's own profiles.
+		UWGame.Mods.BalancedDietMod.AdjustItems(list);
 		return list;
 	}
 
