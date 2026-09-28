@@ -141,6 +141,8 @@ public class MainMenuScreen : GameScreen
 
 	public override void HandleInput()
 	{
+		// Enter / Escape answer the Options dialog, whose buttons can end up off a small screen.
+		UWGame.ClientSide.Interface.OptionsDialog.HandleKeys(base.Controller.InputData);
 	}
 
 	private void ExitMessageBoxAccepted(object sender, EventArgs e)

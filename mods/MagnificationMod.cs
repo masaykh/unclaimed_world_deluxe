@@ -78,6 +78,13 @@ public static class MagnificationMod
     /// reachable only by hand-editing Options.xml. Reported twice before it was found, because
     /// setting it in the file did work and that looked like the feature working.
     /// </summary>
+    /// <summary>
+    /// The MAGNIFICATION slider's step, in percent: 0.05 rather than the studio's 0.25. Kastuk asked
+    /// for steps between 0.5 and 1.0, and a value like 0.8 set in Options.xml came back from the
+    /// dialog as 0.75, because the slider snapped it.
+    /// </summary>
+    public static int OptionsStepSize() => 5;
+
     public static int OptionsFloorPercent()
     {
         if (!AllowBelowOne.On)

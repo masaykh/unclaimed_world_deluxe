@@ -2742,6 +2742,10 @@ public class Client : GameScreen
 			return;
 		}
 		Options options = base.Controller.Options;
+		if (OptionsDialog.HandleKeys(inputData))
+		{
+			return;
+		}
 		bool flag = false;
 		if (EnableKeyboardShortcuts)
 		{

@@ -22,6 +22,9 @@ public static class MagnificationMod
     }
 
     /// <summary>The studio's options floor: 100%, and their exact wording for it.</summary>
+    /// <summary>The studio's step of 0.25.</summary>
+    public static int OptionsStepSize() => 25;
+
     public static int OptionsFloorPercent()
     {
         return 100;

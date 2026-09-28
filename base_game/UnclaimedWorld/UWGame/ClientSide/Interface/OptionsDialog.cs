@@ -204,9 +204,10 @@ public class OptionsDialog : Panel
 		fbZoom.MaxValue = 400;
 		fbZoom.ShowMaxValueLabelAtEnd = true;
 		fbZoom.ShowValueLabel = FillableBarSlider.ShowValueLabelModes.Always;
-		fbZoom.StepSize = 25;
+		fbZoom.StepSize = MagnificationMod.OptionsStepSize();
 		fbZoom.KnobWidth = 16;
-		fbZoom.ShowNotches = true;
+		// 80 notches at a step of 5 would be a solid bar; the studio's 25 keeps them.
+		fbZoom.ShowNotches = fbZoom.StepSize >= 25;
 		fbZoom.MaxSliderValueSymbol = null;
 		fbZoom.MaxSliderValueTooltip = null;
 		fbZoom.DisplayValueFunction = (int v) => (0.01f * (float)v).ToString("N2");
@@ -934,6 +935,36 @@ public class OptionsDialog : Panel
 	{
 		base.ShowDialog(modal);
 		Fill();
+		shown = this;
+	}
+
+	/// <summary>The dialog most recently shown; open while its window is visible.</summary>
+	private static OptionsDialog shown;
+
+	/// <summary>
+	/// Enter is OK and Escape is CANCEL while the dialog is open. Kastuk: at a small resolution
+	/// or magnification the OK and CANCEL buttons can end up off the screen, and the only way out
+	/// was editing Options.xml by hand. Called from Client.HandleInput in game and from
+	/// MainMenuScreen.HandleInput; returns whether it took the key.
+	/// </summary>
+	public static bool HandleKeys(InputEventSystem.InputData input)
+	{
+		OptionsDialog dialog = shown;
+		if (dialog == null || input == null || dialog.Window == null || !dialog.Window.IsVisibleAndActive)
+		{
+			return false;
+		}
+		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Enter))
+		{
+			dialog.btOK_Click(null, null);
+			return true;
+		}
+		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
+		{
+			dialog.btCancel_Click(null, null);
+			return true;
+		}
+		return false;
 	}
 
 	private void Fill()
