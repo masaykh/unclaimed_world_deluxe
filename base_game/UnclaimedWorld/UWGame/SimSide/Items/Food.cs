@@ -41,7 +41,12 @@ public class Food : ISnapshot
 		}
 	}
 
-	public void ConsumeBy(Entity consumer)
+	/// <param name="satisfactionFactor">
+	/// MOD: how much of the meal's nourishment reaches the eater's needs - 1, the studio's, unless
+	/// BalancedDietMod finds the dish eaten too often lately (see GoalEat.ConsumeStomachContents).
+	/// The nutrient statistics still record what was eaten.
+	/// </param>
+	public void ConsumeBy(Entity consumer, float satisfactionFactor = 1f)
 	{
 		foreach (KeyValuePair<FoodNutrientType, float> nutrientBulkAmount in NutrientBulkAmounts)
 		{
@@ -50,7 +55,7 @@ public class Food : ISnapshot
 				float num = Math.Min(nutrientBulkAmount.Value, value.FoodNeed.CurrentNeededNutrientBulk);
 				LogConsumeStatistics(consumer, nutrientBulkAmount.Key, nutrientBulkAmount.Value, num);
 				float amount = num / value.FoodNeed.TotalNeededNutrientBulk;
-				value.Satisfy(amount);
+				value.Satisfy(amount * satisfactionFactor);
 			}
 		}
 		List<EffectProfileType> effectTypes = Parent.Parent.EntityType.ItemType.FoodType.EffectTypes;

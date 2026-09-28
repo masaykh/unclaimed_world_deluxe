@@ -484,14 +484,18 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 
 	public static void ConsumeStomachContents(Entity entity)
 	{
+		// MOD: BalancedDietMod's monotony - a dish eaten too often lately fills less. The factor
+		// is decided per dish from the meals BEFORE this one, and this meal is recorded after, so
+		// three pieces of one fish are one serving, not three. 1 unless switched on.
 		entity.AgentStorage.IterateContained(StorageCompartment.Stomach, delegate(Entity foodItem)
 		{
 			if (foodItem.EntityType.ItemType != null && foodItem.EntityType.ItemType.FoodType != null)
 			{
-				foodItem.Item.Food.ConsumeBy(entity);
+				foodItem.Item.Food.ConsumeBy(entity, UWGame.Mods.BalancedDietMod.MonotonyFactor(entity, foodItem.EntityType));
 				foodItem.Destroy();
 			}
 		});
+		UWGame.Mods.BalancedDietMod.RecordMeal(entity);
 	}
 
 	public override bool HandleMessage(Message message)

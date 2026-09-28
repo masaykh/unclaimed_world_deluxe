@@ -74,11 +74,122 @@ public static class BalancedDietMod
                      "the crystal berries they are made from - a bonus, not a meal.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
+    private static ModSetting monotony;
+
+    /// <summary>Whether a dish eaten too often lately fills less.</summary>
+    public static ModSetting Monotony =>
+        monotony ?? (monotony = ModSettings.Toggle(
+            ModId, "monotony", "THE SAME FOOD EVERY DAY FILLS LESS", defaultValue: true,
+            toolTip: "Each colonist remembers their last 10 meals. A dish is fine three times; from " +
+                     "the fourth serving it satisfies 10% less each time, down to half - so they get " +
+                     "hungry sooner on one food, and a varied kitchen pays. Drinks are exempt.",
+            affectsSimulation: true));
+
     public static void RegisterSettings()
     {
         _ = SpecialiseRawFood;
         _ = PreservedLosesVitamins;
         _ = AlcoholHasEnergy;
+        _ = Monotony;
+    }
+
+    // ---- monotony ----------------------------------------------------------------------------
+    //
+    // Kastuk: "Moral or Food need or Comfort to be affected by same dishes day by day ... I want it
+    // to be for more dynamic survival without stagnation on the same food." There is no personal
+    // morale or comfort need to lower - colonists' needs are foodEnergy, protein, micronutrients,
+    // sleep and stimulants - so it acts on the FOOD need: a dish eaten too often lately satisfies
+    // less (Food.ConsumeBy's satisfactionFactor), and the colonist is hungry again sooner. The studio
+    // had started on this: Meal.Variety exists, and nothing constructs a Meal or reads it.
+    //
+    // The history is the colonist's own CustomFields entry dietRecentMeals - dish keys, newest last,
+    // one per dish per meal - which the save already carries. No save-format change.
+
+    public const string HistoryKey = "dietRecentMeals";
+
+    /// <summary>How many meals a colonist remembers.</summary>
+    public const int RememberedMeals = 10;
+
+    /// <summary>Servings of one dish in the remembered meals that cost nothing.</summary>
+    public const int FreeServings = 3;
+
+    private static readonly Dictionary<EntityID, HashSet<string>> dishesThisMeal = new Dictionary<EntityID, HashSet<string>>();
+
+    /// <summary>
+    /// The satisfaction factor for a dish already served <paramref name="servingsRemembered"/>
+    /// times in the remembered meals: 1 up to FreeServings, then 10% less per serving, never below
+    /// half.
+    /// </summary>
+    public static float MonotonyFactorFor(int servingsRemembered) =>
+        servingsRemembered < FreeServings ? 1f : Math.Max(0.5f, 1f - 0.1f * (servingsRemembered - FreeServings + 1));
+
+    private static bool IsDish(EntityType food)
+    {
+        FoodType type = food?.ItemType?.FoodType;
+        if (type?.FoodNutrientProfile == null)
+        {
+            return false;
+        }
+        bool drink = (type.FoodTags != null && Array.IndexOf(type.FoodTags, "alcoholicBeverage") >= 0)
+                     || type.FoodNutrientProfile.KeyName == "lowStimulant";
+        return !drink;
+    }
+
+    private static List<string> History(Entity eater)
+    {
+        if (eater.CustomFields != null && eater.CustomFields.TryGetValue(HistoryKey, out var stored) && !string.IsNullOrEmpty(stored.StringResult))
+        {
+            return stored.StringResult.Split('|').ToList();
+        }
+        return new List<string>();
+    }
+
+    /// <summary>
+    /// Called by GoalEat.ConsumeStomachContents for each item a colonist eats: how much of it
+    /// reaches their needs. 1 for anything but a colonist eating a dish, and unless switched on.
+    /// </summary>
+    public static float MonotonyFactor(Entity eater, EntityType food)
+    {
+        if (!Monotony.On || eater?.EntityType?.Person == null || !IsDish(food))
+        {
+            return 1f;
+        }
+        if (!dishesThisMeal.TryGetValue(eater.EntityID, out var dishes))
+        {
+            dishes = new HashSet<string>(StringComparer.Ordinal);
+            dishesThisMeal[eater.EntityID] = dishes;
+        }
+        int servings = History(eater).Count(k => k == food.KeyName);
+        if (dishes.Add(food.KeyName) && servings == FreeServings && eater.Intelligence?.Allegiance != null && The.Client != null)
+        {
+            // Once, on the first serving that fills less - so a player can see why food is going
+            // faster, and which dish to vary.
+            The.Client.AddLogEvent(eater.Intelligence.Allegiance, The.Client.Log.GeneralEvent, eater,
+                "is tired of eating " + (food.Name ?? food.KeyName).ToLowerInvariant() + ".");
+        }
+        return MonotonyFactorFor(servings);
+    }
+
+    /// <summary>Called once a meal is eaten: its dishes join the colonist's remembered meals.</summary>
+    public static void RecordMeal(Entity eater)
+    {
+        if (eater == null || !dishesThisMeal.TryGetValue(eater.EntityID, out var dishes))
+        {
+            return;
+        }
+        dishesThisMeal.Remove(eater.EntityID);
+        if (dishes.Count == 0)
+        {
+            return;
+        }
+        List<string> history = History(eater);
+        history.AddRange(dishes.OrderBy(d => d, StringComparer.Ordinal));
+        if (history.Count > RememberedMeals)
+        {
+            history = history.Skip(history.Count - RememberedMeals).ToList();
+        }
+        Entity.SetPropertyValue(ref eater.CustomFields, HistoryKey,
+            new UWGame.ClientSide.PropertyPresentation.PropertyResult { StringResult = string.Join("|", history) });
     }
 
     /// <summary>

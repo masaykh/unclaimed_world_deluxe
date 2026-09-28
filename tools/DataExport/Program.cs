@@ -552,6 +552,12 @@ internal static class Program
               FormattableString.Invariant($"...with a third of the crystal berries' energy ({Amount(wine, "foodEnergy"):0.###} of {Amount(berries, "foodEnergy"):0.###})"));
         Check(Amount(wine, "stimulants") == Amount(stimulant, "stimulants") && Amount(wine, "stimulants") > 0f, "...and the studio's stimulant");
 
+        // Monotony: free for the first servings, 10% less per serving after, never below half.
+        float F(int n) => UWGame.Mods.BalancedDietMod.MonotonyFactorFor(n);
+        Check(F(0) == 1f && F(2) == 1f, "a dish served up to 3 times in the last 10 meals fills fully");
+        Check(Math.Abs(F(3) - 0.9f) < 1e-6f && Math.Abs(F(4) - 0.8f) < 1e-6f, "the 4th serving fills 90%, the 5th 80%");
+        Check(F(7) == 0.5f && F(10) == 0.5f, "...never below half");
+
         bool valid = ValidateDataComplete();
         Console.WriteLine(failures == 0 && valid ? "balanced diet self-test OK" : $"balanced diet self-test FAILED - {failures} check(s)");
         return failures == 0 && valid ? 0 : 1;

@@ -19,6 +19,15 @@ public static class BalancedDietMod
     {
     }
 
+    /// <summary>Every meal fills as the studio made it.</summary>
+    public static float MonotonyFactor(UWGame.SimSide.Entities.Entity eater, UWGame.SimSide.Entities.EntityType food) => 1f;
+
+    public static void RecordMeal(UWGame.SimSide.Entities.Entity eater)
+    {
+    }
+
+    public static float MonotonyFactorFor(int servingsRemembered) => 1f;
+
     /// <summary>Leaves every item on the profile the studio gave it.</summary>
     public static void AdjustItems(List<UWGame.SimSide.Entities.EntityType> types)
     {
