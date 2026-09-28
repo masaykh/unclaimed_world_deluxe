@@ -379,7 +379,8 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 
 	private static void GetAmountToProduce(EntityGroup owner, EntityType entityType, ProductionOrder order, out int currentJobs, out int amountToProduce)
 	{
-		int itemsInStock = owner.CountAvailableItems(entityType);
+		// ReserveMod: a standing order keeps its amount on top of the reserve.
+		int itemsInStock = UWGame.Mods.ReserveMod.StockAfterReserve(owner, entityType, owner.CountAvailableItems(entityType));
 		float averageSpeed;
 		int totalOutstandingOutput = owner.CountOutstandingJobOutput(entityType, countUnstarted: true, out currentJobs, out averageSpeed);
 		amountToProduce = GetAmountToProduce(order, itemsInStock, totalOutstandingOutput);

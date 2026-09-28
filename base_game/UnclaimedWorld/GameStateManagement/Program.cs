@@ -108,6 +108,7 @@ internal static class Program
 		UWGame.Mods.PestMod.RegisterSettings();
 		UWGame.Mods.BirdHopMod.RegisterSettings();
 		UWGame.Mods.HomeRaidMod.RegisterSettings();
+		UWGame.Mods.ReserveMod.RegisterSettings();
 		UWGame.Mods.DisassemblyMod.RegisterSettings();
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();

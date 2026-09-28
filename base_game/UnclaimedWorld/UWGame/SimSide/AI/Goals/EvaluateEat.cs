@@ -204,8 +204,14 @@ public class EvaluateEat : GoalEvaluator
 	{
 		allFoodItems.Clear();
 		SharedKnowledge sharedKnowledge = entityIntelligence.Allegiance.SharedKnowledge;
+		// ReserveMod: a food at or below its reserve is not on the menu, unless this one is starving.
+		bool starving = UWGame.Mods.ReserveMod.Enabled && GetLowestFoodLevel() == FoodLevels.Starving;
 		foreach (KeyValuePair<EntityType, List<EntityID>> item in foodItemsGroup.Food)
 		{
+			if (UWGame.Mods.ReserveMod.Enabled && UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, item.Key, starving))
+			{
+				continue;
+			}
 			for (int num = item.Value.Count - 1; num >= 0; num--)
 			{
 				if (IsValidFoodItem(item.Value[num], entity, bioEntity, sharedKnowledge, foodItemsGroup, out var itemData))

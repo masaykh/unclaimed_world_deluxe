@@ -57,6 +57,14 @@ public class ProductionOrderControl : UIComponent
 
 	private bool isSliderBeingDragged;
 
+	/// <summary>ReserveMod's "R": pressed, the slider edits the item's reserve instead of its order.</summary>
+	private TextButton btReserve;
+
+	private int lastNoOfAvailableItems;
+
+	/// <summary>The reserve slider's tint, so it cannot be mistaken for an order or a standing order.</summary>
+	private static readonly Color ReserveTint = new Color(110, 190, 255);
+
 	public ProductionOrderControl(EntityType entityType, ProductionTargetEventArgs eventArgs, GUIManager gui, UILayout uiLayout, int productionColumnX, Action<UIComponent, EventArgs> tbItems_Click, Action<UIComponent, EventArgs> btPadlock_Click)
 		: base(gui)
 	{
@@ -87,7 +95,7 @@ public class ProductionOrderControl : UIComponent
 		{
 			fillableBar = new FillableBar(guiManager, (uiLayout == UILayout.LCD) ? FillableBar.FillableBarType.LCDSliderWhite : FillableBar.FillableBarType.HUDSliderWhite, canGrow: false, includeButtons: true, GameData.Instance.GUIConstants.TimeBetweenSliderButtonIncrements, GameData.Instance.GUIConstants.SliderButtonDelay);
 			Add(fillableBar);
-			fillableBar.Width = 130;
+			fillableBar.Width = (UWGame.Mods.ReserveMod.Enabled ? 110 : 130);
 			fillableBar.X = productionColumnX;
 			fillableBar.Y = 5;
 			fillableBar.SliderTooltip = "Drag slider to specify amount to produce.";
@@ -103,6 +111,19 @@ public class ProductionOrderControl : UIComponent
 			icWarning.ResizeControlToFitImage();
 			icWarning.X = fillableBar.Right - 7;
 			icWarning.Y = 2;
+			if (UWGame.Mods.ReserveMod.Enabled)
+			{
+				btReserve = new TextButton(guiManager);
+				Add(btReserve);
+				btReserve.Init((uiLayout == UILayout.LCD) ? TextButton.TextButtonType.LCDToolTipBlack : TextButton.TextButtonType.HUDToolTipWhite);
+				btReserve.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
+				btReserve.Text = "R";
+				btReserve.TextAlignment = TextButton.TextAlign.Center;
+				btReserve.Width = 18;
+				btReserve.X = fillableBar.Right + 3;
+				btReserve.ToolTip = "Reserve: click, then use the slider to set an amount colonists will not eat and workshops will not use.";
+				CenterChildVertically(btReserve);
+			}
 		}
 		else
 		{
@@ -160,6 +181,11 @@ public class ProductionOrderControl : UIComponent
 		ExpeditionID? uIExpedition = The.InGameUI.UIExpedition;
 		if (uIExpedition.HasValue)
 		{
+			if (IsEditingReserve)
+			{
+				The.Client.Controller.StoreAndExecuteCommand(new SetReserve(uIExpedition.Value, item.KeyName, fillableBar.Value));
+				return;
+			}
 			if (btStandingOrder != null && btStandingOrder.IsChecked)
 			{
 				SetStandingOrder command = new SetStandingOrder(newCount: (fillableBar.Value != GameData.Instance.GUIConstants.UnlimitedStandingOrderValue) ? fillableBar.Value : (-1), expeditionID: uIExpedition.Value, entityTypeKey: item.KeyName, giveClientFeedback: true);
@@ -254,7 +280,16 @@ public class ProductionOrderControl : UIComponent
 			dictionary = The.InGameUI.InventorySettings.GetAttainableInfo(entityType);
 		}
 		ProcessType.ProductionUI productionUI = processType?.GetProductionUI() ?? ProcessType.ProductionUI.None;
-		if (productionUI == ProcessType.ProductionUI.Build)
+		lastNoOfAvailableItems = noOfAvailableItems;
+		if (btReserve != null)
+		{
+			UpdateReserveButton(owner);
+		}
+		if (IsEditingReserve)
+		{
+			UpdateItemRowReserve(owner);
+		}
+		else if (productionUI == ProcessType.ProductionUI.Build)
 		{
 			UpdateItemRowStructureType(processType, allAvailableItems, dictionary, noOfIncompleteEntities, needsImmovableInput, maxAmountThatCanBeProduced, hasTools, hasInputs, hasSkills, hasResources);
 		}
@@ -303,6 +338,55 @@ public class ProductionOrderControl : UIComponent
 		}
 		}
 		isFirstUpdate = false;
+	}
+
+	private bool IsEditingReserve => btReserve != null && btReserve.IsChecked && fillableBar != null;
+
+	/// <summary>ReserveMod: the R stays lit while a reserve is set, and says how much.</summary>
+	private void UpdateReserveButton(EntityGroup owner)
+	{
+		int reserve = UWGame.Mods.ReserveMod.Reserved(owner, entityType);
+		btReserve.LabelColor = ((reserve > 0 || btReserve.IsChecked) ? ReserveTint : UIComponent.LCDTint);
+		string text = ((reserve > 0) ? ("Reserved: " + reserve + ". Colonists will not eat these and workshops will not use them, unless someone is starving. ") : "No reserve. ");
+		btReserve.ToolTip = text + (btReserve.IsChecked ? "The slider sets the reserve. Click R again to go back to ordering." : "Click, then use the slider to set the reserve.");
+	}
+
+	/// <summary>ReserveMod: the slider shows and sets the reserve, whether or not the item can be made right now.</summary>
+	private void UpdateItemRowReserve(EntityGroup owner)
+	{
+		int reserve = UWGame.Mods.ReserveMod.Reserved(owner, entityType);
+		fillableBar.Visible = true;
+		fillableBar.ColorAllControls = ReserveTint;
+		fillableBar.StepSize = 1;
+		fillableBar.MaxSliderValueSymbol = null;
+		fillableBar.MaxSliderValueTooltip = null;
+		fillableBar.ShowMaxValueLabelAtEnd = true;
+		hzAttainable.Visible = false;
+		hzNotAttainable.Visible = false;
+		if (icWarning != null)
+		{
+			icWarning.Visible = false;
+		}
+		if (isSliderBeingDragged)
+		{
+			return;
+		}
+		bool flag = false;
+		int num = UWGame.Mods.ReserveMod.SliderMax(lastNoOfAvailableItems, reserve);
+		if (fillableBar.MaxValue != num)
+		{
+			fillableBar.MaxValue = num;
+			flag = true;
+		}
+		if (fillableBar.Value != reserve)
+		{
+			fillableBar.Value = reserve;
+			flag = true;
+		}
+		if (flag)
+		{
+			fillableBar.UpdateSliderPosition();
+		}
 	}
 
 	private int GetSumToOrderBy(int noOfIncompleteItems, int noOfEntitiesUsedAsParts, int noOfAvailableItems, int noOfItemsOffSite)

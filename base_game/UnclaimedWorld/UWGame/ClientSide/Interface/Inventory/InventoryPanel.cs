@@ -1583,6 +1583,8 @@ public class InventoryPanel : RosterPanel
 		int num = 0;
 		noOfAvailableItems = GetNoOfAvailableEntities(owner.AllEntities, owner, inputType, out var _, out var _, out var _, out var _, out var _, allAvailableItems);
 		num = GetNoOfItemsOrderedAsInput(owner, inputType, process);
+		// ReserveMod: the reserve is spoken for, like items promised to other orders.
+		num += UWGame.Mods.ReserveMod.Reserved(owner, inputType);
 		int num2 = Common.ClampBottom(noOfAvailableItems.Value - num, 0) / input.Amount.NoOfItems.Value;
 		if (num2 == 0)
 		{

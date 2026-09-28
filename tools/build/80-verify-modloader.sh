@@ -26,6 +26,7 @@
 #  16. preserved food and alcohol get the balanced diet mod's profiles, and still validate
 #  17. every wood the regrowth mod slows is a real resource, and its curve is smooth
 #  18. exposed food is classified for the pest mod as meant, and its bonus is bounded
+#  19. a reserve is kept in the expedition's saved fields, and its command survives a replay
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -338,7 +339,7 @@ out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned
 echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is registered and reads from the file"   || { echo "$out" | grep -i "hud" | sed 's/^/      /';        fail "hud.markersOnAlt did not reach the registry"; }
 
 # The nature mods default to off as well - checked ON.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"
@@ -630,6 +631,19 @@ else
   fail "the pest self-test reported failures"
 fi
 
+# The reserve mod keeps its amounts in the expedition's custom fields rather than a new saved field,
+# and changes them through a SetReserve command - which the replay serializer can only write if
+# Command's XmlInclude list names it. Both are checked; the mod is switched on for it.
+say "==> 19. a reserve is kept in the expedition's saved fields, and its command survives a replay"
+d=$(new_install case19); write_setting "$d" reserve.enabled true
+out=$( cd "$d" && "$EXPORT" . --reserve-selftest 2>&1 ) || true
+if echo "$out" | grep -q "reserve self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the reserve self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -644,7 +658,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 18/18 cases passed."
+  say "mod loader OK - 19/19 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

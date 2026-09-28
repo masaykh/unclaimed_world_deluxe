@@ -137,6 +137,7 @@ internal static class Program
         UWGame.Mods.PestMod.RegisterSettings();
         UWGame.Mods.BirdHopMod.RegisterSettings();
         UWGame.Mods.HomeRaidMod.RegisterSettings();
+        UWGame.Mods.ReserveMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -207,6 +208,11 @@ internal static class Program
         if (args.Contains("--pest-selftest"))
         {
             return PestSelfTest();
+        }
+
+        if (args.Contains("--reserve-selftest"))
+        {
+            return ReserveSelfTest();
         }
 
         if (scenarioReport)
@@ -456,6 +462,53 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks ReserveMod: a reserve set through the mod is read back from the expedition's custom
+    /// fields and clears at 0, the SetReserve command survives the replay serializer (a command left
+    /// out of Command's XmlInclude list breaks every replay that holds one), and the slider's top is
+    /// what it says. Needs reserve.enabled on - the gate writes it.
+    /// </summary>
+    private static int ReserveSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> reserve self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        if (!UWGame.Mods.ReserveMod.Enabled)
+        {
+            Console.WriteLine("  the mod is off or not in this build - nothing to check");
+            return 0;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        Check(types.TryGetValue("item:smokedStreakFin", out var fish), "item:smokedStreakFin, the trade food asked about, is in the table");
+        var expedition = new UWGame.SimSide.Expeditions.Expedition();
+        Check(UWGame.Mods.ReserveMod.Reserved(expedition, fish) == 0, "nothing is reserved on a new expedition");
+        UWGame.Mods.ReserveMod.SetReserve(expedition, fish, 12);
+        Check(UWGame.Mods.ReserveMod.Reserved(expedition, fish) == 12, "a reserve of 12 reads back as 12");
+        Check(expedition.GetPropertyValue(UWGame.Mods.ReserveMod.KeyPrefix + fish.KeyName, null, null)?.NumberResult == 12f,
+              "it is kept in the expedition's saved custom fields, under reserve:<item key>");
+        UWGame.Mods.ReserveMod.SetReserve(expedition, fish, 0);
+        Check(UWGame.Mods.ReserveMod.Reserved(expedition, fish) == 0
+              && expedition.GetPropertyValue(UWGame.Mods.ReserveMod.KeyPrefix + fish.KeyName, null, null) == null,
+              "a reserve of 0 removes the field");
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UWGame.Control.Commands.Command>));
+        var writer = new System.IO.StringWriter();
+        serializer.Serialize(writer, new List<UWGame.Control.Commands.Command> { new UWGame.SimSide.Commands.SetReserve((UWGame.SimSide.Expeditions.ExpeditionID)7L, fish.KeyName, 5) });
+        var back = serializer.Deserialize(new System.IO.StringReader(writer.ToString())) as List<UWGame.Control.Commands.Command>;
+        var command = back?.FirstOrDefault() as UWGame.SimSide.Commands.SetReserve;
+        Check(command != null && command.ExpeditionID == 7L && command.EntityTypeKey == fish.KeyName && command.Amount == 5,
+              "SetReserve round-trips through the replay serializer");
+        Check(UWGame.Mods.ReserveMod.SliderMax(0, 0) == 20 && UWGame.Mods.ReserveMod.SliderMax(35, 0) == 40
+              && UWGame.Mods.ReserveMod.SliderMax(5, 50) == 60, "the slider tops out at 20, or the next ten above stock or reserve");
+        Console.WriteLine(failures == 0 ? "reserve self-test OK" : $"reserve self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

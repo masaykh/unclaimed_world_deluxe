@@ -442,7 +442,7 @@ public class EntityGroup : ISnapshot, ILookUp<EntityGroup, EntityGroupID>
 	{
 		if (ProductionOrders.Orders.TryGetValue(entityType, out var value))
 		{
-			int num = CountAvailableItems(entityType);
+			int num = UWGame.Mods.ReserveMod.StockAfterReserve(this, entityType, CountAvailableItems(entityType));
 			if (value.AmountToKeepInStore.HasValue && value.AmountToKeepInStore.Value > num)
 			{
 				return true;

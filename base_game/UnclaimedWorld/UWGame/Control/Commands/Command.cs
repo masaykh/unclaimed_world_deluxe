@@ -35,6 +35,7 @@ namespace UWGame.Control.Commands;
 [XmlInclude(typeof(AttackAreaUpdateJob))]
 [XmlInclude(typeof(PatrolAreaUpdateJob))]
 [XmlInclude(typeof(AllowAmmoForVermin))]
+[XmlInclude(typeof(SetReserve))]
 public abstract class Command
 {
 	public int frameCalled;

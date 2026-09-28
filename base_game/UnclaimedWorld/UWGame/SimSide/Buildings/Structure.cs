@@ -299,7 +299,7 @@ public class Structure : Component
 				continue;
 			}
 			int needed = ((input.Amount != null && input.Amount.NoOfItems.HasValue) ? input.Amount.NoOfItems.Value : 1);
-			if (ownerOfBuilding.CountAvailableItems(input.EntityType) < needed)
+			if (ownerOfBuilding.CountAvailableItems(input.EntityType) - UWGame.Mods.ReserveMod.Reserved(ownerOfBuilding, input.EntityType) < needed)
 			{
 				return false;
 			}
