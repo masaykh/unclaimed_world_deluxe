@@ -172,6 +172,7 @@
     <Compile Remove="UWGame\Mods\HomeRaidMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\ReserveMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\SafeSleepMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\GatherOnDemandMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DebugMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\StateDumpMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DisassemblyMod.Absent.cs" />
@@ -192,6 +193,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HomeRaidMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\ReserveMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\SafeSleepMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\GatherOnDemandMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DebugMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StateDumpMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DisassemblyMod.cs" />

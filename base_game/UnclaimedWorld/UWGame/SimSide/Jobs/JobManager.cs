@@ -326,7 +326,8 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 			return;
 		}
 		int standingOrderJobCapacity = GetStandingOrderJobCapacity();
-		int num = owner.ProductionOrders.Orders.Sum((KeyValuePair<EntityType, ProductionOrder> o) => (o.Value.AmountToKeepInStore.HasValue && o.Value.AmountToKeepInStore.Value != 0) ? 1 : 0);
+		// GatherOnDemandMod: an order at 0 is active while jobs are waiting for its item.
+		int num = owner.ProductionOrders.Orders.Sum((KeyValuePair<EntityType, ProductionOrder> o) => (o.Value.AmountToKeepInStore.HasValue && (o.Value.AmountToKeepInStore.Value != 0 || UWGame.Mods.GatherOnDemandMod.HasDemand(owner, o.Key))) ? 1 : 0);
 		int num2 = 0;
 		num2 = ((num <= standingOrderJobCapacity) ? ((int)Math.Floor((float)standingOrderJobCapacity / (float)num)) : GameData.Instance.AIConstants.MinimumJobsPerStandingOrder);
 		foreach (KeyValuePair<EntityType, ProductionOrder> order in owner.ProductionOrders.Orders)
@@ -381,6 +382,8 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	{
 		// ReserveMod: a standing order keeps its amount on top of the reserve.
 		int itemsInStock = UWGame.Mods.ReserveMod.StockAfterReserve(owner, entityType, owner.CountAvailableItems(entityType));
+		// GatherOnDemandMod: what construction sites and workshops are waiting for is added to the target.
+		itemsInStock = UWGame.Mods.GatherOnDemandMod.StockAfterDemand(owner, entityType, itemsInStock);
 		float averageSpeed;
 		int totalOutstandingOutput = owner.CountOutstandingJobOutput(entityType, countUnstarted: true, out currentJobs, out averageSpeed);
 		amountToProduce = GetAmountToProduce(order, itemsInStock, totalOutstandingOutput);
