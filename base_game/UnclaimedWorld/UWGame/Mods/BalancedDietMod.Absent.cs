@@ -26,7 +26,12 @@ public static class BalancedDietMod
     {
     }
 
-    public static float MonotonyFactorFor(int servingsRemembered) => 1f;
+    public static float TirednessOf(IEnumerable<string> remembered) => 0f;
+
+    /// <summary>The food ratings are the studio's.</summary>
+    public static float MonotonyRatingPenalty(UWGame.SimSide.Allegiances.ICanIterateEntities group) => 0f;
+
+    public static string MonotonyBreakdown(float penalty) => "";
 
     /// <summary>Leaves every item on the profile the studio gave it.</summary>
     public static void AdjustItems(List<UWGame.SimSide.Entities.EntityType> types)

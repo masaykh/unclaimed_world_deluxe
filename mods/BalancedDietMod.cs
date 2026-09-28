@@ -34,9 +34,8 @@ namespace UWGame.Mods;
 /// omission. A cooked meal SHOULD be complete - that is what cooking is for - and the change is
 /// only worth anything if the prepared food stays better than the sum of raw parts.
 ///
-/// NOT DONE: morale from eating the same thing every day. That needs somewhere to remember what a
-/// colonist has been eating, which is new state on the person and a save-format change, rather
-/// than a different number in a table.
+/// MONOTONY lowers the colony's food rating rather than what a meal gives - see the monotony
+/// section below.
 /// </summary>
 public static class BalancedDietMod
 {
@@ -76,13 +75,24 @@ public static class BalancedDietMod
 
     private static ModSetting monotony;
 
-    /// <summary>Whether a dish eaten too often lately fills less.</summary>
+    private static ModSetting monotonyPenalty;
+
+    /// <summary>Whether eating the same dishes lowers the colony's food rating.</summary>
     public static ModSetting Monotony =>
         monotony ?? (monotony = ModSettings.Toggle(
-            ModId, "monotony", "THE SAME FOOD EVERY DAY FILLS LESS", defaultValue: true,
-            toolTip: "Each colonist remembers their last 10 meals. A dish is fine three times; from " +
-                     "the fourth serving it satisfies 10% less each time, down to half - so they get " +
-                     "hungry sooner on one food, and a varied kitchen pays. Drinks are exempt.",
+            ModId, "monotony", "THE SAME FOOD EVERY DAY LOWERS FOOD MORALE", defaultValue: true,
+            toolTip: "Each colonist remembers their last 10 meals. A dish is fine three times in " +
+                     "them; every serving past that makes them a little more tired of their food, " +
+                     "and the colony's FOOD rating drops with the average - the rating behind " +
+                     "happiness and emigration. Meals still give their full nutrients. Drinks are exempt.",
+            affectsSimulation: true));
+
+    /// <summary>How much of the food rating a colony entirely tired of its food loses.</summary>
+    public static ModSetting MonotonyPenalty =>
+        monotonyPenalty ?? (monotonyPenalty = ModSettings.Choice(
+            ModId, "monotonyPenalty", "MONOTONOUS DIET COSTS UP TO", new[] { "10%", "20%", "30%" }, "20%",
+            toolTip: "The most the FOOD rating can lose when every colonist has eaten one dish at " +
+                     "every one of their last 10 meals.",
             affectsSimulation: true));
 
     public static void RegisterSettings()
@@ -91,16 +101,29 @@ public static class BalancedDietMod
         _ = PreservedLosesVitamins;
         _ = AlcoholHasEnergy;
         _ = Monotony;
+        _ = MonotonyPenalty;
     }
 
     // ---- monotony ----------------------------------------------------------------------------
     //
     // Kastuk: "Moral or Food need or Comfort to be affected by same dishes day by day ... I want it
-    // to be for more dynamic survival without stagnation on the same food." There is no personal
-    // morale or comfort need to lower - colonists' needs are foodEnergy, protein, micronutrients,
-    // sleep and stimulants - so it acts on the FOOD need: a dish eaten too often lately satisfies
-    // less (Food.ConsumeBy's satisfactionFactor), and the colonist is hungry again sooner. The studio
-    // had started on this: Meal.Variety exists, and nothing constructs a Meal or reads it.
+    // to be for more dynamic survival without stagnation on the same food." And after the first
+    // version, which made a repeated dish fill less: "It's not that monofood will reduce nutrients
+    // intake, but it must affect moral somehow", counted "within that 10 dishes memory ... as little
+    // variation still can be possible".
+    //
+    // The game's morale is the colony ratings (FOOD, SECURITY, COMFORT on the HUD): Personality
+    // turns them into happiness, and EmigrateDecider, group meetings and tier unlocks read them.
+    // FOOD - "COLONY FOOD CONDITIONS" - is baseline + stockpiled food - starving - hunger deaths
+    // (FoodStatistics.CombineScores). This adds one more term: MONOTONOUS DIET. A colonist's
+    // tiredness is every serving of a dish beyond the third in their last 10 meals, over the 7 that
+    // can be beyond it - 1 for one dish at all 10, 2/7 for one dish five times among others, 4/7 for
+    // two dishes alternating. The penalty is the group's people's average times MONOTONOUS DIET
+    // COSTS UP TO, taken off both the colony's rating (FoodStatisticsForAllegiance) and each
+    // group's personal one (FoodStatisticsForMembers), with its own line in the rating's tooltip.
+    // Meals give their full nutrients: GoalEat still asks MonotonyFactor, which now only records
+    // the dish and answers 1. The studio had started on this: Meal.Variety exists, and nothing
+    // constructs a Meal or reads it.
     //
     // The history is the colonist's own CustomFields entry dietRecentMeals - dish keys, newest last,
     // one per dish per meal - which the save already carries. No save-format change.
@@ -116,12 +139,61 @@ public static class BalancedDietMod
     private static readonly Dictionary<EntityID, HashSet<string>> dishesThisMeal = new Dictionary<EntityID, HashSet<string>>();
 
     /// <summary>
-    /// The satisfaction factor for a dish already served <paramref name="servingsRemembered"/>
-    /// times in the remembered meals: 1 up to FreeServings, then 10% less per serving, never below
-    /// half.
+    /// How tired of their food a colonist is, 0 to 1, from their remembered dishes: every serving
+    /// of a dish past <see cref="FreeServings"/>, anywhere in the memory, over the most there can be.
     /// </summary>
-    public static float MonotonyFactorFor(int servingsRemembered) =>
-        servingsRemembered < FreeServings ? 1f : Math.Max(0.5f, 1f - 0.1f * (servingsRemembered - FreeServings + 1));
+    public static float TirednessOf(IEnumerable<string> remembered)
+    {
+        if (remembered == null)
+        {
+            return 0f;
+        }
+        int beyond = remembered.GroupBy(k => k, StringComparer.Ordinal).Sum(g => Math.Max(0, g.Count() - FreeServings));
+        return Math.Min(1f, beyond / (float)(RememberedMeals - FreeServings));
+    }
+
+    /// <summary>The MONOTONOUS DIET COSTS UP TO setting as a fraction: 0.2 unless changed.</summary>
+    public static float MaxMonotonyPenalty() =>
+        float.TryParse(MonotonyPenalty.Value?.TrimEnd('%'), System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out float p) && p > 0f ? p / 100f : 0.2f;
+
+    /// <summary>
+    /// Called from both food ratings' ScoreRating: what MONOTONOUS DIET takes off, 0 to the
+    /// setting's maximum - the average tiredness of the group's people. 0 unless switched on.
+    /// </summary>
+    public static float MonotonyRatingPenalty(UWGame.SimSide.Allegiances.ICanIterateEntities group)
+    {
+        if (!Monotony.On || group == null)
+        {
+            return 0f;
+        }
+        int people = 0;
+        float tiredness = 0f;
+        group.IterateMembers(delegate(Entity member)
+        {
+            if (member?.EntityType?.Person != null)
+            {
+                people++;
+                tiredness += TirednessOf(History(member));
+            }
+        });
+        return people == 0 ? 0f : MaxMonotonyPenalty() * tiredness / people;
+    }
+
+    /// <summary>The rating tooltip's MONOTONOUS DIET line, in the studio's BASELINE / STOCKPILED FOOD style.</summary>
+    public static string MonotonyBreakdown(float penalty)
+    {
+        if (penalty <= 0f)
+        {
+            return "";
+        }
+        var text = new System.Text.StringBuilder();
+        Common.AppendLine(text);
+        Common.AppendLine(text, "MONOTONOUS DIET");
+        text.Append("Subscore: -");
+        Common.AppendLine(text, Common.PercentageToString(penalty, includePlusPrefix: false, useColoring: true));
+        return text.ToString();
+    }
 
     private static bool IsDish(EntityType food)
     {
@@ -145,8 +217,9 @@ public static class BalancedDietMod
     }
 
     /// <summary>
-    /// Called by GoalEat.ConsumeStomachContents for each item a colonist eats: how much of it
-    /// reaches their needs. 1 for anything but a colonist eating a dish, and unless switched on.
+    /// Called by GoalEat.ConsumeStomachContents for each item a colonist eats. It notes the dish for
+    /// RecordMeal, and logs once when a dish reaches its fourth serving in memory. It always answers
+    /// 1: monotony costs morale (MonotonyRatingPenalty), not nutrients.
     /// </summary>
     public static float MonotonyFactor(Entity eater, EntityType food)
     {
@@ -167,7 +240,7 @@ public static class BalancedDietMod
             The.Client.AddLogEvent(eater.Intelligence.Allegiance, The.Client.Log.GeneralEvent, eater,
                 "is tired of eating " + (food.Name ?? food.KeyName).ToLowerInvariant() + ".");
         }
-        return MonotonyFactorFor(servings);
+        return 1f;
     }
 
     /// <summary>Called once a meal is eaten: its dishes join the colonist's remembered meals.</summary>

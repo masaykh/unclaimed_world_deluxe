@@ -31,9 +31,13 @@ public class FoodStatisticsForMembers : FoodStatistics
 		ScoreNeedsAndDeaths(members, out var hungerDeaths, out var starvingMembers, out var totalNeeds, out var deathsContribution);
 		float num = ((FoodStatisticsForAllegiance)Allegiance.Statistics.Ratings[RatingTypes.Food]).GetSharedRatings();
 		FoodStatistics.CombineScores(food.BaseScore, num, totalNeeds, deathsContribution, out var rating, out var totalNeedsScore);
+		// MOD: BalancedDietMod's MONOTONOUS DIET, for this group's own people. 0 unless on.
+		float monotony = UWGame.Mods.BalancedDietMod.MonotonyRatingPenalty(LookUpICanIterateEntities.FindByID(Parent.CanIterateEntitiesID));
+		rating = Common.Clamp(rating - monotony, 0f, 1f);
 		if (composeBreakdown)
 		{
 			ComposeRatingBreakdown(food, rating, hungerDeaths, deathsContribution, members, starvingMembers, totalNeedsScore, num);
+			ratingsBreakdown += UWGame.Mods.BalancedDietMod.MonotonyBreakdown(monotony);
 		}
 		return rating;
 	}
