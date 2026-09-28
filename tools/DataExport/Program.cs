@@ -138,6 +138,7 @@ internal static class Program
         UWGame.Mods.BirdHopMod.RegisterSettings();
         UWGame.Mods.HomeRaidMod.RegisterSettings();
         UWGame.Mods.ReserveMod.RegisterSettings();
+        UWGame.Mods.SafeSleepMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -213,6 +214,11 @@ internal static class Program
         if (args.Contains("--reserve-selftest"))
         {
             return ReserveSelfTest();
+        }
+
+        if (args.Contains("--safesleep-selftest"))
+        {
+            return SafeSleepSelfTest();
         }
 
         if (scenarioReport)
@@ -467,6 +473,39 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks SafeSleepMod's rule for which wild groups make a nest worth avoiding, against the real
+    /// creatures: swarmers, whipjaws and patricians do; field quadites, rats that only forage and
+    /// people who trade do not. A rule that let quadite nests count would keep colonists out of
+    /// every field; one that missed swarmers would be the original report.
+    /// </summary>
+    private static int SafeSleepSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> safe sleep self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        bool Dangerous(string key) => types.TryGetValue(key, out var t) && UWGame.Mods.SafeSleepMod.IsDangerous(t);
+        foreach (string key in new[] { "entity:swarmer", "entity:whipjaw", "entity:patrician" })
+        {
+            Check(types.ContainsKey(key) && Dangerous(key), key + " makes its nest one to avoid");
+        }
+        foreach (string key in new[] { "entity:fieldQuadite", "entity:human" })
+        {
+            Check(types.ContainsKey(key) && !Dangerous(key), key + " does not");
+        }
+        int dangerous = types.Values.Count(t => UWGame.Mods.SafeSleepMod.IsDangerous(t));
+        Console.WriteLine($"  info  {dangerous} creature types count as dangerous: " + string.Join(", ", types.Values.Where(t => UWGame.Mods.SafeSleepMod.IsDangerous(t)).Select(t => t.KeyName)));
+        Console.WriteLine(failures == 0 ? "safe sleep self-test OK" : $"safe sleep self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

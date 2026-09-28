@@ -283,6 +283,8 @@ public class EvaluateSleep : GoalEvaluator
 			weightedRating.AddScore(0.1, score2);
 			weightedRating.AddScore(0.3, score4);
 			score = weightedRating.Result;
+			// SafeSleepMod: a spot by a known predator nest keeps a tenth of this.
+			score *= UWGame.Mods.SafeSleepMod.SafetyFactor(entity, worldLocation.ToVector3());
 			return CalculateResult.Done;
 		}
 		}

@@ -27,6 +27,7 @@
 #  17. every wood the regrowth mod slows is a real resource, and its curve is smooth
 #  18. exposed food is classified for the pest mod as meant, and its bonus is bounded
 #  19. a reserve is kept in the expedition's saved fields, and its command survives a replay
+#  20. the safe sleep mod counts swarmer and whipjaw nests as dangerous, and quadite nests not
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -340,7 +341,7 @@ echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is r
 
 # The nature mods default to off as well - checked ON.
 # So is self-preservation: it changes the studio's AI rather than fixing it, so it is opt-in.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"
@@ -645,6 +646,18 @@ else
   fail "the reserve self-test reported failures"
 fi
 
+# The safe sleep mod decides from a creature's own AI data which wild groups' nests are worth
+# avoiding. Too wide a rule keeps colonists out of every quadite field; too narrow misses the
+# swarmers the report was about. Checked against the real creatures.
+say "==> 20. the safe sleep mod counts swarmer and whipjaw nests as dangerous, and quadite nests not"
+out=$( cd "$(new_install case20)" && "$EXPORT" . --safesleep-selftest 2>&1 ) || true
+if echo "$out" | grep -q "safe sleep self-test OK"; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the safe sleep self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -659,7 +672,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 19/19 cases passed."
+  say "mod loader OK - 20/20 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

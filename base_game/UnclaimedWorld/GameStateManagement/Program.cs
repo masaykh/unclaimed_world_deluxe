@@ -109,6 +109,7 @@ internal static class Program
 		UWGame.Mods.BirdHopMod.RegisterSettings();
 		UWGame.Mods.HomeRaidMod.RegisterSettings();
 		UWGame.Mods.ReserveMod.RegisterSettings();
+		UWGame.Mods.SafeSleepMod.RegisterSettings();
 		UWGame.Mods.DisassemblyMod.RegisterSettings();
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();
