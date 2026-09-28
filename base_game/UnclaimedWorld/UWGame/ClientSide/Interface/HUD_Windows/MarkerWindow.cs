@@ -756,7 +756,7 @@ public class MarkerWindow : HUDWindow
 			{
 				SetScreenPosition(new Point(screenPosition.Value.X, screenPosition.Value.Y));
 				SetWorldPosition(new Point(screenPosition.Value.X, screenPosition.Value.Y));
-				activityWindow.SetPosition(screenPosition.Value);
+				activityWindow.SetPositionBelow(screenPosition.Value, DisplayWindow.Height);
 				activityWindow.Update();
 			}
 		}

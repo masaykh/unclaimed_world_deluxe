@@ -43,6 +43,21 @@ public class EntityActivityHUDWindow : HUDWindow
 		ScreenPosition.Y += OffsetFromParent.Y;
 	}
 
+	/// <summary>
+	/// PORT FIX: below the parent window, never under it. The studio's offset is 20 from the top of
+	/// a name marker 24 high, so the activity line - "Spear (flint-tipped)" and its progress bar -
+	/// sat 4 pixels under the colonist's name, and the name, drawn later, covered it (Kastuk, "Too
+	/// much info on the screen", with a screenshot). The offset still applies when it is the lower.
+	/// </summary>
+	public void SetPositionBelow(Point parentScreenPosition, int parentHeight)
+	{
+		SetPosition(parentScreenPosition);
+		ScreenPosition.Y = System.Math.Max(ScreenPosition.Y, parentScreenPosition.Y + parentHeight + ActivityGap);
+	}
+
+	/// <summary>Pixels between the name marker and the activity line under it.</summary>
+	public const int ActivityGap = 1;
+
 	private bool UpdateIcons(Entity entityWithStatus)
 	{
 		foreach (PresentationTypeCategory finalPresentationTypeCategory in GameData.Instance.CustomEntityActivityData.FinalPresentationTypeCategories)
