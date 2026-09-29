@@ -43,12 +43,21 @@ OBJ=artifacts/obj/gl-effects-sd
 # UW_TEMPLATES FIRST. That is the documented way to point this at a pristine copy without
 # deploying anything, it is what the release build uses, and a checkout that has never run
 # 40-deploy.sh has no game/Content at all - so testing UW_GAME alone rejects the normal case.
+#
+# THEN UW_STEAM, the pristine install that every other step already reads - 32, 35 and 60 all do.
+# Leaving it out here meant build.md's one export did not reach this step, and Kastuk worked around
+# it by pointing UW_GAME at his Steam folder. That is the one variable not to point there:
+# 40-deploy.sh WRITES into $UW_GAME.
+if [ -z "$UW_TEMPLATES" ] && [ -n "$UW_STEAM" ] && [ -d "$UW_STEAM/Content" ]; then
+  UW_TEMPLATES="$UW_STEAM/Content"
+fi
 if [ -n "$UW_TEMPLATES" ] && [ -d "$UW_TEMPLATES" ]; then
   : # fine - the templates directory is set and real
 elif [ ! -d "$UW_GAME/Content" ]; then
   echo "FATAL: no compiled Content to take the effect containers from." >&2
   echo >&2
   echo "  looked for:  \$UW_TEMPLATES   = ${UW_TEMPLATES:-<unset>}" >&2
+  echo "               \$UW_STEAM/Content = ${UW_STEAM:-<unset>}/Content" >&2
   echo "               \$UW_GAME/Content = $UW_GAME/Content" >&2
   echo >&2
   # THE ONE THAT ACTUALLY HAPPENS, and Kastuk hit it: a variable set WITHOUT export looks right in
@@ -56,7 +65,7 @@ elif [ ! -d "$UW_GAME/Content" ]; then
   # because that is a child process and a plain assignment is not an environment variable.
   echo "  Point it at your own copy of the game - EXPORTED, or it will not reach this script:" >&2
   echo >&2
-  echo "      export UW_TEMPLATES=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World/Content\"" >&2
+  echo "      export UW_STEAM=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
   echo >&2
   echo "  Or deploy a working copy once, which populates \$UW_GAME:" >&2
   echo >&2
