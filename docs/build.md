@@ -25,7 +25,8 @@ dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlat
 # 2. shaders  (needs the patched compiler; fetched and built for you)
 sh tools/shadowdusk/build-shadowdusk.sh
 export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
-sh tools/build/34-build-gl-effects-shadowdusk.sh
+export UW_STEAM="/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World"   # your copy, read only
+sh tools/build/34-build-gl-effects-shadowdusk.sh   # runs step 35 first if its output is missing
 
 # 3. package
 sh tools/build/60-package-gl.sh Release
@@ -47,6 +48,7 @@ sh tools/build/35-make-dx-effects.sh
 # 2. package
 sh tools/build/70-make-release.sh 0.0-dev win-x64-dx          # code + data/ + port-content/
 sh tools/build/70-make-release.sh 0.0-dev win-x64-dx --full   # the above plus Content/
+sh tools/build/70-make-release.sh --folder 0.0-dev win-x64-dx # a plain folder to test, no 7-Zip
 ```
 
 `70-make-release.sh` builds the code itself, so there is no separate `dotnet build` step — and
@@ -56,7 +58,9 @@ staged directory it was cut from is in `artifacts/release-stage/win-x64-dx/`, wh
 run from.
 
 Without `--full` the archive has no `Content/` — you point it at your own copy, exactly as the
-GL archives do. With `--full` it is standalone. Both need 7-Zip on `PATH` (or `SEVENZIP` set).
+GL archives do. With `--full` it is standalone. Both need 7-Zip on `PATH` (or `SEVENZIP` set),
+unless `--folder` is given: then each platform is left as a folder in `artifacts/release/`, for
+local testing, and nothing is compressed.
 
 ## `UwPlatform`
 
