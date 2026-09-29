@@ -461,6 +461,7 @@ public class OptionsDialog : Panel
 		};
 		cp.AddContent(content);
 		int lineY = 0;
+		categoryChoiceWidth = ChoiceWidthFor(settings, content.Width);
 		foreach (ModSetting setting in settings)
 		{
 			lineY = AddModSettingControl(content, setting, lineY);
@@ -598,6 +599,23 @@ public class OptionsDialog : Panel
 				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, button));
 			}
 		}
+		// Kastuk: GAME MENU rebound away from Escape could never be put back, since Escape cancels
+		// a rebinding. This puts every key back to the studio's and the mods' defaults - pending,
+		// like everything else here, until OK.
+		TextButton defaults = new TextButton(Interface.gui);
+		content.Add(defaults);
+		defaults.Init(TextButton.TextButtonType.LCDToolTipBlack);
+		defaults.CheckedMode = CheckedModes.CannotBeChecked;
+		defaults.Text = "DEFAULT KEYS";
+		defaults.Width = 120;
+		defaults.X = content.Width - defaults.Width - 4;
+		defaults.Y = lineY;
+		defaults.ToolTip = "Every key back to its default. Nothing is applied until OK.";
+		defaults.Click += delegate
+		{
+			RestoreDefaultKeys();
+		};
+		lineY = defaults.Bottom + 6;
 		content.Height = lineY + 4;
 		MarkDuplicateKeys();
 		const string key = "\u0002keys";
@@ -630,13 +648,23 @@ public class OptionsDialog : Panel
 		caption.Y = lineY;
 		caption.ToolTip = toolTip;
 		caption.TooltipWidth = 320;
+		caption.TooltipExpires = false;
 		TextButton button = new TextButton(Interface.gui);
 		panel.Add(button);
 		button.Init(TextButton.TextButtonType.LCDToolTipBlack);
 		button.CheckedMode = CheckedModes.CannotBeChecked;
-		button.X = Math.Max(caption.Right + 6, 176);
-		button.Width = Math.Max(80, panel.Width - button.X - 4);
-		button.CenterThisVertically(caption.Y + caption.Height / 2);
+		// A fixed key column, wide enough for LEFT SHIFT; a caption too long for the space beside
+		// it puts the key on the next line instead of pushing it off the panel (Kastuk, screenshot).
+		button.Width = 104;
+		button.X = panel.Width - button.Width - 4;
+		if (caption.Right + 6 <= button.X)
+		{
+			button.CenterThisVertically(caption.Y + caption.Height / 2);
+		}
+		else
+		{
+			button.Y = caption.Bottom + 2;
+		}
 		button.ToolTip = "Click, then press the new key. Escape cancels.";
 		keyButtonColor = button.LabelColor;
 		keyButtonValues[button] = keyName;
@@ -697,6 +725,26 @@ public class OptionsDialog : Panel
 		}
 	}
 
+	/// <summary>DEFAULT KEYS: the studio's defaults from a fresh Options, the mods' from each setting's default.</summary>
+	private void RestoreDefaultKeys()
+	{
+		capturingKeyButton = null;
+		Options fresh = new Options();
+		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
+		{
+			keyButtonValues[pair.Value] = pair.Key.GetValue(fresh).ToString();
+			pair.Value.Text = KeybindMod.DisplayName(keyButtonValues[pair.Value]);
+		}
+		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
+		{
+			if (pair.Key.Kind == ModSettingKind.Key)
+			{
+				WriteModControl(pair.Key, pair.Key.DefaultValue);
+			}
+		}
+		MarkDuplicateKeys();
+	}
+
 	/// <summary>On OK: the studio's bindings back into Options, which OK then writes to Options.xml.</summary>
 	private void ApplyKeyBindings(Options options)
 	{
@@ -745,6 +793,39 @@ public class OptionsDialog : Panel
 		modsSurface.Height = Math.Max(modsSurfaceMinHeight, y + 12);
 	}
 
+	/// <summary>The width of this category's dropdowns, chosen by <see cref="ChoiceWidthFor"/>.</summary>
+	private int categoryChoiceWidth;
+
+	/// <summary>
+	/// One of three widths for a category's dropdowns, from its longest choice. Kastuk: DANGEROUS
+	/// FAUNA's "x1.5" sat in a box as wide as SAVE DATE FORMAT's longest date pattern, which pushed
+	/// every one onto a line of its own. Short values get a short box beside their caption.
+	/// </summary>
+	private static int ChoiceWidthFor(List<ModSetting> settings, int panelWidth)
+	{
+		int longest = 0;
+		foreach (ModSetting s in settings)
+		{
+			if (s.Kind == ModSettingKind.Choice && s.Choices != null)
+			{
+				foreach (string choice in s.Choices)
+				{
+					longest = Math.Max(longest, choice?.Length ?? 0);
+				}
+			}
+		}
+		int full = Math.Max(80, panelWidth - 124 - 4);
+		if (longest <= 6)
+		{
+			return Math.Min(full, 70);
+		}
+		if (longest <= 14)
+		{
+			return Math.Min(full, 120);
+		}
+		return full;
+	}
+
 	/// <summary>One setting's row inside a category; returns the Y below it.</summary>
 	private int AddModSettingControl(UIComponent panel, ModSetting setting, int lineY)
 	{
@@ -769,6 +850,8 @@ public class OptionsDialog : Panel
 			checkBox.Y = lineY;
 			checkBox.ToolTip = toolTip;
 			checkBox.TooltipWidth = 320;
+			// Kastuk: the tooltip went away while the cursor was still on the switch.
+			checkBox.TooltipExpires = false;
 			checkBox.IsChecked = setting.On;
 			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, checkBox));
 			return checkBox.Bottom + 8;
@@ -784,24 +867,25 @@ public class OptionsDialog : Panel
 			caption.Y = lineY;
 			caption.ToolTip = toolTip;
 			caption.TooltipWidth = 320;
+			caption.TooltipExpires = false;
 			ComboBox comboBox = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
 			panel.Add(comboBox);
 			comboBox.Init(ComboBoxTypes.LCD);
-			// Beside the caption when it fits, under it when it does not: category rows are
-			// narrower than the old flat list, and "NORTHERN BUSH DRAGON AGGRO RANGE:" is long.
-			if (caption.Right + 6 <= valueX)
+			// Right-aligned at the category's width; beside the caption when it fits, under it
+			// when it does not ("NORTHERN BUSH DRAGON AGGRO RANGE:" is long).
+			int choiceWidth = (categoryChoiceWidth > 0) ? categoryChoiceWidth : valueWidth;
+			comboBox.Width = choiceWidth;
+			comboBox.X = panel.Width - choiceWidth - 4;
+			if (caption.Right + 6 <= comboBox.X)
 			{
-				comboBox.X = valueX;
-				comboBox.Width = valueWidth;
 				comboBox.CenterThisVertically(caption.Y + caption.Height / 2);
 			}
 			else
 			{
-				comboBox.X = valueX;
-				comboBox.Width = valueWidth;
 				comboBox.Y = caption.Bottom + 2;
 			}
 			comboBox.ToolTip = toolTip;
+			comboBox.TooltipExpires = false;
 			foreach (string choice in setting.Choices ?? new string[0])
 			{
 				comboBox.AddEntry(choice, choice);
@@ -823,6 +907,7 @@ public class OptionsDialog : Panel
 			caption2.X = 6;
 			caption2.Y = lineY;
 			caption2.ToolTip = toolTip;
+			caption2.TooltipExpires = false;
 			TextBox textBox = new TextBox(Interface.gui);
 			panel.Add(textBox);
 			textBox.Init(TextBox.TextBoxType.LCD);

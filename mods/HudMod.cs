@@ -33,12 +33,36 @@ public static class HudMod
             toolTip: "Colonist names, status icons, point-of-interest labels and the zone grid show " +
                      "only while LeftAlt is held, instead of appearing on every ground click."));
 
+    private static ModSetting talkPanel;
+
+    public const string TalkAlways = "always";
+    public const string TalkWhenSpoken = "when someone speaks";
+    public const string TalkHidden = "hidden";
+
+    /// <summary>
+    /// The talk panel on the left - the frame, the CRT portrait and the lines (TalkPanel). Kastuk:
+    /// "hide it fully / show only when dialogues is triggered / show it always, like now", and for
+    /// the middle one, hidden again 10 seconds after the last line; lines are not copied into the
+    /// bottom log in any mode. They are still recorded in Client.Log.TalkEvents.
+    /// </summary>
+    public static ModSetting TalkPanel =>
+        talkPanel ?? (talkPanel = ModSettings.Choice(
+            ModId, "talkPanel", "TALK PANEL", new[] { TalkAlways, TalkWhenSpoken, TalkHidden }, TalkAlways,
+            toolTip: "The panel on the left where colonists talk: always shown (the studio's way), " +
+                     "shown when someone speaks and hidden 10 seconds after the last line, or hidden."));
+
+    /// <summary>How long the talk panel stays after the last line, in the middle mode.</summary>
+    public const double TalkPanelLingerSeconds = 10.0;
+
+    /// <summary>The talk panel mode; read by TalkPanel.Update every frame.</summary>
+    public static string TalkPanelMode() => TalkPanel.Value;
+
     private static ModSetting revealKey;
 
     /// <summary>The key held to show them. LeftAlt, as asked; rebindable in the KEYS section.</summary>
     public static ModSetting RevealKey =>
         revealKey ?? (revealKey = ModSettings.Key(
-            ModId, "revealKey", "SHOW NAMES AND MARKERS (HOLD)", Keys.LeftAlt,
+            ModId, "revealKey", "NAMES AND MARKERS (HOLD)", Keys.LeftAlt,
             toolTip: "The key held to show colonist names, status icons, labels and the zone grid, " +
                      "when HOLD LEFT ALT FOR NAMES AND MARKERS is on. Drag-select still uses LeftAlt."));
 
@@ -47,6 +71,7 @@ public static class HudMod
         ModSettings.SetCategoryLabel(ModId, "HUD");
         _ = MarkersOnAltSetting;
         _ = RevealKey;
+        _ = TalkPanel;
     }
 
     /// <summary>Whether the click sites should leave the markers switch alone.</summary>

@@ -21,6 +21,15 @@ public static class HudMod
 
     public static bool MarkersOnAlt => false;
 
+    public const string TalkAlways = "always";
+    public const string TalkWhenSpoken = "when someone speaks";
+    public const string TalkHidden = "hidden";
+
+    public const double TalkPanelLingerSeconds = 10.0;
+
+    /// <summary>The studio's talk panel: always there.</summary>
+    public static string TalkPanelMode() => TalkAlways;
+
     public static void UpdateMarkers(InGameInterface ui, bool windowIsActive)
     {
     }

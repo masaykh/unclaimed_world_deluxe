@@ -24,6 +24,11 @@ public class TalkPanel
 
 	private double timeLeftToShowFace;
 
+	/// <summary>Seconds since the last line was spoken (HudMod's TALK PANEL, "when someone speaks").</summary>
+	private double secondsSinceLastLine = double.MaxValue;
+
+	private bool isShown = true;
+
 	public TalkPanel()
 	{
 		int num = 248;
@@ -71,6 +76,25 @@ public class TalkPanel
 
 	public void Update(GameTime gameTime)
 	{
+		// MOD: HudMod's TALK PANEL - always (the studio's), when someone speaks, or hidden.
+		string mode = UWGame.Mods.HudMod.TalkPanelMode();
+		if (secondsSinceLastLine < double.MaxValue)
+		{
+			secondsSinceLastLine += gameTime.ElapsedGameTime.TotalSeconds;
+		}
+		bool wanted = mode == UWGame.Mods.HudMod.TalkAlways
+			|| (mode == UWGame.Mods.HudMod.TalkWhenSpoken && secondsSinceLastLine < UWGame.Mods.HudMod.TalkPanelLingerSeconds);
+		if (wanted != isShown)
+		{
+			if (wanted)
+			{
+				Show();
+			}
+			else
+			{
+				Hide();
+			}
+		}
 		crtAnimator.Update(gameTime);
 		if (timeLeftToShowFace > 0.0)
 		{
@@ -94,6 +118,7 @@ public class TalkPanel
 			crtContent.Add(faceImage);
 			timeLeftToShowFace = The.Client.ClientRandomGenerator.RandomNormalDistribution(6.0, 0.4);
 		}
+		secondsSinceLastLine = 0.0;
 	}
 
 	public void Hide()
@@ -101,5 +126,15 @@ public class TalkPanel
 		plasticPanel.Hide();
 		HUDTalkPanel.Hide();
 		crtWindow.Hide();
+		isShown = false;
+	}
+
+	/// <summary>The studio wrote Hide and nothing to undo it; HudMod's TALK PANEL needs both.</summary>
+	public void Show()
+	{
+		plasticPanel.Show();
+		HUDTalkPanel.DisplayWindow.Show();
+		crtWindow.Show();
+		isShown = true;
 	}
 }
