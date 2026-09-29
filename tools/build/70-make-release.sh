@@ -4,6 +4,7 @@
 #     sh tools/build/70-make-release.sh                 # version from git, all four platforms
 #     sh tools/build/70-make-release.sh 1.0             # explicit version
 #     sh tools/build/70-make-release.sh 1.0 linux-x64   # one platform
+#     sh tools/build/70-make-release.sh --folder 0.0-dev win-x64-dx   # a folder to test, no 7z
 #
 # RELEASES ARE CUT LOCALLY, NOT BY CI, and that is structural rather than a preference. A usable
 # archive needs the compiled effects and the transcoded music, and both are built FROM YOUR COPY
@@ -30,10 +31,15 @@ cd "$UW_REPO"
 # Without --full the archive carries code, data/ and the port-content overrides, and the player
 # brings Content/ from their own copy.
 FULL=""
+# --folder leaves each platform as a plain folder in artifacts/release/ instead of a 7z. Kastuk:
+# "7zipping is unnecessary for local testing. Need option to evade it and place just a folder."
+# The same staging and the same startable-and-Steam checks; no 7-Zip needed at all.
+FOLDER=""
 for a in "$@"; do
   [ "$a" = "--full" ] && FULL=1
+  [ "$a" = "--folder" ] && FOLDER=1
 done
-set -- $(echo "$@" | sed 's/--full//')
+set -- $(echo "$@" | sed 's/--full//; s/--folder//')
 
 VERSION=${1:-}
 if [ -z "$VERSION" ]; then
@@ -107,7 +113,9 @@ for cand in "$SEVENZIP" 7zz 7z 7za; do
   [ -n "$cand" ] || continue
   if [ -x "$cand" ] || command -v "$cand" >/dev/null 2>&1; then SEVENZ="$cand"; break; fi
 done
-if [ -z "$SEVENZ" ]; then
+if [ -n "$FOLDER" ]; then
+  SEVENZ="(not used: --folder)"
+elif [ -z "$SEVENZ" ]; then
   echo "FATAL: no 7-Zip found. Install p7zip (apt install p7zip-full / brew install p7zip)" >&2
   echo "       or 7-Zip on Windows, or set SEVENZIP to its path." >&2
   exit 2
@@ -342,6 +350,14 @@ DXNOTE
   fi
 
   # --- archive ---------------------------------------------------------------------------------
+  if [ -n "$FOLDER" ]; then
+    name="UnclaimedWorldDeluxe-$VERSION-$rid"
+    rm -rf "$OUT/$name"
+    cp -r "$app" "$OUT/$name"
+    for want in UnclaimedWorld.dll install.md LICENSE-UnclaimedWorld-Community.md MapData.xml; do
+      find "$OUT/$name" -name "$want" | grep -q . || { echo "  !! missing from folder: $want" >&2; exit 1; }
+    done
+  else
   name="UnclaimedWorldDeluxe-$VERSION-$rid.7z"
   rm -f "$OUT/$name"
   # -mx=9: built once, downloaded many times.
@@ -353,6 +369,7 @@ DXNOTE
   for want in UnclaimedWorld.dll install.md LICENSE-UnclaimedWorld-Community.md MapData.xml; do
     "$SEVENZ" l "$OUT/$name" | grep -q "$want" || { echo "  !! missing from archive: $want" >&2; exit 1; }
   done
+  fi
 
   # THE ARCHIVE MUST BE STARTABLE, which is a different question from whether it contains files.
   # Both of these were true of the v1.1 DX archive and nothing noticed until a player could not
@@ -385,12 +402,18 @@ DXNOTE
       : ;;
   esac
 
-  size=$(du -h "$OUT/$name" | cut -f1)
+  size=$(du -sh "$OUT/$name" | cut -f1)
   echo "    $name  ($size)"
 done
 
 echo
 echo "==> $OUT"
+if [ -n "$FOLDER" ]; then
+  ls -1d "$OUT"/UnclaimedWorldDeluxe-"$VERSION"-* 2>/dev/null | grep -v '\.7z$' | sed 's|.*/|    |'
+  echo
+  echo "    folders for testing; not publishable (71-publish-release.sh takes the 7z archives)."
+  exit 0
+fi
 ls -1 "$OUT"/*.7z 2>/dev/null | sed 's|.*/|    |'
 echo
 echo "    publish with:  sh tools/build/71-publish-release.sh v$VERSION"

@@ -70,6 +70,32 @@ fi
 TEMPLATES="${UW_TEMPLATES:-$UW_GAME/Content}"
 mkdir -p "$OUT" "$OBJ"
 
+# THE DEFAULTS COME FROM STEP 35's OUTPUT (see the loop below), and Kastuk ran 34 on its own and got
+# "no v10 effect" nineteen times and 0 built. When that output is missing, make it here - but only
+# from a PRISTINE copy of the game: UW_STEAM, else UW_TEMPLATES. $UW_GAME/Content has been
+# transcoded in place by earlier steps, and 35 reading it would quietly produce nothing useful.
+if ! ls "$UW_REPO"/artifacts/content/effects-dx/*.xnb >/dev/null 2>&1; then
+  PRISTINE=""
+  if [ -n "$UW_STEAM" ] && [ -d "$UW_STEAM/Content" ]; then
+    PRISTINE="$UW_STEAM/Content"
+  elif [ -n "$UW_TEMPLATES" ] && [ -d "$UW_TEMPLATES" ]; then
+    PRISTINE="$UW_TEMPLATES"
+  fi
+  if [ -n "$PRISTINE" ]; then
+    echo "==> no v10 effects yet (artifacts/content/effects-dx): running step 35 from $PRISTINE"
+    sh "$UW_REPO/tools/build/35-make-dx-effects.sh" "$PRISTINE" || { echo "FATAL: step 35 failed" >&2; exit 1; }
+  else
+    echo "FATAL: this step takes each effect's parameter defaults from step 35's output," >&2
+    echo "  artifacts/content/effects-dx/, which is not there yet. Run it first, from your own copy" >&2
+    echo "  of the game (it only reads it):" >&2
+    echo >&2
+    echo "      sh tools/build/35-make-dx-effects.sh \"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World/Content\"" >&2
+    echo >&2
+    echo "  Or export UW_STEAM (or UW_TEMPLATES) and this step runs it for you." >&2
+    exit 1
+  fi
+fi
+
 # NO PREPROCESSING. The sources in assets/effects/ are compiled exactly as they are.
 #
 # Worth stating, because the mgfxc route could not do that. It had to compile from a COPY with
