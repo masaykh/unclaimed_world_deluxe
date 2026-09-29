@@ -381,6 +381,12 @@ internal static class Program
                   == UWGame.Mods.ModContentState.Missing,
               "a setting from a mod that is not installed is grey, not red");
 
+        // STABLE / TESTING: confirmed-in-play settings are listed in ModSettings; everything else tests.
+        Check(UWGame.Mods.ModSettings.IsStable(UWGame.Mods.PortSettings.SaveDateFormat) && !UWGame.Mods.ModSettings.IsStable(sim),
+              "SAVE DATE FORMAT is STABLE, a setting nobody confirmed is TESTING");
+        Check(File.ReadAllText(path).Contains("TESTING") && File.ReadAllText(path).Contains("STABLE"),
+              "ModSettings.xml notes STABLE or TESTING beside the entries");
+
         // A key setting (KeybindMod's KEYS section, HudMod's reveal key) holds a Keys name.
         UWGame.Mods.ModSetting keySetting = UWGame.Mods.ModSettings.Key(
             "selftest", "key", "SELF TEST KEY", Microsoft.Xna.Framework.Input.Keys.LeftAlt);

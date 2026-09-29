@@ -483,7 +483,9 @@ public class OptionsDialog : Panel
 		{
 			int changed = settings.Count((ModSetting s) => !string.Equals(ReadModControl(s), s.StockValue, StringComparison.Ordinal));
 			categorySwitch.IsChecked = changed > 0;
-			cp.Summary = changed > 0 ? changed + " CHANGED" : "";
+			// The category's state first: STABLE only when every switch in it is confirmed in play.
+			string stability = ModSettings.AllStable(settings) ? "STABLE" : "TESTING";
+			cp.Summary = changed > 0 ? stability + " - " + changed + " CHANGED" : stability;
 		}
 
 		categorySwitch.Click += delegate
@@ -829,7 +831,8 @@ public class OptionsDialog : Panel
 	/// <summary>One setting's row inside a category; returns the Y below it.</summary>
 	private int AddModSettingControl(UIComponent panel, ModSetting setting, int lineY)
 	{
-		string toolTip = setting.ToolTip;
+		// STABLE or TESTING first (ModSettings.IsStable), so a player reads it before the rest.
+		string toolTip = (ModSettings.IsStable(setting) ? "STABLE - confirmed in play. " : "TESTING - not yet confirmed in play. ") + setting.ToolTip;
 		if (setting.AffectsSimulation)
 		{
 			toolTip += " Changes what a save contains: saves made with it on are marked MODDED.";

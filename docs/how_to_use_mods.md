@@ -26,6 +26,11 @@ report that prompted it.
 
 **In the game:** options menu → **MODS**. Every setting is there, with a description.
 
+Each category says **STABLE** or **TESTING** on its header, and each setting's description starts
+with the same word. STABLE means the setting has been confirmed working in a real game; TESTING
+means it has not been yet - most new settings start there. A category is STABLE only when every
+setting in it is. The list of confirmed settings is kept in `ModSettings.cs`.
+
 **In a file:** `user/ModSettings.xml`, next to the game. One line per setting:
 
 ```xml

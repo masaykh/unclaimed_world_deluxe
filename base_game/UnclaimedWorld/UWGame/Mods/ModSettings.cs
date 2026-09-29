@@ -387,6 +387,7 @@ public static class ModSettings
         {
             comment += "  AFFECTS SAVES";
         }
+        comment += "  " + StabilityTag(s);
         root.Add(new XComment(comment.Replace("--", "-") + " "));
         root.Add(new XElement("Setting",
             new XAttribute("id", s.Id),
@@ -476,6 +477,49 @@ public static class ModSettings
 
     private static readonly Dictionary<string, string> categoryLabels =
         new Dictionary<string, string>(StringComparer.Ordinal);
+
+    // ---- STABLE and TESTING -------------------------------------------------------------------
+    //
+    // Kastuk, dev chat: "It may be time to mark mods with Stable or Unstable states, to show in mod
+    // settings, what's need further testing and what is safe enough to use."
+    //
+    // Per SETTING, not per mod: a mod's switches are not tested together - HUD's LeftAlt key has
+    // been confirmed in play while its TALK PANEL and marker rows have not. A setting is STABLE only
+    // once the tester has confirmed it in a real game; everything else, including every new one, is
+    // TESTING. The menu shows it at the start of each tooltip and on each category's header (STABLE
+    // only when all of the category is), and ModSettings.xml notes it beside each entry.
+    //
+    // THE LIST IS THE RECORD. Add a setting id here when it has been confirmed in play, with where.
+
+    /// <summary>Setting ids confirmed in play by the tester.</summary>
+    private static readonly HashSet<string> confirmedInPlay = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "mapedge.stopAtEdge",               // "Works fine" - Stop screen scrolling at map edge
+        "magnification.allowBelowOne",      // "magnification 0.5 is working now" - Magnification setting
+        "magnification.warnWhenTooSmall",   // same thread
+        "hud.markersOnAlt",                 // "Key to show all markers-names-zones is works fine"
+        "hud.revealKey",                    // the same key; rebinding tested in KEYS
+        "port.saveDateFormat",              // Kastuk's own request, in use since 1.2
+    };
+
+    /// <summary>Whether this setting has been confirmed in play (STABLE) rather than still TESTING.</summary>
+    public static bool IsStable(ModSetting setting) => setting != null && confirmedInPlay.Contains(setting.Id);
+
+    /// <summary>"STABLE" or "TESTING", as the menu and the settings file show it.</summary>
+    public static string StabilityTag(ModSetting setting) => IsStable(setting) ? "STABLE" : "TESTING";
+
+    /// <summary>Whether every setting in a group is confirmed; a category is STABLE only then.</summary>
+    public static bool AllStable(IEnumerable<ModSetting> settings)
+    {
+        foreach (ModSetting s in settings)
+        {
+            if (!IsStable(s))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /// <summary>
     /// Names a mod's group in the MODS menu. Optional: a mod that never calls this is listed under
