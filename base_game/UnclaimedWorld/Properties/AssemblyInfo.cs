@@ -11,7 +11,7 @@ using System.Runtime.Versioning;
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("02eed97a-5aad-446e-aadb-8926a88abd1c")]
-// Unclaimed World DELUXE 1.3. This is the Deluxe version number, not the studio's: the game it
+// Unclaimed World DELUXE 1.4. This is the Deluxe version number, not the studio's: the game it
 // is built from is their 1.0.4.8.
 //
 // THIS IS WHAT THE GAME DISPLAYS. UnclaimedWorld.GetVersion() reads the AssemblyVersion back off
@@ -36,7 +36,7 @@ using System.Runtime.Versioning;
 // than the one loaded. At 1.0.0.0, Deluxe 1.0 to 1.3 loaded no vanilla save at all. Since then
 // Snapshotter.ResolveSavedType matches the assembly by name alone, so this number no longer
 // matters to a save in either direction (gate 80, case 22).
-[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.4.0.0")]
 [assembly: AssemblyProduct("Unclaimed World Deluxe")]
 [assembly: AssemblyTitle("Unclaimed World Deluxe")]
-[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyVersion("1.4.0.0")]

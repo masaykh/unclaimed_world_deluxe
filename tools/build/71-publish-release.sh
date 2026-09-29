@@ -83,14 +83,23 @@ if ! git rev-parse "$TAG" >/dev/null 2>&1; then
 fi
 git push origin "$TAG" 2>&1 | tail -2
 
+# This release's own highlights, above the standing text: artifacts/release/NOTES.md, if present.
+HIGHLIGHTS=""
+if [ -f "$OUT/NOTES.md" ]; then
+  HIGHLIGHTS="$(cat "$OUT/NOTES.md")
+
+---
+
+"
+fi
 echo "==> creating the release"
 gh release create "$TAG" "$@" \
   $DRAFT \
   --title "Unclaimed World Deluxe ${TAG#v}" \
   --generate-notes \
   --notes "
-*Unclaimed World* on .NET 8 and DesktopGL — Windows, Linux and macOS, with seven gameplay mods
-you can switch off.
+${HIGHLIGHTS}*Unclaimed World* on .NET 8 and DesktopGL — Windows, Linux and macOS, with gameplay mods you
+switch on and off in the options menu (MODS).
 
 **Download, extract, run.** Nothing to install, nothing to copy.
 
