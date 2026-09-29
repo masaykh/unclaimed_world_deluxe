@@ -32,5 +32,9 @@ public static class HomeRaidMod
 
     public static float DamagePerSecond() => 0f;
 
+    public static void RaidStarted(Entity predator)
+    {
+    }
+
     public static float ParseSeconds(string value) => 60f;
 }

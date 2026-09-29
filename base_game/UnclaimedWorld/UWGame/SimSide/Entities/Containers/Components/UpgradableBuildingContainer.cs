@@ -219,6 +219,12 @@ public class UpgradableBuildingContainer : Container, IGarrison, IStorage, IUpgr
 		return flag;
 	}
 
+	public override void ThrowOutContents()
+	{
+		storage?.UncontainAllEntities();
+		garrison.UncontainAllEntities();
+	}
+
 	public override void Destroy()
 	{
 		if (storage != null)

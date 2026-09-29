@@ -85,6 +85,16 @@ public abstract class Container : ISnapshot
 
 	public abstract void Destroy();
 
+	/// <summary>
+	/// Everyone and everything inside, out onto the ground - the first half of Destroy, without
+	/// destroying the storage or the upgrades. For a building broken open (HomeRaidMod), which
+	/// stays standing, broken and repairable. Nothing by default: only containers that hold
+	/// people or items have anything to throw out.
+	/// </summary>
+	public virtual void ThrowOutContents()
+	{
+	}
+
 	public virtual void ResetPlaySiteRegulators()
 	{
 	}

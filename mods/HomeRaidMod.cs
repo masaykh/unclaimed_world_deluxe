@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Renderables;
 using UWGame.SimSide;
@@ -29,10 +30,11 @@ namespace UWGame.Mods;
 /// nothing better to do, and leaves it for anything that scores higher - eating, sleeping,
 /// answering an attack. The goal walks to the door (GoalMoveToPosition), then wears the building
 /// down (Entity.DoDamage, which already damages integrity and parts) playing the attack animation.
-/// When it breaks it is destroyed through the studio's own path - HomeContainer /
-/// UpgradableBuildingContainer.Destroy - which already ejects the occupants and drops the stored
-/// items. From there the ordinary AI takes over: sleepers are visible targets, and food is on the
-/// ground. The raid is part of the predator's saved brain, so it carries on after a load.
+/// At integrity 0 the building is broken, not destroyed - "just like abandoned unclaimed
+/// structures", Kastuk - and stays standing to be repaired, while Container.ThrowOutContents puts
+/// the occupants and the stock on the ground. From there the ordinary AI takes over: sleepers are
+/// visible targets, and food is on the ground. A broken building is not raided again. The raid is
+/// part of the predator's saved brain, so it carries on after a load.
 ///
 /// This file keeps the rules: who raids, what is worth raiding, how fast a building gives way.
 /// Off by default.
@@ -47,9 +49,9 @@ public static class HomeRaidMod
     public static ModSetting EnabledSetting =>
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "PREDATORS BREAK INTO HOMES AND STORES", defaultValue: false,
-            toolTip: "Patricians, whipjaws, megapods and bush dragons nearby may break into a home " +
-                     "with colonists asleep inside (at night) or a store holding food. A broken " +
-                     "building is destroyed: its occupants and contents are thrown out.",
+            toolTip: "Patricians, whipjaws and megapods nearby may break into a home with colonists " +
+                     "asleep inside (at night) or a store holding food. A broken-into building is " +
+                     "left broken, to be repaired, and its occupants and contents are thrown out.",
             affectsSimulation: true));
 
     public static ModSetting BreakInSeconds =>
@@ -68,8 +70,11 @@ public static class HomeRaidMod
     /// <summary>Whether raids happen at all. Read by EvaluateBreakIn and GoalBreakIn.</summary>
     public static bool Enabled => EnabledSetting.On;
 
-    /// <summary>The raiders: the big hunters, all around 100 bulk.</summary>
-    public static readonly string[] RaiderKeys = { "entity:patrician", "entity:whipjaw", "entity:megapod", "entity:bushDragon" };
+    /// <summary>
+    /// The raiders: the big hunters. Not the bush dragon - Kastuk: "not such aggressive and their
+    /// attacking by poison must be not such damageable for structures".
+    /// </summary>
+    public static readonly string[] RaiderKeys = { "entity:patrician", "entity:whipjaw", "entity:megapod" };
 
     /// <summary>Whether this species gets EvaluateBreakIn. By species only, so switching the mod on mid-game works.</summary>
     public static bool IsRaider(EntityType type) => type != null && Array.IndexOf(RaiderKeys, type.KeyName) >= 0;
@@ -86,26 +91,93 @@ public static class HomeRaidMod
     /// <summary>A building's integrity lost per second of one predator at its door: a sound one breaks in BREAK IN seconds.</summary>
     public static float DamagePerSecond() => 1f / Math.Max(1f, ParseSeconds(BreakInSeconds.Value));
 
-    private static readonly List<Entity> raidable = new List<Entity>();
+    // ---- who raids what --------------------------------------------------------------------
+    //
+    // tripleacoder: triggered "by hunger or aggression (territorial). Either way, it should probably
+    // be an uncommon behavior." Kastuk: "If raid is triggered by hunger, then predators must have
+    // ability to eat raided food." So:
+    // - a store of food is raided only by a HUNGRY predator (stomach under half full), and only for
+    //   food that predator eats. The three raiders eat cooked, raw and small raw meat, spoiled meals
+    //   and rotten meat (CreatureLoader, FoodItemTagsThatCanBeConsumed) and butcher carcasses
+    //   (ExtractionProcessTypes) - checked per predator against its own ConsumeProcesses and
+    //   FoodExtractionProcesses. Once the store is open the food is on the ground, and the
+    //   predator's own EvaluateEat takes it from there.
+    // - a home with colonists asleep inside, at night, is the territorial case.
+    // - either way, a predator raids at most once a game day (RaidCooldownDays), remembered in its
+    //   saved CustomFields.
+
+    /// <summary>Stomach below this is hungry enough to raid a food store.</summary>
+    public const float HungryBelowStomach = 0.5f;
+
+    /// <summary>Game days between two raids by one predator.</summary>
+    public const double RaidCooldownDays = 1.0;
+
+    private const string LastRaidKey = "homeRaidLastDay";
+
+    private sealed class Raidable
+    {
+        public Entity Building;
+        public bool Sleepers;
+        public HashSet<EntityType> Food;
+    }
+
+    private static readonly List<Raidable> raidable = new List<Raidable>();
     private static double builtAt = double.MinValue;
     private static object builtFor;
 
+    private static double Today => The.Sim?.DateAndTime?.CurrentTimeDateYear.TotalDays ?? 0.0;
+
+    /// <summary>Called by GoalBreakIn when a raid starts: the day it did, for the cooldown.</summary>
+    public static void RaidStarted(Entity predator)
+    {
+        if (predator == null)
+        {
+            return;
+        }
+        Entity.SetPropertyValue(ref predator.CustomFields, LastRaidKey,
+            new UWGame.ClientSide.PropertyPresentation.PropertyResult { NumberResult = (float)Today });
+    }
+
+    private static bool OnCooldown(Entity predator)
+    {
+        if (predator.CustomFields != null && predator.CustomFields.TryGetValue(LastRaidKey, out var last) && last.NumberResult is float day)
+        {
+            return Today - day < RaidCooldownDays && Today >= day;
+        }
+        return false;
+    }
+
+    private static bool Eats(Entity predator, EntityType food)
+    {
+        var bio = predator.BiologicalEntity;
+        return bio != null && ((bio.ConsumeProcesses != null && bio.ConsumeProcesses.ContainsKey(food))
+                               || (bio.FoodExtractionProcesses != null && bio.FoodExtractionProcesses.ContainsKey(food)));
+    }
+
     /// <summary>
-    /// The building this predator would raid: the nearest raidable one within its aggro range, or
-    /// null. Called from EvaluateBreakIn.
+    /// The building this predator would raid: the nearest within its aggro range with colonists
+    /// asleep inside at night, or - if it is hungry - food in store it eats. Null when there is none,
+    /// or it raided today. Called from EvaluateBreakIn.
     /// </summary>
     public static Entity FindTarget(Entity predator)
     {
-        if (!Enabled || predator?.Location == null)
+        if (!Enabled || predator?.Location == null || OnCooldown(predator))
         {
             return null;
         }
-        List<Entity> buildings = RaidableBuildings();
+        bool hungry = predator.BiologicalEntity != null && predator.BiologicalEntity.StomachContents < HungryBelowStomach;
         Entity best = null;
         float bestDistance = predator.GetAggroRange() ?? 0f;
-        foreach (Entity building in buildings)
+        foreach (Raidable r in RaidableBuildings())
         {
-            if (building.AccessPoint == null || Entity.FindByID(building.EntityID) == null)
+            Entity building = r.Building;
+            if (building.AccessPoint == null || Entity.FindByID(building.EntityID) == null
+                || (building.NonLivingEntity?.Integrity is float integrity && integrity <= 0f))
+            {
+                // Gone, or already broken open.
+                continue;
+            }
+            if (!r.Sleepers && !(hungry && r.Food.Any(f => Eats(predator, f))))
             {
                 continue;
             }
@@ -120,7 +192,7 @@ public static class HomeRaidMod
     }
 
     /// <summary>The player's buildings with colonists asleep inside (at night) or food in storage, rebuilt every few seconds.</summary>
-    private static List<Entity> RaidableBuildings()
+    private static List<Raidable> RaidableBuildings()
     {
         Sim sim = The.Sim;
         if (sim?.PlaySite?.PlayerAllegiance == null || sim.Mode != Sim.EngineMode.Game)
@@ -137,7 +209,7 @@ public static class HomeRaidMod
         builtAt = now;
         raidable.Clear();
         bool night = sim.DateAndTime != null && sim.DateAndTime.LightLevel < NightBelowLightLevel;
-        var holdingFood = new HashSet<EntityID>();
+        var foodIn = new Dictionary<EntityID, HashSet<EntityType>>();
         foreach (Expedition expedition in sim.PlaySite.PlayerAllegiance.Expeditions)
         {
             var food = expedition?.OwnedEntities?.Food;
@@ -147,7 +219,13 @@ public static class HomeRaidMod
                 foreach (EntityID id in byType.Value)
                 {
                     Entity item = Entity.FindByID(id);
-                    if (item?.ContainedBy != null) holdingFood.Add(item.ContainedBy.Value);
+                    if (item?.ContainedBy == null) continue;
+                    if (!foodIn.TryGetValue(item.ContainedBy.Value, out var types))
+                    {
+                        types = new HashSet<EntityType>();
+                        foodIn[item.ContainedBy.Value] = types;
+                    }
+                    types.Add(byType.Key);
                 }
             }
         }
@@ -162,9 +240,10 @@ public static class HomeRaidMod
                     Entity building = Entity.FindByID(id);
                     if (building == null || !building.IsOnPlaySite()) continue;
                     bool sleepers = night && building.Contains is IGarrison garrison && garrison.GetNoOfAgentsInside() > 0;
-                    if (sleepers || holdingFood.Contains(id))
+                    foodIn.TryGetValue(id, out var types);
+                    if (sleepers || types != null)
                     {
-                        raidable.Add(building);
+                        raidable.Add(new Raidable { Building = building, Sleepers = sleepers, Food = types ?? new HashSet<EntityType>() });
                     }
                 }
             }

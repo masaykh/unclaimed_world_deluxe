@@ -48,6 +48,11 @@ internal class StorageContainer : Container, IStorage
 		return StorageCompartment.NormalStorage;
 	}
 
+	public override void ThrowOutContents()
+	{
+		storage.UncontainAllEntities();
+	}
+
 	public override void Destroy()
 	{
 		storage.UncontainAllEntities(GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers, GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);

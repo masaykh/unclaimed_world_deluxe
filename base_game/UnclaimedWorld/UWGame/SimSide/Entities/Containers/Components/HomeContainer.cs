@@ -325,6 +325,12 @@ internal class HomeContainer : Container, IGarrison, IStorage, IResidence, IExit
 		return true;
 	}
 
+	public override void ThrowOutContents()
+	{
+		storage.UncontainAllEntities();
+		garrison.UncontainAllEntities();
+	}
+
 	public override void Destroy()
 	{
 		storage.UncontainAllEntities(GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers, GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);

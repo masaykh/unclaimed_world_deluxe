@@ -20,8 +20,10 @@ namespace UWGame.SimSide.AI.Goals;
 ///
 /// Two stages. On the way: a GoalMoveToPosition to the building's access point, given up after
 /// HomeRaidMod.GiveUpAfterSeconds. At the door: Entity.DoDamage at HomeRaidMod.DamagePerSecond,
-/// playing the attack animation; when the building breaks it goes through the studio's own
-/// Destroy, which throws out its occupants and contents.
+/// playing the attack animation. When its integrity reaches 0 the building is broken - Kastuk:
+/// "Building will just be broken, just like abandoned unclaimed structures" - so it stays
+/// standing and repairable, and Container.ThrowOutContents puts its occupants and stock on the
+/// ground.
 /// </summary>
 internal class GoalBreakIn : CompositeGoal, ITopLevelGoal
 {
@@ -59,6 +61,8 @@ internal class GoalBreakIn : CompositeGoal, ITopLevelGoal
 		{
 			AddSubgoal(new GoalMoveToPosition(entity, building.AccessPoint.Value, null));
 		}
+		// For HomeRaidMod's once-a-day limit; a raid resumed after a load counts again, harmlessly.
+		HomeRaidMod.RaidStarted(entity);
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)
@@ -94,7 +98,7 @@ internal class GoalBreakIn : CompositeGoal, ITopLevelGoal
 		entity.Renderable?.SetAnimationActionStateFlag(AnimAction.Attacking);
 		if (building.DoDamage(HomeRaidMod.DamagePerSecond() * (float)seconds) && Entity.FindByID(target) != null)
 		{
-			building.Destroy();
+			building.Contains?.ThrowOutContents();
 			base.Status = Status.Completed;
 		}
 	}
