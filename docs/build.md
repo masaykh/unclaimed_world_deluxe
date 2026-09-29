@@ -25,7 +25,7 @@ dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlat
 # 2. shaders  (needs the patched compiler; fetched and built for you)
 sh tools/shadowdusk/build-shadowdusk.sh
 export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
-export UW_STEAM="/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World"   # your copy, read only
+export UW_GAME="/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World"   # your copy, read only
 sh tools/build/34-build-gl-effects-shadowdusk.sh   # runs step 35 first if its output is missing
 
 # 3. package
