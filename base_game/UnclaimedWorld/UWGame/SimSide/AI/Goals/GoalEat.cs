@@ -306,6 +306,12 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
+		// MOD: PreyFearMod - the panic check GoalTakeFive runs, which the studio left out of eating
+		// ("Unless this method is called during the goal, the agent will not be able to flee").
+		if (UWGame.Mods.PreyFearMod.ChecksSafetyWhileEating(entity) && !ValidateSafetyAndTakeAction(null))
+		{
+			return;
+		}
 		if (!preconditionsRegulator.IsReady() || ArePreconditionsOK())
 		{
 			base.Status = ProcessSubgoals(elapsed);

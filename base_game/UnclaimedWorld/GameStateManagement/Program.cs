@@ -113,6 +113,7 @@ internal static class Program
 		UWGame.Mods.GatherOnDemandMod.RegisterSettings();
 		UWGame.Mods.HuntingMod.RegisterSettings();
 		UWGame.Mods.KeybindMod.RegisterSettings();
+		UWGame.Mods.PreyFearMod.RegisterSettings();
 		UWGame.Mods.DisassemblyMod.RegisterSettings();
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();

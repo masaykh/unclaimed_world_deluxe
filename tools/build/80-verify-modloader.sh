@@ -343,7 +343,7 @@ echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is r
 
 # The nature mods default to off as well - checked ON.
 # So is self-preservation: it changes the studio's AI rather than fixing it, so it is opt-in.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones preyfear.preyFlees preyfear.closeInReach selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"

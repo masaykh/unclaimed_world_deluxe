@@ -70,6 +70,8 @@ public class ThreatMap : InfluenceMap
 			break;
 		}
 		boldnessFactor = 1f - EntityType.IntelligenceType.Boldness + 0.5f;
+		// MOD: PreyFearMod gives timid prey a floor under this, so a hunter's threat reaches further than a tile.
+		boldnessFactor = UWGame.Mods.PreyFearMod.BoldnessFactor(EntityType, boldnessFactor);
 	}
 
 	private int GetThreatValue(double dangerLevel)

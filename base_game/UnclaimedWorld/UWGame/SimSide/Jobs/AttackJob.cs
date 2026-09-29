@@ -376,15 +376,18 @@ public abstract class AttackJob : Job
 	{
 		Point p = MapManager.WorldPosToSubtile(attacker.PlaySiteLocation);
 		Point p2 = MapManager.WorldPosToSubtile(pos);
-		if (Math.Abs(Common.DistanceOctile(p, p2) * 16f - (attacker.EntityType.LocomotorType.MeleeRadius + target.EntityType.LocomotorType.MeleeRadius)) <= GameData.Instance.AIConstants.Combat.DistanceToleranceInMeleeCombat)
-		{
-			return true;
-		}
-		return false;
+		return IsCorrectMeleeDistance(Common.DistanceOctile(p, p2) * 16f, attacker.EntityType.LocomotorType.MeleeRadius + target.EntityType.LocomotorType.MeleeRadius);
 	}
 
 	public static bool IsCorrectMeleeDistance(float distance, float correctMeleeDistance)
 	{
+		// MOD: PreyFearMod's CLOSE COUNTS AS IN REACH makes the band one-sided - closer than ideal is
+		// in reach too. The studio's test fails a dog standing against moving prey as surely as one
+		// too far away, and each failure re-plans the attack.
+		if (UWGame.Mods.PreyFearMod.CloseCountsAsInReach && distance - correctMeleeDistance <= GameData.Instance.AIConstants.Combat.DistanceToleranceInMeleeCombat)
+		{
+			return true;
+		}
 		if (Math.Abs(distance - correctMeleeDistance) <= GameData.Instance.AIConstants.Combat.DistanceToleranceInMeleeCombat)
 		{
 			return true;
