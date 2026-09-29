@@ -30,9 +30,12 @@ using System.Runtime.Versioning;
 // Xclna.Xna.Animationx86 must keep theirs exactly - but nothing names THIS assembly, and
 // MonoGame's ContentTypeReaderManager.PrepareType strips the version from a reader name anyway.
 //
-// Saves are unaffected. SnapshotHeader writes ProgramVersion, but reading it back is
-// `sn.Ignore(ProgramVersion)` - a literal no-op - and the only other use is a label on the load
-// screen. A save made by 1.0.4.8 still loads, and shows the version it was made with.
+// Saves DID depend on it, which this comment used to deny. SnapshotHeader's ProgramVersion is only
+// a label, but a save names generic types with assembly-qualified arguments, version included -
+// "UnclaimedWorld, Version=1.0.4.8" in every studio save - and .NET will not bind a newer version
+// than the one loaded. At 1.0.0.0, Deluxe 1.0 to 1.3 loaded no vanilla save at all. Since then
+// Snapshotter.ResolveSavedType matches the assembly by name alone, so this number no longer
+// matters to a save in either direction (gate 80, case 22).
 [assembly: AssemblyFileVersion("1.3.0.0")]
 [assembly: AssemblyProduct("Unclaimed World Deluxe")]
 [assembly: AssemblyTitle("Unclaimed World Deluxe")]

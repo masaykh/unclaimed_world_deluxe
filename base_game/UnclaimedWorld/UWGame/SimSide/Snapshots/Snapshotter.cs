@@ -1483,7 +1483,73 @@ public class Snapshotter
 		{
 			val = t.FullName;
 		}
-		return Type.GetType(DoString(val, verifyField: false));
+		return ResolveSavedType(DoString(val, verifyField: false));
+	}
+
+	private static readonly Dictionary<string, Type> savedTypeCache = new Dictionary<string, Type>();
+
+	/// <summary>
+	/// PORT FIX: a type name read from a save, found whatever assembly VERSION it names.
+	///
+	/// A save names generic types with their arguments assembly-qualified - the studio's 1.0.4.8
+	/// saves carry "UWGame.SimSide.Snapshots.LookUp`2[[UWGame.SimSide.AI.MemoryFact, UnclaimedWorld,
+	/// Version=1.0.4.8, ...]]" 180 times. Type.GetType on .NET 8 will not bind a request for a
+	/// NEWER version of an assembly than the one loaded, and returns null; the load then died in
+	/// Activator.CreateInstance(null). Deluxe 1.0 to 1.3 shipped as UnclaimedWorld 1.0.0.0, so no
+	/// vanilla save loaded in any of them (Kastuk, dev chat); main loaded them only because its
+	/// 1.3.0.0 happens to be above 1.0.4.8, and a save made by a later Deluxe would have failed in
+	/// an earlier one the same way.
+	///
+	/// So: the name as written first, and if that fails, again with every assembly in it matched by
+	/// simple name to the one already loaded. Version, culture and key are ignored - there is only
+	/// ever one UnclaimedWorld in the process.
+	/// </summary>
+	public static Type ResolveSavedType(string typeName)
+	{
+		if (typeName == null)
+		{
+			return null;
+		}
+		lock (savedTypeCache)
+		{
+			if (savedTypeCache.TryGetValue(typeName, out Type cached))
+			{
+				return cached;
+			}
+		}
+		Type type = null;
+		try
+		{
+			type = Type.GetType(typeName, throwOnError: false);
+		}
+		catch (Exception)
+		{
+			// A version it cannot bind can throw FileLoadException rather than answer null.
+		}
+		if (type == null)
+		{
+			type = Type.GetType(typeName, LoadedAssemblyBySimpleName, null, throwOnError: false);
+		}
+		if (type != null)
+		{
+			lock (savedTypeCache)
+			{
+				savedTypeCache[typeName] = type;
+			}
+		}
+		return type;
+	}
+
+	private static Assembly LoadedAssemblyBySimpleName(AssemblyName name)
+	{
+		foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+		{
+			if (string.Equals(assembly.GetName().Name, name.Name, StringComparison.OrdinalIgnoreCase))
+			{
+				return assembly;
+			}
+		}
+		return null;
 	}
 
 	public EntityAndRoot DoEntityAndRoot(EntityAndRoot val, bool verifyField = true)
@@ -2330,7 +2396,7 @@ public class Snapshotter
 			{
 				return null;
 			}
-			GetStaticTypeInfo(Type.GetType(text), out var typeInfo);
+			GetStaticTypeInfo(ResolveSavedType(text), out var typeInfo);
 			return DoElement(typeInfo, value);
 		}
 		if (mode == Mode.Save)
@@ -3089,7 +3155,7 @@ public class Snapshotter
 			{
 				return null;
 			}
-			snapshot = ((!staticOrDynamicType.IsInterface && !staticOrDynamicType.IsAbstract) ? (Activator.CreateInstance(staticOrDynamicType) as ISnapshot) : (Activator.CreateInstance(Type.GetType(text)) as ISnapshot));
+			snapshot = ((!staticOrDynamicType.IsInterface && !staticOrDynamicType.IsAbstract) ? (Activator.CreateInstance(staticOrDynamicType) as ISnapshot) : (Activator.CreateInstance(ResolveSavedType(text)) as ISnapshot));
 			snapshot.DoVersion(this);
 			snapshot = snapshot.DoSnapshot(this);
 		}

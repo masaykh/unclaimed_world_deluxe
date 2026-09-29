@@ -29,6 +29,7 @@
 #  19. a reserve is kept in the expedition's saved fields, and its command survives a replay
 #  20. the safe sleep mod counts swarmer and whipjaw nests as dangerous, and quadite nests not
 #  21. the swarmer becomes human prey only with the hunting mod's switch on
+#  22. a save's type names resolve whatever assembly version they carry
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -679,6 +680,19 @@ else
   fail "the hunting self-test reported failures with the switch off"
 fi
 
+# Why vanilla saves did not load in Deluxe 1.0 to 1.3: a save names generic types with their
+# arguments assembly-qualified, version included, and .NET will not bind a newer version than the
+# one loaded. Snapshotter.ResolveSavedType matches by simple name instead; checked with the
+# studio's 1.0.4.8, a future version and an older one.
+say "==> 22. a save's type names resolve whatever assembly version they carry"
+out=$( cd "$(new_install case22)" && "$EXPORT" . --savetype-selftest 2>&1 ) || true
+if echo "$out" | grep -q "save type-name self-test OK"; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the save type-name self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -693,7 +707,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 21/21 cases passed."
+  say "mod loader OK - 22/22 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

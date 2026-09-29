@@ -229,6 +229,11 @@ internal static class Program
             return HuntingSelfTest();
         }
 
+        if (args.Contains("--savetype-selftest"))
+        {
+            return SaveTypeSelfTest();
+        }
+
         if (scenarioReport)
         {
             // Load the way the GAME loads and only then switch modes, which is the order that
@@ -501,6 +506,37 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks Snapshotter.ResolveSavedType, the reason vanilla saves did not load in Deluxe 1.0 to
+    /// 1.3: a save names generic types with assembly-qualified arguments ("UnclaimedWorld,
+    /// Version=1.0.4.8" in the studio's saves), and Type.GetType will not bind a newer version than
+    /// the one loaded. A real generic type's saved name is rewritten to the studio's version and to
+    /// a future one; both must resolve to the same type.
+    /// </summary>
+    private static int SaveTypeSelfTest()
+    {
+        Console.WriteLine("==> save type-name self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        Type type = typeof(UWGame.SimSide.Snapshots.LookUp<UWGame.SimSide.AI.MemoryFact, UWGame.SimSide.AI.MemoryFactID>);
+        string saved = type.FullName;
+        Check(saved.Contains("UnclaimedWorld, Version="), "a generic type's saved name carries the assembly version: " + saved.Substring(0, Math.Min(90, saved.Length)) + "...");
+        string Rewrite(string version) => System.Text.RegularExpressions.Regex.Replace(saved, @"UnclaimedWorld, Version=[0-9.]+", "UnclaimedWorld, Version=" + version);
+        foreach (string version in new[] { "1.0.4.8", "9.9.9.9", "0.0.0.1" })
+        {
+            Type resolved = UWGame.SimSide.Snapshots.Snapshotter.ResolveSavedType(Rewrite(version));
+            Check(resolved == type, $"a save naming UnclaimedWorld Version={version} resolves to the same type");
+        }
+        Check(UWGame.SimSide.Snapshots.Snapshotter.ResolveSavedType("UWGame.NoSuchType, UnclaimedWorld, Version=1.0.0.0") == null,
+              "a type that does not exist is still null, not something else");
+        Console.WriteLine(failures == 0 ? "save type-name self-test OK" : $"save type-name self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 
