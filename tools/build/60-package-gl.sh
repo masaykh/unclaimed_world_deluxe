@@ -74,6 +74,21 @@ if [ -n "$missing" ]; then
 fi
 
 # ---- 2. binaries ---------------------------------------------------------------------------
+# ...and on the music. The package plays Ogg Vorbis, which step 32 makes; without it the copy
+# further down failed, set -e stopped the script half-way - before OpenAL, SDL2, the Steam
+# native and the menu animation went in - and the half-built package crashed on its first song
+# ("Could not load the specified container", NVorbis reading a WMA). Kastuk, with Errors.txt.
+# So check first, and make it when it is missing: step 32 needs ffmpeg and says so if absent.
+if ! ls "$MEDIA_DIR"/Music/*.ogg >/dev/null 2>&1; then
+  if [ "$MEDIA_DIR" = "artifacts/content/media-gl" ]; then
+    echo "==> no Ogg music yet ($MEDIA_DIR): running step 32"
+    sh "$UW_REPO/tools/build/32-convert-media.sh" || {
+      echo "FATAL: step 32 (music to Ogg Vorbis) failed - see above. Nothing was packaged." >&2; exit 1; }
+  fi
+  ls "$MEDIA_DIR"/Music/*.ogg >/dev/null 2>&1 || {
+    echo "FATAL: no Ogg Vorbis music in $MEDIA_DIR/Music. Run: sh tools/build/32-convert-media.sh" >&2; exit 1; }
+fi
+
 echo "==> publishing GL ($CFG)"
 "$DOTNET" publish base_game/UnclaimedWorld/UnclaimedWorld.csproj -c "$CFG" -p:UwPlatform=GL -v q --nologo
 [ -d "$PUB" ] || { echo "FATAL: $PUB not found" >&2; exit 1; }

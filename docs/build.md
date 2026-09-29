@@ -29,7 +29,7 @@ export UW_GAME="/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World"  
 sh tools/build/34-build-gl-effects-shadowdusk.sh   # runs step 35 first if its output is missing
 
 # 3. package
-sh tools/build/60-package-gl.sh Release
+sh tools/build/60-package-gl.sh Release   # runs step 32 (music to Ogg, needs ffmpeg) if not done
 ```
 
 The result is `artifacts/package/UnclaimedWorld-GL/` — a self-contained, runnable game

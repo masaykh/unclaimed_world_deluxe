@@ -29,7 +29,19 @@ FFMPEG=$(command -v ffmpeg 2>/dev/null || true)
 [ -n "$FFMPEG" ] || { echo "FATAL: ffmpeg not found. Install with: winget install Gyan.FFmpeg" >&2; exit 1; }
 echo "==> ffmpeg: $FFMPEG"
 
-SRC="$UW_GAME/Content"
+# The pristine install first (UW_STEAM), as 60-package-gl.sh already requires; the deployed working
+# copy only if there is no such thing. Kastuk built a package with no game/ folder at all, and
+# this read nothing.
+if [ -n "$UW_STEAM" ] && [ -d "$UW_STEAM/Content/Music" ]; then
+  SRC="$UW_STEAM/Content"
+else
+  SRC="$UW_GAME/Content"
+fi
+ls "$SRC"/Music/*.wma >/dev/null 2>&1 || {
+  echo "FATAL: no music to convert in $SRC/Music." >&2
+  echo "  Export UW_STEAM as your copy of the game, which this only reads:" >&2
+  echo "      export UW_STEAM=\"/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World\"" >&2
+  exit 1; }
 OUT=artifacts/content/media-gl
 mkdir -p "$OUT/Music"
 
