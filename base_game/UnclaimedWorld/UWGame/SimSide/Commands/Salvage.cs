@@ -72,6 +72,13 @@ public class Salvage : Command
 		return false;
 	}
 
+	/// <summary>The salvage job for this entity, or null. PORT: for upgrade removals that must follow their host's priority, or be withdrawn.</summary>
+	public static ProcessJob FindSalvageJob(IKnownEntityData entity)
+	{
+		LookUpOwners.ResolveEntityOwner(entity, out IOwner owner);
+		return owner?.OwnedEntities.OtherJobs.Find((Job j) => SalvageJobExistsForEntity(j, entity)) as ProcessJob;
+	}
+
 	private static bool SalvageJobExistsForEntity(Job j, IKnownEntityData entity)
 	{
 		if (j is ProcessJob { SalvageJob: not null } processJob && processJob.GetAssignedInputs(out var inputs) && inputs.TryGetValue(entity.EntityType, out var value) && value.Exists((Tuple<EntityID, WorldLocation> i) => i.Item1 == entity.EntityID))

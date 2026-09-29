@@ -236,7 +236,18 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 
 	private void CreateSalvageUpgradeJob(IKnownEntityData entityData, EntityGroup owner)
 	{
-		Salvage.CreateSalvageJob(entityData, owner);
+		ProcessJob job = Salvage.CreateSalvageJob(entityData, owner);
+		// PORT FIX: made after the player set the host's removal priority, it takes that priority
+		// (see SetTaskPriority.PassPriorityToUpgradeRemovals, which covers the other order).
+		if (job != null && entityData.UpgradeFor.HasValue)
+		{
+			Entity host = Entity.FindByID(entityData.UpgradeFor.Value);
+			ProcessJob hostRemoval = (host != null) ? Salvage.FindSalvageJob(host) : null;
+			if (hostRemoval != null)
+			{
+				job.Priority = hostRemoval.Priority;
+			}
+		}
 	}
 
 	/// <summary>
@@ -286,6 +297,14 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 			}
 			SimProcess simProcess = SimProcess.FindById(processJob.ProductionProcess);
 			if (simProcess == null || simProcess.UpgradeCategory != category)
+			{
+				continue;
+			}
+			// A STARTED job is left alone. Destroying it destroyed its SimProcess and the construction
+			// progress with it, so re-checking the upgrade two seconds later started again from
+			// nothing (Kastuk, T2b). It stays until the studio's salvage job consumes its output, as
+			// in the studio's game - or until re-checking withdraws that salvage job (CycleUpgrade).
+			if (simProcess.IsStarted)
 			{
 				continue;
 			}
@@ -482,6 +501,17 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 					if (!GoalEvaluator.HandleOwnerDataResult(sharedKnowledge, value2, owner, out var entityData2, ref invalidEntities))
 					{
 						continue;
+					}
+					if (entityData2.EntityType == value && Entity.IsFunctional(entityData2))
+					{
+						// PORT FIX: re-checked before its removal began - withdraw the removal, so the
+						// part-built upgrade carries on being built from where it was (Kastuk, T2b:
+						// "changing task to Removing and cannot continue construction from last stage").
+						ProcessJob pendingRemoval = Salvage.FindSalvageJob(entityData2);
+						if (pendingRemoval != null && (!pendingRemoval.ProductionProcess.HasValue || SimProcess.FindById(pendingRemoval.ProductionProcess) is not { IsStarted: true }))
+						{
+							pendingRemoval.Destroy(removeTakers: true, null);
+						}
 					}
 					if (entityData2.EntityType != value || !Entity.IsFunctional(entityData2))
 					{

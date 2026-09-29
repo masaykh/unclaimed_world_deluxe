@@ -1344,10 +1344,16 @@ public class InventoryPanel : RosterPanel
 			ownsItemIncludingIntrinsicPart = false;
 			return;
 		}
-		if (GetNoOfAvailableEntities(owner.AllEntities, owner, entityType, out var noOfIncompleteEntities, out var _, out var _, out var _, out var noOfAvailableItemsIncludingIntrinsic, allAvailableItems, countPartsOfEntities) != 0 || noOfIncompleteEntities != 0)
+		// PORT FIX: ownsItemIncludingIntrinsicPart - read only by DataSheet.ScoreItem, where it colours a
+		// tool row white - no longer counts INCOMPLETE entities. A part-built polymer upgrade showed
+		// white as the rubber's primary tool while HasValidTool, which decides ordering, requires
+		// IsCompleted() and refused the order (Kastuk; the same in a vanilla save - the studio marked
+		// this test "inconsistency here..."). ownsItem keeps its meaning.
+		int available = GetNoOfAvailableEntities(owner.AllEntities, owner, entityType, out var noOfIncompleteEntities, out var _, out var _, out var _, out var noOfAvailableItemsIncludingIntrinsic, allAvailableItems, countPartsOfEntities);
+		if (available != 0 || noOfIncompleteEntities != 0)
 		{
 			ownsItem = true;
-			ownsItemIncludingIntrinsicPart = true;
+			ownsItemIncludingIntrinsicPart = available != 0 || noOfAvailableItemsIncludingIntrinsic > 0;
 			return;
 		}
 		if (noOfAvailableItemsIncludingIntrinsic > 0)
