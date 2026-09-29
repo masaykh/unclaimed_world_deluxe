@@ -51,7 +51,39 @@ public static class BirdHopMod
 
     public const float HopMaxDistance = 72f;
 
-    /// <summary>Whether this immobile creature may take GoalTakeFive's short idle step.</summary>
-    public static bool MayHop(Entity entity) =>
-        Enabled.On && entity?.EntityType != null && Array.IndexOf(HopperKeys, entity.EntityType.KeyName) >= 0;
+    /// <summary>
+    /// Whether this immobile creature may take GoalTakeFive's short idle step - and, if so, that it
+    /// has what walking needs.
+    ///
+    /// THE CRASH (Kastuk, with Errors.txt): NullReferenceException in GoalMoveToPosition.GetPath
+    /// the first time a bird hopped, which was when the view first reached where birds live.
+    /// Intelligence.ComeOnline gives a PathPlanner only to creatures marked mobile, and GetPath's
+    /// short-path branch calls entityIntelligence.PathPlanner.FindShortPathDirectly. So no hop had
+    /// ever run. Now the bird gets its planner here, the way ComeOnline makes one for a mobile
+    /// creature - and only once its side has a movement map for its kind, stance and way of moving,
+    /// which GetPath reads next; without one it simply stays where it is.
+    /// </summary>
+    public static bool MayHop(Entity entity)
+    {
+        if (!Enabled.On || entity?.EntityType == null || Array.IndexOf(HopperKeys, entity.EntityType.KeyName) < 0)
+        {
+            return false;
+        }
+        var intelligence = entity.Intelligence;
+        var maps = intelligence?.Allegiance?.SharedKnowledge?.PlaySiteKnowledge?.AllMovementMaps;
+        if (maps == null || !entity.IsOnPlaySite()
+            || !maps.TryGetValue(UWGame.SimSide.Maps.ProtectionLevel.Exposed, out var byType)
+            || !byType.TryGetValue(entity.EntityType, out var byStance)
+            || !byStance.TryGetValue(intelligence.ThreatStance, out var map)
+            || map?.GetCurrent()?.Layers == null
+            || !map.GetCurrent().Layers.ContainsKey(entity.GetTransportType()))
+        {
+            return false;
+        }
+        if (intelligence.PathPlanner == null)
+        {
+            intelligence.PathPlanner = new UWGame.SimSide.AI.Pathfinding.PathPlanner(entity);
+        }
+        return true;
+    }
 }
