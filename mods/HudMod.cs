@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework.Input;
 using UWGame.ClientSide.Interface;
+using UWGame.SimSide.Entities;
 
 namespace UWGame.Mods;
 
@@ -57,6 +58,63 @@ public static class HudMod
     /// <summary>The talk panel mode; read by TalkPanel.Update every frame.</summary>
     public static string TalkPanelMode() => TalkPanel.Value;
 
+    // ---- which markers show -------------------------------------------------------------------
+    //
+    // Kastuk, after the activity-line fix: markers of different colonists still overlap at random,
+    // "I guess only way is to hide layers of markers separately, like to hide only names. It need
+    // additional buttons in bottom menu of minimap markers." InGameInterface.RefreshEntityMarkers
+    // already sorts every marker into one of three kinds, so each gets a switch: NAMES (colonists
+    // and creatures - an Always marker on something with a mind), LABELS (an Always marker on
+    // anything else: fishing spots, arable plots, the port location) and STATUS (the ByStatus
+    // icons - problems and crafting). A selected entity always shows its marker.
+    //
+    // Phrased as HIDE so that off is the studio's game. They are rows in the overlay panel above
+    // the minimap (HUDOverlayPanel), kept in ModSettings.xml rather than the save.
+
+    private static readonly ModSetting[] hideMarkers = new ModSetting[3];
+
+    private static readonly string[] markerKeys = { "hideNames", "hideLabels", "hideStatus" };
+
+    private static readonly string[] markerLabels = { "HIDE NAMES ON THE MAP", "HIDE LABELS ON THE MAP", "HIDE STATUS ICONS ON THE MAP" };
+
+    private static readonly string[] markerRows = { "NAMES", "LABELS", "STATUS ICONS" };
+
+    private static readonly string[] markerTips =
+    {
+        "Colonist and creature names on the map. A selected one always shows its name.",
+        "Point-of-interest labels on the map: fishing spots, arable plots, the port location.",
+        "Status icons on the map - problems and what is being made.",
+    };
+
+    private static ModSetting HideMarker(int i) =>
+        hideMarkers[i] ?? (hideMarkers[i] = ModSettings.Toggle(ModId, markerKeys[i], markerLabels[i], defaultValue: false,
+            toolTip: markerTips[i] + " Also a row in the overlay panel above the minimap."));
+
+    public const int MarkerRowCount = 3;
+
+    public static string MarkerRowLabel(int i) => markerRows[i];
+
+    public static string MarkerRowToolTip(int i) => "Show " + markerTips[i].Substring(0, 1).ToLowerInvariant() + markerTips[i].Substring(1);
+
+    public static bool MarkerRowIsOn(int i) => !HideMarker(i).On;
+
+    /// <summary>From the overlay panel's checkbox: shown or not, saved at once like the developer rows.</summary>
+    public static void SetMarkerRow(int i, bool shown)
+    {
+        HideMarker(i).Value = shown ? "false" : "true";
+        ModSettings.Save(GameStateManagement.UnclaimedWorld.LogError);
+    }
+
+    /// <summary>Called from InGameInterface.RefreshEntityMarkers: whether this kind of marker may show.</summary>
+    public static bool ShowsMarker(EntityType type, bool byStatus)
+    {
+        if (byStatus)
+        {
+            return !HideMarker(2).On;
+        }
+        return type?.IntelligenceType != null ? !HideMarker(0).On : !HideMarker(1).On;
+    }
+
     private static ModSetting revealKey;
 
     /// <summary>The key held to show them. LeftAlt, as asked; rebindable in the KEYS section.</summary>
@@ -72,6 +130,10 @@ public static class HudMod
         _ = MarkersOnAltSetting;
         _ = RevealKey;
         _ = TalkPanel;
+        for (int i = 0; i < MarkerRowCount; i++)
+        {
+            _ = HideMarker(i);
+        }
     }
 
     /// <summary>Whether the click sites should leave the markers switch alone.</summary>

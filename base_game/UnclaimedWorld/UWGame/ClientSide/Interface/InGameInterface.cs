@@ -822,14 +822,15 @@ public class InGameInterface : CommonInterface
 				{
 					switch (data.EntityType.GetShowMarkerWindowMode())
 					{
+					// MOD: HudMod's NAMES / LABELS / STATUS ICONS rows in the overlay panel; all shown unless hidden.
 					case EntityType.ShowMarkerWindowMode.Always:
-						if (showOverlaysAndMarkerWindows)
+						if (showOverlaysAndMarkerWindows && UWGame.Mods.HudMod.ShowsMarker(data.EntityType, byStatus: false))
 						{
 							flag = true;
 						}
 						break;
 					case EntityType.ShowMarkerWindowMode.ByStatus:
-						if (showOverlaysAndMarkerWindows)
+						if (showOverlaysAndMarkerWindows && UWGame.Mods.HudMod.ShowsMarker(data.EntityType, byStatus: true))
 						{
 							if (data.IsTimeToShowStatusMarkerWindow())
 							{

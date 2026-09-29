@@ -112,8 +112,38 @@ public class HUDOverlayPanel : HUDWindow
 			}
 			UpdateSingleItemRow(value);
 		}
+		AddHudMarkerRows();
 		AddDeveloperOverlayRows();
 		grdSingleItems.EndAddingEntries();
+	}
+
+	/// <summary>HUD MOD: NAMES, LABELS and STATUS ICONS on the map, each its own row, beside the overlays.</summary>
+	private void AddHudMarkerRows()
+	{
+		for (int i = 0; i < UWGame.Mods.HudMod.MarkerRowCount; i++)
+		{
+			string key = "uwhud:" + i;
+			if (!grdSingleItems.EntriesByKey.TryGetValue(key, out var row))
+			{
+				row = AddSingleItemRow(key, UWGame.Mods.HudMod.MarkerRowLabel(i), null, UWGame.Mods.HudMod.MarkerRowToolTip(i), null, null, cbSelectHudMarkerRow_Click);
+			}
+			row.FindChildById<CheckBox>(UIComponent.DataControlID.Selector, out var check, firstLevelOnly: false);
+			if (check != null)
+			{
+				check.IsChecked = UWGame.Mods.HudMod.MarkerRowIsOn(i);
+			}
+		}
+	}
+
+	private void cbSelectHudMarkerRow_Click(UIComponent sender, EventArgs e)
+	{
+		CheckBox checkBox = (CheckBox)sender;
+		string key = sender.Tag1 as string;
+		if (key == null || !int.TryParse(key.Substring("uwhud:".Length), out int index))
+		{
+			return;
+		}
+		UWGame.Mods.HudMod.SetMarkerRow(index, checkBox.IsChecked);
 	}
 
 	private void PopulateSingleItemGridEditor()

@@ -21,6 +21,21 @@ public static class HudMod
 
     public static bool MarkersOnAlt => false;
 
+    public const int MarkerRowCount = 0;
+
+    public static string MarkerRowLabel(int i) => null;
+
+    public static string MarkerRowToolTip(int i) => null;
+
+    public static bool MarkerRowIsOn(int i) => true;
+
+    public static void SetMarkerRow(int i, bool shown)
+    {
+    }
+
+    /// <summary>Every marker the studio shows.</summary>
+    public static bool ShowsMarker(UWGame.SimSide.Entities.EntityType type, bool byStatus) => true;
+
     public const string TalkAlways = "always";
     public const string TalkWhenSpoken = "when someone speaks";
     public const string TalkHidden = "hidden";
