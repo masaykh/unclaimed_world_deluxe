@@ -53,7 +53,9 @@ public static class MagnificationMod
             ModId, "allowBelowOne", "ALLOW MAGNIFICATION BELOW 1.0", defaultValue: true,
             toolTip: "Lets the magnification slider go down to 0.5, which renders at a higher " +
                      "resolution than the window and scales down - a smaller interface and more " +
-                     "of the world on screen. It costs performance: 0.5 is four times the pixels."));
+                     "of the world on screen. It costs performance: 0.5 is four times the pixels. " +
+                     "Like magnification itself, switching it takes effect at the next start.",
+            takesEffectOnNextLoad: true));
 
     /// <summary>Whether to complain when the resulting draw area is too small for the interface.</summary>
     public static ModSetting WarnWhenTooSmall =>
@@ -85,14 +87,25 @@ public static class MagnificationMod
     /// </summary>
     public static int OptionsStepSize() => 5;
 
-    public static int OptionsFloorPercent()
-    {
-        if (!AllowBelowOne.On)
-        {
-            return 100;
-        }
-        return (int)(Minimum * 100f);
-    }
+    public static int OptionsFloorPercent() => OptionsFloorPercent(AllowBelowOne.On);
+
+    /// <summary>
+    /// The floor for a given state of the switch. The dialog asks with the state its checkbox
+    /// SHOWS, not the one in force: Kastuk switched the mod off with 0.8 set, and from then on the
+    /// dialog refused every OK ("at least 1") until the slider went back up by hand.
+    /// </summary>
+    public static int OptionsFloorPercent(bool allowBelowOne) => allowBelowOne ? (int)(Minimum * 100f) : 100;
+
+    /// <summary>
+    /// The switch as it stood when the magnification in force was set (Controller, at startup).
+    /// Magnification only changes at a restart, so the switch must too: read live, switching the
+    /// mod off mid-session made ZoomIsActive answer "no" for the 0.8 still in force, the scaled
+    /// render target was dropped, and the interface came out zoomed to an unreadable size (Kastuk,
+    /// with a screenshot).
+    /// </summary>
+    private static bool? allowBelowOneInForce;
+
+    private static bool AllowBelowOneInForce => allowBelowOneInForce ?? AllowBelowOne.On;
 
     /// <summary>
     /// The magnification to actually use, given what the options file asked for.
@@ -102,6 +115,7 @@ public static class MagnificationMod
     /// </summary>
     public static float Clamp(float wanted)
     {
+        allowBelowOneInForce = AllowBelowOne.On;
         if (!AllowBelowOne.On)
         {
             return Common.ClampBottom(wanted, 1f);
@@ -117,7 +131,7 @@ public static class MagnificationMod
     /// </summary>
     public static bool ZoomIsActive(float activeZoomFactor)
     {
-        if (!AllowBelowOne.On)
+        if (!AllowBelowOneInForce)
         {
             return activeZoomFactor > 1f;
         }

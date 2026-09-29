@@ -1054,12 +1054,18 @@ public class OptionsDialog : Panel
 		// MOD: the floor here was a hard 100, which refused every magnification below 1 no matter
 		// what the rest of the game allowed - so the slider could not reach what Options.xml could.
 		// With the mod off this is 100 and the message is the studio's, character for character.
-		int minZoomPercent = UWGame.Mods.MagnificationMod.OptionsFloorPercent();
+		//
+		// The floor is taken for the switch as its checkbox SHOWS - the state OK is about to save -
+		// and a slider below it is lifted to it rather than refused. Refusing trapped Kastuk: with
+		// 0.8 set and the mod switched off, every OK failed until the slider was moved by hand,
+		// and he could not tell why.
+		ModSetting allowBelowOne = ModSettings.Find(UWGame.Mods.MagnificationMod.ModId + ".allowBelowOne");
+		bool pendingAllowBelowOne = allowBelowOne != null && ModSetting.ParseBool(ReadModControl(allowBelowOne), false);
+		int minZoomPercent = UWGame.Mods.MagnificationMod.OptionsFloorPercent(pendingAllowBelowOne);
 		if ((float)fbZoom.Value < (float)minZoomPercent)
 		{
-			errorsAndMessages.ShowError("Magnification must be at least "
-				+ (0.01f * (float)minZoomPercent).ToString("0.##") + ".");
-			return false;
+			fbZoom.Value = minZoomPercent;
+			fbZoom.UpdateSliderPosition();
 		}
 		errorsAndMessages.Hide();
 		return true;

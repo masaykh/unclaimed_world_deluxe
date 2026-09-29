@@ -30,6 +30,8 @@ public static class MagnificationMod
         return 100;
     }
 
+    public static int OptionsFloorPercent(bool allowBelowOne) => 100;
+
     /// <summary>The studio's floor of 1, which is what their line did.</summary>
     public static float Clamp(float wanted)
     {
