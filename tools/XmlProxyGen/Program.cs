@@ -41,6 +41,9 @@ internal static class Program
             return 2;
         }
 
+        // Both sides are consts, so while they agree the compiler sees the body as unreachable
+        // (CS0162). That is the point: the body exists for the day someone renames one of them.
+#pragma warning disable CS0162
         if (CustomXmlSerializer.GeneratedProxyNamespace != ProxyNamespace)
         {
             Console.Error.WriteLine(
@@ -49,6 +52,7 @@ internal static class Program
                 $"'{ProxyNamespace}'. The runtime would not find the generated proxies.");
             return 1;
         }
+#pragma warning restore CS0162
 
         List<(Type Declaring, CustomXmlSerializer.XmlProxyData Data)> declared = Discover();
         Console.WriteLine($"==> {declared.Count} type(s) declare a _proxyData field");

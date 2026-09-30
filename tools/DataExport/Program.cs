@@ -504,11 +504,15 @@ internal static class Program
             Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
             if (!ok) failures++;
         }
+        // RatKey is a const: null in PestMod.Absent.cs, set in mods/PestMod.cs. Whichever build this
+        // is, one of the two branches is unreachable by construction, and CS0162 says so.
+#pragma warning disable CS0162
         if (UWGame.Mods.PestMod.RatKey == null)
         {
             Console.WriteLine("  the mod is not in this build - nothing to check");
             return 0;
         }
+#pragma warning restore CS0162
         var types = GameData.Instance.AllEntityTypes;
         Check(types.ContainsKey(UWGame.Mods.PestMod.RatKey) && types.ContainsKey(UWGame.Mods.PestMod.QuaditeKey),
               "entity:binalRat and entity:fieldQuadite are creatures in the table");

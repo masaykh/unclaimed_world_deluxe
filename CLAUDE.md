@@ -141,6 +141,7 @@ iteration. A gap in the automated gates is a gap that reaches players.
 | `tools/build/83-verify-debug-scenarios.sh` | every debug scenario fits the map it is registered against |
 | `tools/build/84-verify-user-scenarios.sh` | an exported scenario loads as a user scenario, and one with no tables is refused |
 | `tools/build/85-verify-no-dead-code.sh` | no unused private member, never-read field or unreachable branch outside `85-dead-code-allowlist.txt` |
+| `tools/build/86-verify-no-orphans.sh` | no Absent-stub member the core stopped calling, unnamed mod member, project entry for a missing file, or build script nothing mentions |
 | `tools/ContentProbe` | every asset loads on a real `GraphicsDevice` |
 
 **Three rules learned the hard way:**
@@ -156,6 +157,14 @@ iteration. A gap in the automated gates is a gap that reaches players.
    the asset probe, was packaged and shipped — then killed the game at startup, because the game
    does not reference SharpDX and loading content never touches MediaFoundation. When you find
    such a class of bug, add it to a gate rather than leaving it to somebody launching the game.
+
+**Dead code cascades — remove it in the same commit.** Deleting the last caller of something
+orphans it, and that orphans the next thing: the September sweep needed a fourth pass because
+three rounds of removals had each left new unused members behind. After removing a caller, rerun
+gates 85 and 86 and clear what they report before committing. Something kept on purpose goes in
+the allowlist **with a reason** (the gate refuses an entry without one); a guard on a const that
+differs per build gets `#pragma warning disable CS0162` and a comment at the site instead. The
+tools build with `-warnaserror`, in CI too: keep them at zero warnings.
 
 **Scope backend workarounds.** `#if UW_GL` / `#if UW_DX` exist for this. Two GL workarounds were
 applied to both targets, and one silently disabled the 4x MSAA the DirectX build requests.

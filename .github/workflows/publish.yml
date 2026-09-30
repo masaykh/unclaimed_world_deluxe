@@ -58,8 +58,8 @@ jobs:
       #                             here, under UwPlatform=GL.
       - name: Tools
         run: |
-          for p in tools/MgfxTranscode tools/ContentProbe; do
-            dotnet build "$p"/*.csproj -c Release -p:UwPlatform=GL
+          for p in tools/MgfxTranscode tools/ContentProbe tools/FontCoverage; do
+            dotnet build "$p"/*.csproj -c Release -p:UwPlatform=GL -warnaserror
           done
 
       # EVERY SHELL SCRIPT MUST PARSE.
@@ -98,6 +98,11 @@ jobs:
       # back. What is kept on purpose is listed, with the reason, in 85-dead-code-allowlist.txt.
       - name: No dead code
         run: sh tools/build/85-verify-no-dead-code.sh
+
+      # What no compiler warning sees: Absent-stub members the core stopped calling, mod members
+      # nothing names, project entries for missing files, build scripts nothing mentions.
+      - name: No orphans
+        run: sh tools/build/86-verify-no-orphans.sh
 
   # CORE DOES NOT DEPEND ON MODS, checked by deleting them.
   #

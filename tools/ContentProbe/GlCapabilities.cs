@@ -64,7 +64,7 @@ internal static class GlCapabilities
     private static string Str(int name)
     {
         IntPtr p = windows ? GlGetStringWin(name) : GlGetStringUnix(name);
-        return p == IntPtr.Zero ? "?" : Marshal.PtrToStringAnsi(p);
+        return p == IntPtr.Zero ? "?" : Marshal.PtrToStringAnsi(p) ?? "?";
     }
 
     private static int Int(int name)

@@ -1,0 +1,5 @@
+# Findings of tools/build/86-verify-no-orphans.sh kept on purpose.
+#
+#   <check>  <file>  <name>   # why
+#
+# check is stub, mod, item or script. A reason is required; an entry that no longer matches fails.

@@ -130,7 +130,7 @@ internal static class Program
         // probe the PRISTINE game content against a freshly built override - the combination that
         // actually ships. Probing a content folder that was converted in place proves nothing
         // about the override.
-        string overrideDir = null;
+        string? overrideDir = null;
         int ov = Array.IndexOf(args, "--override");
         if (ov >= 0 && ov + 1 < args.Length) overrideDir = Path.GetFullPath(args[ov + 1]);
 
@@ -201,7 +201,7 @@ internal static class Program
                 {
                     Console.WriteLine();
                     Console.WriteLine($"  !! {profile} FAILED before any asset was probed");
-                    for (Exception e = ex; e != null; e = e.InnerException)
+                    for (Exception? e = ex; e != null; e = e.InnerException)
                     {
                         Console.WriteLine($"     {e.GetType().Name}: {e.Message}");
                     }
@@ -233,7 +233,7 @@ internal static class Program
     private sealed class TeeWriter : System.IO.TextWriter
     {
         private readonly System.IO.TextWriter _console;
-        private readonly System.IO.StreamWriter _file;
+        private readonly System.IO.StreamWriter? _file;
 
         public TeeWriter(System.IO.TextWriter console, string path)
         {
@@ -257,13 +257,13 @@ internal static class Program
             _file?.Write(value);
         }
 
-        public override void Write(string value)
+        public override void Write(string? value)
         {
             _console.Write(value);
             _file?.Write(value);
         }
 
-        public override void WriteLine(string value)
+        public override void WriteLine(string? value)
         {
             _console.WriteLine(value);
             _file?.WriteLine(value);
@@ -289,11 +289,11 @@ internal static class Program
         private readonly GraphicsDeviceManager _gdm;
         private readonly string _contentDir;
         private readonly List<string> _probes;
-        private readonly string _overrideDir;
+        private readonly string? _overrideDir;
 
         public int Failures { get; private set; }
 
-        public Probe(string contentDir, List<string> probes, string overrideDir = null,
+        public Probe(string contentDir, List<string> probes, string? overrideDir = null,
                      GraphicsProfile profile = GraphicsProfile.HiDef)
         {
             _contentDir = contentDir;
@@ -428,7 +428,7 @@ internal static class Program
             // override folder is given that is the more reliable anchor: the content directory
             // may be somebody else's installation (the build gate points it at the pristine
             // Steam content, whose root has no animation in it).
-            string gameRoot = _overrideDir != null
+            string? gameRoot = _overrideDir != null
                 ? Directory.GetParent(_overrideDir)?.FullName
                 : Directory.GetParent(_contentDir)?.FullName;
             string path = Path.Combine(gameRoot ?? _contentDir, UWGame.Port.MenuAnimation.FileName);
@@ -491,7 +491,7 @@ internal static class Program
         private void ProbeEffectVersionCheck()
         {
 #if UW_HAVE_GAME
-            string gameRoot = _overrideDir != null
+            string? gameRoot = _overrideDir != null
                 ? Directory.GetParent(_overrideDir)?.FullName
                 : Directory.GetParent(_contentDir)?.FullName;
             if (gameRoot == null)
@@ -546,7 +546,7 @@ internal static class Program
             {
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
-                    VertexDeclaration declaration = part.VertexBuffer?.VertexDeclaration;
+                    VertexDeclaration? declaration = part.VertexBuffer?.VertexDeclaration;
                     if (declaration == null) continue;
                     string text = $"stride={declaration.VertexStride} " + string.Join(" ",
                         declaration.GetVertexElements().Select(e =>
@@ -713,7 +713,7 @@ internal static class Program
             if (m.Tag is System.Collections.Generic.Dictionary<string, object> tag)
             {
                 string keys = string.Join(",", tag.Keys.OrderBy(k => k, StringComparer.Ordinal));
-                if (tag.TryGetValue("SkinInfo", out object value) && value is SkinInfoCollection[] skins)
+                if (tag.TryGetValue("SkinInfo", out object? value) && value is SkinInfoCollection[] skins)
                 {
                     return $" tag=[{keys}] SkinInfo[{skins.Length}] bones-per-mesh=" +
                            string.Join("/", skins.Select(s => s == null ? "null" : s.Count.ToString())) +

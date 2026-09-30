@@ -32,6 +32,6 @@ IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Entities/RepairTypes/RepairPack
 # An ISnapshot goal; its constructor argument stays with the rest of the goal's state.
 IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalMoveAsGroup.cs  GoalMoveAsGroup.activity
 
-# --- Guards whose condition is a constant in this build but not in every build.
-CS0162  tools/DataExport/Program.cs  -     # PestMod.RatKey is null only when the mod is compiled out
-CS0162  tools/XmlProxyGen/Program.cs  -    # GeneratedProxyNamespace == ProxyNamespace until someone renames one of them
+# CS0162 on a guard whose condition is a const in one build and not another is not listed here:
+# it is silenced at the site with #pragma warning disable CS0162 and a comment saying why, so the
+# tools build with -warnaserror.

@@ -33,6 +33,19 @@ cd "$UW_REPO"
 
 ALLOW=tools/build/85-dead-code-allowlist.txt
 [ -f "$ALLOW" ] || { echo "missing $ALLOW"; exit 1; }
+
+# Every entry says why it is kept: a "# reason" on its own line, or a comment block above its
+# group (the lines since the last blank one). Checked before the slow part.
+unexplained=$(tr -d '\r' < "$ALLOW" | awk '
+  /^[[:space:]]*$/ { why = 0; next }
+  /^[[:space:]]*#/ { why = 1; next }
+  { if (!why && $0 !~ /#/) print "        " NR ": " $0 }')
+if [ -n "$unexplained" ]; then
+  echo "  FAIL  allowlist entries with no reason (add a # comment on the line or above its group):"
+  echo "$unexplained"
+  exit 1
+fi
+
 if [ -e .editorconfig ]; then
   echo "a root .editorconfig exists; this gate writes its own and will not overwrite yours"
   exit 1
@@ -45,14 +58,24 @@ printf 'root = true\n[*.cs]\ndotnet_diagnostic.IDE0051.severity = warning\ndotne
 # GL builds everywhere, so CI (ubuntu) can run this. DX is added on Windows, which is the only
 # place it builds: code under #if UW_DX is then checked too. The findings of both are merged, so
 # an allowlist entry needs to match in only one of them.
+# Off Windows, a tool that targets only net8.0-windows (DataExport, XmlProxyGen) is skipped: it
+# does not build there, and it is checked on every Windows run.
 case "$(uname -s)" in
-  MINGW*|MSYS*|CYGWIN*) PLATFORMS="${UW_DEADCODE_PLATFORMS:-GL DX}" ;;
-  *)                    PLATFORMS="${UW_DEADCODE_PLATFORMS:-GL}" ;;
+  MINGW*|MSYS*|CYGWIN*) PLATFORMS="${UW_DEADCODE_PLATFORMS:-GL DX}"; WINDOWS=1 ;;
+  *)                    PLATFORMS="${UW_DEADCODE_PLATFORMS:-GL}";    WINDOWS=0 ;;
 esac
+PROJECTS=base_game/UnclaimedWorld/UnclaimedWorld.csproj
+for proj in tools/*/*.csproj; do
+  if [ $WINDOWS -eq 0 ] && ! grep -q '<TargetFramework>net[0-9.]*</TargetFramework>' "$proj"; then
+    echo "  --    $proj: Windows-only, skipped"
+    continue
+  fi
+  PROJECTS="$PROJECTS $proj"
+done
 
 echo "==> dead-code check ($PLATFORMS)"
 for platform in $PLATFORMS; do
-  for proj in base_game/UnclaimedWorld/UnclaimedWorld.csproj tools/*/*.csproj; do
+  for proj in $PROJECTS; do
     echo "  building $proj ($platform)"
     "$DOTNET" build "$proj" -c Release -p:UwPlatform=$platform -p:EnforceCodeStyleInBuild=true \
       -p:TreatWarningsAsErrors=false --no-incremental -v q -nologo >> "$WORK/build.log" 2>&1 || {
