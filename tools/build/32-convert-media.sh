@@ -23,10 +23,23 @@ set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
 
-FFMPEG=$(command -v ffmpeg 2>/dev/null || true)
+# WHERE FFMPEG IS LOOKED FOR, in order: $FFMPEG if you set it; artifacts/tools/ffmpeg/ inside this
+# checkout; PATH; a WinGet install. artifacts/ is git-ignored, so an ffmpeg unpacked there once is
+# kept across every pull and every build - Kastuk had to fetch and extract it again for each build,
+# "extraction is longer than downloading".
+LOCAL_FFMPEG_DIR="$UW_REPO/artifacts/tools/ffmpeg"
+FFMPEG=${FFMPEG:-}
+[ -n "$FFMPEG" ] && [ ! -x "$FFMPEG" ] && [ ! -f "$FFMPEG" ] && FFMPEG=""
+[ -n "$FFMPEG" ] || FFMPEG=$(find "$LOCAL_FFMPEG_DIR" \( -name 'ffmpeg.exe' -o -name 'ffmpeg' \) -type f 2>/dev/null | head -1)
+[ -n "$FFMPEG" ] || FFMPEG=$(command -v ffmpeg 2>/dev/null || true)
 [ -n "$FFMPEG" ] || FFMPEG=$(find "/c/Users/$USERNAME/AppData/Local/Microsoft/WinGet/Packages" -name 'ffmpeg.exe' 2>/dev/null | head -1)
 [ -n "$FFMPEG" ] || FFMPEG=$(find /c/Users/*/AppData/Local/Microsoft/WinGet/Packages -name 'ffmpeg.exe' 2>/dev/null | head -1)
-[ -n "$FFMPEG" ] || { echo "FATAL: ffmpeg not found. Install with: winget install Gyan.FFmpeg" >&2; exit 1; }
+[ -n "$FFMPEG" ] || {
+  echo "FATAL: ffmpeg not found." >&2
+  echo "  Put it where every later build finds it - inside this checkout, untouched by git pull:" >&2
+  echo "      $LOCAL_FFMPEG_DIR/   (the whole unpacked folder, or just ffmpeg.exe)" >&2
+  echo "  or install it (winget install Gyan.FFmpeg), or export FFMPEG=/path/to/ffmpeg.exe" >&2
+  exit 1; }
 echo "==> ffmpeg: $FFMPEG"
 
 # The pristine install first (UW_STEAM), as 60-package-gl.sh already requires; the deployed working

@@ -148,10 +148,28 @@ public class Tooltip : HUDWindow
 				tooltip.Hide();
 			}
 		}
-		else if (tooltip is Tooltip tooltip2 && tooltip2.tooltipAnchor.TooltipExpires && tooltip.DisplayWindow.IsVisibleAndActive && timePassed > 7.0)
+		else if (tooltip is Tooltip tooltip2 && Expires(tooltip2.tooltipAnchor) && tooltip.DisplayWindow.IsVisibleAndActive && timePassed > 7.0)
 		{
 			tooltip.Hide();
 		}
+	}
+
+	/// <summary>
+	/// PORT FIX: whether a tooltip times out, asked of the control AND the controls it sits in. A
+	/// checkbox or a combo box is several components, and the one under the cursor - the anchor - is
+	/// usually an inner part that still expires; so TooltipExpires = false on the control itself
+	/// changed nothing, and the MODS tooltips still vanished after 7 s (Kastuk).
+	/// </summary>
+	private static bool Expires(UIComponent anchor)
+	{
+		for (UIComponent c = anchor; c != null; c = c.Parent)
+		{
+			if (!c.TooltipExpires)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static void ShowTooltip(InputData inputData, UIComponent tooltipAnchor, Tooltip standardTooltip)

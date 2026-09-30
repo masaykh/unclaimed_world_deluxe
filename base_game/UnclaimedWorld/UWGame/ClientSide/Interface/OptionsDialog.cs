@@ -799,33 +799,40 @@ public class OptionsDialog : Panel
 	private int categoryChoiceWidth;
 
 	/// <summary>
-	/// One of three widths for a category's dropdowns, from its longest choice. Kastuk: DANGEROUS
-	/// FAUNA's "x1.5" sat in a box as wide as SAVE DATE FORMAT's longest date pattern, which pushed
-	/// every one onto a line of its own. Short values get a short box beside their caption.
+	/// The width of a category's dropdowns: its longest choice as the LCD font draws it, plus the
+	/// arrow button (as wide as the box is tall) and the text box's margins. Kastuk: DANGEROUS
+	/// FAUNA's "x1.5" sat in a box as wide as SAVE DATE FORMAT's longest pattern; then, with widths
+	/// guessed from character counts, PESTS' "Normal" slid under the arrow. Measured, both fit.
 	/// </summary>
-	private static int ChoiceWidthFor(List<ModSetting> settings, int panelWidth)
+	private int ChoiceWidthFor(List<ModSetting> settings, int panelWidth)
 	{
 		int longest = 0;
+		Label probe = null;
 		foreach (ModSetting s in settings)
 		{
-			if (s.Kind == ModSettingKind.Choice && s.Choices != null)
+			if (s.Kind != ModSettingKind.Choice || s.Choices == null)
 			{
-				foreach (string choice in s.Choices)
+				continue;
+			}
+			foreach (string choice in s.Choices)
+			{
+				if (probe == null)
 				{
-					longest = Math.Max(longest, choice?.Length ?? 0);
+					probe = new Label(Interface.gui);
+					probe.Init(Label.LabelType.LCDNormal);
 				}
+				probe.Text = choice ?? "";
+				probe.FitToText();
+				longest = Math.Max(longest, probe.Width);
 			}
 		}
 		int full = Math.Max(80, panelWidth - 124 - 4);
-		if (longest <= 6)
+		if (longest == 0)
 		{
-			return Math.Min(full, 70);
+			return full;
 		}
-		if (longest <= 14)
-		{
-			return Math.Min(full, 120);
-		}
-		return full;
+		const int arrowAndMargins = 22 + 14;
+		return Common.Clamp(longest + arrowAndMargins, 60, full);
 	}
 
 	/// <summary>One setting's row inside a category; returns the Y below it.</summary>
