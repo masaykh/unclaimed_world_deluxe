@@ -971,7 +971,8 @@ public class GameWorldRenderer
 	public static bool GetIsInGodMode()
 	{
 		bool result = false;
-		if (The.Sim.Mode == Sim.EngineMode.Edit)
+		// MOD: UnhiddenMod's SHOW ALL OF A TEST MAP draws a TEST MAP the way the editor does.
+		if (The.Sim.Mode == Sim.EngineMode.Edit || (UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.RevealsTestMap))
 		{
 			result = true;
 		}

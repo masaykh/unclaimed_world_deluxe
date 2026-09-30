@@ -188,6 +188,40 @@ public static class UnhiddenMod
             toolTip: "Reserved for whatever is being tried out in this build. Off in a release.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
+    private static ModSetting mapEditorButtons;
+
+    private static ModSetting revealTestMap;
+
+    /// <summary>
+    /// Whether the main menu shows EDIT and TEST MAP (MainMenuPanel). Kastuk: they should be a
+    /// switch in the mod settings, not only a compile-time choice. Interface only.
+    /// </summary>
+    public static ModSetting MapEditorButtons =>
+        mapEditorButtons ?? (mapEditorButtons = ModSettings.Toggle(
+            ModId, "mapEditorButtons", "MAP EDITOR BUTTONS", defaultValue: true,
+            toolTip: "Shows EDIT and TEST MAP on the main menu: the studio's map editor, and a map " +
+                     "played with no colonists on it. Takes effect the next time the main menu opens."));
+
+    /// <summary>
+    /// Whether a map played through TEST MAP is shown whole: no fog of war, no black unexplored
+    /// ground. Kastuk: "TEST is not really useful without visible ground". A test map has no
+    /// colonists, so nothing ever sees any of it. Drawing only - GameWorldRenderer.GetIsInGodMode,
+    /// the studio's own switch for the editor, which the renderer, minimap and resource icons
+    /// already honour; FogMap follows it. What the simulation knows is unchanged.
+    /// </summary>
+    public static ModSetting RevealTestMap =>
+        revealTestMap ?? (revealTestMap = ModSettings.Toggle(
+            ModId, "revealTestMap", "SHOW ALL OF A TEST MAP", defaultValue: true,
+            toolTip: "A map opened with TEST MAP is drawn whole, as in the editor: no fog of war and " +
+                     "no black unexplored ground. Ordinary games are not affected."));
+
+    /// <summary>True while playing a TEST MAP with <see cref="RevealTestMap"/> on.</summary>
+    public static bool RevealsTestMap =>
+        RevealTestMap.On
+        && The.Sim != null
+        && The.Sim.Mode == UWGame.SimSide.Sim.EngineMode.Game
+        && The.Sim.StartGameParams?.StartGameEditorParams != null;
+
     /// <summary>The prefix its settings carry in the file and in save signatures.</summary>
     public const string ModId = "unhidden";
 
@@ -206,6 +240,8 @@ public static class UnhiddenMod
         _ = Culture;
         _ = Experimental;
         _ = ShadowsKey;
+        _ = MapEditorButtons;
+        _ = RevealTestMap;
     }
 
     /// <summary>

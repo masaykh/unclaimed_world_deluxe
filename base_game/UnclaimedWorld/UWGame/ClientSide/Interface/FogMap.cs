@@ -90,13 +90,16 @@ public class FogMap
 		TerrainTile[][] tileMap = The.Map.TileMap;
 		Color color = Color.Black * The.MapUI.FogOfWarTint;
 		float fogOfWarFadeRate = The.MapUI.FogOfWarFadeRate;
+		// MOD: no fog where the renderer draws everything (UnhiddenMod's SHOW ALL OF A TEST MAP).
+		// The editor never has a FogMap; a revealed test map has one that is kept clear.
+		bool godMode = UWGame.ClientSide.Map.GameWorldRenderer.GetIsInGodMode();
 		for (int i = 0; i < mapHeight; i++)
 		{
 			int num = i * mapWidth;
 			for (int j = 0; j < mapWidth; j++)
 			{
 				TerrainTile terrainTile = tileMap[j][i];
-				Color value = (terrainTile.HasEverBeenSeenByPlayer ? ((!terrainTile.AllegiancesThatSeeThisTile.Contains(uIAllegiance)) ? color : Color.Transparent) : Color.Black);
+				Color value = godMode ? Color.Transparent : (terrainTile.HasEverBeenSeenByPlayer ? ((!terrainTile.AllegiancesThatSeeThisTile.Contains(uIAllegiance)) ? color : Color.Transparent) : Color.Black);
 				mapTextureColors[num + j] = Color.Lerp(mapTextureColors[num + j], value, fogOfWarFadeRate);
 			}
 		}

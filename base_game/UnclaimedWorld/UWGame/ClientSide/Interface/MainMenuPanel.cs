@@ -100,7 +100,8 @@ public class MainMenuPanel : Panel
 		// The coordinates are the patch's own: they fill the empty slot at y=76 directly above
 		// OPTIONS, two 59px buttons where one 106px one would go. Not num2, which by this point
 		// has advanced to the CREDITS/EXIT column and would stack them under CREDITS.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
+		// Switchable in MODS -> UNHIDDEN MOD, MAP EDITOR BUTTONS (Kastuk).
+		if (UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.MapEditorButtons.On)
 		{
 			TextButton textButton6 = new TextButton(Interface.gui);
 			Window.Add(textButton6);

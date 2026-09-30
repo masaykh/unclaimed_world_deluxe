@@ -47,6 +47,13 @@ public static class UnhiddenMod
     public static readonly ModSetting CapResourceRespawn =
         new ModSetting(ModId, "capResourceRespawn", ModSettingKind.Toggle, "false");
 
+    /// <summary>Kept because MainMenuPanel reads it behind <see cref="Enabled"/>. Never registered, always off.</summary>
+    public static readonly ModSetting MapEditorButtons =
+        new ModSetting(ModId, "mapEditorButtons", ModSettingKind.Toggle, "false");
+
+    /// <summary>No test map is revealed: without the mod there is no TEST MAP button to open one.</summary>
+    public static bool RevealsTestMap => false;
+
     /// <summary>The prefix the mod's settings would carry, for the stub above.</summary>
     public const string ModId = "unhidden";
 
