@@ -7,7 +7,6 @@ namespace UWGame.ClientSide.Screens;
 
 public class LoseGamePanel : Panel
 {
-	private Box display;
 
 	private LCDScreen lcdScreen;
 
@@ -33,7 +32,7 @@ public class LoseGamePanel : Panel
 	public LoseGamePanel(LoseGameInterface intf, Point position)
 		: base(intf, "GAME END", position, Dimensions, Level.Dialogs)
 	{
-		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(intf, Window, 52, new Point(16, MarginTop), out display, out lcdSurface, ref lcdScreen);
+		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(intf, Window, 52, new Point(16, MarginTop), out _, out lcdSurface, ref lcdScreen);
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: false);
 		Panel.CreateTextArea(intf, ref area, surfaceGrid);
 		TextButton textButton = new TextButton(Interface.gui);

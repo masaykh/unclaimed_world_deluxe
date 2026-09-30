@@ -124,8 +124,6 @@ public class Client : GameScreen
 
 	private float desiredSleepAmount;
 
-	private int frameCount;
-
 	public bool MapHasMoved = true;
 
 	public static Dictionary<string, Rectangle?[,]> AllConnectedGroundSprites = new Dictionary<string, Rectangle?[,]>();
@@ -426,7 +424,6 @@ public class Client : GameScreen
 		bool limitFramerateWhenPaused = base.Controller.Options.LimitFramerateWhenPaused;
 		if (base.IsActive)
 		{
-			frameCount++;
 			GameTime = gameTime;
 			if (!BeginRunWasCalled)
 			{

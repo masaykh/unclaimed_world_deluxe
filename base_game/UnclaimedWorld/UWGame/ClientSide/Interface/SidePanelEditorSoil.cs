@@ -20,10 +20,6 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 
 	private Label lblStatusInfo2;
 
-	private CollapsablePanel cpSoil;
-
-	private CollapsablePanel cpVegetation;
-
 	private Grid grdSoil;
 
 	private Grid grdVegetation;
@@ -32,20 +28,14 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 
 	private RenderedTerrainType SelectedType;
 
-	private static char[] stopChars = new char[11]
-	{
-		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		'_'
-	};
-
 	public SidePanelEditorSoil()
 		: base(The.InGameUI.sidePanelFullHeight, isInfoPanel: true)
 	{
 		int value = 20;
 		outerGrid = RosterPanel.CreateOuterGridForCollapsableLists(The.InGameUI.gui, lcdSurface, 150);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Soil", value, out cpSoil, out grdSoil);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Soil", value, out _, out grdSoil);
 		grdSoil.SelectedChanged += grdSoil_SelectedChanged;
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Vegetation", value, out cpVegetation, out grdVegetation);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Vegetation", value, out _, out grdVegetation);
 		grdVegetation.SelectedChanged += grdVegetation_SelectedChanged;
 		PopulateGrid();
 		InitStatusContentPanel();

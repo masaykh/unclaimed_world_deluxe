@@ -54,7 +54,6 @@ public class InventoryPanel : RosterPanel
 		public List<EntityID> UnavailableEntities;
 	}
 
-	private Expedition expedition;
 	public const int DefaultStocksMaxValue = 5;
 
 	public const int MaxStockOrder = 99;
@@ -137,7 +136,6 @@ public class InventoryPanel : RosterPanel
 	public InventoryPanel()
 		: base("PRODUCTION", 555, needBottomMarginForButtons: false)
 	{
-		expedition = The.Sim.PlaySite.GetFirstPlayerExpedition();
 		encyclopediaTint = "#636D8C".ColorFromHex();
 		encyclopediaTint.A = 160;
 		if (GameData.Instance.GUIConstants.EnableFilters)

@@ -20,7 +20,6 @@ namespace UWGame.ClientSide.Interface;
 public class Minimap
 {
 	private Image displayDust;
-	private Box frame;
 
 	public Window DisplayWindow;
 
@@ -58,10 +57,6 @@ public class Minimap
 
 	private bool draggingInMap;
 
-	private int screenWidth;
-
-	private int screenHeight;
-
 	private bool frameIsDirty;
 
 	private bool settingsAreDirty;
@@ -72,8 +67,6 @@ public class Minimap
 	{
 		int num = screenHeight + StatusScreen.GetPlasticFrameHeight();
 		int width = GetWidth(screenWidth);
-		this.screenWidth = screenWidth;
-		this.screenHeight = screenHeight;
 		GUIManager gui = The.InGameUI.gui;
 		int cornerSize = 30;
 		DisplayWindow = new Window(gui);
@@ -123,7 +116,7 @@ public class Minimap
 		{
 			The.InGameUI.DisplayPanelRenderer.AddCRT(minimap, new Point(minimap.AbsolutePosition.X, minimap.AbsolutePosition.Y), minimap.Width, minimap.Height, Level.Bottom, DisplayWindow, ReflectionToUse.Small, isMonochrome: false);
 		}
-		StatusScreen.AddCRTPlasticFrame(gui, DisplayWindow, minimap.Position, minimap.Width, minimap.Height, out frame);
+		StatusScreen.AddCRTPlasticFrame(gui, DisplayWindow, minimap.Position, minimap.Width, minimap.Height, out _);
 		DrawMapTexture();
 		Show();
 	}

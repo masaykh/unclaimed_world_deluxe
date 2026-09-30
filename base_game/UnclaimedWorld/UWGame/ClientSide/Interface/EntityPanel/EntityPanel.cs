@@ -33,8 +33,6 @@ public class EntityPanel : ExpandedPanel
 
 	private Label lblFullPanelTitle;
 
-	private TabButtonPanel.Layout tabLayout;
-
 	public Entity SelectedEntity
 	{
 		get
@@ -55,7 +53,6 @@ public class EntityPanel : ExpandedPanel
 		: base("", intf, pos, dimensions, level, includeCables)
 	{
 		HasCRT = true;
-		this.tabLayout = tabLayout;
 		entityCRTContent = new EntityCRTContent(intf.gui, this, framedCRT);
 		int num = 0;
 		HalfPanel.Hide();

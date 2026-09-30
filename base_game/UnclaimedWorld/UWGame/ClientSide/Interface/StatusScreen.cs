@@ -7,7 +7,6 @@ namespace UWGame.ClientSide.Interface;
 public class StatusScreen
 {
 	public Window DisplayWindow;
-	private Box plasticEdge;
 
 	public const int HeightOfStatusImage = 130;
 
@@ -63,7 +62,7 @@ public class StatusScreen
 		DisplayWindow.Show();
 		DisplayWindow.DebugTag = "tvpanel";
 		Point point = new Point(20, 20);
-		AddCRTPlasticFrame(gui, DisplayWindow, point, crtWidth, crtHeight, out plasticEdge);
+		AddCRTPlasticFrame(gui, DisplayWindow, point, crtWidth, crtHeight, out _);
 		Image image = Panel.AddDust(gui, DisplayWindow);
 		image.RenderType = RenderType.Overlay;
 		image.DebugTag = "event_dust";

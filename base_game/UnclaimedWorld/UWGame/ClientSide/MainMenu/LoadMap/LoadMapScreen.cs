@@ -17,15 +17,12 @@ public class LoadMapScreen : GameScreen
 
 	private Sim.EngineMode gameMode;
 
-	private bool isTestingGame;
-
 	private InputData frameInput;
 
 	public LoadMapScreen(Controller screenManager, Sim.EngineMode gameMode, bool isTestingGame = false)
 	{
 		intf = new LoadMapInterface(this, screenManager.Game);
 		this.gameMode = gameMode;
-		this.isTestingGame = isTestingGame;
 		frameInput = screenManager.InputData;
 	}
 

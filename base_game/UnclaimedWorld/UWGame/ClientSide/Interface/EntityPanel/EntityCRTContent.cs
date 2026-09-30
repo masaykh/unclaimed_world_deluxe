@@ -15,8 +15,6 @@ public class EntityCRTContent
 
 	private GUIManager gui;
 
-	private EntityPanel entityPanel;
-
 	private FramedCRT framedCRT;
 
 	private Dictionary<EntityType, Entity> screenModels = new Dictionary<EntityType, Entity>();
@@ -112,7 +110,6 @@ public class EntityCRTContent
 	public EntityCRTContent(GUIManager gui, EntityPanel entityPanel, FramedCRT framedCRT)
 	{
 		this.gui = gui;
-		this.entityPanel = entityPanel;
 		this.framedCRT = framedCRT;
 		crtContent = framedCRT.GetNewSurfaceContent();
 		InitModelRenderer();

@@ -34,8 +34,6 @@ internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 
 	private bool hasReachedArea;
 
-	private float sampleDistance = 100f;
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public double TimeSpentInTopLevelGoal { get; set; }
@@ -56,7 +54,6 @@ internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 
 	protected override void Activate()
 	{
-		sampleDistance = 100f;
 		base.Status = Status.Active;
 		RemoveAllSubgoals();
 		job.TakeJob(entity);
@@ -190,7 +187,6 @@ internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 		}
 		else
 		{
-			sampleDistance *= 1.5f;
 			AddSubgoal(new GoalSearchArea(entity, job.Zone, ownersOfVehicles, isStealthy: false, examine: false));
 		}
 	}

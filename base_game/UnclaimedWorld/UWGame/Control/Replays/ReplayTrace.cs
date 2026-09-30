@@ -75,8 +75,6 @@ public sealed class ReplayTrace : IDisposable
 
     private int ringNext;
 
-    private long drawsThisFrame;
-
     private long drawsTotal;
 
     private ulong hash = 14695981039346656037uL;
@@ -195,7 +193,6 @@ public sealed class ReplayTrace : IDisposable
     /// </summary>
     public void Draw(string label)
     {
-        drawsThisFrame++;
         drawsTotal++;
 
         string text = label ?? string.Empty;
@@ -234,8 +231,6 @@ public sealed class ReplayTrace : IDisposable
 
         string line = string.Create(CultureInfo.InvariantCulture,
             $"{frameIndex}\t{drawsTotal}\t{hash:x16}\t{world.RepresentativeEntityLocation.X:R}\t{world.RepresentativeEntityLocation.Y:R}\t{world.MapWindowLocation.X:R}\t{world.MapWindowLocation.Y:R}\t{simDays:R}\t{simState}");
-
-        drawsThisFrame = 0;
 
         if (writer != null)
         {

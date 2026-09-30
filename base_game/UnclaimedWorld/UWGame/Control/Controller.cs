@@ -86,12 +86,6 @@ public class Controller : DrawableGameComponent
 	private UnclaimedWorld game;
 	public object UpdateScreensLock = new object();
 
-	private RasterizerState rasterizerSampleClosest = new RasterizerState
-	{
-		CullMode = CullMode.None,
-		FillMode = FillMode.WireFrame
-	};
-
 	public float ActiveZoomFactor { get; private set; }
 
 	/// <summary>MOD: the too-small-screen warning is reported once, not on every device reset.</summary>

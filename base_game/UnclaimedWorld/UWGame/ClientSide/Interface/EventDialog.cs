@@ -26,7 +26,6 @@ public class EventDialog : Panel
 	private TextArea area;
 
 	private Image image;
-	private Box display;
 
 	private Box crtPlasticEdge;
 
@@ -39,8 +38,6 @@ public class EventDialog : Panel
 	private TextButton[] buttons = new TextButton[4];
 
 	private List<TextButton> buttonsOnForm = new List<TextButton>();
-
-	private Mode mode;
 
 	public string Text
 	{
@@ -64,7 +61,7 @@ public class EventDialog : Panel
 	public EventDialog(CommonInterface intf)
 		: base(intf, null, Point.Zero, new Vector2(786f, 308f), Level.EventDialog, PanelType.EventDialog)
 	{
-		FullLCDPanel.AddLCDPanel(intf, Window, new Point(14, 46), 465, 215, out display, out lcdSurface, ref lcdScreen);
+		FullLCDPanel.AddLCDPanel(intf, Window, new Point(14, 46), 465, 215, out _, out lcdSurface, ref lcdScreen);
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: false);
 		area = new TextArea(intf.gui, ListBoxType.LCD);
 		area.RenderType = RenderType.CRTAndLCD;
@@ -172,7 +169,6 @@ public class EventDialog : Panel
 	{
 		FillImageAndText(imageName, heading, text);
 		dialogOptions = null;
-		this.mode = mode;
 		RemoveButtons();
 		if (showOkButton)
 		{
@@ -191,7 +187,6 @@ public class EventDialog : Panel
 	{
 		FillImageAndText(imageName, heading, text);
 		dialogOptions = dialogButtons;
-		this.mode = mode;
 		if (this.ButtonClicked != null)
 		{
 			Delegate[] invocationList = this.ButtonClicked.GetInvocationList();

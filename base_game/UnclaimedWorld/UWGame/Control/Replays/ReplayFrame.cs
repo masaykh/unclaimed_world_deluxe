@@ -16,8 +16,6 @@ public class ReplayFrame
 	public ReplayVerificationData RecordedVerificationData = new ReplayVerificationData();
 	private static Dictionary<Keys, bool> keyStates;
 
-	private List<Keys> changedKeys = new List<Keys>();
-
 	static ReplayFrame()
 	{
 		keyStates = new Dictionary<Keys, bool>();
@@ -35,7 +33,6 @@ public class ReplayFrame
 	{
 		GameTime = gameTime;
 		InitMouseState(mouseX, mouseY, leftButtonDown, rightButtonDown);
-		this.changedKeys = changedKeys;
 	}
 
 	public void LoadFrame(BinaryFileReader replayReader)

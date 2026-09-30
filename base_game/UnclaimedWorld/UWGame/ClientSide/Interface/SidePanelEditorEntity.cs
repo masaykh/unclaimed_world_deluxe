@@ -20,10 +20,6 @@ public class SidePanelEditorEntity : RosterPanel
 
 	private Label lblStatusInfo2;
 
-	private CollapsablePanel cpTerrain;
-
-	private CollapsablePanel cpTrees;
-
 	private Grid terrainGrid;
 
 	private Grid treeGrid;
@@ -63,9 +59,9 @@ public class SidePanelEditorEntity : RosterPanel
 	{
 		int value = 20;
 		outerGrid = RosterPanel.CreateOuterGridForCollapsableLists(The.InGameUI.gui, lcdSurface);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Terrain", value, out cpTerrain, out terrainGrid);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Terrain", value, out _, out terrainGrid);
 		terrainGrid.SelectedChanged += terrainGrid_SelectedChanged;
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Trees", value, out cpTrees, out treeGrid);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Trees", value, out _, out treeGrid);
 		treeGrid.SelectedChanged += treeGrid_SelectedChanged;
 		PopulateGrid();
 		InitStatusContentPanel();

@@ -14,8 +14,6 @@ public class PersonnelDialog : Panel
 
 	private UIComponent lcdSurface;
 
-	private Box display;
-
 	private PersonnelList PersonnelList;
 
 	private ErrorAndMessagePanel errorAndMessagePanel;
@@ -31,7 +29,7 @@ public class PersonnelDialog : Panel
 	public PersonnelDialog(CommonInterface intf, Point position)
 		: base(intf, "", position, new Vector2(468f, 500f), Level.StackedDialogs)
 	{
-		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out display, out lcdSurface, ref lcdScreen);
+		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out _, out lcdSurface, ref lcdScreen);
 		errorAndMessagePanel = new ErrorAndMessagePanel(lcdSurface);
 		PersonnelList = new PersonnelList(intf, lcdSurface, showSelectors: true, errorAndMessagePanel.Height, isRoster: false);
 		btOK = AddLowerButton("OK", "Accepts the order and closes the dialog.", Align.Left);

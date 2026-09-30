@@ -76,66 +76,6 @@ public class Snapshotter
 		public TypeInformation[] TupleTypeArguments;
 	}
 
-	private class SnapshotClassVerification
-	{
-		public Type Type;
-
-		public bool IsVerified;
-
-		public List<FieldInfo> Fields = new List<FieldInfo>();
-
-		public Dictionary<Type, List<FieldInfo>> FieldsByType = new Dictionary<Type, List<FieldInfo>>();
-
-		public Dictionary<Type, int> TypesUnaccountedFor = new Dictionary<Type, int>();
-
-		public Dictionary<Type, int> PostponedTypes = new Dictionary<Type, int>();
-
-		public SnapshotClassVerification(Type snapshotType)
-		{
-			Type = snapshotType;
-			BindingFlags bindingFlags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-			FieldInfo[] fieldInfosIncludingBaseClasses = GetFieldInfosIncludingBaseClasses(snapshotType, bindingFlags);
-			for (int num = fieldInfosIncludingBaseClasses.Length - 1; num >= 0; num--)
-			{
-				FieldInfo fieldInfo = fieldInfosIncludingBaseClasses[num];
-				int value = 0;
-				if (fieldInfo.FieldType != typeof(Version) && fieldInfo.FieldType != typeof(Regulator) && fieldInfo.FieldType != typeof(Renderable) && !fieldInfo.IsLiteral && !fieldInfo.Name.Contains("IsSnapshotted") && !fieldInfo.Name.Contains("CachedAnonymousMethod"))
-				{
-					Type fieldType = fieldInfo.FieldType;
-					Fields.Add(fieldInfo);
-					if (!TypesUnaccountedFor.TryGetValue(fieldType, out value))
-					{
-						TypesUnaccountedFor.Add(fieldType, 1);
-					}
-					else
-					{
-						value++;
-						TypesUnaccountedFor[fieldType] = value;
-					}
-					Common.AddToMultiList(FieldsByType, fieldType, fieldInfo);
-				}
-			}
-		}
-
-	}
-
-	private class FieldInfoComparer : IEqualityComparer<FieldInfo>
-	{
-		public bool Equals(FieldInfo x, FieldInfo y)
-		{
-			if (x.DeclaringType == y.DeclaringType)
-			{
-				return x.Name == y.Name;
-			}
-			return false;
-		}
-
-		public int GetHashCode(FieldInfo obj)
-		{
-			return obj.Name.GetHashCode() ^ obj.DeclaringType.GetHashCode();
-		}
-	}
-
 	private CRC CRC = new CRC();
 
 	private BinaryWriter m_writer;
@@ -145,10 +85,6 @@ public class Snapshotter
 	private static bool snapshotting;
 
 	public Mode mode;
-
-	private Dictionary<Type, SnapshotClassVerification> snapshotClasses;
-
-	private Stack<SnapshotClassVerification> snapshotClassesBeingVerified = new Stack<SnapshotClassVerification>();
 
 	private Dictionary<Type, int> allSnapshottedISnapshots = new Dictionary<Type, int>();
 
@@ -206,7 +142,6 @@ public class Snapshotter
 		m_writer = writer;
 		m_reader = null;
 		snapshotting = true;
-		snapshotClasses = new Dictionary<Type, SnapshotClassVerification>();
 		allSnapshottedISnapshots.Clear();
 		if (snapShotHeader)
 		{
@@ -227,7 +162,6 @@ public class Snapshotter
 		m_reader = reader;
 		m_writer = null;
 		snapshotting = true;
-		snapshotClasses = new Dictionary<Type, SnapshotClassVerification>();
 		SnapshotHeader snapshotHeader = (SnapshotHeader)DoISnapshot<SnapshotHeader>(null);
 		Controller controller = The.Sim.Controller;
 		int indexOfScreen = controller.GetIndexOfScreen(The.Sim);
@@ -263,7 +197,6 @@ public class Snapshotter
 		m_reader = reader;
 		m_writer = null;
 		snapshotting = true;
-		snapshotClasses = new Dictionary<Type, SnapshotClassVerification>();
 		SnapshotHeader obj = (SnapshotHeader)DoISnapshot<SnapshotHeader>(null);
 		obj.LoadPostProcess(this);
 		snapshotting = false;
@@ -2841,25 +2774,6 @@ public class Snapshotter
 			DoList(item.Value, verifyField: false);
 		}
 		return dict;
-	}
-
-	public static FieldInfo[] GetFieldInfosIncludingBaseClasses(Type type, BindingFlags bindingFlags)
-	{
-		FieldInfo[] fields = type.GetFields(bindingFlags);
-		if (type.BaseType == typeof(object))
-		{
-			return fields;
-		}
-		Type type2 = type;
-		FieldInfoComparer comparer = new FieldInfoComparer();
-		HashSet<FieldInfo> hashSet = new HashSet<FieldInfo>(fields, comparer);
-		while (type2 != typeof(object))
-		{
-			fields = type2.GetFields(bindingFlags);
-			hashSet.UnionWith(fields);
-			type2 = type2.BaseType;
-		}
-		return hashSet.ToArray();
 	}
 
 	private void EndVerifyISnapshot()

@@ -93,6 +93,12 @@ jobs:
       - name: Debug scenarios fit their maps
         run: sh tools/build/83-verify-debug-scenarios.sh
 
+      # Code nothing can reach: unused private members, fields written and never read, branches
+      # behind a constant. A sweep removed a few thousand lines of it; this keeps it from growing
+      # back. What is kept on purpose is listed, with the reason, in 85-dead-code-allowlist.txt.
+      - name: No dead code
+        run: sh tools/build/85-verify-no-dead-code.sh
+
   # CORE DOES NOT DEPEND ON MODS, checked by deleting them.
   #
   # The repository is organised around one rule: base_game is the original game plus the port and

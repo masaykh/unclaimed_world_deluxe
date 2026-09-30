@@ -30,8 +30,6 @@ internal class GoalProduce : CompositeGoal, ITopLevelGoal
 
 	private ToolTypeCombinationID? snapshotToolCombo;
 
-	private EntityID? inputItem;
-
 	private Dictionary<EntityAndRoot, List<ReplenishItemsForAction>> replenishItemsForTools;
 
 	private bool isInRangeOfRemotelyStartedJob;
@@ -77,7 +75,6 @@ internal class GoalProduce : CompositeGoal, ITopLevelGoal
 		Tools = tools;
 		ToolTypeCombination = toolTypeCombination;
 		this.replenishItemsForTools = replenishItemsForTools;
-		this.inputItem = inputItem;
 	}
 
 	public GoalProduce(Entity owner, ProcessType processType, EntityAndRoot? actingOnEntity, OwnerID? ownerOfProduct, List<EntityGroupID> ownersOfVehicles, List<EntityID> tools, Dictionary<EntityAndRoot, List<ReplenishItemsForAction>> replenishItemsForTools, ToolTypeCombination toolTypeCombination, EntityID? inputItem)
@@ -90,7 +87,6 @@ internal class GoalProduce : CompositeGoal, ITopLevelGoal
 		Tools = tools;
 		ToolTypeCombination = toolTypeCombination;
 		this.replenishItemsForTools = replenishItemsForTools;
-		this.inputItem = inputItem;
 	}
 
 	public GoalProduce()

@@ -112,7 +112,6 @@ public class CreateMissionPanel : RosterPanel
 
 	private MissionActionTemplate dialogSourceActionTemplate;
 	private bool transportIsExpanded;
-	private static int separatorLength = " | ".Length;
 
 	private MissionTemplate Mission
 	{

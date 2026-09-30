@@ -11,11 +11,8 @@ public class Lighting
 
 	public LightSource[] OutdoorLightSources;
 
-	private LightingType lightingType;
-
 	public Lighting(LightingType lightingType, Renderable parent)
 	{
-		this.lightingType = lightingType;
 	}
 
 	public void TurnOnDesiredShareOfLights(float fractionToTurnOn)

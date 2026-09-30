@@ -69,10 +69,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 
 	private List<EntityID> tempIntrinsicWeaponsList = new List<EntityID>();
 
-	private Dictionary<Job, WeaponInstanceComboJobData> jobData = new Dictionary<Job, WeaponInstanceComboJobData>();
-
-	private Dictionary<Job, WeaponInstanceComboAttackData> attackData = new Dictionary<Job, WeaponInstanceComboAttackData>();
-
 	private WeaponInstanceCombo combo;
 
 	private WeaponInstanceCombo bestCarriedCombo;

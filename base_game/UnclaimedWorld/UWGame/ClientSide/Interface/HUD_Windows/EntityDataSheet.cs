@@ -31,8 +31,6 @@ public class EntityDataSheet : DataSheet
 	private UIComponent humanEdibleHeader;
 	private Grid grdNutrition;
 
-	private Label lblNutrition;
-
 	private UIComponent nutritionHeader;
 	private Label lblComfort;
 
@@ -55,7 +53,6 @@ public class EntityDataSheet : DataSheet
 	private UIComponent ammoHeader;
 
 	private Grid grdAmmo;
-	private Label lblWeapon;
 
 	private UIComponent weaponHeader;
 
@@ -92,8 +89,6 @@ public class EntityDataSheet : DataSheet
 	private Grid grdToolUsedFor;
 
 	private UIComponent toolUsedForHeader;
-
-	private Label lbltoolUsedFor;
 
 	private Label lbltoolUsedForCapNotice;
 
@@ -248,11 +243,11 @@ public class EntityDataSheet : DataSheet
 	{
 		humanEdibleHeader = AddSubHeader(grdGeneralOuter, "EDIBLE BY HUMANS:", out lblHumanEdible, addToGrid: true, foodColorGreen);
 		humanEdibleHeader.OrderByTag1 = 10f;
-		nutritionHeader = AddSubHeader(grdGeneralOuter, "POTENTIAL NUTRITIONAL CONTENT:", out lblNutrition, addToGrid: true, foodColorGreen);
+		nutritionHeader = AddSubHeader(grdGeneralOuter, "POTENTIAL NUTRITIONAL CONTENT:", out _, addToGrid: true, foodColorGreen);
 		nutritionHeader.OrderByTag1 = 15f;
 		grdNutrition = CreateSubGrid();
 		grdNutrition.OrderByTag1 = 16f;
-		weaponHeader = AddSubHeader(grdGeneralOuter, "WEAPON DATA:", out lblWeapon, addToGrid: true, securityColorBlue);
+		weaponHeader = AddSubHeader(grdGeneralOuter, "WEAPON DATA:", out _, addToGrid: true, securityColorBlue);
 		weaponHeader.OrderByTag1 = 100f;
 		lblWeaponNotWieldable = new Label(gui);
 		lblWeaponNotWieldable.Init(Label.LabelType.EntityTypeTooltip);
@@ -374,7 +369,7 @@ public class EntityDataSheet : DataSheet
 		settingsHeader = AddSubHeader(grdProductionOuter, "IN STOCK / ORDERS:", out lblSettings);
 		settingsHeader.OrderByTag1 = 0f;
 		CreateGridAndHeader(grdProductionOuter, out usedInHeader, "USED IN:", "Used as a material in these objects", 80f, out grdUsedIn, out lblUsedIn);
-		CreateGridAndHeader(grdProductionOuter, out toolUsedForHeader, "USED FOR:", "Used as a tool for making these objects", 100f, out grdToolUsedFor, out lbltoolUsedFor);
+		CreateGridAndHeader(grdProductionOuter, out toolUsedForHeader, "USED FOR:", "Used as a tool for making these objects", 100f, out grdToolUsedFor, out _);
 		lbltoolUsedForCapNotice = new Label(gui);
 		lbltoolUsedForCapNotice.Init(Label.LabelType.HUDWindow);
 		lbltoolUsedForCapNotice.Text = "...Used for more objects than shown!";

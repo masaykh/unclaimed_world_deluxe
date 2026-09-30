@@ -18,8 +18,6 @@ public class SelectScenarioPanel : Panel
 		public UWGame.SimSide.Scenarios.Scenario Scenario;
 	}
 
-	private Box display;
-
 	private LCDScreen lcdScreen;
 
 	private UIComponent lcdSurface;
@@ -39,7 +37,7 @@ public class SelectScenarioPanel : Panel
 		: base(intf, "SCENARIOS", position, new Vector2(800f, 620f), Level.Middle)
 	{
 		selectScenarioInterface = intf;
-		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out display, out lcdSurface, ref lcdScreen, 55);
+		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out _, out lcdSurface, ref lcdScreen, 55);
 		grid = FullLCDPanel.AddGridWithFixedItemHeights(intf.gui, lcdSurface, 0);
 		grid.ItemHeight = 112;
 		grid.Selectability = Grid.SelectabilityOptions.None;

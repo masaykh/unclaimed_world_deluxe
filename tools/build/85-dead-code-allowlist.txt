@@ -1,0 +1,37 @@
+# Findings of tools/build/85-verify-no-dead-code.sh that were looked at and kept on purpose.
+#
+#   <code>  <file, from the repository root>  <member, or - for CS0162>   # why
+#
+# Keyed by member, never by line. The gate fails on a finding not listed here AND on an entry here
+# that no longer matches anything, so remove an entry when you remove what it describes.
+
+# --- Regulators. A Regulator's constructor draws from a random generator. Removing one that is
+# --- never consulted would shift every later draw, and replays (and the sim's determinism) would
+# --- drift. Kept until someone decides to break replay compatibility on purpose.
+IDE0052  base_game/UnclaimedWorld/UWGame/ClientSide/Client.cs  Client.printAllegiancesRegulator    # draws from ClientRandomGenerator
+IDE0052  base_game/UnclaimedWorld/UWGame/ClientSide/Client.cs  Client.printEmigrateRollsRegulator  # draws from ClientRandomGenerator
+IDE0052  base_game/UnclaimedWorld/UWGame/ClientSide/Client.cs  Client.printPerformanceRegulator    # draws from ClientRandomGenerator
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalAttack.cs  GoalAttack.chaseProgressRegulator  # draws from GameplayRandomGenerator
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/AI/PlaySiteKnowledge.cs  PlaySiteKnowledge.assertRegulator  # draws from GameplayRandomGenerator
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Overland/OtherSiteAllegianceManager.cs  OtherSiteAllegianceManager.missionRegulator  # draws from GameplayRandomGenerator
+
+# --- Struct fields. A struct's default equality and hash compare every field; these two are
+# --- dictionary keys, so a field nobody reads by name still decides which entries are distinct.
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/FromTo.cs  FromTo.From
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/FromTo.cs  FromTo.To
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/FromTo.cs  FromTo.Transport
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.Approach
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.Destination
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.DriverType
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.ProtectionLevel
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.VehicleType
+
+# --- Saves. The assignment is a read or write on the save stream (sn.SnapshotID): the value is
+# --- unused, the stream position is not.
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Entities/RepairTypes/RepairPackageAction.cs  RepairPackageAction.snapshotPart
+# An ISnapshot goal; its constructor argument stays with the rest of the goal's state.
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalMoveAsGroup.cs  GoalMoveAsGroup.activity
+
+# --- Guards whose condition is a constant in this build but not in every build.
+CS0162  tools/DataExport/Program.cs  -     # PestMod.RatKey is null only when the mod is compiled out
+CS0162  tools/XmlProxyGen/Program.cs  -    # GeneratedProxyNamespace == ProxyNamespace until someone renames one of them

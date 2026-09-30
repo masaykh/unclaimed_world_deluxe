@@ -351,10 +351,6 @@ public class FillableBar : UIComponent
 
 	private string Text
 	{
-		get
-		{
-			return lblMaxValue.Text;
-		}
 		set
 		{
 			lblMaxValue.Text = value;

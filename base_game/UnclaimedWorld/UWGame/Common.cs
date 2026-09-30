@@ -44,8 +44,6 @@ public static class Common
 	public const decimal decimalEpsilon = 0.00001m;
 	public const string indentString = "   ";
 
-	private static int indentLength = "   ".Length;
-
 	public static void AppendDivider(StringBuilder text)
 	{
 		AppendLine(text, "---------------");
