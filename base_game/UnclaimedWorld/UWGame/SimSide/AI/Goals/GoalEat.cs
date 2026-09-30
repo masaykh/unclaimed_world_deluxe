@@ -15,6 +15,9 @@ namespace UWGame.SimSide.AI.Goals;
 
 internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 {
+	/// <summary>ToolCareMod: an outdoor goal, so a protected item may be carried back to camp before it goes on.</summary>
+	protected override bool MayCarryHomeFirst => true;
+
 	private enum State
 	{
 		Moving,

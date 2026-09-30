@@ -15,6 +15,9 @@ namespace UWGame.SimSide.AI.Goals;
 
 public class GoalHarvest : CompositeGoal, ITopLevelGoal
 {
+	/// <summary>ToolCareMod: an outdoor goal, so a protected item may be carried back to camp before it goes on.</summary>
+	protected override bool MayCarryHomeFirst => true;
+
 	public ProcessJob harvestJob;
 
 	private JobID? snapshotJob;

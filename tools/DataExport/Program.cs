@@ -143,6 +143,7 @@ internal static class Program
         UWGame.Mods.HuntingMod.RegisterSettings();
         UWGame.Mods.KeybindMod.RegisterSettings();
         UWGame.Mods.PreyFearMod.RegisterSettings();
+        UWGame.Mods.ToolCareMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -233,6 +234,11 @@ internal static class Program
         if (args.Contains("--savetype-selftest"))
         {
             return SaveTypeSelfTest();
+        }
+
+        if (args.Contains("--toolcare-selftest"))
+        {
+            return ToolCareSelfTest();
         }
 
         if (scenarioReport)
@@ -513,6 +519,36 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks ToolCareMod's rule for what a colonist looks after: weapons always, and items above the
+    /// survival tier by their own tier or the lowest tier of whatever makes them. Prints how many of
+    /// each so a wrong tier table shows up as a strange count.
+    /// </summary>
+    private static int ToolCareSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        // Tiers (EntityType/ProcessType.TierOrAreaType) are linked in the validation pass.
+        if (!ValidateDataComplete()) return 1;
+        Console.WriteLine("==> tool care self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        Check(types.TryGetValue("item:gunpowderRifle", out var rifle) && UWGame.Mods.ToolCareMod.IsProtected(rifle), "a gunpowder rifle is protected (a weapon)");
+        var items = types.Values.Where(t => t.ItemType != null && !t.IsIntrinsic()).ToList();
+        int weapons = items.Count(t => t.ItemType.WeaponType != null);
+        int byTier = items.Count(t => t.ItemType.WeaponType == null && UWGame.Mods.ToolCareMod.IsProtected(t));
+        Check(items.Count(t => !UWGame.Mods.ToolCareMod.IsProtected(t)) > 0, "most things are not protected - cheap tools still drop freely");
+        Check(byTier > 0, $"the tier rule protects something besides weapons ({byTier} item types)");
+        Console.WriteLine($"  info  {items.Count} item types: {weapons} weapons, {byTier} more above the survival tier");
+        Console.WriteLine(failures == 0 ? "tool care self-test OK" : $"tool care self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

@@ -30,6 +30,7 @@
 #  20. the safe sleep mod counts swarmer and whipjaw nests as dangerous, and quadite nests not
 #  21. the swarmer becomes human prey only with the hunting mod's switch on
 #  22. a save's type names resolve whatever assembly version they carry
+#  23. tool care protects weapons and items above the survival tier, and not cheap tools
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -343,7 +344,7 @@ echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is r
 
 # The nature mods default to off as well - checked ON.
 # So is self-preservation: it changes the studio's AI rather than fixing it, so it is opt-in.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones preyfear.preyFlees preyfear.closeInReach selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones preyfear.preyFlees preyfear.closeInReach toolcare.enabled selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"
@@ -693,6 +694,17 @@ else
   fail "the save type-name self-test reported failures"
 fi
 
+# ToolCareMod decides what a colonist carries home from the tier tables: an item's own tier, else
+# the lowest tier of whatever makes it. A broken link there would protect nothing, or everything.
+say "==> 23. tool care protects weapons and items above the survival tier, and not cheap tools"
+out=$( cd "$(new_install case23)" && "$EXPORT" . --toolcare-selftest 2>&1 ) || true
+if echo "$out" | grep -q "tool care self-test OK"; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the tool care self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -707,7 +719,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 22/22 cases passed."
+  say "mod loader OK - 23/23 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

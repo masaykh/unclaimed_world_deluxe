@@ -1186,8 +1186,45 @@ public abstract class CompositeGoal : Goal
 	private void DropUnneededItems(Predicate<Entity> okToDrop, out float totalDropped, StorageCompartment compartment, float? bulkNeededToDrop = null)
 	{
 		float totalDroppedParam = 0f;
+		// MOD: ToolCareMod - a colonist drops weapons and above-survival items last, and carries one
+		// back to camp first when it must go out in the field. Everyone else, as the studio made it.
+		if (UWGame.Mods.ToolCareMod.IsCarefulCarrier(entity))
+		{
+			entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => !UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && DropUnneededItem(itemEntity, entity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
+			if (!bulkNeededToDrop.HasValue || !Common.IsLessThanOrEqual(bulkNeededToDrop.Value, totalDroppedParam))
+			{
+				entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && DropProtectedItem(itemEntity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
+			}
+			totalDropped = totalDroppedParam;
+			return;
+		}
 		entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => DropUnneededItem(itemEntity, entity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
 		totalDropped = totalDroppedParam;
+	}
+
+	/// <summary>
+	/// ToolCareMod: whether this goal may send its colonist back to camp with a protected item before
+	/// going on. Only goals that work outdoors say yes (GoalHarvest, GoalEat): one that has already
+	/// queued entering a building (GoalProduce) would walk home from inside it.
+	/// </summary>
+	protected virtual bool MayCarryHomeFirst => false;
+
+	/// <summary>ToolCareMod: drop a protected item - at camp, walking there first, when out in the field.</summary>
+	private bool DropProtectedItem(Entity itemEntity, Predicate<Entity> okToDrop, float? bulkNeededToDrop, ref float bulkAlreadyDropped)
+	{
+		if (!okToDrop(itemEntity))
+		{
+			return false;
+		}
+		Vector3? spot = (MayCarryHomeFirst && UWGame.Mods.ToolCareMod.IsOutOfCamp(entity)) ? UWGame.Mods.ToolCareMod.DropSpotInCamp(entity) : null;
+		if (spot.HasValue)
+		{
+			AddSubgoal(new GoalMoveToPosition(entity, spot.Value, null));
+			UWGame.Mods.ToolCareMod.LogCarriedHome(entity, itemEntity);
+		}
+		AddSubgoal(new GoalDropItem(entity, itemEntity.EntityID));
+		bulkAlreadyDropped += itemEntity.Bulk;
+		return bulkNeededToDrop.HasValue && Common.IsLessThanOrEqual(bulkNeededToDrop.Value, bulkAlreadyDropped);
 	}
 
 	public bool DropUnneededItem(Entity itemEntity, Entity carrierEntity, Predicate<Entity> okToDrop, float? bulkNeededToDrop, ref float bulkAlreadyDropped)
