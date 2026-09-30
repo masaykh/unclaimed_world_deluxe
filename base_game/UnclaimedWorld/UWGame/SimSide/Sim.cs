@@ -1543,6 +1543,8 @@ public class Sim : GameScreen, ISnapshot
 				g.Update(gameTime);
 			});
 			The.Client.MarkPerformanceTime("HaulingJobManager.Update", Color.Purple);
+			// MOD: OwnershipMod pays households and plans their cooking when work turns to leisure.
+			UWGame.Mods.OwnershipMod.OnSimTick(this);
 			CycleManager.Update();
 			if (IsGameOver)
 			{

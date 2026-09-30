@@ -690,10 +690,25 @@ public class EvaluateJob : GoalEvaluator, IScoreJob
 			{
 				return items.Count > 0;
 			}
+			// MOD: OwnershipMod - a household's job may use the colony's tools.
+			EntityGroup communalItems = UWGame.Mods.OwnershipMod.CommunalFallback(ownerOfJobs);
+			if (communalItems != null && communalItems.Items.TryGetValue(entityType, out items))
+			{
+				return items.Count > 0;
+			}
 		}
-		else if (entityType.StructureType != null && ownerOfJobs.Structures.TryGetValue(entityType, out items))
+		else if (entityType.StructureType != null)
 		{
-			return items.Count > 0;
+			if (ownerOfJobs.Structures.TryGetValue(entityType, out items))
+			{
+				return items.Count > 0;
+			}
+			// MOD: OwnershipMod - and the colony's campfires and kitchens.
+			EntityGroup communalStructures = UWGame.Mods.OwnershipMod.CommunalFallback(ownerOfJobs);
+			if (communalStructures != null && communalStructures.Structures.TryGetValue(entityType, out items))
+			{
+				return items.Count > 0;
+			}
 		}
 		return false;
 	}

@@ -220,6 +220,8 @@ public class EvaluateEat : GoalEvaluator
 				}
 			}
 		}
+		// MOD: OwnershipMod - a person also eats its household's food; the studio searched only the expedition's.
+		UWGame.Mods.OwnershipMod.AddHouseholdFood(entity, bioEntity, sharedKnowledge, allFoodItems);
 	}
 
 	public static bool IsValidFoodItem(EntityID foodID, Entity entity, BiologicalEntity bioEntity, SharedKnowledge sharedKnowledge, EntityGroup foodItemsGroup, out IKnownEntityData itemData)

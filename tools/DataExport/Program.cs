@@ -144,6 +144,7 @@ internal static class Program
         UWGame.Mods.KeybindMod.RegisterSettings();
         UWGame.Mods.PreyFearMod.RegisterSettings();
         UWGame.Mods.ToolCareMod.RegisterSettings();
+        UWGame.Mods.OwnershipMod.RegisterSettings();
         UWGame.Mods.DisassemblyMod.RegisterSettings();
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
@@ -239,6 +240,11 @@ internal static class Program
         if (args.Contains("--toolcare-selftest"))
         {
             return ToolCareSelfTest();
+        }
+
+        if (args.Contains("--ownership-selftest"))
+        {
+            return OwnershipSelfTest();
         }
 
         if (scenarioReport)
@@ -519,6 +525,36 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks the part of OwnershipMod that reads the tables: the meal recipes a household planner can
+    /// order - every one yields a FoodType.IsMeal item and takes real inputs - in a fixed order, as
+    /// replays need. Paying and cooking need a running game and are not checked here.
+    /// </summary>
+    private static int OwnershipSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        if (!ValidateDataComplete()) return 1;
+        Console.WriteLine("==> ownership self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var meals = UWGame.Mods.OwnershipMod.MealProcesses();
+        Check(meals.Count > 0, $"the planner finds meal recipes ({meals.Count})");
+        Check(meals.All(p => p.InputsByType != null && p.InputsByType.Count > 0 && p.InputsByType.Keys.All(k => k != null)),
+              "every one takes real inputs");
+        Check(meals.All(p => p.Outputs != null && p.Outputs.Any(o => o.FinalEntityTypeToCreate?.ItemType?.FoodType?.IsMeal == true)),
+              "every one yields a meal");
+        Check(meals.Select(p => p.KeyName).SequenceEqual(meals.Select(p => p.KeyName).OrderBy(k => k, StringComparer.Ordinal)),
+              "in a fixed order (by key), so every run and replay picks the same one");
+        Console.WriteLine("  info  first few: " + string.Join(", ", meals.Take(5).Select(p => p.KeyName)));
+        Console.WriteLine(failures == 0 ? "ownership self-test OK" : $"ownership self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

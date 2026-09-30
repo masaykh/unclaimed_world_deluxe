@@ -177,6 +177,7 @@
     <Compile Remove="UWGame\Mods\KeybindMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\PreyFearMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\ToolCareMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\OwnershipMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DebugMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\StateDumpMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\DisassemblyMod.Absent.cs" />
@@ -202,6 +203,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\KeybindMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\PreyFearMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\ToolCareMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\OwnershipMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DebugMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StateDumpMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DisassemblyMod.cs" />

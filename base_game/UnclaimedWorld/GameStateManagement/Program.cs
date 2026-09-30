@@ -115,6 +115,7 @@ internal static class Program
 		UWGame.Mods.KeybindMod.RegisterSettings();
 		UWGame.Mods.PreyFearMod.RegisterSettings();
 		UWGame.Mods.ToolCareMod.RegisterSettings();
+		UWGame.Mods.OwnershipMod.RegisterSettings();
 		UWGame.Mods.DisassemblyMod.RegisterSettings();
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();
