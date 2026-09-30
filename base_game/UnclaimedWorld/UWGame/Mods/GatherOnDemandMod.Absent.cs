@@ -18,8 +18,6 @@ public static class GatherOnDemandMod
     {
     }
 
-    public static int Demand(EntityGroup owner, EntityType type) => 0;
-
     public static int StockAfterDemand(EntityGroup owner, EntityType type, int stock) => stock;
 
     public static bool HasDemand(EntityGroup owner, EntityType type) => false;

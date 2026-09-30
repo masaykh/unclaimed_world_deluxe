@@ -8,9 +8,6 @@ namespace UWGame.Mods;
 /// </summary>
 public static class AgentMod
 {
-    /// <summary>Always false: the mod is not present in this build.</summary>
-    public const bool IsEnabled = false;
-
     /// <summary>The prefix the mod's settings would carry.</summary>
     public const string ModId = "agent";
 
@@ -24,11 +21,6 @@ public static class AgentMod
     /// anything's behalf - which is the studio's behaviour, since none of this existed.
     /// </summary>
     public static void Tick(Controller controller)
-    {
-    }
-
-    /// <summary>Nothing to forget.</summary>
-    public static void Reset()
     {
     }
 }

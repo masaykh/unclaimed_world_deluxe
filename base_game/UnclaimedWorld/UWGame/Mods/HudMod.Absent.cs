@@ -38,7 +38,6 @@ public static class HudMod
 
     public const string TalkAlways = "always";
     public const string TalkWhenSpoken = "when someone speaks";
-    public const string TalkHidden = "hidden";
 
     public const double TalkPanelLingerSeconds = 10.0;
 

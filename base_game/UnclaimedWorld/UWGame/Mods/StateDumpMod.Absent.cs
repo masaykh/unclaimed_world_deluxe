@@ -20,9 +20,4 @@ public static class StateDumpMod
     public static void Sample()
     {
     }
-
-    /// <summary>Nothing to close.</summary>
-    public static void Close()
-    {
-    }
 }
