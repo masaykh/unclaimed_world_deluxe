@@ -252,6 +252,37 @@ internal static class Program
             return HudSelfTest();
         }
 
+        // Procedural maps (MapGenMod). Learns from --maps-from=DIR, default this game's data/Maps.
+        string mapsFrom = args.FirstOrDefault(a => a.StartsWith("--maps-from=", StringComparison.Ordinal))
+            ?.Substring("--maps-from=".Length) ?? Path.Combine("data", "Maps");
+        string generateMap = args.FirstOrDefault(a => a.StartsWith("--generate-map=", StringComparison.Ordinal))
+            ?.Substring("--generate-map=".Length);
+        if (generateMap != null || args.Contains("--mapgen-selftest"))
+        {
+            int loaded = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+            if (loaded != 0) return loaded;
+            if (generateMap != null)
+            {
+                ulong seed = ulong.TryParse(args.FirstOrDefault(a => a.StartsWith("--seed=", StringComparison.Ordinal))?.Substring(7), out ulong sd) ? sd : (ulong)Environment.TickCount64;
+                int size = int.TryParse(args.FirstOrDefault(a => a.StartsWith("--size=", StringComparison.Ordinal))?.Substring(7), out int sz) ? sz : 80;
+                Console.WriteLine("==> generating " + UWGame.Mods.MapGenMod.GenerateMap(mapsFrom, Path.Combine("data", "Maps"), generateMap, seed, size));
+                Console.WriteLine("    open it with EDIT or TEST MAP on the main menu");
+                return 0;
+            }
+            Console.WriteLine("==> mapgen self-test");
+            string work = Path.Combine(Path.GetTempPath(), "uw-mapgen-selftest-" + Environment.ProcessId);
+            try
+            {
+                int failures = UWGame.Mods.MapGenMod.SelfTest(mapsFrom, work, Console.WriteLine);
+                Console.WriteLine(failures == 0 ? "mapgen self-test OK" : $"mapgen self-test FAILED - {failures} check(s)");
+                return failures == 0 ? 0 : 1;
+            }
+            finally
+            {
+                try { Directory.Delete(work, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            }
+        }
+
         if (scenarioReport)
         {
             // Load the way the GAME loads and only then switch modes, which is the order that

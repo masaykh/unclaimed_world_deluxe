@@ -195,6 +195,32 @@ artifacts/bin/ContentProbe/release_gl/contentprobe.exe "<game>/Content" Arial Fo
 
 `cyrillic=yes` means the override is picked up. The stock font reports `95 glyphs … cyrillic=no`.
 
+## Procedural maps
+
+`MapGenMod` (in `mods/`) writes an ordinary map folder, `MapData.xml` plus its PNG layers, which
+EDIT and TEST MAP open like a shipped map. Run it against your game folder:
+
+```sh
+artifacts/bin/DataExport/release/dataexport.exe "<game>" --generate-map=MyMap --seed=42 --size=80
+```
+
+The map lands in `<game>/data/Maps/MyMap`, which is the only place the map picker looks. The same
+seed always gives the same map. Sizes run from 32 to 256; the shipped playable maps are 64, 80 and
+128.
+
+The generator learns from the shipped maps in `<game>/data/Maps`, or from `--maps-from=DIR`.
+Each shipped map becomes an *ecosystem*: which rocks, plants, trees and resources it has in each
+setting (deep or shallow water, shore, or land of a given soil), and how densely. The steps:
+
+1. Water and rivers first, with fords so the land stays connected.
+2. Then climate: rainfall, temperature and an "x factor".
+3. Then biome regions (`MapGenMod.Biomes`), each at least a minimum size. Each region picks an
+   ecosystem whose soils suit it, so the same biome can carry different species in different places.
+4. Soil, vegetation and placement then follow the region's ecosystem. Every key written is one the
+   game defines.
+
+Gate 80 case 26 generates four maps and reads each back through the game's own `MapData` type.
+
 ## What is committed and what is built
 
 Committed: source, shader **sources** (`assets/effects/*.fx`), scenarios, string tables, tooling.

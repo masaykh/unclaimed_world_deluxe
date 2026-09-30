@@ -729,6 +729,19 @@ else
   fail "the hud self-test reported failures"
 fi
 
+# Procedural maps (MapGenMod): four maps generated at fixed seeds, learning from the shipped maps,
+# and each read back through the studio's own MapData type and checked against the loaded tables -
+# keys, tree elements, positions, soils, water share, a dry and connected TEST MAP start - then the
+# same seed twice for identical bytes. A generated folder is what EDIT and TEST MAP open.
+say "==> 26. generated maps read as the game reads a map, with only keys the game defines"
+out=$( cd "$(new_install case26)" && "$EXPORT" . --mapgen-selftest "--maps-from=$UW_STEAM/data/Maps" 2>&1 ) || true
+if echo "$out" | grep -q "mapgen self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the mapgen self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -743,7 +756,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 25/25 cases passed."
+  say "mod loader OK - 26/26 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1
