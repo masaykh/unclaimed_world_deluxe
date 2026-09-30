@@ -155,6 +155,9 @@ internal class GoalDoTakeFive : CompositeGoal
 	/// <summary>Seconds since PreyFearMod's watchful check last ran; not saved, it simply starts again.</summary>
 	private double secondsSinceWatch;
 
+	/// <summary>The same for BirdHopMod's startle check.</summary>
+	private double secondsSinceStartleWatch;
+
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
 		// MOD: PreyFearMod - timid prey watches while idle, not only between idle animations. The
@@ -171,6 +174,13 @@ internal class GoalDoTakeFive : CompositeGoal
 					return;
 				}
 			}
+		}
+		// MOD: BirdHopMod - a resting bird that sees someone close stops resting, and GoalTakeFive
+		// starts again with a startled hop away.
+		if (UWGame.Mods.BirdHopMod.IsStartled(entity, ref secondsSinceStartleWatch, elapsed.ElapsedGameTime.TotalSeconds))
+		{
+			base.Status = Status.Failed;
+			return;
 		}
 		Status status = ProcessSubgoals(elapsed);
 		if (status == Status.Completed)

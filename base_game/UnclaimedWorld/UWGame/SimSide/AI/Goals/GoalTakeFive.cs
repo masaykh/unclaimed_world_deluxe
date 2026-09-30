@@ -72,7 +72,9 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		{
 			return;
 		}
-		float? chanceToIdleWalkShortDistanceAway = entity.GetChanceToIdleWalkShortDistanceAway() ?? (hop ? new float?(UWGame.Mods.BirdHopMod.HopChance) : null);
+		// A startled hopper (someone of another group close by) hops for certain, and away.
+		bool startled = hop && UWGame.Mods.BirdHopMod.Startler(entity) != null;
+		float? chanceToIdleWalkShortDistanceAway = startled ? new float?(1f) : (entity.GetChanceToIdleWalkShortDistanceAway() ?? (hop ? new float?(UWGame.Mods.BirdHopMod.HopChance) : null));
 		float moveAbility = entity.Locomotor.MoveAbility;
 		if (!chanceToIdleWalkShortDistanceAway.HasValue || !(moveAbility > 0.15f))
 		{
@@ -83,17 +85,21 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		{
 			num = MathHelper.Lerp(GameData.Instance.Constants.ZeroEnergyIdleWalkFactor, 1f, entity.BiologicalEntity.EnergyLevel);
 		}
-		if (!(The.Sim.GameplayRandomGenerator.NextDouble("GoalTakeFive") < (double)(num * chanceToIdleWalkShortDistanceAway.Value * moveAbility)))
+		if (!startled && !(The.Sim.GameplayRandomGenerator.NextDouble("GoalTakeFive") < (double)(num * chanceToIdleWalkShortDistanceAway.Value * moveAbility)))
 		{
 			return;
 		}
 		MovementMap movementMap = entityIntelligence.Allegiance.SharedKnowledge.GetMovementMap(entity.Intelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance);
-		float innerRadius = (hop ? UWGame.Mods.BirdHopMod.HopMinDistance : (entity.GetShortIdleWalkMinDistance() ?? 48f));
+		float innerRadius = (startled ? UWGame.Mods.BirdHopMod.StartledMinDistance : (hop ? UWGame.Mods.BirdHopMod.HopMinDistance : (entity.GetShortIdleWalkMinDistance() ?? 48f)));
 		float num2 = (hop ? UWGame.Mods.BirdHopMod.HopMaxDistance : (entity.GetShortIdleWalkMaxDistance() ?? 110f));
 		int sizeOfMapInSubtiles = (int)(num2 * 2.5f * 0.0625f);
 		SubtileInfluence subtileInfluence = new SubtileInfluence(entity.Location.Value, sizeOfMapInSubtiles);
 		subtileInfluence.DrawRadius(entity.PlaySiteLocation, innerRadius, num2, 4);
-		subtileInfluence.DrawDistanceGradientOnInfluenceMap(entityIntelligence.CurrentExpedition.Center.Value, 1f, 4f);
+		if (!startled)
+		{
+			// The pull home - left out for a startled bird, which it sent straight back to whoever scared it.
+			subtileInfluence.DrawDistanceGradientOnInfluenceMap(entityIntelligence.CurrentExpedition.Center.Value, 1f, 4f);
+		}
 		subtileInfluence.DrawNegativeInfluenceFromEntities(entity, drawStationaryAgents: true, drawItems: true);
 		subtileInfluence.BlockOutBlockedSubtiles(movementMap.Layers[SurfaceType.TransportType.Foot], blockReserved: true);
 		subtileInfluence.AddWhiteNoise(4);

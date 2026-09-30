@@ -27,4 +27,10 @@ public static class BirdHopMod
     }
 
     public static bool MayHop(Entity entity) => false;
+
+    public const float StartledMinDistance = 96f;
+
+    public static Entity Startler(Entity bird) => null;
+
+    public static bool IsStartled(Entity bird, ref double secondsSinceWatch, double elapsedSeconds) => false;
 }

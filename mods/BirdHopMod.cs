@@ -19,9 +19,19 @@ namespace UWGame.Mods;
 /// animation, so it was built to take a step.
 ///
 /// So this lets the listed creatures run that same move - from the immobile branch of
-/// GoalTakeFive.Activate - with a short reach (40 to 72 units: the next cell, not a stroll) and a
-/// chance per idle turn where the type has none. Nothing else about the bird changes: it still does
-/// not wander, hunt, flee or patrol. Off by default.
+/// GoalTakeFive.Activate - with a chance per idle turn where the type has none.
+///
+/// AFTER KASTUK TRIED IT: "Bird may occasionally move, when human is coming, but immediately move
+/// back or stuck on new position ... length of the leash can be raised to 5 tiles ... May add them
+/// fear of any other creatures, so they will shift from the shore into water, when someone come."
+/// - The reach is now up to 5 tiles (<see cref="HopMaxDistance"/>).
+/// - STARTLED: while resting, a bird watches for any creature or person of another group within
+///   <see cref="StartleRange"/> (GoalDoTakeFive, <see cref="IsStartled"/>). Seeing one ends its rest,
+///   and the hop that follows is certain, at least two tiles, and WITHOUT the pull back towards its
+///   group's centre - the pull that sent it straight back. Others count against a spot as they
+///   always did, so it steps away from them. It walks, so how far into water it can go is the
+///   terrain's say: where the shallows are walkable it goes there, otherwise along the shore.
+/// It still does not wander, hunt or patrol. Off by default.
 /// </summary>
 public static class BirdHopMod
 {
@@ -49,7 +59,69 @@ public static class BirdHopMod
 
     public const float HopMinDistance = 40f;
 
-    public const float HopMaxDistance = 72f;
+    /// <summary>5 tiles, Kastuk's leash.</summary>
+    public const float HopMaxDistance = 240f;
+
+    /// <summary>A startled hop goes at least this far: two tiles, well clear of whoever came.</summary>
+    public const float StartledMinDistance = 96f;
+
+    /// <summary>How close another group's creature or person comes before a bird takes fright: 3 tiles.</summary>
+    public const float StartleRange = 144f;
+
+    /// <summary>How often a resting bird looks round, in game seconds.</summary>
+    public const double WatchEverySeconds = 0.5;
+
+    /// <summary>
+    /// The nearest creature or person of another group within <see cref="StartleRange"/> that this
+    /// bird's side knows of, or null. Read from PlaySiteKnowledge.AllKnownOutsideAgentsOnPlaySite, the
+    /// list the threat maps are drawn from.
+    /// </summary>
+    public static Entity Startler(Entity bird)
+    {
+        var known = bird?.Intelligence?.Allegiance?.SharedKnowledge?.PlaySiteKnowledge?.AllKnownOutsideAgentsOnPlaySite;
+        if (known == null || !bird.Location.HasValue)
+        {
+            return null;
+        }
+        Entity nearest = null;
+        float best = StartleRange;
+        foreach (EntityID id in known.Keys)
+        {
+            Entity other = Entity.FindByID(id);
+            if (other == null || other == bird || other.EntityType == bird.EntityType || !other.Location.HasValue || other.ContainedBy.HasValue)
+            {
+                continue;
+            }
+            float d = Microsoft.Xna.Framework.Vector3.Distance(bird.PlaySiteLocation, other.PlaySiteLocation);
+            if (d <= best)
+            {
+                nearest = other;
+                best = d;
+            }
+        }
+        return nearest;
+    }
+
+    /// <summary>
+    /// Called from GoalDoTakeFive every frame: whether a resting hopper has just seen someone close
+    /// and should stop resting (so GoalTakeFive starts again and hops away). Checks every
+    /// <see cref="WatchEverySeconds"/>.
+    /// </summary>
+    public static bool IsStartled(Entity bird, ref double secondsSinceWatch, double elapsedSeconds)
+    {
+        if (!Enabled.On || bird?.EntityType?.IntelligenceType == null || bird.EntityType.IntelligenceType.IsMobile
+            || Array.IndexOf(HopperKeys, bird.EntityType.KeyName) < 0)
+        {
+            return false;
+        }
+        secondsSinceWatch += elapsedSeconds;
+        if (secondsSinceWatch < WatchEverySeconds)
+        {
+            return false;
+        }
+        secondsSinceWatch = 0.0;
+        return MayHop(bird) && Startler(bird) != null;
+    }
 
     /// <summary>
     /// Whether this immobile creature may take GoalTakeFive's short idle step - and, if so, that it
