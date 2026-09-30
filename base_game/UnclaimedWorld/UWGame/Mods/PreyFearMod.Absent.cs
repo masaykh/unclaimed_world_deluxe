@@ -23,5 +23,9 @@ public static class PreyFearMod
 
     public static bool ChecksSafetyWhileEating(Entity eater) => false;
 
+    public const double WatchEverySeconds = 0.25;
+
+    public static bool IsWatchful(Entity idler) => false;
+
     public const bool CloseCountsAsInReach = false;
 }

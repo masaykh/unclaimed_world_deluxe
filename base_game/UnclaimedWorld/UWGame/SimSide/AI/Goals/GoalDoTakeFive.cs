@@ -152,8 +152,26 @@ internal class GoalDoTakeFive : CompositeGoal
 		RemoveAllSubgoals();
 	}
 
+	/// <summary>Seconds since PreyFearMod's watchful check last ran; not saved, it simply starts again.</summary>
+	private double secondsSinceWatch;
+
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
+		// MOD: PreyFearMod - timid prey watches while idle, not only between idle animations. The
+		// studio's check (below) runs when an animation ends, every few seconds, and a dog closing
+		// in got its bite first: "stopping and reconsider situation ... then got bitten" (Kastuk).
+		if (TestForDanger && UWGame.Mods.PreyFearMod.IsWatchful(entity))
+		{
+			secondsSinceWatch += elapsed.ElapsedGameTime.TotalSeconds;
+			if (secondsSinceWatch >= UWGame.Mods.PreyFearMod.WatchEverySeconds)
+			{
+				secondsSinceWatch = 0.0;
+				if (!ValidateSafetyAndTakeAction(null))
+				{
+					return;
+				}
+			}
+		}
 		Status status = ProcessSubgoals(elapsed);
 		if (status == Status.Completed)
 		{

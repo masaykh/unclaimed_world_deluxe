@@ -85,6 +85,18 @@ public static class PreyFearMod
     public static bool ChecksSafetyWhileEating(Entity eater) =>
         PreyFleesSetting.On && eater?.EntityType?.Person == null && IsTimidPrey(eater.EntityType);
 
+    /// <summary>How often idle timid prey looks round for a hunter (GoalDoTakeFive), in game seconds.</summary>
+    public const double WatchEverySeconds = 0.25;
+
+    /// <summary>
+    /// Called from GoalDoTakeFive: whether this idler should check for danger continuously rather than
+    /// between idle animations. Kastuk, after the first version: quadites ran, then stopped "and
+    /// reconsider situation, trying to scout or idle, then got bitten and running away again" - the
+    /// studio checks only when an idle animation ends, and the dog arrived in between.
+    /// </summary>
+    public static bool IsWatchful(Entity idler) =>
+        PreyFleesSetting.On && idler?.EntityType?.Person == null && IsTimidPrey(idler.EntityType);
+
     /// <summary>Called from AttackJob's melee test: whether being closer than the ideal distance still counts.</summary>
     public static bool CloseCountsAsInReach => CloseInReachSetting.On;
 }
