@@ -28,8 +28,6 @@ public class Minimap
 
 	private Image minimapLocationFrame;
 
-	private CRTScreen crtScreen;
-
 	private Regulator mapRegulator = new Regulator(The.Client.ClientRandomGenerator, 0.5, "Minimap");
 
 	private Texture2D mapTexture;
@@ -47,10 +45,6 @@ public class Minimap
 	private Color shallowWaterColor = new Color(65, 94, 83);
 
 	private Color groundColor = new Color(161, 182, 174);
-
-	private Color structureColor = Color.DarkOrchid;
-
-	private Color unitColor = Color.Tomato;
 
 	private Color fovColor = new Color(130, 148, 141);
 
@@ -128,7 +122,7 @@ public class Minimap
 		ComputeScaleFactor();
 		if (The.Sim.Controller.GraphicsLevelSetting == Controller.GraphicsLevel.High)
 		{
-			crtScreen = The.InGameUI.DisplayPanelRenderer.AddCRT(minimap, new Point(minimap.AbsolutePosition.X, minimap.AbsolutePosition.Y), minimap.Width, minimap.Height, Level.Bottom, DisplayWindow, ReflectionToUse.Small, isMonochrome: false);
+			The.InGameUI.DisplayPanelRenderer.AddCRT(minimap, new Point(minimap.AbsolutePosition.X, minimap.AbsolutePosition.Y), minimap.Width, minimap.Height, Level.Bottom, DisplayWindow, ReflectionToUse.Small, isMonochrome: false);
 		}
 		StatusScreen.AddCRTPlasticFrame(gui, DisplayWindow, minimap.Position, minimap.Width, minimap.Height, out frame);
 		DrawMapTexture();

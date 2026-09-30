@@ -42,8 +42,6 @@ public class HuntWindow : HUDWindow
 
 	private Image headerIcon;
 
-	private FullLCDPanel.SetCollapsedSummary SetSummaryDelegate;
-
 	private Dictionary<FillableBar, bool> userChangedData = new Dictionary<FillableBar, bool>();
 
 	private TextButton btCancel;
@@ -63,7 +61,6 @@ public class HuntWindow : HUDWindow
 		DisplayWindow.ResizableBorderSize = 6;
 		DisplayWindow.Resize += DisplayWindow_Resize;
 		AddZoneNameAndHeader("", "HUNT", "HUD_icon_hunt", 12, out lblName, out lblHeader, out headerIcon);
-		SetSummaryDelegate = SidePanelEntity.SetSummaryAsTotal;
 		CreateGridHeader();
 		grid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
 		grid.IsOuterGrid = true;

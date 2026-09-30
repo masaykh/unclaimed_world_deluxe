@@ -41,11 +41,8 @@ internal class BackgroundScreen : GameScreen
 	private Texture2D backgroundTexture;
 
 	private Rectangle backgroundDest;
-	private Background backgroundType;
-
 	public BackgroundScreen(Background background)
 	{
-		backgroundType = background;
 		base.TransitionOnTime = TimeSpan.FromSeconds(0.5);
 		base.TransitionOffTime = TimeSpan.FromSeconds(0.5);
 	}

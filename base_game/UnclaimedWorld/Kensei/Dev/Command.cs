@@ -83,10 +83,6 @@ public static class Command
 
 	private static List<string> s_commandHistory = new List<string>();
 
-	private static int s_doskey = -1;
-
-	private static bool s_doskeyActive;
-
 	private static Microsoft.Xna.Framework.Color s_backgroundColour = Microsoft.Xna.Framework.Color.Crimson;
 
 	private static Microsoft.Xna.Framework.Color s_activeTextColour = Microsoft.Xna.Framework.Color.White;
@@ -513,8 +509,6 @@ public static class Command
 	private static void ClearDoskeyDelegate(string[] commandArguments)
 	{
 		s_commandHistory.Clear();
-		s_doskeyActive = false;
-		s_doskey = -1;
 	}
 
 	private static void ExitDelegate(string[] commandArguments)

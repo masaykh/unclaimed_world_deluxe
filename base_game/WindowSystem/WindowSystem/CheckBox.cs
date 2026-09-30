@@ -10,8 +10,6 @@ public class CheckBox : UIComponent, ICanBeChecked
 
 	private static int defaultHMargin = 5;
 
-	private static string defaultFont = "Content/Fonts/DefaultFont";
-
 	private static Rectangle defaultSkin = new Rectangle(1, 27, 15, 15);
 
 	private static Rectangle defaultHoverSkin = new Rectangle(17, 27, 15, 15);
@@ -56,7 +54,6 @@ public class CheckBox : UIComponent, ICanBeChecked
 	{
 		set
 		{
-			defaultFont = value;
 		}
 	}
 

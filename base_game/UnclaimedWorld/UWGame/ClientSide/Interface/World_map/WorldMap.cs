@@ -75,8 +75,6 @@ public class WorldMap : UIComponent
 
 	private Dictionary<SiteID, SiteMarker> sitesOnMap = new Dictionary<SiteID, SiteMarker>();
 
-	private Dictionary<JobID, JobID> missionsOnMap = new Dictionary<JobID, JobID>();
-
 	private int canvasWidth;
 
 	private int canvasHeight;
@@ -87,8 +85,6 @@ public class WorldMap : UIComponent
 	private RenderTarget2D renderTarget;
 
 	private PrimitiveBatch primitiveBatch;
-	private Matrix viewProj;
-
 	private List<RoundLine> roundLines = new List<RoundLine>();
 
 	private Label.LabelType axisType = Label.LabelType.LCDNormalDark;
@@ -131,7 +127,6 @@ public class WorldMap : UIComponent
 		Height = canvasHeight + 11 + 12;
 		renderTarget = new RenderTarget2D(guiManager.Game.GraphicsDevice, canvasWidth, canvasHeight);
 		primitiveBatch = new PrimitiveBatch(guiManager.ScreenWidth, guiManager.ScreenHeight, guiManager.Game.GraphicsDevice, canvasWidth, canvasHeight);
-		viewProj = primitiveBatch.Projection;
 		border = new Box(guiManager);
 		Add(border);
 		border.CornerSize = 20;

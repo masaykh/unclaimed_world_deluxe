@@ -168,8 +168,6 @@ public class Snapshotter
 
 	private Dictionary<Type, SnapshotClassVerification> snapshotClasses;
 
-	private SnapshotClassVerification snapshotClassBeingVerified;
-
 	private Stack<SnapshotClassVerification> snapshotClassesBeingVerified = new Stack<SnapshotClassVerification>();
 
 	private Dictionary<Type, int> allSnapshottedISnapshots = new Dictionary<Type, int>();
@@ -228,7 +226,6 @@ public class Snapshotter
 		m_writer = writer;
 		m_reader = null;
 		snapshotting = true;
-		snapshotClassBeingVerified = null;
 		snapshotClasses = new Dictionary<Type, SnapshotClassVerification>();
 		allSnapshottedISnapshots.Clear();
 		if (snapShotHeader)
@@ -250,7 +247,6 @@ public class Snapshotter
 		m_reader = reader;
 		m_writer = null;
 		snapshotting = true;
-		snapshotClassBeingVerified = null;
 		snapshotClasses = new Dictionary<Type, SnapshotClassVerification>();
 		SnapshotHeader snapshotHeader = (SnapshotHeader)DoISnapshot<SnapshotHeader>(null);
 		Controller controller = The.Sim.Controller;
@@ -287,7 +283,6 @@ public class Snapshotter
 		m_reader = reader;
 		m_writer = null;
 		snapshotting = true;
-		snapshotClassBeingVerified = null;
 		snapshotClasses = new Dictionary<Type, SnapshotClassVerification>();
 		SnapshotHeader obj = (SnapshotHeader)DoISnapshot<SnapshotHeader>(null);
 		obj.LoadPostProcess(this);

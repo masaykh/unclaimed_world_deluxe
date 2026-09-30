@@ -111,8 +111,6 @@ public class MapClient
 
 	private Microsoft.Xna.Framework.Point? startLeftDragMouseScreenPosition;
 
-	private SubtilePos? startLeftDragMouseSubtilePosition;
-
 	private TilePos? startLeftDragMouseTilePosition;
 
 	private bool hasRightDragged;
@@ -348,7 +346,6 @@ public class MapClient
 					EvaluateMouseDirection();
 					if ((The.InGameUI.InterfaceMode == InGameInterface.InterfaceState.None || The.InGameUI.InterfaceMode == InGameInterface.InterfaceState.EditorTool) && allowLeftDraggingToStart)
 					{
-						startLeftDragMouseSubtilePosition = MouseSubtilePosition;
 						startLeftDragMouseTilePosition = MouseTilePosition;
 						startLeftDragMouseScreenPosition = new Microsoft.Xna.Framework.Point(inputData.mouseX, inputData.mouseY);
 					}
@@ -711,7 +708,6 @@ public class MapClient
 	{
 		startLeftDragMouseTilePosition = null;
 		startLeftDragMouseScreenPosition = null;
-		startLeftDragMouseSubtilePosition = null;
 	}
 
 	public void CropTilesToConnectedArea(MapArea mapArea)

@@ -11,13 +11,10 @@ public class Lighting
 
 	public LightSource[] OutdoorLightSources;
 
-	private Renderable Parent;
-
 	private LightingType lightingType;
 
 	public Lighting(LightingType lightingType, Renderable parent)
 	{
-		Parent = parent;
 		this.lightingType = lightingType;
 	}
 

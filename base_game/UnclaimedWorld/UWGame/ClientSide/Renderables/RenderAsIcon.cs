@@ -5,8 +5,6 @@ namespace UWGame.ClientSide.Renderables;
 
 public class RenderAsIcon
 {
-	private Color color = Color.White;
-
 	public IconToRender IconToRender = IconToRender.Hook;
 
 	public IconToRender GetIconToRender()

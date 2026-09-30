@@ -17,8 +17,6 @@ public class AnimationInfo
 
 	public bool HideHandAttachments;
 
-	private double startOffsetInSeconds;
-
 	private AnimationChannelCollection boneAnimations;
 
 	private bool isGaitAnim;
@@ -32,7 +30,6 @@ public class AnimationInfo
 		set
 		{
 			startOffset = value;
-			startOffsetInSeconds = new TimeSpan(startOffset).TotalSeconds;
 		}
 	}
 

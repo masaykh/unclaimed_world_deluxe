@@ -33,8 +33,6 @@ public class AttackWindow : HUDWindow
 	private TextButton btCancel;
 
 	private TextButton btOK;
-	private bool isFirstUpdate;
-
 	public AttackWindow()
 		: base(239, 240, hasSurface: true, hasCloseButton: false, isMovable: true, "HUD_window_base", hideWhenMouseExits: false, Level.Bottom)
 	{
@@ -114,7 +112,6 @@ public class AttackWindow : HUDWindow
 
 	public override void ShowOnPlayfield(int screenPosX, int screenPosY, bool avoidRightInterfaceArea = true)
 	{
-		isFirstUpdate = true;
 		base.ShowOnPlayfield(screenPosX, screenPosY, avoidRightInterfaceArea);
 		mapArea = TileSelectionContextMenu.GetMapArea();
 		expedition = mapArea.GetOwner().Parent as Expedition;

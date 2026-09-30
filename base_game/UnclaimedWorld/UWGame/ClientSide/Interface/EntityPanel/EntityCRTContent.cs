@@ -9,8 +9,6 @@ namespace UWGame.ClientSide.Interface.EntityPanel;
 
 public class EntityCRTContent
 {
-	private Dictionary<EntityType, Entity> modelsToPlay = new Dictionary<EntityType, Entity>();
-
 	private UIComponent crtContent;
 
 	private UIComponent modelRenderer;

@@ -42,8 +42,6 @@ public class Water
 
 	private Effect waterEffect;
 
-	private Sim game;
-
 	private GameWorldRenderer renderer;
 
 	private Vector3 sunPositionSpecularityHack = new Vector3(0f, 0f, 1.5f);
@@ -72,7 +70,6 @@ public class Water
 	public void LoadContent()
 	{
 		device = The.Client.GraphicsDevice;
-		game = The.Sim;
 		Dimension drawArea = The.Client.Controller.DrawArea;
 		waterQuadWidth = drawArea.Width;
 		waterQuadHeight = drawArea.Height;

@@ -9,8 +9,6 @@ public class CRTAnimator
 
 	private AnimatedImage animationControl;
 
-	private CRTScreen crtScreen;
-
 	private Point absolutePosition;
 
 	private Point relativePosition;
@@ -20,8 +18,6 @@ public class CRTAnimator
 	private int height;
 
 	private bool isOn;
-
-	private bool microSwitchIsPlaying;
 
 	private bool longShakeIsPlaying;
 
@@ -80,7 +76,7 @@ public class CRTAnimator
 		animationControl.Height = SurfacePanel.Height;
 		animationControl.RenderType = RenderType.CRTAndLCD;
 		animationControl.DebugTag = "animationControl";
-		crtScreen = The.InGameUI.DisplayPanelRenderer.AddCRT(SurfacePanel, new Point(absolutePosition.X + 4, absolutePosition.Y + 4), width - 8, height - 8, DisplayWindow.Level, DisplayWindow, reflection, isMonochrome: true, alpha);
+		The.InGameUI.DisplayPanelRenderer.AddCRT(SurfacePanel, new Point(absolutePosition.X + 4, absolutePosition.Y + 4), width - 8, height - 8, DisplayWindow.Level, DisplayWindow, reflection, isMonochrome: true, alpha);
 	}
 
 	private void InitAnims()
@@ -247,7 +243,6 @@ public class CRTAnimator
 		}
 		else
 		{
-			microSwitchIsPlaying = true;
 		}
 		animationControl.StartAnimation(switchChannelBlackFrameSmall);
 		animationControl.Player.AnimationEndedEvent += SwitchChannelBlackFrameAnimationEnded;
@@ -276,7 +271,6 @@ public class CRTAnimator
 		SetSurfacePanelPosition();
 		longShakeIsPlaying = false;
 		shortShakeIsPlaying = false;
-		microSwitchIsPlaying = false;
 		SetSurfaceYPosition(0);
 		animationControl.Player.AnimationEndedEvent -= SwitchChannelAnimationEnded;
 	}

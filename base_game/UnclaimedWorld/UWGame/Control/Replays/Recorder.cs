@@ -34,8 +34,6 @@ public class Recorder
 
 	public bool RecordDuringPlay;
 
-	private int savedMessageIndex;
-
 	/// <summary>
 	/// PORT DEVIATION 20. The draw-label trace. randomWriter and stateWriter above are the
 	/// studio's own fields for this - declared, closed in StopRecording, and never once opened or
@@ -261,7 +259,6 @@ public class Recorder
 
 	public void StopRecording()
 	{
-		savedMessageIndex = 0;
 		isRecording = false;
 		trace?.Dispose();
 		trace = null;

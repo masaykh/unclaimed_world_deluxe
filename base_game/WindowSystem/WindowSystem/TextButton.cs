@@ -53,19 +53,8 @@ public class TextButton : UIComponent, ICanBeChecked
 		Left
 	}
 
-	private static int defaultWidth = 65;
-
 	private static int defaultHeight = 12;
 
-	private static int defaultEdgeSize = 12;
-
-	private static Rectangle defaultSkin = new Rectangle(1, 142, 25, 25);
-
-	private static Rectangle defaultHoverSkin = new Rectangle(27, 142, 25, 25);
-
-	private static Rectangle defaultPressedSkin = new Rectangle(52, 142, 25, 25);
-
-	private static Rectangle defaultHoverSkinNonEnabled = new Rectangle(1, 142, 25, 25);
 	protected Box buttonBox;
 
 	protected Label label;
@@ -90,7 +79,6 @@ public class TextButton : UIComponent, ICanBeChecked
 	{
 		set
 		{
-			defaultWidth = value;
 		}
 	}
 
@@ -106,7 +94,6 @@ public class TextButton : UIComponent, ICanBeChecked
 	{
 		set
 		{
-			defaultEdgeSize = value;
 		}
 	}
 
@@ -114,7 +101,6 @@ public class TextButton : UIComponent, ICanBeChecked
 	{
 		set
 		{
-			defaultSkin = value;
 		}
 	}
 
@@ -122,7 +108,6 @@ public class TextButton : UIComponent, ICanBeChecked
 	{
 		set
 		{
-			defaultHoverSkin = value;
 		}
 	}
 
@@ -130,7 +115,6 @@ public class TextButton : UIComponent, ICanBeChecked
 	{
 		set
 		{
-			defaultPressedSkin = value;
 		}
 	}
 

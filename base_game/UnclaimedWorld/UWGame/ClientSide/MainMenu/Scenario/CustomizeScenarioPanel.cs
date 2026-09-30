@@ -41,10 +41,6 @@ public class CustomizeScenarioPanel : Panel
 
 	private Image image;
 
-	private int descriptionBottom;
-
-	private CRTScreen crtScreen;
-
 	private Box displayBoxOptions;
 
 	private LCDScreen lcdScreenOptions;
@@ -60,7 +56,6 @@ public class CustomizeScenarioPanel : Panel
 	private Label lblExtraOptions;
 
 	private int scoreHeaderRight = 856;
-	private CommonInterface customizeScenarioInterface;
 	private CustomizeScenarioScreen screen;
 
 	private RadioGroup mainDifficultyRadioGroup;
@@ -85,14 +80,11 @@ public class CustomizeScenarioPanel : Panel
 	private int mainDifficultyYPos;
 
 	private int nameColumnWidth = 80;
-	private int randomizeWidth = 60;
-
 	public event EventHandler CancelClick;
 
 	public CustomizeScenarioPanel(CommonInterface intf, Point position, CustomizeScenarioScreen screen)
 		: base(intf, "CREATE GAME", position, new Vector2(1000f, intf.gui.ScreenHeight - 180), Level.Middle)
 	{
-		customizeScenarioInterface = intf;
 		this.screen = screen;
 		selectionColumnWidth = 148;
 		CreateOptionsScreen(intf);
@@ -207,10 +199,9 @@ public class CustomizeScenarioPanel : Panel
 		image.X = x;
 		image.Y = y;
 		StatusScreen.AddCRTPlasticFrame(Interface.gui, Window, image.Position, num2, num3, out var plasticEdge);
-		crtScreen = Interface.DisplayPanelRenderer.AddCRT(image, new Point(plasticEdge.AbsolutePosition.X + num, plasticEdge.AbsolutePosition.Y + num), plasticEdge.Width - 2 * num, plasticEdge.Height - 2 * num, Window.Level, Window, ReflectionToUse.Small, isMonochrome: true);
+		Interface.DisplayPanelRenderer.AddCRT(image, new Point(plasticEdge.AbsolutePosition.X + num, plasticEdge.AbsolutePosition.Y + num), plasticEdge.Width - 2 * num, plasticEdge.Height - 2 * num, Window.Level, Window, ReflectionToUse.Small, isMonochrome: true);
 		int right = plasticEdge.Right;
 		FullLCDPanel.AddLCDPanel(Interface, Window, new Point(right, MarginTop), Window.Width - 16 - right, 224, out var display, out lcdSurfaceDescription, ref lcdScreenDescription);
-		descriptionBottom = display.Bottom;
 		int num4 = 12;
 		CreateSurfaceWithScrollbar(out descriptionSurfaceGrid, lcdSurfaceDescription, canHaveFocus: false);
 		descriptionSurfaceGrid.DebugTag = "descriptionGrid";
@@ -635,7 +626,6 @@ public class CustomizeScenarioPanel : Panel
 		uIComponent.CenterChildVertically(checkBox);
 		checkBox.Y++;
 		checkBox.FitToText();
-		randomizeWidth = checkBox.Width;
 		ComboBox comboBox2 = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
 		uIComponent.Add(comboBox2);
 		comboBox2.Init(ComboBoxTypes.LCD);

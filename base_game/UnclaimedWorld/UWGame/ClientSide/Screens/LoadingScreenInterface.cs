@@ -15,10 +15,6 @@ public class LoadingScreenInterface : CommonInterface
 
 	private int totalHeight = 800;
 
-	private int left;
-
-	private int top;
-
 	private EventDialog dialog;
 
 	public LoadingScreen loadingScreen;
@@ -33,8 +29,6 @@ public class LoadingScreenInterface : CommonInterface
 		loadingScreen = screen;
 		this.startGameParams = startGameParams;
 		game.Controller.ValidateDrawAreaWidth(loadPanelWidth);
-		left = (game.Controller.DrawArea.Width - loadPanelWidth) / 2;
-		top = (game.Controller.DrawArea.Height - totalHeight) / 2;
 		hintPanel = new HintPanel(this);
 		hintPanel.ShowInScreenSpace((gui.ScreenWidth - hintPanel.DisplayWindow.Width) / 2, gui.ScreenHeight - hintPanel.DisplayWindow.Height - 80);
 	}

@@ -21,8 +21,6 @@ public class HUDDateAndWeather : HUDWindow
 
 	private Label weatherAhead;
 
-	private Color headerColor = new Color(226, 226, 226);
-
 	private Color weatherNowColor = "4BE7CF".ColorFromHex();
 
 	private Color weatherLaterColor = "22B89D".ColorFromHex();

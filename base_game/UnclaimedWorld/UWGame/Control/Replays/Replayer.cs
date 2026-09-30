@@ -23,15 +23,11 @@ public class Replayer
 
 	public ReplayingMode Mode;
 
-	private List<string> randomGetMessages = new List<string>();
-
 	private InputManager inputManager;
 
 	private UnclaimedWorld game;
 
 	private Controller controller;
-	private List<string> savedAIStates = new List<string>();
-
 	/// <summary>PORT DEVIATION 20. The recorded draw trace this replay is compared against.</summary>
 	private ReplayTrace trace;
 

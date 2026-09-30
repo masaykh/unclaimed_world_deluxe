@@ -39,8 +39,6 @@ public class EvaluateEat : GoalEvaluator
 
 	private List<EntityGroup> ownersOfGatheringPlaces;
 
-	private float currentStomachRoom;
-
 	private Progress progress;
 
 	private int currentIndex;
@@ -98,7 +96,6 @@ public class EvaluateEat : GoalEvaluator
 				result = 0.0;
 				return CalculateResult.Done;
 			}
-			currentStomachRoom = entity.AgentStorage.GetFreeStomachCapacity();
 			allScores.Clear();
 			cachedNutritionScores.Clear();
 			needsToBeCancelled.Clear();

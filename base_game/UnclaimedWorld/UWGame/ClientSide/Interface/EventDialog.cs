@@ -34,8 +34,6 @@ public class EventDialog : Panel
 
 	private UIComponent lcdSurface;
 
-	private CRTScreen crtScreen;
-
 	private Grid surfaceGrid;
 	private DialogOption[] dialogOptions;
 	private TextButton[] buttons = new TextButton[4];
@@ -87,7 +85,7 @@ public class EventDialog : Panel
 		image.X = 496;
 		image.Y = 33;
 		StatusScreen.AddCRTPlasticFrame(intf.gui, Window, new Point(image.X, image.Y), crtWidth, crtHeight, out crtPlasticEdge);
-		crtScreen = intf.DisplayPanelRenderer.AddCRT(image, new Point(image.AbsolutePosition.X, image.AbsolutePosition.Y), crtWidth, crtHeight, Window.Level, Window, ReflectionToUse.Small, isMonochrome: true);
+		intf.DisplayPanelRenderer.AddCRT(image, new Point(image.AbsolutePosition.X, image.AbsolutePosition.Y), crtWidth, crtHeight, Window.Level, Window, ReflectionToUse.Small, isMonochrome: true);
 		for (int i = 0; i < 4; i++)
 		{
 			TextButton textButton = new TextButton(intf.gui);

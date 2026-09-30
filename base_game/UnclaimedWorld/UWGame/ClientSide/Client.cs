@@ -120,8 +120,6 @@ public class Client : GameScreen
 
 	private long previousDrawElapsedTotalGameTime;
 
-	private StringBuilder description = new StringBuilder("");
-
 	private Regulator printAllegiancesRegulator;
 
 	private Regulator printPerformanceRegulator;
@@ -140,20 +138,6 @@ public class Client : GameScreen
 	private Vector3 testRotation = new Vector3(0f);
 
 	private Vector3 testTranslation = new Vector3(0f);
-	private Dictionary<string, AttachPoint> attachorOptions = new Dictionary<string, AttachPoint>();
-
-	private Dictionary<string, string> animationOptions = new Dictionary<string, string>();
-
-	private Dictionary<string, MovementMap> overlayOptions = new Dictionary<string, MovementMap>();
-
-	private Dictionary<string, RegionMap> regionMapOverlayOptions = new Dictionary<string, RegionMap>();
-
-	private Dictionary<string, ThreatMap> threatMapOverlayOptions = new Dictionary<string, ThreatMap>();
-
-	private Dictionary<string, DiscomfortMap> discomfortMapOverlayOptions = new Dictionary<string, DiscomfortMap>();
-
-	private Dictionary<string, ResourceType> resourceTypeOverlayOptions = new Dictionary<string, ResourceType>();
-
 	public const float MaxSpeed = 180f;
 
 	public GraphicsDevice GraphicsDevice => base.Controller.GraphicsDevice;

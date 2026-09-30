@@ -45,10 +45,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 
 	private static int defaultVMargin = 0;
 
-	private static string defaultFont = "Content/Fonts/DefaultFont";
-
-	private static Rectangle defaultSkin = new Rectangle(84, 41, 25, 25);
-
 	public const int ScrollBarAndGapMain = 25;
 
 	public const int GapAndScrollbarComm = 20;
@@ -156,7 +152,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 	{
 		set
 		{
-			defaultFont = value;
 		}
 	}
 
@@ -164,7 +159,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 	{
 		set
 		{
-			defaultSkin = value;
 		}
 	}
 

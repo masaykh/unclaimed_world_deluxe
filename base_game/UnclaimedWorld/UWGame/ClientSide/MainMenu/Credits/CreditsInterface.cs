@@ -10,10 +10,6 @@ public class CreditsInterface : CommonInterface
 
 	private int totalHeight = 800;
 
-	private int left;
-
-	private int top;
-
 	private CreditsPanel hud;
 
 	public CreditsScreen creditsScreen;
@@ -23,8 +19,6 @@ public class CreditsInterface : CommonInterface
 	{
 		creditsScreen = createGameScreen;
 		game.Controller.ValidateDrawAreaWidth(loadPanelWidth);
-		left = (game.Controller.DrawArea.Width - loadPanelWidth) / 2;
-		top = (game.Controller.DrawArea.Height - totalHeight) / 2;
 	}
 
 	public override void LoadContent()

@@ -17,8 +17,6 @@ public class HorizontalList : UIComponent, IKeyedEntryComponent
 
 	private static string defaultFont = GUIManager.LCDandHUDBodyFontPath;
 
-	private static Rectangle defaultSkin = new Rectangle(84, 41, 25, 25);
-
 	private bool isAddingEntries;
 
 	private int? MaxNumberOfEntries;
@@ -34,8 +32,6 @@ public class HorizontalList : UIComponent, IKeyedEntryComponent
 	private Dictionary<object, UIComponent> entriesByKey;
 
 	private SpriteFont font;
-
-	private string fontFileName;
 
 	private List<Icon> poolOfIcons;
 
@@ -91,7 +87,6 @@ public class HorizontalList : UIComponent, IKeyedEntryComponent
 	{
 		set
 		{
-			defaultSkin = value;
 		}
 	}
 
@@ -113,7 +108,6 @@ public class HorizontalList : UIComponent, IKeyedEntryComponent
 	{
 		set
 		{
-			fontFileName = value;
 			font = base.GUIManager.ContentManager.Load<SpriteFont>(value);
 			RefreshEntries();
 		}

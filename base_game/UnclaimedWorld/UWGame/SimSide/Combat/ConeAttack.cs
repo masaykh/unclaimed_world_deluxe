@@ -13,14 +13,10 @@ public class ConeAttack : AreaAttack
 	public float WidthInDegrees;
 
 	[XmlIgnore]
-	private float lengthSquared;
-
-	[XmlIgnore]
 	private float angleDistanceFromCenterLineInRadians;
 
 	public override void Initialize()
 	{
-		lengthSquared = Length * Length;
 		angleDistanceFromCenterLineInRadians = MathHelper.ToRadians(WidthInDegrees) / 2f;
 	}
 

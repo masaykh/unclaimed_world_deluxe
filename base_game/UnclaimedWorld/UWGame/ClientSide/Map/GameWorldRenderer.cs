@@ -187,7 +187,6 @@ public class GameWorldRenderer
 
 	private short[] lightSourceIndices;
 
-	private Plane noClippingPlane;
 	public Matrix TerrainViewMatrix;
 
 	public Vector3 TerrainCameraPosition;
@@ -303,8 +302,6 @@ public class GameWorldRenderer
 
 	private Dictionary<TerrainTile, List<TerrainTilePosition>> tilesToPositions = new Dictionary<TerrainTile, List<TerrainTilePosition>>();
 
-	private bool isInGodMode;
-
 	private int tileStartShadowsX;
 
 	private int tileEndShadowsX;
@@ -318,8 +315,6 @@ public class GameWorldRenderer
 	private List<IDrawnAsGroundSprite> middleSprites = new List<IDrawnAsGroundSprite>();
 
 	private List<IDrawnAsGroundSprite> topSprites = new List<IDrawnAsGroundSprite>();
-
-	private List<IDrawnAsGroundSprite> outlineSprites = new List<IDrawnAsGroundSprite>();
 
 	public const int GutterSize = 2;
 	private Viewport DrawAreaViewport;
@@ -354,7 +349,7 @@ public class GameWorldRenderer
 
 	public void Init()
 	{
-		noClippingPlane = CreatePlane(4000f, new Vector3(0f, 0f, -1f), clipSide: true);
+		CreatePlane(4000f, new Vector3(0f, 0f, -1f), clipSide: true);
 	}
 
 	public void LoadContent()
@@ -1248,7 +1243,6 @@ public class GameWorldRenderer
 		bool drawModels = true;
 		if (The.Sim.Mode == Sim.EngineMode.Edit)
 		{
-			isInGodMode = true;
 		}
 		float x = The.MapUI.MapWindowWorldPosition.X + (float)The.MapUI.mapWindowWidth / 2f;
 		float y = The.MapUI.MapWindowWorldPosition.Y + (float)The.MapUI.mapWindowHeight / 2f;

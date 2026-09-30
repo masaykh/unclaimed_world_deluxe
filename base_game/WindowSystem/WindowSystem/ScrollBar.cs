@@ -21,22 +21,6 @@ public class ScrollBar : Bar
 
 	private static Rectangle defaultTopButtonSkin = new Rectangle(84, 23, 17, 17);
 
-	private static Rectangle defaultTopButtonHoverSkin = new Rectangle(102, 23, 17, 17);
-
-	private static Rectangle defaultTopButtonPressedSkin = new Rectangle(120, 23, 17, 17);
-
-	private static Rectangle defaultBottomButtonSkin = new Rectangle(84, 5, 17, 17);
-
-	private static Rectangle defaultBottomButtonHoverSkin = new Rectangle(102, 5, 17, 17);
-
-	private static Rectangle defaultBottomButtonPressedSkin = new Rectangle(120, 5, 17, 17);
-
-	private static Rectangle defaultThumbSkin = new Rectangle(66, 23, 17, 10);
-
-	private static Rectangle defaultThumbHoverSkin = new Rectangle(66, 34, 17, 10);
-
-	private static Rectangle defaultThumbPressedSkin = new Rectangle(66, 45, 17, 10);
-
 	public ScrollBarType ScrollType;
 	private ImageButton topButton;
 
@@ -68,8 +52,6 @@ public class ScrollBar : Bar
 
 	private int dragPoint;
 
-	private Point lastLocation;
-
 	public static int DefaultButtonSize
 	{
 		set
@@ -98,7 +80,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultTopButtonHoverSkin = value;
 		}
 	}
 
@@ -106,7 +87,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultTopButtonPressedSkin = value;
 		}
 	}
 
@@ -114,7 +94,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultBottomButtonSkin = value;
 		}
 	}
 
@@ -122,7 +101,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultBottomButtonHoverSkin = value;
 		}
 	}
 
@@ -130,7 +108,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultBottomButtonPressedSkin = value;
 		}
 	}
 
@@ -138,7 +115,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultThumbSkin = value;
 		}
 	}
 
@@ -146,7 +122,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultThumbHoverSkin = value;
 		}
 	}
 
@@ -154,7 +129,6 @@ public class ScrollBar : Bar
 	{
 		set
 		{
-			defaultThumbPressedSkin = value;
 		}
 	}
 
@@ -390,7 +364,6 @@ public class ScrollBar : Bar
 		isTopOver = false;
 		isBottomOver = false;
 		draggingThumb = false;
-		lastLocation = Point.Zero;
 		switch (type)
 		{
 		case ScrollBarType.CommRoller:
@@ -683,7 +656,6 @@ public class ScrollBar : Bar
 		if (args.Button == MouseButtons.Left)
 		{
 			draggingThumb = true;
-			lastLocation = args.Position;
 			dragPoint = args.Position.Y - thumb.AbsolutePosition.Y;
 			thumb.CurrentSkinState = SkinState.Pressed;
 		}

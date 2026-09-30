@@ -14,8 +14,6 @@ public class BonePose
 
 	private AnimationTrack mainAnimationTrack;
 
-	private AnimationTrack secondGaitTrack;
-
 	private BonePoseCollection children;
 
 	private bool? blendToSpecialTransform;
@@ -25,10 +23,6 @@ public class BonePose
 	private bool doesMainAnimAffectBone;
 
 	private bool doesMainBlendAnimAffectBone;
-
-	private bool doesSecondGaitAnimAffectBone;
-
-	private bool doesSecondGaitBlendAnimAffectBone;
 
 	private List<AnimationTrack> additionalAnimationTracks = new List<AnimationTrack>();
 
@@ -125,7 +119,6 @@ public class BonePose
 			mainAnimationTrack = track;
 			break;
 		case AnimationTrack.TrackType.ExtraGait:
-			secondGaitTrack = track;
 			break;
 		case AnimationTrack.TrackType.Additional:
 			additionalAnimationTracks.Add(track);
@@ -160,19 +153,15 @@ public class BonePose
 		case AnimationTrack.TrackType.ExtraGait:
 			if (track.currentController != null)
 			{
-				doesSecondGaitAnimAffectBone = track.currentController.AnimationInfo.AffectsBone(name);
 			}
 			else
 			{
-				doesSecondGaitAnimAffectBone = false;
 			}
 			if (track.controllerBeingBlendedTo != null)
 			{
-				doesSecondGaitBlendAnimAffectBone = track.controllerBeingBlendedTo.AnimationInfo.AffectsBone(name);
 			}
 			else
 			{
-				doesSecondGaitBlendAnimAffectBone = false;
 			}
 			break;
 		case AnimationTrack.TrackType.Additional:

@@ -46,8 +46,6 @@ public class GatherResourcesWindow : HUDWindow
 
 	private Image headerIcon;
 
-	private FullLCDPanel.SetCollapsedSummary SetSummaryDelegate;
-
 	private Dictionary<ResourceType, MapArea.ResourcesAndJobs> data = new Dictionary<ResourceType, MapArea.ResourcesAndJobs>();
 
 	private Dictionary<FillableBar, bool> userChangedData = new Dictionary<FillableBar, bool>();
@@ -73,7 +71,6 @@ public class GatherResourcesWindow : HUDWindow
 		DisplayWindow.ResizableBorderSize = 6;
 		DisplayWindow.Resize += DisplayWindow_Resize;
 		AddZoneNameAndHeader("", "GATHER", "HUD_icon_gather", 12, out lblName, out lblHeader, out headerIcon);
-		SetSummaryDelegate = SidePanelEntity.SetSummaryAsTotal;
 		CreateGridHeader();
 		outerGrid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
 		outerGrid.IsOuterGrid = true;

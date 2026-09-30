@@ -22,8 +22,6 @@ public class ListBox : UIComponent, IHasText
 
 	private static SpriteFont defaultFont = GUIManager.LCDandHUDFont;
 
-	private static Rectangle defaultSkin = new Rectangle(84, 41, 25, 25);
-
 	private bool isAddingEntries;
 
 	public int scrollBarXOffset;
@@ -106,7 +104,6 @@ public class ListBox : UIComponent, IHasText
 	{
 		set
 		{
-			defaultSkin = value;
 		}
 	}
 

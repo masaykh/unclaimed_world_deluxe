@@ -127,8 +127,6 @@ public class PlaceGameEntities
 
 	private static Dictionary<DebugScenarios, Tuple<StartDebugScenarioParams, LoadDebugScenario>> loadScenarioFunctions;
 
-	private static GoalPlanner doSomething;
-
 	private static DebugScenarios GetDefaultScenario()
 	{
 		// MOD: which of the 94 prepared situations the main menu's TEST button loads.
@@ -148,7 +146,6 @@ public class PlaceGameEntities
 	static PlaceGameEntities()
 	{
 		loadScenarioFunctions = new Dictionary<DebugScenarios, Tuple<StartDebugScenarioParams, LoadDebugScenario>>();
-		doSomething = DoSomething;
 		AddScenario(DebugScenarios.BushDragon, "d Mezzomap MLo", BushDragon);
 		AddScenario(DebugScenarios.NeedsTest, "d Mezzomap MLo", NeedsTest);
 		AddScenario(DebugScenarios.WeaponsTest, "d Mezzomap MLo", WeaponsTest);

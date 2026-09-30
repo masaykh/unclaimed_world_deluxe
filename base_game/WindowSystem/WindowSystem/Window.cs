@@ -20,16 +20,10 @@ public class Window : UIComponent
 	private static bool defaultHasCloseButton = true;
 	private static bool defaultFullWindowMovableArea = true;
 
-	private static int defaultTitleBarHeight = 24;
-
 	private static int defaultButtonSize = 20;
 
 	private static int defaultMargin = 0;
-	private static string defaultTitleFont = "Content/Fonts/DefaultHeading";
-
 	private static Rectangle defaultSkin = new Rectangle(15, 1, 15, 15);
-
-	private static Rectangle defaultTitleBarSkin = new Rectangle(1, 1, 13, 25);
 
 	private static Rectangle defaultCloseButtonSkin = new Rectangle(1, 168, 20, 20);
 
@@ -137,7 +131,6 @@ public class Window : UIComponent
 	{
 		set
 		{
-			defaultTitleBarHeight = value;
 		}
 	}
 
@@ -164,7 +157,6 @@ public class Window : UIComponent
 	{
 		set
 		{
-			defaultTitleFont = value;
 		}
 	}
 
@@ -182,7 +174,6 @@ public class Window : UIComponent
 	{
 		set
 		{
-			defaultTitleBarSkin = value;
 		}
 	}
 

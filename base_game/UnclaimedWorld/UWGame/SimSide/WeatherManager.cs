@@ -24,8 +24,6 @@ public class WeatherManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapsh
 
 	private float globalTemperature;
 
-	private float temperatureBeingAssigned;
-
 	public float Temperature;
 
 	private float cloudCover = 0.2f;
@@ -187,7 +185,6 @@ public class WeatherManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapsh
 		double millisecondsSinceLastReady = 0.0;
 		if (regulator.IsReady(ref millisecondsSinceLastReady))
 		{
-			temperatureBeingAssigned = globalTemperature;
 			phase = Phase.Temperature;
 			cycleTileY = 0;
 			The.Sim.CycleManager.Register(this, CycleManager.Priority.Medium);

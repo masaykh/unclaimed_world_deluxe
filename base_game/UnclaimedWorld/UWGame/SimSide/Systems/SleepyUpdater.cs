@@ -20,8 +20,6 @@ public class SleepyUpdater<T> where T : ISleepingUpdatable
 
 	private Module belongsToModule;
 
-	private HighResolutionTime timer;
-
 	private SleepyUpdaterID id = SleepyUpdaterID.Invalid;
 
 	private static SleepyUpdaterID IDCounter = SleepyUpdaterID.First;
@@ -49,7 +47,6 @@ public class SleepyUpdater<T> where T : ISleepingUpdatable
 		this.staggerUpdates = staggerUpdates;
 		belongsToModule = module;
 		AddToLookup();
-		timer = new HighResolutionTime();
 	}
 
 	private void SetDirty()

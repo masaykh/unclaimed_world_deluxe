@@ -8,10 +8,6 @@ namespace UWGame.ClientSide.PropertyPresentation;
 
 internal class PresentationTypeCategoryProcessor
 {
-	private static List<IHasExposedProperties> hasPropertiesList = new List<IHasExposedProperties>();
-
-	private static List<LeafNode> emptyPropertyPresentations = new List<LeafNode>();
-
 	private static Dictionary<object, object> currentKeys = new Dictionary<object, object>();
 
 	public static bool KeyedEntryComponentHasDataToShow(PresentationTypeCategory categoryToProcess, IHasExposedProperties hasExposedProperties, Func<string, string, float?, bool> canShowData)

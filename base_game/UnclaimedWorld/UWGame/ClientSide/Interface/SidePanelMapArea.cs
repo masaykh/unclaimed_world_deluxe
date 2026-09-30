@@ -15,8 +15,6 @@ namespace UWGame.ClientSide.Interface;
 
 public class SidePanelMapArea : RosterPanel
 {
-	private FullLCDPanel.SetCollapsedSummary SetSummaryDelegate;
-
 	private Grid outerGrid;
 
 	private CollapsablePanel cpPersons;
@@ -63,7 +61,6 @@ public class SidePanelMapArea : RosterPanel
 	public SidePanelMapArea()
 		: base(The.InGameUI.sidePanelHeight, isInfoPanel: true)
 	{
-		SetSummaryDelegate = SetSummaryAsTotal;
 		InitStatusContentPanel();
 		int value = 20;
 		outerGrid = RosterPanel.CreateOuterGridForCollapsableLists(The.InGameUI.gui, lcdSurface);

@@ -71,8 +71,6 @@ public class InGameInterface : CommonInterface
 
 	public EntityGroupID? UIOwner;
 
-	private HashSet<IKnownEntityData> entitiesToShowMarkerWindowsFor = new HashSet<IKnownEntityData>();
-
 	private List<object> markersToRemove = new List<object>();
 
 	public OverlaySettings OverlaySettings;

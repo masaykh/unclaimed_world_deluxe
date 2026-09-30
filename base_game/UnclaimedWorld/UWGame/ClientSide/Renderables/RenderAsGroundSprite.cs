@@ -12,8 +12,6 @@ public class RenderAsGroundSprite : RenderAsBase, IDrawnAsGroundSprite
 
 	private bool propertiesAreDirty = true;
 
-	private bool overlayPropertiesAreDirty = true;
-
 	public RoadAndPathQuad quad = new RoadAndPathQuad();
 
 	public RenderAsGroundSprite(Entity parent, RenderAsGroundSpriteType type, Renderable renderable)
@@ -43,7 +41,6 @@ public class RenderAsGroundSprite : RenderAsBase, IDrawnAsGroundSprite
 
 	public void SetOverlayPropertiesAreDirty()
 	{
-		overlayPropertiesAreDirty = true;
 	}
 
 	public void CopyQuadToVertexBuffer(VertexGroundFeature[] featureVertices, ref int index, Renderable.AdditionalEffect? overridingEffectID = null)

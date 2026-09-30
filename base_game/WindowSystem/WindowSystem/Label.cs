@@ -55,8 +55,6 @@ public class Label : UIComponent, IHasText
 		Line
 	}
 
-	private static string defaultFont;
-
 	private static Color defaultColor;
 
 	private LabelType type;
@@ -91,8 +89,6 @@ public class Label : UIComponent, IHasText
 
 	private Color color;
 
-	private bool isRedrawRequired;
-
 	private Viewport viewPort;
 
 	private static RasterizerState scissorTestRasterizerState;
@@ -100,8 +96,6 @@ public class Label : UIComponent, IHasText
 	private AnimationMode animationMode;
 
 	public int? AnimateOnCRTScreenLineNo;
-
-	private static Color digitalGreen;
 
 	public static Color CRTLightBlue;
 	public static Color LCDErrorColor;
@@ -153,7 +147,6 @@ public class Label : UIComponent, IHasText
 	{
 		set
 		{
-			defaultFont = value;
 		}
 	}
 
@@ -249,7 +242,6 @@ public class Label : UIComponent, IHasText
 			}
 			FitToText();
 			Redraw();
-			isRedrawRequired = true;
 		}
 	}
 
@@ -303,7 +295,6 @@ public class Label : UIComponent, IHasText
 			{
 				isCursorShown = value;
 				Redraw();
-				isRedrawRequired = true;
 			}
 		}
 	}
@@ -358,7 +349,6 @@ public class Label : UIComponent, IHasText
 				ResetHeight();
 			}
 			Redraw();
-			isRedrawRequired = true;
 		}
 	}
 
@@ -383,7 +373,6 @@ public class Label : UIComponent, IHasText
 		{
 			this.color = value;
 			Redraw();
-			isRedrawRequired = true;
 			foreach (UIComponent control in base.Controls)
 			{
 				if (control is Label { normalColor: var color } label)
@@ -690,9 +679,7 @@ public class Label : UIComponent, IHasText
 
 	static Label()
 	{
-		defaultFont = "Content/Fonts/DefaultFont";
 		defaultColor = Color.Black;
-		digitalGreen = new Color(98, 251, 187);
 		CRTLightBlue = new Color(188, 216, 242);
 		LCDErrorColor = Color.Red;
 		scissorTestRasterizerState = new RasterizerState();
@@ -1093,7 +1080,6 @@ public class Label : UIComponent, IHasText
 
 	public override void Initialize()
 	{
-		isRedrawRequired = true;
 		base.Initialize();
 	}
 
@@ -1105,7 +1091,6 @@ public class Label : UIComponent, IHasText
 
 	public new void UnloadGraphicsContent(bool unloadAllContent)
 	{
-		isRedrawRequired = true;
 		base.UnloadGraphicsContent(unloadAllContent);
 	}
 

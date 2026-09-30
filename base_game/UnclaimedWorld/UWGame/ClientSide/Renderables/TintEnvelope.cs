@@ -12,10 +12,6 @@ public class TintEnvelope
 		Sustain
 	}
 
-	private uint m_sustainCounter;
-
-	private State m_envState;
-
 	private bool m_affect;
 
 	public void update()
@@ -28,17 +24,14 @@ public class TintEnvelope
 
 	public void sustain()
 	{
-		m_envState = State.Sustain;
 	}
 
 	public void release()
 	{
-		m_envState = State.Decay;
 	}
 
 	public void rest()
 	{
-		m_envState = State.Rest;
 	}
 
 	public bool isEffective()
@@ -61,6 +54,5 @@ public class TintEnvelope
 
 	public void setSustain(uint x)
 	{
-		m_sustainCounter = x;
 	}
 }

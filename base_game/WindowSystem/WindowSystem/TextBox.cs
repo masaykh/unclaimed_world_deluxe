@@ -22,10 +22,6 @@ public class TextBox : UIComponent
 
 	private static int defaultVMargin = 3;
 
-	private static string defaultFont = "Content/Fonts/DefaultFont";
-
-	private static Rectangle defaultSkin = new Rectangle(84, 41, 25, 25);
-
 	private Box box;
 
 	private Label label;
@@ -76,7 +72,6 @@ public class TextBox : UIComponent
 	{
 		set
 		{
-			defaultFont = value;
 		}
 	}
 
@@ -84,7 +79,6 @@ public class TextBox : UIComponent
 	{
 		set
 		{
-			defaultSkin = value;
 		}
 	}
 

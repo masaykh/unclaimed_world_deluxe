@@ -54,8 +54,6 @@ public class LoadingScreen : GameScreen
 
 	private bool userContinued;
 
-	private static int imageToShow = DateTime.Now.Millisecond;
-
 	private bool startGameQueueHasFinished;
 
 	private bool startGame;

@@ -60,8 +60,6 @@ public class InventoryPanel : RosterPanel
 	public const int MaxStockOrder = 99;
 	private bool haveActiveTracking = true;
 
-	private Rectangle screenDimensions = new Rectangle(40, 700, 400, 300);
-
 	private Grid grdCategoryView;
 
 	private Grid grdListView;
@@ -134,7 +132,6 @@ public class InventoryPanel : RosterPanel
 
 	private Color encyclopediaTint;
 
-	private Dictionary<EntityType, bool> standingOrderButtonWasChecked = new Dictionary<EntityType, bool>();
 	private TextButton latestCheckedTextButton;
 
 	public InventoryPanel()

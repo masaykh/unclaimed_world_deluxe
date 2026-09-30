@@ -46,8 +46,6 @@ public class ProductionOrderControl : UIComponent
 
 	private Icon icWarning;
 
-	private bool isFirstUpdate = true;
-
 	private bool isSliderBeingDragged;
 
 	/// <summary>ReserveMod's "R": pressed, the slider edits the item's reserve instead of its order.</summary>
@@ -330,7 +328,6 @@ public class ProductionOrderControl : UIComponent
 			break;
 		}
 		}
-		isFirstUpdate = false;
 	}
 
 	private bool IsEditingReserve => btReserve != null && btReserve.IsChecked && fillableBar != null;

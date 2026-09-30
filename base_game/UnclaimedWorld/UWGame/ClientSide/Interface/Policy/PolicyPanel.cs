@@ -4,10 +4,6 @@ namespace UWGame.ClientSide.Interface.Policy;
 
 public class PolicyPanel : RosterPanel
 {
-	private TiersPage tiersPage;
-
-	private WeaponsPage weaponsPage;
-
 	private TabControl tab;
 
 	public PolicyPanel()
@@ -15,8 +11,8 @@ public class PolicyPanel : RosterPanel
 	{
 		GUIManager gui = Interface.gui;
 		tab = new TabControl(gui, lcdSurface);
-		tiersPage = new TiersPage(tab);
-		weaponsPage = new WeaponsPage(tab);
+		new TiersPage(tab);
+		new WeaponsPage(tab);
 		tab.NewPageSelected += tab_NewPageSelected;
 	}
 

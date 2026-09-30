@@ -16,12 +16,9 @@ public class OverlayPanel
 
 	public ImageButton btAccessMinimap;
 
-	private InputData frameInput;
-
 	public OverlayPanel(int xPos)
 	{
 		CreateButtonWindow(intf.gui, xPos, "scanpanel", 22, out DisplayWindow);
-		frameInput = The.Client.Controller.InputData;
 		int num = 10;
 		int y = 16;
 		btAccessMinimap = new ImageButton(intf.gui);
