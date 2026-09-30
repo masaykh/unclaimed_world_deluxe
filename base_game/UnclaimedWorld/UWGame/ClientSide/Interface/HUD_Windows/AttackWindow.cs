@@ -22,9 +22,6 @@ public class AttackWindow : HUDWindow
 	private Expedition expedition;
 
 	private CheckBox cbAttackVermin;
-
-	private Grid grid;
-
 	private FillableBar fbNoOfAttackers;
 
 	private Label lblName;
@@ -36,9 +33,6 @@ public class AttackWindow : HUDWindow
 	private TextButton btCancel;
 
 	private TextButton btOK;
-
-	private int itemTypeIconColumnX = 10;
-
 	private bool isFirstUpdate;
 
 	public AttackWindow()
@@ -118,54 +112,6 @@ public class AttackWindow : HUDWindow
 	{
 	}
 
-	private List<Tuple<EntityType, bool>> GetPreyToDisplay()
-	{
-		List<Tuple<EntityType, bool>> list = new List<Tuple<EntityType, bool>>();
-		HashSet<EntityType> habitats = GetHabitats();
-		if (habitats != null)
-		{
-			foreach (EntityType item in habitats)
-			{
-				if (The.InGameUI.UIAllegiance.RepresentativeEntityType.IntelligenceType.PreyTypes.Contains(item))
-				{
-					list.Add(new Tuple<EntityType, bool>(item, item2: true));
-				}
-			}
-		}
-		foreach (EntityType item2 in The.InGameUI.UIAllegiance.SharedKnowledge.PlaySiteKnowledge.SpottedPrey)
-		{
-			if (habitats == null || !habitats.Contains(item2))
-			{
-				list.Add(new Tuple<EntityType, bool>(item2, item2: false));
-			}
-		}
-		return list;
-	}
-
-	private HashSet<EntityType> GetHabitats()
-	{
-		HashSet<Collidable<Expedition>> expeditions = new HashSet<Collidable<Expedition>>();
-		mapArea.IterateArea(delegate(TerrainTile tile)
-		{
-			GetPreyHabitatsOnTile(tile, expeditions);
-		});
-		HashSet<EntityType> set = null;
-		foreach (Collidable<Expedition> item in expeditions)
-		{
-			Common.AddToSet(ref set, item.Parent.Allegiance.RepresentativeEntityType);
-		}
-		return set;
-	}
-
-	private void GetPreyHabitatsOnTile(TerrainTile tile, HashSet<Collidable<Expedition>> expeditions)
-	{
-		if (tile.HasEverBeenSeenByPlayer)
-		{
-			Vector2 location = MapManager.TileToWorldPosVector2(tile.TilePos.ToPoint());
-			The.Sim.PlaySite.PlaySite.ExpeditionRadiusQuadTree.GetCollidablesContainingPoint(location, expeditions);
-		}
-	}
-
 	public override void ShowOnPlayfield(int screenPosX, int screenPosY, bool avoidRightInterfaceArea = true)
 	{
 		isFirstUpdate = true;
@@ -190,32 +136,5 @@ public class AttackWindow : HUDWindow
 			cbAttackVermin.Enabled = true;
 		}
 		SetDisplayName(zoneName, lblName, lblHeader, headerIcon);
-	}
-
-	private UIComponent AddRow(EntityType entityType, EntityGroup owner)
-	{
-		UIComponent uIComponent = new UIComponent(gui);
-		grid.AddEntry(entityType, uIComponent);
-		uIComponent.OrderByTag1 = entityType.PluralName;
-		InventoryPanel.AddEntityTypeIcon(entityType, uIComponent, itemTypeIconColumnX);
-		DataTypeButton dataTypeButton = new DataTypeButton(gui, DataSheet.InfoToShow.Data, entityType, owner.ID, useUIOwner: false);
-		dataTypeButton.Init(TextButton.TextButtonType.HUDToolTipWhite);
-		dataTypeButton.ID = UIComponent.DataControlID.Caption;
-		dataTypeButton.IsRoot = true;
-		dataTypeButton.Text = entityType.PluralName;
-		uIComponent.Add(dataTypeButton);
-		dataTypeButton.TextAlignment = TextButton.TextAlign.Left;
-		dataTypeButton.Width = 125;
-		dataTypeButton.X = 22;
-		dataTypeButton.DebugTag = "entityTypeButton";
-		CheckBox checkBox = new CheckBox(gui);
-		checkBox.Init(CheckBoxType.HUDCheckBox);
-		checkBox.ID = UIComponent.DataControlID.Selector;
-		checkBox.ToolTip = "If checked, any entities of this type will be attacked";
-		uIComponent.AlignVertically(checkBox);
-		checkBox.IsChecked = false;
-		checkBox.Tag1 = entityType;
-		uIComponent.OrderByTag2 = entityType.PluralName;
-		return uIComponent;
 	}
 }

@@ -278,29 +278,6 @@ public class GoalMoveToPosition : CompositeGoal
 		GoByVehicle(vehicleToUse);
 	}
 
-	private static double ScoreComfort(IKnownEntityData vehicle)
-	{
-		if (vehicle != null)
-		{
-			return 1.0;
-		}
-		return 0.3;
-	}
-
-	private static double ScoreMainVehicleFunction(EntityType vehicle)
-	{
-		VehicleContainerType vehicleContainerType = (VehicleContainerType)vehicle.ContainerType;
-		if (vehicleContainerType.MainFunction == VehicleContainerType.Function.PersonalTransport)
-		{
-			return 1.0;
-		}
-		if (vehicleContainerType.MainFunction == VehicleContainerType.Function.Hauling)
-		{
-			return 0.4;
-		}
-		return 0.0;
-	}
-
 	private void GoByVehicle(IKnownEntityData vehicleToUse)
 	{
 		Rectangle surroundingAreaUsingEntityRadius = Vehicle.GetSurroundingAreaUsingEntityRadius(vehicleToUse, DestinationTilePos.Value.ToPoint());

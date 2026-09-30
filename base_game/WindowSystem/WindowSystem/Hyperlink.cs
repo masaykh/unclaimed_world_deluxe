@@ -14,9 +14,6 @@ public class Hyperlink : TextButton
 	public Point? TargetMapPosition;
 
 	public uint? TargetZoneID;
-
-	private new const string toolTip = "LMB: Select the link target.\n RMB: Center on target.\n Double click: Select and center.";
-
 	private Color normalColor = Color.Black;
 
 	public static Color HoverColor = Color.Yellow;

@@ -146,14 +146,6 @@ public class UpgradeWindow : HUDWindow
 		categoryGrid.IsOuterGrid = false;
 	}
 
-	private static void AllowItems(CollapsablePanel cpCategory)
-	{
-		foreach (UIComponent entry in ((Grid)cpCategory.ExpandedPanel.Controls[0]).Entries)
-		{
-			((ImageButton)entry.FindChildById(UIComponent.DataControlID.CurrentOrders)).IsChecked = true;
-		}
-	}
-
 	private UIComponent AddItemRow(Grid categoryGrid, UpgradeCategory upgradeCategory, EntityType entityType, EntityGroup owner)
 	{
 		UIComponent uIComponent = new UIComponent(gui);

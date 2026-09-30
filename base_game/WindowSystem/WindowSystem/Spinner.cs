@@ -24,9 +24,6 @@ public class Spinner : UIComponent
 	protected int noOfDigits = 3;
 
 	protected int defaultWidth = 40;
-
-	private double seconds;
-
 	private bool increaseIsPressed;
 
 	private bool decreaseIsPressed;
@@ -38,12 +35,6 @@ public class Spinner : UIComponent
 	private bool changedCounter;
 
 	private float currentSpeed;
-
-	private const float acceleration = 8f;
-
-	private const float maxSpeed = 100f;
-
-	private const float minSpeed = 3f;
 
 	public override string ToolTip
 	{

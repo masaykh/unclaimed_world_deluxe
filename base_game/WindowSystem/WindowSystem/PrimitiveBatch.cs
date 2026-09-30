@@ -6,8 +6,6 @@ namespace WindowSystem;
 
 public class PrimitiveBatch : IDisposable
 {
-	private const int DefaultBufferSize = 500;
-
 	private VertexPositionColor[] vertices = new VertexPositionColor[500];
 
 	private int[] indexData = new int[500];
@@ -27,10 +25,6 @@ public class PrimitiveBatch : IDisposable
 	private bool isDisposed;
 
 	public Matrix Projection;
-
-	private int drawAreaWidth;
-
-	private int drawAreaHeight;
 
 	public Matrix View => basicEffect.View;
 

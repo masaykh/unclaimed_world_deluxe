@@ -10,7 +10,20 @@ public sealed class MultiBlendController : GameComponent, IAnimationController
 
 	public Dictionary<IAnimationController, float> ControllerWeightDictionary => controllerDict;
 
-	public event EventHandler AnimationTracksChanged;
+	/// <summary>
+	/// Required by IAnimationController; this controller never raises it (its raiser was never called,
+	/// and went with the unused-code sweep). Explicit no-op accessors say so instead of a field that
+	/// only looks live.
+	/// </summary>
+	public event EventHandler AnimationTracksChanged
+	{
+		add
+		{
+		}
+		remove
+		{
+		}
+	}
 
 	public MultiBlendController(Game game)
 		: base(game)
@@ -44,13 +57,5 @@ public sealed class MultiBlendController : GameComponent, IAnimationController
 	public bool ContainsAnimationTrack(BonePose pose)
 	{
 		return true;
-	}
-
-	private void OnAnimationTracksChanged(EventArgs e)
-	{
-		if (this.AnimationTracksChanged != null)
-		{
-			this.AnimationTracksChanged(this, e);
-		}
 	}
 }

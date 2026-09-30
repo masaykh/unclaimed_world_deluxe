@@ -1011,14 +1011,6 @@ public class InventoryPanel : RosterPanel
 		}
 	}
 
-	private void SetTrackingVisibility(Grid grid, MouseEventArgs args)
-	{
-		foreach (UIComponent entry in grid.Entries)
-		{
-			ShowHideTrackingButton(args, entry);
-		}
-	}
-
 	private static void ShowHideTrackingButton(UIComponent sender, bool show)
 	{
 		UIComponent parent = sender.Parent;
@@ -1036,44 +1028,6 @@ public class InventoryPanel : RosterPanel
 				imageButton.ToolTip = "No more objects can be tracked, cancel some of the other tracked objects first.";
 				imageButton.Enabled = false;
 			}
-		}
-	}
-
-	private static void ShowHideTrackingButton(MouseEventArgs args, UIComponent row)
-	{
-		ImageButton imageButton = (ImageButton)row.FindChildById(UIComponent.DataControlID.Track);
-		if (row.AbsolutePosition.Y < args.Position.Y && row.AbsolutePosition.Y + row.Height > args.Position.Y)
-		{
-			if (row.AbsolutePosition.X < args.Position.X && row.AbsolutePosition.X + row.Width > args.Position.X)
-			{
-				imageButton.Visible = true;
-			}
-			else
-			{
-				imageButton.Visible = false;
-			}
-		}
-		else
-		{
-			imageButton.Visible = false;
-		}
-		if (!The.InGameUI.InventorySettings.TrackedTargets.TryGetValue((EntityType)row.Tag1, out var _))
-		{
-			if (The.InGameUI.InventorySettings.HasAvailableTrackingSlots())
-			{
-				imageButton.ToolTip = "Track this item/structure";
-				imageButton.Enabled = true;
-			}
-			else
-			{
-				imageButton.ToolTip = "No more objects can be tracked, cancel some of the other tracked objects first.";
-				imageButton.Enabled = false;
-			}
-		}
-		else
-		{
-			imageButton.Enabled = true;
-			imageButton.Visible = true;
 		}
 	}
 

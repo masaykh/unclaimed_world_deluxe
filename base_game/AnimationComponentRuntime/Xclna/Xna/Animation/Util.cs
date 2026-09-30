@@ -81,23 +81,6 @@ public sealed class Util
 		m.M34 *= -1f;
 	}
 
-	private static T Max<T>(params T[] items) where T : IComparable
-	{
-		IComparable comparable = null;
-		foreach (IComparable comparable2 in items)
-		{
-			if (comparable == null)
-			{
-				comparable = comparable2;
-			}
-			else if (comparable2.CompareTo(comparable) > 0)
-			{
-				comparable = comparable2;
-			}
-		}
-		return (T)comparable;
-	}
-
 	public static T[] Convert<T>(byte[] data, int vertexSize, GraphicsDevice device) where T : struct
 	{
 		T[] array = new T[data.Length / vertexSize];

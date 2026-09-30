@@ -277,27 +277,6 @@ public class SidePanelEntity : RosterPanel
 		}
 	}
 
-	private void ShowNextOrPrevious(int currentIndex)
-	{
-		int count = The.Sim.PlaySite.PlayerAllegiance.Persons.Count;
-		if (count > 0)
-		{
-			if (currentIndex > count - 1)
-			{
-				currentIndex -= count;
-			}
-			else if (currentIndex < 0)
-			{
-				currentIndex += count;
-			}
-			Entity entity = The.Sim.PlaySite.PlayerAllegiance.Persons[currentIndex];
-			if (!entity.IsDead && entity.IsOnPlaySite())
-			{
-				intface.SelectEntity(entity);
-			}
-		}
-	}
-
 	private void PopulateContains(IKnownEntityData entityData)
 	{
 		if (RosterPanel.AddPanelIfNotPresent(entityData != null && entityData.ContainedEntitiesByType != null, outerGrid, cpCarrying))

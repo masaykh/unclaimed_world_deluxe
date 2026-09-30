@@ -4,10 +4,6 @@ namespace Xclna.Xna.Animation;
 
 public class InterpolationController : AnimationController
 {
-	private static Matrix curTransform;
-
-	private static Matrix nextTransform;
-
 	private static Matrix transform;
 
 	public InterpolationController(AnimationInfo source)

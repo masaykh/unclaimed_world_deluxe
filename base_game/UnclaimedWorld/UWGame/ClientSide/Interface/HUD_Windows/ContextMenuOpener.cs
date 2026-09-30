@@ -13,10 +13,6 @@ public class ContextMenuOpener : HUDWindow
 
 	private TextButton btExpand;
 
-	private UIComponent pnZones;
-
-	private Grid grdZones;
-
 	public int CycleButtonXPos => btCycle.X;
 
 	public ContextMenuOpener()

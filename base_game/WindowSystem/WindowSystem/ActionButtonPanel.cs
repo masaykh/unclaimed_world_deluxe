@@ -31,9 +31,6 @@ public class ActionButtonPanel : UIComponent
 	private ActionType action2;
 
 	private ActionType action3;
-
-	private const int buttonX = 2;
-
 	protected const int defaultHeight = 40;
 
 	public override int Width

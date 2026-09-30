@@ -195,9 +195,6 @@ public class ProcessType : IGameData, IXmlSerializable
 
 	[XmlIgnore]
 	public bool UseOriginalProcessEvents = true;
-
-	private static float? worstCaseSkillAndEnergyFactorsRoot;
-
 	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(ProcessType))
 	{
 		TypeMappings = DataLoader.GetListOfTypeMappings()

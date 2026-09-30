@@ -20,12 +20,6 @@ internal class Lz4DecoderStream : Stream
 		CopyMatch
 	}
 
-	private const int DecBufLen = 65536;
-
-	private const int DecBufMask = 65535;
-
-	private const int InBufLen = 128;
-
 	private long inputLength;
 
 	// Null in exactly two windows: between the parameterless constructor and the first Reset,

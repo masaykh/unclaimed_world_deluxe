@@ -10,9 +10,6 @@ public class TextArea : ListBox
 	}
 
 	private string text;
-
-	private const char tagMarker = '§';
-
 	private static char[] spaces = new char[1] { ' ' };
 
 	public string Text

@@ -13,11 +13,6 @@ public class MessageBox : Dialog
 	private static Rectangle defaultWarningSkin = new Rectangle(53, 91, 25, 25);
 
 	private static Rectangle defaultQuestionSkin = new Rectangle(79, 91, 25, 25);
-
-	private const int LargeSeperation = 10;
-
-	private const int SmallSeperation = 5;
-
 	private Rectangle infoSkin;
 
 	private Rectangle errorSkin;

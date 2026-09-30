@@ -2075,11 +2075,6 @@ public class CreateMissionPanel : RosterPanel
 		}
 	}
 
-	private List<TravelLocation> GetAllTravelLocations()
-	{
-		return new List<TravelLocation>();
-	}
-
 	public bool HasTransportationIfStart(TravelLocation travelLocation)
 	{
 		if (worldMapDialogSource == WorldMapDialogSource.Start)

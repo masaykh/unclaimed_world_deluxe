@@ -752,11 +752,6 @@ public class Expedition : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGro
 	{
 	}
 
-	private static bool GiveFreeItemInList(Household household, List<EntityID> items)
-	{
-		return false;
-	}
-
 	private void CreateCollidable()
 	{
 		Vector2? position = null;

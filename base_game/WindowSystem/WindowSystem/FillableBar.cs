@@ -80,11 +80,6 @@ public class FillableBar : UIComponent
 	private bool hoverEnabled;
 
 	private bool showMaxValueLabelAtEnd = true;
-
-	private const int buttonMargin = 0;
-
-	private const int distanceToMaxValueLabel = 24;
-
 	private int barLeftMargin = 8;
 
 	private int barRightMargin = 10;
@@ -982,15 +977,6 @@ public class FillableBar : UIComponent
 	protected override void OnMouseWheelChanged(int wheelChange)
 	{
 		base.OnMouseWheelChanged(wheelChange);
-	}
-
-	private int GetDistanceToMaxLabel()
-	{
-		if (tbIncrease != null)
-		{
-			return 24 + tbIncrease.Width;
-		}
-		return 24;
 	}
 
 	private int GetBarLeftPos()

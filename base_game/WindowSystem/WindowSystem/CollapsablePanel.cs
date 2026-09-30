@@ -47,9 +47,6 @@ public class CollapsablePanel : UIComponent
 	public Box ExpandedPanel;
 
 	private Image icon;
-
-	private const int iconX = 12;
-
 	public int CollapsedHeight = 14;
 
 	public int ExpandedPanelYPos = 20;
@@ -59,21 +56,6 @@ public class CollapsablePanel : UIComponent
 	public int CollapsablePanelRightPadding;
 
 	private int expandedPanelHorizMargin;
-
-	private const int headingXPosDropDown = 30;
-
-	private const int headingXPosNode = 36;
-
-	private const int headingSummaryRightPaddingDropDown = 30;
-
-	private const int headingSummaryRightPaddingNode = 14;
-
-	private const string hudCollapsedArrowSprite = "HUD_rightarrow";
-
-	private const string lcdCollapsedArrowSprite = "lcd_rightarrow";
-
-	private const string lcdExpandedArrowSprite = "lcd_downarrow";
-
 	public int HeadingYPos = 3;
 
 	public int? TitleSummaryRightAlignXPos;
@@ -518,9 +500,5 @@ public class CollapsablePanel : UIComponent
 		ExpandedPanel.X = expandedPanelHorizMargin;
 		ExpandedPanel.Y = ExpandedPanelYPos;
 		Collapse();
-	}
-
-	private void headerbox_Click(UIComponent sender, EventArgs e)
-	{
 	}
 }

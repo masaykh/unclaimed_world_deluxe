@@ -6,8 +6,6 @@ namespace Xclna.Xna.Animation;
 
 public class BonePose
 {
-	private static Matrix currentMatrixBuffer;
-
 	private int index;
 
 	private string name;

@@ -26,8 +26,6 @@ public class GUIManager
 		Right
 	}
 
-	private static string defaultSkinTexture = "Textures/DefaultStyle";
-
 	private static ContentManager contentManager;
 
 	public InputData InputData;

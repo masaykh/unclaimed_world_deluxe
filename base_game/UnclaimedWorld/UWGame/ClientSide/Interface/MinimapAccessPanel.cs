@@ -12,8 +12,6 @@ public class MinimapAccessPanel
 	protected InGameInterface intf = The.InGameUI;
 	public ImageButton btAccessMinimap;
 
-	private InputData frameInput;
-
 	public MinimapAccessPanel(int screenX)
 	{
 	}

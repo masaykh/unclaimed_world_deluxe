@@ -37,11 +37,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 	private ListBoxType type;
 
 	private Label.LabelType labelType;
-
-	private const int itemContentJustifyX = 2;
-
-	private const int itemContentJustifyY = 2;
-
 	private static int defaultWidth = 200;
 
 	private static int defaultHeight = 150;

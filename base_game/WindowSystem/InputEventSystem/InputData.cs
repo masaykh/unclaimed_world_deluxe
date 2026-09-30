@@ -23,11 +23,6 @@ public class InputData
 	private MouseState oldMouseState;
 
 	private MouseState newMouseState;
-
-	private const int RepeatDelay = 500;
-
-	private const int RepeatRate = 50;
-
 	private List<InputKey> keys;
 
 	private KeyDownHandler keyDown;

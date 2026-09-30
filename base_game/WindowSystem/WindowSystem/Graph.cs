@@ -75,13 +75,6 @@ public class Graph : UIComponent
 	private List<RoundLine> roundLines = new List<RoundLine>();
 
 	private bool useFixedYRanges;
-
-	private const int legendIconSpacing = 4;
-
-	private const int legendStartX = 24;
-
-	private const int legendLineHeight = 20;
-
 	public const double epsilon = 1E-05;
 
 	public const float floatEpsilon = 1E-05f;

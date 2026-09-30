@@ -6,11 +6,6 @@ namespace Xclna.Xna.Animation;
 
 public class SkinInfoCollection : ReadOnlyCollection<SkinInfo>
 {
-	private SkinInfoCollection(Model model, SkinInfo[] info)
-		: base((IList<SkinInfo>)info)
-	{
-	}
-
 	internal SkinInfoCollection(IList<SkinInfo> info)
 		: base(info)
 	{

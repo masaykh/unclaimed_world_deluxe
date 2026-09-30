@@ -66,9 +66,6 @@ public class TextButton : UIComponent, ICanBeChecked
 	private static Rectangle defaultPressedSkin = new Rectangle(52, 142, 25, 25);
 
 	private static Rectangle defaultHoverSkinNonEnabled = new Rectangle(1, 142, 25, 25);
-
-	private const int hudButtonHeight = 25;
-
 	protected Box buttonBox;
 
 	protected Label label;

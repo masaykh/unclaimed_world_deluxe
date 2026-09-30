@@ -18,9 +18,6 @@ public class Window : UIComponent
 	public delegate void DrawContentDelegate(Window sender, SpriteBatch spriteBatch);
 
 	private static bool defaultHasCloseButton = true;
-
-	private static bool defaultHasTitleBar = true;
-
 	private static bool defaultFullWindowMovableArea = true;
 
 	private static int defaultTitleBarHeight = 24;
@@ -28,9 +25,6 @@ public class Window : UIComponent
 	private static int defaultButtonSize = 20;
 
 	private static int defaultMargin = 0;
-
-	private static float defaultAnimationTransparency = 0.75f;
-
 	private static string defaultTitleFont = "Content/Fonts/DefaultHeading";
 
 	private static Rectangle defaultSkin = new Rectangle(15, 1, 15, 15);

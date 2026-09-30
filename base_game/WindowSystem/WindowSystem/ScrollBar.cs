@@ -38,11 +38,6 @@ public class ScrollBar : Bar
 	private static Rectangle defaultThumbPressedSkin = new Rectangle(66, 45, 17, 10);
 
 	public ScrollBarType ScrollType;
-
-	private const int RepeatDelay = 500;
-
-	private const int RepeatRate = 50;
-
 	private ImageButton topButton;
 
 	private ImageButton bottomButton;

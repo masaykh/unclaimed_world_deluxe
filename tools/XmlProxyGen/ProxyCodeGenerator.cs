@@ -54,11 +54,6 @@ internal sealed class ProxyCodeGenerator
 	}
 
 	private static readonly Dictionary<Type, object> _xmlCustomAttributesInstances = new Dictionary<Type, object>();
-
-	private const string UNDERLYING_INSTANCE_NAME = "_underlyingInstance";
-
-	private const string PROXY_DATA_NAME = "_proxyData";
-
 	private CodeCompileUnit _unit;
 
 	private CodeNamespace _ns;
@@ -278,11 +273,6 @@ internal sealed class ProxyCodeGenerator
 		return codeMemberField;
 	}
 
-	private CodeMethodInvokeExpression GetMethodInvoke(string varName, string methodName, params CodeExpression[] parameters)
-	{
-		return new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression(varName), methodName), parameters);
-	}
-
 	private CodeMethodInvokeExpression GetStaticMethodInvoke(CodeTypeReference type, string methodName, params CodeExpression[] parameters)
 	{
 		return new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(type), methodName), parameters);
@@ -317,15 +307,6 @@ internal sealed class ProxyCodeGenerator
 	private CodePropertyReferenceExpression GetPropRef(string varName, string propName)
 	{
 		return new CodePropertyReferenceExpression(GetVar(varName), propName);
-	}
-
-	private CodeExpression GetFieldOrPropRef(string varName, string name, bool isField)
-	{
-		if (isField)
-		{
-			return GetFieldRef(varName, name);
-		}
-		return GetPropRef(varName, name);
 	}
 
 	private void SaveFile(string filePath)

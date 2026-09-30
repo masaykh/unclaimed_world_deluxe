@@ -47,11 +47,6 @@ public class CombatHistory : EntityPanelTabPage
 		pnSummary.Height = yPos + 10;
 	}
 
-	private void grdSkills_HeightResize(UIComponent sender)
-	{
-		pnKills.Height = grdKills.Y + grdKills.Height + 10;
-	}
-
 	private void PopulateSummary()
 	{
 		lblAccuracy.Text = "89 %";

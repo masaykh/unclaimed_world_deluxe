@@ -317,9 +317,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 	private RadiusDecalType selectionDecalType;
 
 	public bool IsDrawn = true;
-
-	private uint fogOfWarClearFrame;
-
 	private FadeStatus fadeStatus;
 
 	private bool destroyAfterFadeOut;
@@ -2421,14 +2418,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		if (sound != null && sound.Item2.State == SoundState.Playing)
 		{
 			The.Client.AudioManager.SetSoundLocation(sound.Item2, sound.Item1, fadeProgress, Location.Value);
-		}
-	}
-
-	private void StopSound(Tuple<SoundData, SoundEffectInstance> sound)
-	{
-		if (sound != null && sound.Item2.State == SoundState.Playing)
-		{
-			The.Client.AudioManager.StopSound(sound.Item1, sound.Item2);
 		}
 	}
 

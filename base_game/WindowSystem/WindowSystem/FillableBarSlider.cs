@@ -27,9 +27,6 @@ public class FillableBarSlider : UIComponent
 	private Box knob;
 
 	private Label label;
-
-	private const float ShrinkScaleWhenSliderIsBelowThisPercentage = 0.8f;
-
 	public int MinimumSliderWidth = 14;
 
 	private int labelHorizontalPadding = 2;
@@ -49,9 +46,6 @@ public class FillableBarSlider : UIComponent
 	public bool CanGrow = true;
 
 	private ShowValueLabelModes showValueLabel = ShowValueLabelModes.WhenDragging;
-
-	private const int digitTooltipWidth = 30;
-
 	private bool mouseWasHidden;
 
 	public int Value
@@ -516,9 +510,5 @@ public class FillableBarSlider : UIComponent
 				parentBar.MaxValue -= 1;
 			}
 		}
-	}
-
-	private void MoveSliderToPosition(Point pos)
-	{
 	}
 }

@@ -12,7 +12,6 @@ public class TintEnvelope
 		Sustain
 	}
 
-	private Color m_peakColor;
 	private uint m_sustainCounter;
 
 	private State m_envState;

@@ -104,11 +104,6 @@ public class Label : UIComponent, IHasText
 	private static Color digitalGreen;
 
 	public static Color CRTLightBlue;
-
-	private const int lcdCornerHeadingPadding = 6;
-
-	private const int lcdMediumHeadingTopPadding = 1;
-
 	public static Color LCDErrorColor;
 
 	private bool hoverEnabled;
@@ -848,11 +843,6 @@ public class Label : UIComponent, IHasText
 	private void InitNormalBackground(string backgroundSprite, int edgeSize)
 	{
 		InitBackground(backgroundSprite, edgeSize, ref background, addNow: true);
-	}
-
-	private void InitHoverBackground(string backgroundSprite, int edgeSize)
-	{
-		InitBackground(backgroundSprite, edgeSize, ref hoverBackground, addNow: false);
 	}
 
 	private void InitBackground(string backgroundSprite, int edgeSize, ref Bar backgroundToUse, bool addNow)

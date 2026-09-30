@@ -487,21 +487,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		}
 	}
 
-	private void SetEdgeTerrainCost(PathType pathType, Common.Direction dir)
-	{
-		Point point = MapManager.TileEdgeToSubtile(new Point(X, Y));
-		Point subtilePosition = MapManager.DirectionToRelativeSubtile(dir);
-		subtilePosition.X += point.X;
-		subtilePosition.Y += point.Y;
-		Point subtilePosition2 = new Point(point.X + 1, point.Y);
-		foreach (SurfaceType.TransportType item in MapManager.MapTransportTypeArray)
-		{
-			byte newCost = pathType.TransportCosts[(uint)item];
-			The.Map.SetSubtileCost(subtilePosition, item, newCost);
-			The.Map.SetSubtileCost(subtilePosition2, item, newCost);
-		}
-	}
-
 	public List<Zone> GetListOfZones(Allegiance allegiance)
 	{
 		List<Zone> value = null;

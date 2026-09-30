@@ -11,9 +11,6 @@ public class TabControl : UIComponent
 	public List<TabPage> TabPages = new List<TabPage>();
 
 	private Grid grdSurface;
-
-	private const int accessHeight = 36;
-
 	private Box headerBanner;
 
 	private Dictionary<TabPage, ICanBeChecked> accessButtons = new Dictionary<TabPage, ICanBeChecked>();
