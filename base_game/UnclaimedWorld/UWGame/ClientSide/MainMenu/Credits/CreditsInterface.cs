@@ -7,9 +7,6 @@ namespace UWGame.ClientSide.MainMenu.Credits;
 public class CreditsInterface : CommonInterface
 {
 	private int loadPanelWidth = 600;
-
-	private int totalHeight = 800;
-
 	private CreditsPanel hud;
 
 	public CreditsScreen creditsScreen;

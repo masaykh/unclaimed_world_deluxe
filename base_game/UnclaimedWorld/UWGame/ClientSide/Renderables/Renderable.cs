@@ -303,19 +303,9 @@ public class Renderable : GameObject, ISleepingUpdatable
 	public bool HideHandAttachments;
 
 	private float? randomConstant;
-
-	private TintStatus tintStatus;
-
 	public TintEnvelope selectionFlashEnvelope;
 
 	public TintEnvelope colorTintEnvelope;
-
-	private LightAttenuationStatus lightAttenuationStatus;
-
-	private TintEnvelope environmentLightAttenuation;
-
-	private RadiusDecalType selectionDecalType;
-
 	public bool IsDrawn = true;
 	private FadeStatus fadeStatus;
 

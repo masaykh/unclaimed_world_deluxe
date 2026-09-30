@@ -149,16 +149,6 @@ public class SimplexNoise : ISnapshot
 		return (int)x;
 	}
 
-	private int Mod(int x, int m)
-	{
-		int num = x % m;
-		if (num >= 0)
-		{
-			return num;
-		}
-		return num + m;
-	}
-
 	private float grad(int hash, float x)
 	{
 		int num = hash & 0xF;
@@ -176,14 +166,6 @@ public class SimplexNoise : ISnapshot
 		float num2 = ((num < 4) ? x : y);
 		float num3 = ((num < 4) ? y : x);
 		return (((num & 1) != 0) ? (0f - num2) : num2) + (((num & 2) != 0) ? (-2f * num3) : (2f * num3));
-	}
-
-	private float grad(int hash, float x, float y, float z)
-	{
-		int num = hash & 0xF;
-		float num2 = ((num < 8) ? x : y);
-		float num3 = ((num < 4) ? y : ((num == 12 || num == 14) ? x : z));
-		return (((num & 1) != 0) ? (0f - num2) : num2) + (((num & 2) != 0) ? (0f - num3) : num3);
 	}
 
 	public Snapshotter.Version DoVersion(Snapshotter sn)

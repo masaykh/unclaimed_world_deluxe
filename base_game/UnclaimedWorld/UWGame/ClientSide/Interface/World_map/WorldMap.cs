@@ -583,12 +583,6 @@ public class WorldMap : UIComponent
 		imCanvas.Texture = renderTarget;
 	}
 
-	private void GetVertexPosFromValues(float x, float y, out float xPos, out float yPos)
-	{
-		xPos = GetVertexXPosFromValue(x);
-		yPos = GetVertexYPosFromValue(y);
-	}
-
 	private float GetVertexXPosFromValue(float longitudeXpos)
 	{
 		return (longitudeXpos - minX) / xInterval * (float)canvasWidth;

@@ -20,8 +20,6 @@ public class SubtileInfluence
 
 	public Point TopLeftSubtilePositionOfMap;
 
-	private List<SubtilePos> bestPositions = new List<SubtilePos>();
-
 	private List<Tuple<byte, SubtilePos>> bestPositionsAndValues = new List<Tuple<byte, SubtilePos>>();
 
 	public byte[][] Values => values;

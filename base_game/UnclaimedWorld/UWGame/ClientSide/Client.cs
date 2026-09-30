@@ -107,12 +107,7 @@ public class Client : GameScreen
 	private SleepyUpdater<Renderable> renderables = new SleepyUpdater<Renderable>(Module.Client);
 
 	private int frameRate;
-
-	private int frameCounter;
-
 	public TimeSpan ElapsedTimeBetweenDraws;
-
-	private TimeSpan frameRateElapsedTime = TimeSpan.Zero;
 
 	public GameTime GameTime = new GameTime();
 

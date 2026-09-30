@@ -196,9 +196,6 @@ public class MapClient
 	private static Dictionary<string, Marker> VisitorMarkers;
 
 	private Dictionary<object, List<Marker>> RenderedObjectMarkers = new Dictionary<object, List<Marker>>();
-
-	private static ulong hash = 0uL;
-
 	private float fogOfWarFadeRate = 0.03f;
 
 	private float fogOfWarTint = 0.7f;

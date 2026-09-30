@@ -12,9 +12,6 @@ namespace UWGame.ClientSide.Screens;
 public class LoadingScreenInterface : CommonInterface
 {
 	private int loadPanelWidth = 600;
-
-	private int totalHeight = 800;
-
 	private EventDialog dialog;
 
 	public LoadingScreen loadingScreen;

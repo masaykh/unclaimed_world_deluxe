@@ -67,8 +67,6 @@ public class Window : UIComponent
 
 	private bool isResizable;
 
-	private float transparency;
-
 	private Transition transitioning = Transition.None;
 
 	public bool HideThisNow;
@@ -499,7 +497,6 @@ public class Window : UIComponent
 		: base(guiManager)
 	{
 		isResizable = true;
-		transparency = -1f;
 		box = new Box(guiManager);
 		box.DebugTag = "windowBox";
 		ViewPort = new UIComponent(guiManager);

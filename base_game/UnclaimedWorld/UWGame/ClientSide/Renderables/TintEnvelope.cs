@@ -12,8 +12,6 @@ public class TintEnvelope
 		Sustain
 	}
 
-	private bool m_affect;
-
 	public void update()
 	{
 	}
