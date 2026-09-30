@@ -165,16 +165,6 @@ public class FramedCRT
 		}
 	}
 
-	public void PlayInterference()
-	{
-		animationControl.StartAnimation(CRTNoise.interference);
-	}
-
-	public void PlayNoReception()
-	{
-		animationControl.StartAnimation(CRTNoise.NoReception);
-	}
-
 	public void Switch()
 	{
 		NoLightOnFrame();

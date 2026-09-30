@@ -85,8 +85,4 @@ public static class Config
 		return Path.Combine(Directory.GetCurrentDirectory(), path, folderName, fileName);
 	}
 
-	public static string GetDocumentsFolderPath(string folderName = "", string fileName = "")
-	{
-		return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Unclaimed World", folderName, fileName);
-	}
 }

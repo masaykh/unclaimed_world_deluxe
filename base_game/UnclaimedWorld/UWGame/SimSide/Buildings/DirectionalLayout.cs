@@ -136,13 +136,4 @@ public class DirectionalLayout : ISnapshot
 		The.Map.SetSubtileCost(CenterSubtile, transport, cost);
 	}
 
-	public void RedrawRoadCost()
-	{
-		PathType pathType = parent.EntityType.TerrainType.PathType;
-		foreach (SurfaceType.TransportType item in MapManager.MapTransportTypeArray)
-		{
-			byte cost = pathType.TransportCosts[(uint)item];
-			SetCost(item, cost);
-		}
-	}
 }

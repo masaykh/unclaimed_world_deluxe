@@ -34,11 +34,6 @@ public abstract class Container : ISnapshot
 		Parent = parent;
 	}
 
-	public virtual bool isGarrison()
-	{
-		return false;
-	}
-
 	public virtual bool IsOpenContainer()
 	{
 		return false;
@@ -47,40 +42,6 @@ public abstract class Container : ISnapshot
 	public virtual bool IsVisible(Entity entity)
 	{
 		return false;
-	}
-
-	public virtual void ReactToTransformChange()
-	{
-	}
-
-	public virtual bool OnEntityWantsToEnterOrExit(Entity entity, EnterExitType wants)
-	{
-		return false;
-	}
-
-	public virtual bool hasentitysWantingToEnterOrExit()
-	{
-		return false;
-	}
-
-	public virtual void onContaining(Entity entity, bool wasSelected)
-	{
-	}
-
-	public virtual void onRemoving(Entity entity)
-	{
-	}
-
-	public virtual void onPassengerDamage(Entity entity, UWGame.SimSide.Entities.Body.Body body, AttackType attack)
-	{
-	}
-
-	public virtual void orderAllPassengersToExit()
-	{
-	}
-
-	public virtual void orderOnePassengersToExit(Entity passenger)
-	{
 	}
 
 	public abstract void Destroy();
@@ -228,39 +189,6 @@ public abstract class Container : ISnapshot
 
 	public abstract void SwitchEntities(Entity entityToRemove, Entity exchangeWithEntity, bool ignoreCapacity = false);
 
-	public virtual ContainedEntityStatus getContainedStatusForEntity(Entity queryentity)
-	{
-		return ContainedEntityStatus.None;
-	}
-
-	public virtual bool isPassengerAllowedToFire()
-	{
-		return false;
-	}
-
-	public virtual bool isOccupantBlockedByContainer(Entity entity, Entity containedTarget)
-	{
-		return false;
-	}
-
-	public virtual bool isDisplayedInUI()
-	{
-		return false;
-	}
-
-	public virtual EntityID getClosestRiderToPosition(Vector3 position)
-	{
-		return EntityID.Invalid;
-	}
-
-	public virtual void enableEnter(bool bEnable)
-	{
-	}
-
-	public virtual void restoreDefaultOpenness()
-	{
-	}
-
 	public virtual void NotifyBrokenContainedEntity(Entity entity)
 	{
 	}
@@ -382,23 +310,6 @@ public abstract class Container : ISnapshot
 	public virtual bool IsDriverOrPassenger(Entity entity)
 	{
 		return false;
-	}
-
-	public static void ComputeSumsOfItems(Entity e, Dictionary<EntityType, int> containedEntities)
-	{
-		if (e.EntityType.NonLivingType != null)
-		{
-			int value = 0;
-			if (containedEntities.TryGetValue(e.EntityType, out value))
-			{
-				value++;
-				containedEntities[e.EntityType] = value;
-			}
-			else
-			{
-				containedEntities[e.EntityType] = 1;
-			}
-		}
 	}
 
 	public virtual ISnapshot DoSnapshot(Snapshotter sn)

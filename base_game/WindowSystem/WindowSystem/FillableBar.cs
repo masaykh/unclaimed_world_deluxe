@@ -968,12 +968,6 @@ public class FillableBar : UIComponent
 		UpdateValueBarWidth();
 	}
 
-	public void SetTags()
-	{
-		underBar.DebugTag = "underBar";
-		valueBar.DebugTag = "valueBar";
-	}
-
 	protected override void OnMouseWheelChanged(int wheelChange)
 	{
 		base.OnMouseWheelChanged(wheelChange);

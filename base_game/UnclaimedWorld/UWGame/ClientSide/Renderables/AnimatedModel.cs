@@ -160,36 +160,6 @@ public abstract class AnimatedModel
 	{
 	}
 
-	public static bool HasAttachorModel(Entity entity, string attachorBoneName)
-	{
-		if (entity.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.AttachedObjects.TryGetValue(attachorBoneName, out var value))
-		{
-			foreach (RenderAsModel item in value)
-			{
-				if (item.Parent.EntityType.Name == "Box")
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	public static bool HasAttachedModel(Entity entity, string attachedEntityKey, string attachorBoneName, string attacheeBoneName)
-	{
-		if (entity.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.AttachedObjects.TryGetValue(attachorBoneName, out var value))
-		{
-			foreach (IAttachable item in value)
-			{
-				if (((RenderAsModel)item).Renderable.RenderableType.KeyName == attachedEntityKey && item.AttacheeBone != null && item.AttacheeBone.Name == attacheeBoneName)
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	public static void OrientAttachedModel(Entity entity, string attachorBoneName, Vector3 euler, Vector3 trans)
 	{
 		if (!entity.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.AttachedObjects.TryGetValue(attachorBoneName, out var value))

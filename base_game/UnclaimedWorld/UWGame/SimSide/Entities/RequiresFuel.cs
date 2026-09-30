@@ -34,11 +34,6 @@ public class RequiresFuel : ISnapshot
 
 	public bool IsSnapshotted { get; set; }
 
-	public void SetBulkLeftOfBurningItem(float value)
-	{
-		bulkLeftOfCurrentlyBurningItem = value;
-	}
-
 	public RequiresFuel()
 	{
 	}

@@ -138,11 +138,6 @@ public class Item : Component, IIDEventSubscriber
 		}
 	}
 
-	public bool IsOwnedBySomebody()
-	{
-		return Parent.OwnedBy.HasValue;
-	}
-
 	public void Destroy()
 	{
 	}

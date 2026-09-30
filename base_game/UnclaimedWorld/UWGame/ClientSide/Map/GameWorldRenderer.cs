@@ -1241,10 +1241,6 @@ public class GameWorldRenderer
 		SortObjectsForDrawingAndComputeMatrices(drawModels);
 	}
 
-	public void UpdateMousePicking()
-	{
-	}
-
 	private bool IsThereWaterInCurrentView()
 	{
 		GetEdgesOfTerrainToDraw(out var lastXToDraw, out var lastYToDraw, out var firstXToDraw, out var firstYToDraw);
@@ -1938,18 +1934,6 @@ public class GameWorldRenderer
 			}
 			list[num + 1] = val;
 		}
-	}
-
-	public static void SaveRenderTargetToFile(string name, RenderTarget2D renderTarget)
-	{
-		using Stream stream = File.Create(name + ".png");
-		renderTarget.SaveAsPng(stream, renderTarget.Width, renderTarget.Height);
-	}
-
-	public static void SaveTextureToFile(string name, Texture2D texture2D)
-	{
-		using Stream stream = File.Create(name + ".png");
-		texture2D.SaveAsPng(stream, texture2D.Width, texture2D.Height);
 	}
 
 	private void DrawSortedObjectsAndParticles()

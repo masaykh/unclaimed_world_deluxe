@@ -98,10 +98,6 @@ public class MainMenuInterface : CommonInterface
 		SetInterfaceCursor();
 	}
 
-	public void ShowSteamWarning()
-	{
-	}
-
 	/// <summary>
 	/// <summary>
 	/// DEBUG MOD: the studio's own DEV OPTIONS panel, constructed.

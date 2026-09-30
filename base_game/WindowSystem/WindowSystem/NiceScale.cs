@@ -41,16 +41,4 @@ public class NiceScale
 		return num2 * Math.Pow(10.0, y);
 	}
 
-	public void setMinMaxPoints(double minPoint, double maxPoint)
-	{
-		this.minPoint = minPoint;
-		this.maxPoint = maxPoint;
-		Calculate();
-	}
-
-	public void setMaxTicks(double maxTicks)
-	{
-		this.maxTicks = maxTicks;
-		Calculate();
-	}
 }

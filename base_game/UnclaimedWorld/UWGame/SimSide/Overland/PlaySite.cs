@@ -74,11 +74,6 @@ public class PlaySite : ISnapshot
 		TileResources.Add(resource);
 	}
 
-	public void RemoveTileResourceContainer(TileResourceContainer resource)
-	{
-		TileResources.Remove(resource);
-	}
-
 	public void Update(GameTime gameTime)
 	{
 		Weather.Update(gameTime);

@@ -79,40 +79,6 @@ public class Lighting
 		}
 	}
 
-	public void GetLightSourcesForDrawing(List<LightSource> listOfObjectsToDraw)
-	{
-		if (IndoorLightSources != null)
-		{
-			for (int i = 0; i < IndoorLightSources.Length; i++)
-			{
-				if (IndoorLightSources[i] != null && IndoorLightSources[i].LightIsOn)
-				{
-					listOfObjectsToDraw.Add(IndoorLightSources[i]);
-				}
-			}
-		}
-		if (OutdoorLightSources == null)
-		{
-			return;
-		}
-		for (int j = 0; j < OutdoorLightSources.Length; j++)
-		{
-			if (OutdoorLightSources[j] != null && OutdoorLightSources[j].LightIsOn)
-			{
-				listOfObjectsToDraw.Add(OutdoorLightSources[j]);
-			}
-		}
-	}
-
-	public float GetOutdoorLightsShare()
-	{
-		if (OutdoorLightSources != null)
-		{
-			return (float)CountLightsOn(OutdoorLightSources) / (float)OutdoorLightSources.Length;
-		}
-		return -1f;
-	}
-
 	public int CountLightsOn(LightSource[] lights)
 	{
 		int num = 0;
@@ -126,12 +92,4 @@ public class Lighting
 		return num;
 	}
 
-	public float GetIndoorLightsShare()
-	{
-		if (IndoorLightSources != null)
-		{
-			return (float)CountLightsOn(IndoorLightSources) / (float)IndoorLightSources.Length;
-		}
-		return -1f;
-	}
 }

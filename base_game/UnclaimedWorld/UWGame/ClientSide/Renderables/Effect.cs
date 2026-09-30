@@ -23,11 +23,6 @@ public class Effect<T> : IUpdatable
 		defaultElement = element;
 	}
 
-	public int GetNumberOfEnvelopes()
-	{
-		return activeEnvelopes.Count;
-	}
-
 	public T GetValue()
 	{
 		if (activeEnvelopes.Count > 0)

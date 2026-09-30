@@ -64,15 +64,6 @@ public class PhysicalNeed : ISnapshot
 		return 1f;
 	}
 
-	public float GetCollapsedFraction()
-	{
-		if (Parent.NeedType.PhysicalEffects.DaysAtZeroCausingCollapse.HasValue)
-		{
-			return Common.Clamp(1f - DaysAtZero / Parent.NeedType.PhysicalEffects.DaysAtZeroCausingCollapse.Value, 0f, 1f);
-		}
-		return 1f;
-	}
-
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);

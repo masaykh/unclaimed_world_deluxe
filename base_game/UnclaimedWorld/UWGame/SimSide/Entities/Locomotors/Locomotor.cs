@@ -366,21 +366,6 @@ public class Locomotor : Component
 		CurrentMaximumSpeedIsDirty = true;
 	}
 
-	public void ToggleImmobilize()
-	{
-		if (!Common.IsZero(moveAbility))
-		{
-			moveAbility = 0f;
-		}
-		else
-		{
-			moveAbility = 1f;
-		}
-		CurrentMaximumSpeedNotAffectedByTerrainIsDirty = true;
-		CurrentMaximumSpeedForEvaluatorIsDirty = true;
-		CurrentMaximumSpeedIsDirty = true;
-	}
-
 	public float GetTargetSpeed()
 	{
 		float num = 0f;

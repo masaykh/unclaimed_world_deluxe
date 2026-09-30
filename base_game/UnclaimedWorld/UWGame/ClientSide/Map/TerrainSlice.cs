@@ -45,11 +45,6 @@ public class TerrainSlice
 		clipRenderTarget.Dispose();
 	}
 
-	public void DiscardTexture()
-	{
-		terrainRenderTargetTexture = null;
-	}
-
 	private void Redraw()
 	{
 		The.Client.GraphicsDevice.SetRenderTarget(terrainRenderTargetTexture);

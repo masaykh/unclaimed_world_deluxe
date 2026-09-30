@@ -688,12 +688,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 	{
 	}
 
-	public void AssignSubstance(SubstancePool pool, float amount)
-	{
-		requestedSubstances.Remove(pool.SubstanceType);
-		Common.AddToDictionary(ref assignedSubstances, pool.SubstanceType, new Tuple<SubstancePoolID, float>(pool.ID, amount));
-	}
-
 	private void HandleDestroyedOutput()
 	{
 		Destroy();
@@ -1911,27 +1905,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 				}
 			}
 		}
-	}
-
-	public bool GetOutputEntityData(Predicate<IKnownEntityData> predicate, out IKnownEntityData matchingData, SharedKnowledge sharedKnowledge)
-	{
-		matchingData = null;
-		if (OutputEntities != null && OutputEntities.Count > 0)
-		{
-			foreach (EntityID outputEntity in OutputEntities)
-			{
-				if (GoalEvaluator.EntityDataResultCausesSkip(sharedKnowledge.GetKnownData(outputEntity, out var data)))
-				{
-					return false;
-				}
-				if (predicate(data))
-				{
-					matchingData = data;
-					return true;
-				}
-			}
-		}
-		return true;
 	}
 
 	private bool GetOutputEntity(Predicate<Entity> predicate, out Entity matchingEntity)

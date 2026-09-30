@@ -195,10 +195,6 @@ public class Vehicle : Component
 		return flag;
 	}
 
-	public static void DivideVehicles(List<EntityID> vehiclesToDivide, List<EntityGroup> newOwners)
-	{
-	}
-
 	public PassengerOrCargoSlot GetEntityPlaceInVehicle(Entity entity)
 	{
 		foreach (PassengerOrCargoSlot slot in Slots)
@@ -218,22 +214,6 @@ public class Vehicle : Component
 	public void GetRendezvousPoint(Vector3 vehicleLocation, Vector3 entityLocation, out Vector3 rendezvousLocation)
 	{
 		Common.GetLocationAtDistance(vehicleLocation, entityLocation, 60f, out rendezvousLocation);
-	}
-
-	public bool HasIntelligenceOnboard()
-	{
-		if (DrivenBy != null)
-		{
-			return true;
-		}
-		foreach (Entity passenger in Passengers)
-		{
-			if (passenger.Intelligence != null)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public List<PassengerOrCargoSlot> GetCargoSlotsForLoading(float bulkToLoad)

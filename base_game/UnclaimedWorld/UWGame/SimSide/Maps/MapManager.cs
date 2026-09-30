@@ -230,15 +230,6 @@ public class MapManager : ISnapshot
 		return GetTile(gameEntity.MapPosition.Value).TileIsInFogOfWar(allegiance);
 	}
 
-	public bool ProcessIsInFogOfWar(SimProcess process, Allegiance allegiance)
-	{
-		if (process.MapPosition.HasValue)
-		{
-			return TileMap[process.MapPosition.Value.X][process.MapPosition.Value.Y].TileIsInFogOfWar(allegiance);
-		}
-		return false;
-	}
-
 	public void RegisterNoParkingSpot(EntityType vehicleType, ProtectionLevel protectionLevel, EntityType driverType, ThreatStance approach, Point destination)
 	{
 		NoParkingSpot noParkingSpot = new NoParkingSpot(vehicleType, protectionLevel, driverType, approach, destination);
@@ -384,14 +375,6 @@ public class MapManager : ISnapshot
 	{
 		position.X = MathHelper.Clamp(position.X, 0.01f, MaxWorldPos.X);
 		position.Y = MathHelper.Clamp(position.Y, 0.01f, MaxWorldPos.Y);
-		return position;
-	}
-
-	public static Vector3 ClampWorldPositionToTile(Point tilePos, Vector3 position)
-	{
-		Vector2 vector = new Vector2(tilePos.X * 48, tilePos.Y * 48);
-		position.X = MathHelper.Clamp(position.X, vector.X, vector.X + 48f - 0.01f);
-		position.Y = MathHelper.Clamp(position.Y, vector.Y, vector.Y + 48f - 0.01f);
 		return position;
 	}
 
@@ -633,38 +616,12 @@ public class MapManager : ISnapshot
 		return false;
 	}
 
-	public static Vector2 WorldPosToPositionWithinTileFromCorner(Vector3 pos)
-	{
-		Vector2 result = default(Vector2);
-		result.X = pos.X % 48f;
-		result.Y = pos.Y % 48f;
-		return result;
-	}
-
 	public static Vector2 WorldPosToPositionWithinTile(Vector3 pos)
 	{
 		Vector2 result = default(Vector2);
 		result.X = pos.X % 48f - 24f;
 		result.Y = pos.Y % 48f - 24f;
 		return result;
-	}
-
-	public bool TileRectangleIsInsideMap(int x, int y, int widthInTiles, int heightInTiles)
-	{
-		if (x >= 0 && x + widthInTiles <= mapTileWidth && y >= 0)
-		{
-			return y + heightInTiles <= mapTileHeight;
-		}
-		return false;
-	}
-
-	public static bool PointIsWithinArea<T>(T[][] map, Point point)
-	{
-		if (point.X >= 0 && point.X < Common.GetJaggedArrayWidth(map) && point.Y >= 0)
-		{
-			return point.Y < Common.GetJaggedArrayHeight(map);
-		}
-		return false;
 	}
 
 	public bool GetClosestAccessiblePoint(SubtileLayers map, Vector3? fromLocation, Vector3 toLocation, bool stayInsideTile, out Point? closestSubtile)
@@ -806,11 +763,6 @@ public class MapManager : ISnapshot
 	public static string ComposeMapDataXmlFilePathFromFolderPath(string folderPath)
 	{
 		return Path.Combine(folderPath, "MapData.xml");
-	}
-
-	public static string ComposeMapDataXmlFilePath(string name)
-	{
-		return Config.GetDataFolderPath(Config.DataType.RGMap, name, "MapData.xml");
 	}
 
 	public static string ComposeMapDataFolderPath(string folderName, string fileOrFolderName = "")
@@ -1232,20 +1184,6 @@ public class MapManager : ISnapshot
 		SetSubtileCost(subtilePosition, transport, newCost);
 	}
 
-	public int GetDirectionIndex(Point from, Point to)
-	{
-		int num = to.X - from.X;
-		int num2 = to.Y - from.Y;
-		for (int i = 0; i < 8; i++)
-		{
-			if (direction[i, 0] == num && direction[i, 1] == num2)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	public static bool DetectIsAtCornerOfTile(float xRelative, float yRelative)
 	{
 		if (xRelative + yRelative < GameData.Instance.AIConstants.DistanceToConsiderOnRoad)
@@ -1342,19 +1280,6 @@ public class MapManager : ISnapshot
 		return false;
 	}
 
-	public bool TileIsAccessible(SubtileLayers map, Point from, Point to)
-	{
-		if (!TileIsOnMap(to))
-		{
-			return false;
-		}
-		if (The.Map.TileIsCompletelyBlocked(map, to))
-		{
-			return false;
-		}
-		return true;
-	}
-
 	public bool SubtileIsCompletelyBlocked(SubtileLayers mapCosts, Point p)
 	{
 		return IsBlocked(mapCosts.GetValue(p));
@@ -1363,19 +1288,6 @@ public class MapManager : ISnapshot
 	public bool SubtileIsCompletelyBlocked(SubtileLayers mapCosts, SubtilePos p)
 	{
 		return IsBlocked(mapCosts.GetValue(p));
-	}
-
-	public bool SubtileIsOrAdjacentToBlockedSubtile(SubtileLayers mapCosts, Point p)
-	{
-		if (p.Y < 1 || p.X < 1)
-		{
-			return true;
-		}
-		if (!IsBlocked(mapCosts.GetValue(--p.X, p.Y - 1)) && !IsBlocked(mapCosts.GetValue(p.X, p.Y)) && !IsBlocked(mapCosts.GetValue(p.X, p.Y + 1)) && !IsBlocked(mapCosts.GetValue(++p.X, p.Y - 1)) && !IsBlocked(mapCosts.GetValue(p.X, p.Y)) && !IsBlocked(mapCosts.GetValue(p.X, p.Y + 1)) && !IsBlocked(mapCosts.GetValue(++p.X, p.Y - 1)) && !IsBlocked(mapCosts.GetValue(p.X, p.Y)))
-		{
-			return IsBlocked(mapCosts.GetValue(p.X, p.Y + 1));
-		}
-		return true;
 	}
 
 	public static bool IsBlocked(SubtileValue value)
@@ -1530,24 +1442,11 @@ public class MapManager : ISnapshot
 		return new Point((int)(location.X * 0.0625f) % 3, (int)(location.Y * 0.0625f) % 3);
 	}
 
-	public static Point RelativePosToRelativeSubtile(Vector2 location)
-	{
-		return new Point((int)(location.X / 16f), (int)(location.Y / 16f));
-	}
-
 	public static List<Point> GetSubtilesTouchedByLine(Vector2 from, Vector2 to)
 	{
 		List<Point> list = new List<Point>();
 		float tileWidth = 16f;
 		float tileHeight = 16f;
-		return GetSquaresTouchedByLine(ref from, ref to, list, tileWidth, tileHeight);
-	}
-
-	public static List<Point> GetTilesTouchedByLine(Vector2 from, Vector2 to)
-	{
-		List<Point> list = new List<Point>();
-		float tileWidth = 48f;
-		float tileHeight = 48f;
 		return GetSquaresTouchedByLine(ref from, ref to, list, tileWidth, tileHeight);
 	}
 
@@ -1753,11 +1652,6 @@ public class MapManager : ISnapshot
 			}
 		}
 		return null;
-	}
-
-	public bool IsBaseCenterOfWorkingBuilding(Point pos, ref Entity structure)
-	{
-		return false;
 	}
 
 	public bool SubtileContainsEntities(Point subtile, Predicate<Entity> countEntity)

@@ -199,11 +199,6 @@ public class EntityType : IXmlSerializable, IGameData, IHasCategory<EntityCatego
 		KeyName = keyName;
 	}
 
-	public EntityType ShallowCopy()
-	{
-		return (EntityType)MemberwiseClone();
-	}
-
 	public void PreInitValidate(ref List<string> listOfErrors)
 	{
 		if (ToolType != null)
@@ -392,15 +387,6 @@ public class EntityType : IXmlSerializable, IGameData, IHasCategory<EntityCatego
 				value.IsOriginalSpecialAction = true;
 			}
 		}
-	}
-
-	public bool CanBeHuntedBy(Allegiance allegiance)
-	{
-		if ((this != allegiance.RepresentativeEntityType && allegiance.RepresentativeEntityType.IntelligenceType.HasServants == null) || (!allegiance.RepresentativeEntityType.IntelligenceType.HasServants.Contains(this) && BiologicalType != null && IntelligenceType != null))
-		{
-			return true;
-		}
-		return false;
 	}
 
 	public void MarkAnchorStructures()

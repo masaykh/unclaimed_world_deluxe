@@ -1683,8 +1683,4 @@ public class InventoryPanel : RosterPanel
 		}
 	}
 
-	private void ExpandStockItem_OnPress(object sender, EventArgs e)
-	{
-		_ = ((ItemTypeButtonEventArgs)e).Item;
-	}
 }

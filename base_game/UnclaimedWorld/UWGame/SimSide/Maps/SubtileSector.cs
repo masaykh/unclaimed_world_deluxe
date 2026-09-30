@@ -91,11 +91,6 @@ public class SubtileSector : ISnapshot
 		return regions;
 	}
 
-	public HashSet<ushort> GetRegionsInProgress()
-	{
-		return newRegions;
-	}
-
 	public void InitCopyVariablesSubtiles()
 	{
 		Common.CopyJaggedArray(regionsOnSubtiles, newRegionsOnSubtiles);

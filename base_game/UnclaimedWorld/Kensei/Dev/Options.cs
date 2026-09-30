@@ -94,8 +94,6 @@ public static class Options
 
 		internal void SetEntityGoalsText(string text) { }
 
-		internal void SetEntityInfotext(string text) { }
-
 		internal void SetEventsText(string text) { }
 
 		internal void SetJobsText(string text) { }
@@ -206,14 +204,6 @@ public static class Options
 		}
 	}
 
-	public static void SetEntityInfoText(string text)
-	{
-		if (s_form != null)
-		{
-			s_form.SetEntityInfotext(text);
-		}
-	}
-
 	public static void SetEntityGoalsText(string text)
 	{
 		if (s_form != null)
@@ -306,11 +296,6 @@ public static class Options
 		}
 	}
 
-	public static void SetOptionCallback(string optionName, OptionChangedFunction callback)
-	{
-		s_callbacks[optionName] = callback;
-	}
-
 	public static string ShownTab()
 	{
 		if (s_form != null)
@@ -341,55 +326,6 @@ public static class Options
 		{
 			s_optionsFloat.Remove(name);
 			s_form.RemoveOption(name);
-		}
-	}
-
-	public static void RemoveOptionsStartingWith(string startsWith)
-	{
-		List<string> list = new List<string>();
-		foreach (KeyValuePair<string, bool> item in s_optionsBool)
-		{
-			if (item.Key.StartsWith(startsWith))
-			{
-				list.Add(item.Key);
-			}
-		}
-		foreach (KeyValuePair<string, DebugButton> s_optionsButton in s_optionsButtons)
-		{
-			if (s_optionsButton.Key.StartsWith(startsWith))
-			{
-				list.Add(s_optionsButton.Key);
-			}
-		}
-		foreach (KeyValuePair<string, EntityType> s_optionsEntityType in s_optionsEntityTypes)
-		{
-			if (s_optionsEntityType.Key.StartsWith(startsWith))
-			{
-				list.Add(s_optionsEntityType.Key);
-			}
-		}
-		foreach (KeyValuePair<string, float> item2 in s_optionsFloat)
-		{
-			if (item2.Key.StartsWith(startsWith))
-			{
-				list.Add(item2.Key);
-			}
-		}
-		foreach (string item3 in list)
-		{
-			RemoveOption(item3);
-		}
-	}
-
-	public static void SetOptionsStartingWith(string startsWith, bool value, bool doCallback)
-	{
-		new List<string>();
-		foreach (KeyValuePair<string, bool> item in s_optionsBool)
-		{
-			if (item.Key.StartsWith(startsWith))
-			{
-				SetOption(item.Key, value, doCallback);
-			}
 		}
 	}
 

@@ -2006,23 +2006,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		}
 	}
 
-	public bool GetVehicle(out Entity vehicle)
-	{
-		if (!GetContainedBy(out vehicle))
-		{
-			return false;
-		}
-		if (vehicle != null)
-		{
-			Container contains = vehicle.Contains;
-			if (contains != null && !contains.IsDriver(this))
-			{
-				vehicle = null;
-			}
-		}
-		return true;
-	}
-
 	public bool GetDrivenVehicle(out Entity vehicle)
 	{
 		if (!GetContainedBy(out vehicle))
@@ -2477,15 +2460,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 
 	private void ConstructDumbRenderableIfNull()
 	{
-	}
-
-	public bool ContentCanBeAccessedBy(Entity accessingEntity)
-	{
-		if (accessingEntity != this)
-		{
-			return EntityType.ContainerType.CanTransactWithContainer(accessingEntity.EntityType);
-		}
-		return true;
 	}
 
 	public bool HasBeenPlaced()
@@ -3992,11 +3966,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		return killer.OwnedBy;
 	}
 
-	public void SetNotDirty()
-	{
-		footprintIsDirty = false;
-	}
-
 	public void PlaceGeometryLayoutIfDirty(GeoPlaceMode mode)
 	{
 		if (footprintIsDirty && GeometryLayout != null && (Structure == null || Structure.ConstructionHasStarted()))
@@ -4685,18 +4654,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		getChildrenProperties.Add("contained", GetContained);
 		getChildrenProperties.Add("effectProfiles", GetEffectProfiles);
 		getChildrenProperties.Add("residents", GetResidents);
-	}
-
-	public void PrintScriptVariables(StringBuilder description)
-	{
-		if (CustomFields == null)
-		{
-			return;
-		}
-		foreach (KeyValuePair<string, PropertyResult> customField in CustomFields)
-		{
-			description.AppendLine(customField.Key + " = " + customField.Value.ToString());
-		}
 	}
 
 	public string GetCaption(string captionKey)

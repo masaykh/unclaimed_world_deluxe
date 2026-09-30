@@ -175,10 +175,6 @@ public class Controller : DrawableGameComponent
 		}
 	}
 
-	public void EndGameSession()
-	{
-	}
-
 	public void ValidateDrawAreaWidth(int minWidth)
 	{
 		if (DrawArea.Width < minWidth)

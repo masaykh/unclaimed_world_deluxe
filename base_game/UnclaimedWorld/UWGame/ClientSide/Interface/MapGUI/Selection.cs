@@ -142,12 +142,6 @@ public class Selection
 		}
 	}
 
-	public void StartHoverOverTile(Color? hoverTintingColor = null)
-	{
-		SetupSelectionDimensionsAndColor(null, out hoverSourceRect, out hoverSprite, isHover: true, hoverTintingColor);
-		hoverCirclePlayer.StartAnimation(smallSelectionLoop);
-	}
-
 	private void player_smallSelectionAnimationEndedEvent()
 	{
 		selectedCirclePlayer.StartAnimation(smallSelectionLoop);

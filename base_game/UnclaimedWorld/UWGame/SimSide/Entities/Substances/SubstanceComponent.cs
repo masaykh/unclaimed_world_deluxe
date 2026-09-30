@@ -56,10 +56,6 @@ public class SubstanceComponent : Component, IIDEventSubscriber
 		Parent.BulkChangedEvent.Add(parentBulkChangedID, this);
 	}
 
-	public void ConvertSubstance(SubstanceType from, SubstanceType to)
-	{
-	}
-
 	private void InitializeSubstanceAmounts()
 	{
 		BulkAmounts = new Dictionary<SubstanceType, SubstanceAmount>();

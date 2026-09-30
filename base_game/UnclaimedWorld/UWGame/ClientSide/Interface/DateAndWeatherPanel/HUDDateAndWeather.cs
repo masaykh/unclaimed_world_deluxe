@@ -32,16 +32,6 @@ public class HUDDateAndWeather : HUDWindow
 		weatherNow.Text = $"{cloudCover}/{wind}";
 	}
 
-	public void SetWeatherAhead(string cloudCover, string wind)
-	{
-		weatherAhead.Text = $"{cloudCover}/{wind}";
-	}
-
-	public void SetTemp(int temp)
-	{
-		tempNow.Text = $"{temp.ToString()}° C";
-	}
-
 	public void SetTime(string timePhrase)
 	{
 		time.Text = timePhrase;

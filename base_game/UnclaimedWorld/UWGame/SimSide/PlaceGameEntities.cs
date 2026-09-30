@@ -1054,61 +1054,6 @@ public class PlaceGameEntities
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:improvisedCookingPot"]), new Point(6, 6));
 	}
 
-	public static void BenjaminsTest()
-	{
-		Point point = new Point(13, 48);
-		Point pos = new Point(15, 44);
-		Point pos2 = new Point(13, 44);
-		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Camp", "Camp", MapManager.TileToWorldPos(point));
-		The.MapUI.ZoomToMapPosition(point.X, point.Y);
-		new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:pygmyThunderChicken"]);
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:improvisedBow"]), new Point(6, 6));
-		Entity entity = new Entity(GameData.Instance.AllEntityTypes["item:improvisedBasicArrow"]);
-		AddColonyItem(entity, new Point(6, 6));
-		entity.Item.Ammunition.NoOfRounds = 1;
-		for (int i = 0; i < 8; i++)
-		{
-			AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:coilRifle"]), point);
-			AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:coilRifleAmmo"]), point);
-		}
-		for (int j = 0; j < 20; j++)
-		{
-			AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:spoakBranches"]), point);
-		}
-		for (int k = 0; k < 21; k++)
-		{
-			if (k != 9 && k != 10 && k != 17)
-			{
-				AddFinishedStructure("structure:abatis", null, expedition, flipHorizontally: false, new Vector3(528 + k * 16, 2304f, 0f));
-			}
-		}
-		AddFinishedStructure("structure:satelliteGroundStation", null, expedition, flipHorizontally: false, new Vector3(624f, 2448f, 0f));
-		GetMinion(point, expedition, "Bob", " ");
-		GetMinion(point, expedition, "Peter", " ");
-		GetMinion(point, expedition, "Luke", " ");
-		GetMinion(point, expedition, "Kurt", " ");
-		GetMinion(point, expedition, "Picard", " ");
-		Allegiance allegiance = new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:twinkler"]);
-		Allegiance allegiance2 = new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:patrician"]);
-		for (int l = 0; l < 3; l++)
-		{
-			PlaceAnimal("entity:twinkler", Reproduction.Male, pos, 20f, allegiance);
-			PlaceAnimal("entity:twinkler", Reproduction.Male, pos, 20f, allegiance);
-			PlaceAnimal("entity:patrician", Reproduction.Male, pos2, 20f, allegiance2);
-		}
-	}
-
-	public static Entity GetMinion(Point pos, Expedition exp, string firstName, string sirName)
-	{
-		Entity entity = PlacePerson(firstName, sirName, Reproduction.Male, pos, Color.Purple, 30f, noSkills: false, exp);
-		entity.PersonEntity.UpdatePortrait(The.InGameUI.gui, "skimmerDark");
-		foreach (SkillType value in GameData.Instance.AllSkillTypes.Values)
-		{
-			entity.Intelligence.Skills.Add(value, new Skill(0.5f, value));
-		}
-		return entity;
-	}
-
 	public static void HuntTest()
 	{
 		Point point = new Point(10, 10);
@@ -2904,45 +2849,6 @@ public class PlaceGameEntities
 		}
 	}
 
-	public static void BuildStructuresTest()
-	{
-		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(9, 7)));
-		The.MapUI.ZoomToMapPosition(10, 5);
-		int num = 10;
-		for (int i = 0; i < num; i++)
-		{
-			Entity entity = PlacePerson("Agent", "NR: " + i, Reproduction.Male, new Point(5, 8 + i), Color.White, 40f, noSkills: false, expedition);
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["bushcraft"], new Skill(1f, GameData.Instance.AllSkillTypes["bushcraft"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["butchering"], new Skill(0.8f, GameData.Instance.AllSkillTypes["butchering"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["hunting"], new Skill(1f, GameData.Instance.AllSkillTypes["hunting"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["fishing"], new Skill(1f, GameData.Instance.AllSkillTypes["fishing"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["foraging"], new Skill(1f, GameData.Instance.AllSkillTypes["foraging"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["cooking"], new Skill(0.8f, GameData.Instance.AllSkillTypes["cooking"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["menial"], new Skill(1f, GameData.Instance.AllSkillTypes["menial"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["shooting"], new Skill(1f, GameData.Instance.AllSkillTypes["shooting"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["armedMelee"], new Skill(1f, GameData.Instance.AllSkillTypes["armedMelee"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["unarmedFighting"], new Skill(0.8f, GameData.Instance.AllSkillTypes["unarmedFighting"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["medicine"], new Skill(0.4f, GameData.Instance.AllSkillTypes["medicine"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["psychology"], new Skill(0.1f, GameData.Instance.AllSkillTypes["psychology"]));
-			entity.Intelligence.Skills.Add(GameData.Instance.AllSkillTypes["biology"], new Skill(0.2f, GameData.Instance.AllSkillTypes["biology"]));
-		}
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:sticks"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:spoakLeaves"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:spoakLeaves"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:spoakLeaves"]), new Point(9, 7));
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedMachete"]), new Point(9, 7));
-		AddFinishedStructure("structure:sensor", new Point(8, 7), expedition);
-	}
-
 	public static void ChickenEatTest()
 	{
 		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(15, 5)));
@@ -3151,14 +3057,6 @@ public class PlaceGameEntities
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:thunderChickenGuts"]), new Point(14, 5));
 	}
 
-	public static void MacheteTest()
-	{
-		The.MapUI.ZoomToMapPosition(15, 5);
-		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(2, 2)));
-		PlacePerson("Karol", "Nikolaev", Reproduction.Male, new Point(2, 2), Color.White, 40f, noSkills: false, expedition).SetRotationAndDir((float)Math.PI / 2f);
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:improvisedBasicSpear"]), new Point(2, 2));
-	}
-
 	public static void StorageTest()
 	{
 		The.MapUI.ZoomToMapPosition(15, 12);
@@ -3319,16 +3217,6 @@ public class PlaceGameEntities
 		PlacePerson("Ward", "Conlan", Reproduction.Male, new Point(4, 4), Color.White, 52f, noSkills, "blue1", expedition, container);
 	}
 
-	public static void MartinAITest()
-	{
-		The.MapUI.ZoomToMapPosition(5, 10);
-		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(15, 5)));
-		Allegiance allegiance = new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:thunderChicken"]);
-		PlaceAnimal("entity:thunderChicken", Reproduction.Male, new Point(16, 9), 20f, allegiance);
-		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:advancedKnife"]), new Point(15, 5));
-		PlacePerson("Karol", "Nikolaev ", Reproduction.Male, new Point(14, 5), Color.White, 40f, noSkills: false, expedition);
-	}
-
 	public static void MLoAnimationTest()
 	{
 		The.MapUI.ZoomToMapPosition(5, 10);
@@ -3336,10 +3224,6 @@ public class PlaceGameEntities
 		Allegiance allegiance = new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:thunderChicken"]);
 		PlaceAnimal("entity:thunderChicken", Reproduction.Male, new Point(16, 9), 20f, allegiance);
 		PlacePerson("Karol", "Nikolaev ", Reproduction.Male, new Point(14, 9), Color.White, 40f, noSkills: false, expedition);
-	}
-
-	private static void DoSomething(Entity entity, DebugJobEvaluator eval)
-	{
 	}
 
 	public static void DecompositionTest()

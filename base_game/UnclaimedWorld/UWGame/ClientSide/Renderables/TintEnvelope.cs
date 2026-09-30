@@ -22,10 +22,6 @@ public class TintEnvelope
 	{
 	}
 
-	public void sustain()
-	{
-	}
-
 	public void release()
 	{
 	}
@@ -34,25 +30,9 @@ public class TintEnvelope
 	{
 	}
 
-	public bool isEffective()
-	{
-		return m_affect;
-	}
-
-	public void saturate(Color color)
-	{
-	}
-
-	public void setVibrato(float amplitude, float frequency)
-	{
-	}
-
 	public Color GetColor()
 	{
 		return Color.White;
 	}
 
-	public void setSustain(uint x)
-	{
-	}
 }

@@ -79,7 +79,4 @@ public class ExpandedPanel : Panel
 		Panel.AddImage(gui, Form, sourceRectangle, new Point(Form.Width - sourceRectangle.Width, 0)).RenderType = RenderType.Overlay;
 	}
 
-	private void Close_OnPress(object sender, EventArgs e)
-	{
-	}
 }

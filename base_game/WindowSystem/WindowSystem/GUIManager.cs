@@ -128,8 +128,6 @@ public class GUIManager
 
 	public event Action<Window> MouseOverWindow;
 
-	public event Action<Window> MouseOutOfWindow;
-
 	public GUIManager(Game game, int width, int height, InputData inputData, ContentManager content, bool receiveInputEvents = true)
 	{
 		Game = game;
@@ -346,14 +344,6 @@ public class GUIManager
 		if (this.MouseOverWindow != null)
 		{
 			this.MouseOverWindow(window);
-		}
-	}
-
-	public void MouseIsOutOfWindow(Window window)
-	{
-		if (this.MouseOutOfWindow != null)
-		{
-			this.MouseOutOfWindow(window);
 		}
 	}
 

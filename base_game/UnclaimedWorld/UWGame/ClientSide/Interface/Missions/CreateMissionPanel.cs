@@ -131,11 +131,6 @@ public class CreateMissionPanel : RosterPanel
 		}
 	}
 
-	public MissionTemplate getMissionTemplate()
-	{
-		return missionTemplate;
-	}
-
 	public CreateMissionPanel()
 		: base("CREATE NEW RUN", 620, needBottomMarginForButtons: true)
 	{

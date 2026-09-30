@@ -97,21 +97,4 @@ public class TabControl : UIComponent
 		SetHeight();
 	}
 
-	public TabPage CreateTabItem(string caption, string tooltip)
-	{
-		TabPage tabPage = new TabPage(guiManager);
-		AddTabPage(tabPage, caption, tooltip);
-		return tabPage;
-	}
-
-	public void AddTabItem(string caption, string tooltip, TabPage tabItem)
-	{
-		RadioButton radioButton = new RadioButton(guiManager);
-		radioButton.Init(CheckBoxType.LCD);
-		radioButton.Text = caption;
-		radioButton.ToolTip = tooltip;
-		rgAccessButtons.Add(radioButton, addAsControl: true, setHorizPosition: true);
-		rgAccessButtons.Height = radioButton.Height;
-		rgAccessButtons.Width = radioButton.Right;
-	}
 }

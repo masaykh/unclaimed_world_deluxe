@@ -25,10 +25,6 @@ public class SubstancePool : ILookUp<SubstancePool, SubstancePoolID>
 
 	public int LoadPostProcessOrder => 0;
 
-	public void RequestSubstance()
-	{
-	}
-
 	public void Consume(float amount)
 	{
 	}

@@ -384,22 +384,6 @@ public class ComboBox : UIComponent
 		}
 	}
 
-	protected void OnButtonMouseOver(MouseEventArgs args)
-	{
-		if (!isListBoxOpen)
-		{
-			button.CurrentSkinState = SkinState.Hover;
-		}
-	}
-
-	protected void OnButtonMouseOut(MouseEventArgs args)
-	{
-		if (!isListBoxOpen)
-		{
-			button.CurrentSkinState = SkinState.Normal;
-		}
-	}
-
 	private void headerbox_Click(UIComponent sender, EventArgs e)
 	{
 		if (!isListBoxOpen && listBox.Count > 0)

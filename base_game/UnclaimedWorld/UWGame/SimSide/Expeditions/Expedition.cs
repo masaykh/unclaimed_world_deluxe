@@ -538,20 +538,6 @@ public class Expedition : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGro
 		}
 	}
 
-	public List<EntityID> GetMembersReadyToEmigrate()
-	{
-		List<EntityID> list = null;
-		foreach (EntityID member in Members)
-		{
-			Entity entity = Entity.FindByID(member);
-			if (entity != null && entity.Intelligence.HasDesireToEmigrate(The.InGameUI.UIAllegiance))
-			{
-				Common.AddToList(ref list, member);
-			}
-		}
-		return list;
-	}
-
 	public void Destroy()
 	{
 		JobManager.Destroy();
@@ -596,10 +582,6 @@ public class Expedition : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGro
 				}
 			}
 		}
-	}
-
-	public void MergeExpeditions(Expedition expeditionToDissappear)
-	{
 	}
 
 	public void AddMember(Entity member)

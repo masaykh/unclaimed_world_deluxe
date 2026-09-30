@@ -90,12 +90,6 @@ public class SubtileLayers : ISnapshot, ILookUp<SubtileLayers, SubtileLayersID>
 		return GetSector(sectorX, sectorY, out layerIndex);
 	}
 
-	public SubtileSector GetUnfinishedSectorFromSubtile(Point subtile, out int layerIndex)
-	{
-		Layers[0].GetSectorAndRelativeCoords(subtile.X, subtile.Y, out var sectorX, out var sectorY, out var _, out var _);
-		return GetSector(sectorX, sectorY, out layerIndex, ignoreNewUnfinishedSectors: false);
-	}
-
 	public SubtileSector GetSectorFromSubtile(Point subtile)
 	{
 		int layerIndex;

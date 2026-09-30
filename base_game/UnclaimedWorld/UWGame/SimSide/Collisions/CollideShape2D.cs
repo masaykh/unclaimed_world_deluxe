@@ -202,11 +202,6 @@ public class CollideShape2D
 		primitiveType = CollidePrim.Circle;
 	}
 
-	public float GetWidthHeightRatio()
-	{
-		return Math.Abs(boundsUpperLeft.X - boundsLowerRight.X) / Math.Abs(boundsUpperLeft.Y - boundsLowerRight.Y);
-	}
-
 	public float GetWidth()
 	{
 		return Math.Abs(boundsUpperLeft.X - boundsLowerRight.X);

@@ -127,25 +127,6 @@ public class NonLivingType
 		return null;
 	}
 
-	public ProcessType SelectRepairProcess(RepairAction action, EntityType part)
-	{
-		switch (action)
-		{
-		case RepairAction.Integrity:
-			return EntityRepairProfile.Integrity;
-		case RepairAction.Condition:
-			return EntityRepairProfile.Condition;
-		case RepairAction.PartsCondition:
-			return EntityRepairProfile.PartsCondition[part];
-		default:
-			if (RepairType.IsReplaceAction(action))
-			{
-				return EntityRepairProfile.PartsReplacement[part];
-			}
-			return null;
-		}
-	}
-
 	public void PostLoadContentInitialize()
 	{
 		if (!string.IsNullOrEmpty(SalvageProcess))

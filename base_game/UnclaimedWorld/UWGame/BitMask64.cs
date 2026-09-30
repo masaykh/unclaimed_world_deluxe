@@ -122,23 +122,6 @@ public class BitMask64 : IXmlSerializable, ISnapshot
 		UpdateStateNames();
 	}
 
-	public void SetOrClear<T>(T flag, bool doSet) where T : struct
-	{
-		if (typeof(T) != Type)
-		{
-			throw new Exception("Use enum type used when constructing BitMask64");
-		}
-		if (doSet)
-		{
-			Set(flag);
-		}
-		else
-		{
-			Clear(flag);
-		}
-		UpdateStateNames();
-	}
-
 	public bool Equals(BitMask64 other)
 	{
 		if (other == null)
@@ -171,20 +154,6 @@ public class BitMask64 : IXmlSerializable, ISnapshot
 		}
 		int num = (int)(object)flag;
 		return (Bits & (ulong)(1L << num)) != 0;
-	}
-
-	public string GetNameFromEnumValue(int value)
-	{
-		return Enum.GetName(Type, value);
-	}
-
-	public bool GetEnumValueFromName<T>(string name, out T value) where T : struct
-	{
-		if (typeof(T) != Type)
-		{
-			throw new Exception("Use enum type used when constructing BitMask64");
-		}
-		return Enum.TryParse<T>(name, ignoreCase: true, out value);
 	}
 
 	public bool TestForAny(ulong mask)
@@ -259,12 +228,6 @@ public class BitMask64 : IXmlSerializable, ISnapshot
 	public void Clear(BitMask64 bitsToClear)
 	{
 		Bits &= ~bitsToClear.Bits;
-		UpdateStateNames();
-	}
-
-	public void ClearAndSet(BitMask64 clr, BitMask64 set)
-	{
-		Bits = (Bits & ~clr.Bits) | set.Bits;
 		UpdateStateNames();
 	}
 

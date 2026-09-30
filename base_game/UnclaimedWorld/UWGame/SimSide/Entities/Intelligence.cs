@@ -407,15 +407,6 @@ public class Intelligence : Component
 		return num;
 	}
 
-	public void SetSkillValue(SkillType skillType, float value)
-	{
-		if (Skills.TryGetValue(skillType, out var value2))
-		{
-			value2.Value = value;
-		}
-		professionIsDirty = true;
-	}
-
 	public float GetSkillProductionFactor(SkillType skillType)
 	{
 		if (skillType == null)
@@ -697,15 +688,6 @@ public class Intelligence : Component
 			return value.Value > GameData.Instance.Constants.MinimumSkillValueToUse;
 		}
 		return false;
-	}
-
-	public Skill GetSkill(SkillType skillType)
-	{
-		if (Skills.TryGetValue(skillType, out var value))
-		{
-			return value;
-		}
-		return null;
 	}
 
 	public void ComeOnline()

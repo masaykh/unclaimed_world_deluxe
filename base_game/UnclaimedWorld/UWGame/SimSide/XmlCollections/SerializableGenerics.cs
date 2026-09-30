@@ -4,10 +4,6 @@ namespace UWGame.SimSide.XmlCollections;
 
 public static class SerializableGenerics
 {
-	public static string GetKeyValuePairName(Type tKey, Type tValue)
-	{
-		return GetTypeName(tKey) + GetTypeName(tValue);
-	}
 
 	public static string GetTypeName(Type type)
 	{

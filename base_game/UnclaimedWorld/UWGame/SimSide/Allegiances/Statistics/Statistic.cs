@@ -279,30 +279,6 @@ public abstract class Statistic : ISnapshot
 		return 0f;
 	}
 
-	public float GetAverage(List<DataPoint<float>> list, DataPoint<float> lastAveragePoint, DateAndTime.TimeDateYear from, DateAndTime.TimeDateYear to)
-	{
-		DateAndTime.TimeDateYear timeDateYear = from;
-		float num = 0f;
-		float num2 = 0f;
-		if (lastAveragePoint != null && lastAveragePoint.Time.CompareTo(from) >= 0)
-		{
-			num2 = lastAveragePoint.Value;
-			timeDateYear = lastAveragePoint.Time;
-			float num3 = (float)lastAveragePoint.Time.TotalDays;
-			float num4 = (float)from.TotalDays;
-			float num5 = (float)to.TotalDays;
-			num = (num3 - num4) / (num5 - num4);
-			num = Math.Min(1f, num);
-		}
-		List<DataPoint<float>> dataPointsBetween = GetDataPointsBetween(list, timeDateYear, to);
-		float num6 = 0f;
-		if (dataPointsBetween.Count > 0)
-		{
-			num6 = dataPointsBetween.Select((DataPoint<float> d) => d.Value).Average();
-		}
-		return num2 * num + num6 * (1f - num);
-	}
-
 	protected string RatingStatisticToString(double rating)
 	{
 		return Common.PercentageToString(rating);

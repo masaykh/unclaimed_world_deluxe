@@ -98,21 +98,6 @@ public class Options
 		DataLoader.SerializeObject(this, "", "Options.xml", Config.DataType.UserSettings);
 	}
 
-	public void SetDefaultResolution()
-	{
-		try
-		{
-			ResolutionWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-			ResolutionHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-		}
-		catch (Exception)
-		{
-			ResolutionWidth = 1024;
-			ResolutionHeight = 800;
-			FullScreen = false;
-		}
-	}
-
 	public bool Validate()
 	{
 		if (MaxAlerts > 0)

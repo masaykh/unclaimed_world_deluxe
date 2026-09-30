@@ -61,10 +61,6 @@ public class EntityData : IGameData
 		return Bulk.HasValue;
 	}
 
-	public void SetRandomStats()
-	{
-	}
-
 	public void PostInitValidate(ref List<string> listOfErrors)
 	{
 	}

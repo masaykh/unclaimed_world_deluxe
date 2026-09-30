@@ -158,15 +158,6 @@ public class ItemType : IXmlSerializable
 		KeyName = keyName;
 	}
 
-	public string GetAbbreviation()
-	{
-		if (!string.IsNullOrEmpty(Abbreviation))
-		{
-			return Abbreviation;
-		}
-		return Name.Substring(0, Common.Min(3, Name.Length));
-	}
-
 	public void Initialize()
 	{
 		if (WeaponType != null && !TaskAppropriateLevels.ContainsKey(TaskType.LongerJourneys))

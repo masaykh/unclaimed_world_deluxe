@@ -1162,57 +1162,12 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 		return false;
 	}
 
-	public string GetCurrentMainAnimation()
-	{
-		if (mainAnimation.currentController != null && mainAnimation.currentController.AnimationInfo != null)
-		{
-			return mainAnimation.currentController.AnimationInfo.Name;
-		}
-		return null;
-	}
-
-	internal void AppendAnimDebugInfo(StringBuilder states)
-	{
-		states.Append("    current main:  " + mainAnimation.CurrentAnimKey);
-		states.Append("\n");
-		states.Append("    blend main:    " + mainAnimation.AnimKeyBeingBlendedTo);
-		states.Append("\n");
-		states.Append("\n");
-		if (secondGaitAnimation.FinalWeightFactor > 0f && (secondGaitAnimation.currentController != null || secondGaitAnimation.controllerBeingBlendedTo != null))
-		{
-			states.Append("    current 2nd gait:  " + secondGaitAnimation.CurrentAnimKey);
-			states.Append("\n");
-			states.Append("    blend 2nd gait:    " + secondGaitAnimation.AnimKeyBeingBlendedTo);
-			states.Append("\n");
-			states.Append("\n");
-			states.Append("    weight:  " + secondGaitAnimation.FinalWeightFactor);
-			states.Append("\n");
-		}
-		int num = 1;
-		foreach (AnimationTrack additionalAnimationTrack in additionalAnimationTracks)
-		{
-			if (additionalAnimationTrack.currentController != null || additionalAnimationTrack.controllerBeingBlendedTo != null)
-			{
-				states.Append("    additional track #" + num + ", current: " + additionalAnimationTrack.CurrentAnimKey);
-				states.Append("\n");
-				states.Append("    additional track #" + num + ", blend: " + additionalAnimationTrack.AnimKeyBeingBlendedTo);
-				states.Append("\n");
-				states.Append("\n");
-			}
-		}
-	}
-
 	public void UpdateAnimationManuallyByTimeScalar(double scalar)
 	{
 		if (!animationFlagsAreDirty)
 		{
 			mainAnimation.UpdateAnimationManuallyByTimeScalar(The.Client.GameTime, scalar);
 		}
-	}
-
-	public void StartMainAnimation(string animKey, Playback playback, StartingPoint startingPoint, BlendMode mode, float speedFactor = 1f, Looping looping = Looping.No, float? startOffsetToAdd = null)
-	{
-		StartAnimation(animKey, mainAnimation, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd, false);
 	}
 
 	public void StartAdditionalAnimation(string animKey, Playback playback, StartingPoint startingPoint, BlendMode mode, float speedFactor = 1f, Looping looping = Looping.No, float? startOffsetToAdd = null)
@@ -1224,11 +1179,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 				StartAnimation(animKey, additionalAnimationTrack, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd, false);
 			}
 		}
-	}
-
-	public void StopMainAnimation()
-	{
-		mainAnimation.StopAnimation();
 	}
 
 	public void UpdateAnimationConditionState()

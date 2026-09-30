@@ -114,10 +114,6 @@ public class Replayer
 		LoadingScreen.StartTransitioningToGame(game.Controller, CurrentReplay.StartGameParams, loadingIsSlow: true);
 	}
 
-	public void DummyMethod(object sender, EventArgs e)
-	{
-	}
-
 	/// <summary>One random draw during a replay, for comparison against the recording.</summary>
 	public void RecordDrawForComparison(string getMessage)
 	{
@@ -167,11 +163,6 @@ public class Replayer
 			return true;
 		}
 		return trace.EndFrame(frameIndex, world);
-	}
-
-	public string GetCurrentSavedAIState()
-	{
-		return null;
 	}
 
 	public string GetCurrentSavedRandomGet()

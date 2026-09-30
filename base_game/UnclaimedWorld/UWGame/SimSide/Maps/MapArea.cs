@@ -171,11 +171,6 @@ public class MapArea : ISnapshot
 		}
 	}
 
-	public void HandleFirstTile(IterateMethod handleMethod)
-	{
-		handleMethod(Coverage[0]);
-	}
-
 	public void PostLoadContent()
 	{
 		MapAreaRender.PostLoadContent();
@@ -248,18 +243,6 @@ public class MapArea : ISnapshot
 		{
 			Zone.ComputeEdges();
 		}
-	}
-
-	public TerrainTile GetCornerFromIndex(int index)
-	{
-		return index switch
-		{
-			0 => BottomLeftTile, 
-			1 => BottomRightTile, 
-			2 => UpperRightTile, 
-			3 => UpperLeftTile, 
-			_ => null, 
-		};
 	}
 
 	public bool CheckConnectivity(bool createList, ref List<TerrainTile> connectedTiles)

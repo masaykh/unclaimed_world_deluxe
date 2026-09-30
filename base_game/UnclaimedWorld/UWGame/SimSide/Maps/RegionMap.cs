@@ -172,11 +172,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 
 	public bool UnregisterBeforeSnapshot => true;
 
-	public void AssertSearch(RegionSearchPlanner planner, RegionSearchRequest searchRequest)
-	{
-		layers.GetRegion(searchRequest.FromSubtile.X, searchRequest.FromSubtile.Y);
-	}
-
 	public RegionMap()
 	{
 	}

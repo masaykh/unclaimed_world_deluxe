@@ -128,32 +128,6 @@ public class TakenBy : ISnapshot
 		return takenBy.FirstOrDefault(matches);
 	}
 
-	public bool IsScoreGreaterThanAnyTaker(double utilityToTest)
-	{
-		if (takenBy.Count > 0)
-		{
-			for (int i = 0; i < takenBy.Count; i++)
-			{
-				Entity entity = takenBy[i];
-				if (IsScoreGreater(utilityToTest, entity))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-		return true;
-	}
-
-	public static bool IsScoreGreater(double utilityToTest, Entity entity)
-	{
-		if (entity.Intelligence.GetScore() < utilityToTest)
-		{
-			return true;
-		}
-		return false;
-	}
-
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);

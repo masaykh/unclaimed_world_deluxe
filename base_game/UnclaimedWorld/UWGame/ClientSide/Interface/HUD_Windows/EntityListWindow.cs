@@ -141,14 +141,6 @@ public class EntityListWindow : HUDWindow
 		Fill();
 	}
 
-	public void PopulateAndShowOnPlayfield(UIComponent spawnButton, EntityType entityType, EntityGroup owner)
-	{
-		SetDataSource(entityType, The.InGameUI.GetExpedition().OwnedEntities.AllEntities[entityType]);
-		int screenPosX = spawnButton.AbsolutePosition.X + 26;
-		int y = spawnButton.AbsolutePosition.Y;
-		ShowOnPlayfield(screenPosX, y, avoidRightInterfaceArea: false);
-	}
-
 	public void OpenNextToStockButton(UIComponent itemButton)
 	{
 		ShowOnPlayfield(itemButton.AbsolutePosition.X - DisplayWindow.Width - 2, itemButton.AbsolutePosition.Y - gridY, avoidRightInterfaceArea: false);

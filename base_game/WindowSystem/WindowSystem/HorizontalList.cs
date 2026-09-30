@@ -408,11 +408,6 @@ public class HorizontalList : UIComponent, IKeyedEntryComponent
 		RefreshMargins();
 	}
 
-	public void StartAddingData()
-	{
-		BeginAddingEntries();
-	}
-
 	public bool TryRemoveEntry(object key)
 	{
 		if (entriesByKey.ContainsKey(key))

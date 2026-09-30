@@ -167,24 +167,10 @@ public class GoalTurnToFace : Goal
 		return GetSmallestAngleDistance(ComputeDesiredAngle(location, faceThis), currentRotation) < allowedRotationMargin;
 	}
 
-	public static float ComputeModelRotationFromCornerRotation(int cornerNo, float cornerRotation)
-	{
-		if (cornerNo == 0)
-		{
-			return cornerRotation;
-		}
-		return Common.WrapAngleBetweenZeroAndTwoPi(cornerRotation - (float)cornerNo * ((float)Math.PI / 2f));
-	}
-
 	public static float GetSmallestAngleDistance(float rotationToFace, float currentRotation)
 	{
 		float num = Math.Abs(rotationToFace - currentRotation);
 		return Math.Min(num, (float)Math.PI * 2f - num);
-	}
-
-	public static float GetAngleDistance(float rotationToFace, float currentRotation)
-	{
-		return Math.Abs(rotationToFace - currentRotation);
 	}
 
 	private static float ComputeDesiredAngle(Vector3 position, Vector2 faceThis)

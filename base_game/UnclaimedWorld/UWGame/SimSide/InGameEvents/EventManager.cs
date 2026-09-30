@@ -221,32 +221,12 @@ public class EventManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 		eventActions.Add(eventAction);
 	}
 
-	public void ClearEvents()
-	{
-		polledEvents = new SleepyUpdater<PolledEvent>(Module.Sim, staggerUpdates: true);
-	}
-
 	public void PlayerEntityHasDied(Entity deadEntity, Entity carcassEntity, CauseOfDeath? causeOfDeath)
 	{
 		if (funeral != null)
 		{
 			funeral.PlayerEntityHasDied(deadEntity, carcassEntity, causeOfDeath);
 		}
-	}
-
-	public void GetCurrentEvents(StringBuilder description)
-	{
-		description.AppendLine("Global (polled) conditions:");
-		polledEvents.IterateItems(delegate(PolledEvent g)
-		{
-			description.AppendLine(g.TimePointInSeconds.Value + ": " + g.PolledEventType.KeyName);
-		});
-		description.AppendLine();
-		description.AppendLine("Event actions:");
-		eventActions.IterateItems(delegate(EventAction e)
-		{
-			description.AppendLine(e.TimePointInSeconds.Value + ": " + e.EventActionType.ToString());
-		});
 	}
 
 	public CyclableID GetUniqueID()
@@ -353,13 +333,6 @@ public class EventManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	public bool PlayerAllegianceIsUnderThreat()
 	{
 		return The.Sim.PlaySite.PlayerAllegiance.IsUnderThreat();
-	}
-
-	public void PrintGlobalConditions(StringBuilder description)
-	{
-		description.AppendLine("sleeping or collapsed: " + PlayerAllegianceIsSleepingOrCollapsed());
-		description.AppendLine("attacking: " + PlayerAllegianceIsAttacking());
-		description.AppendLine("under threat: " + PlayerAllegianceIsUnderThreat());
 	}
 
 	public ISnapshot DoSnapshot(Snapshotter sn)

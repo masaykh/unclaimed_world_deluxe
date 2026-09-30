@@ -184,10 +184,6 @@ public class ThreatJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnap
 		}
 	}
 
-	public void CreateCombosForAttacksOutOfBand()
-	{
-	}
-
 	public void ScoreCombosAndCreateJobsOutOfBand()
 	{
 	}
@@ -455,10 +451,6 @@ public class ThreatJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnap
 			}
 		}
 		return ThreatEvaluationStatus.Done;
-	}
-
-	public void GetSpeciesThreatLevel()
-	{
 	}
 
 	public void PrintInfo(StringBuilder text)

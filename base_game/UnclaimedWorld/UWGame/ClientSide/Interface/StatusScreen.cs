@@ -154,14 +154,6 @@ public class StatusScreen
 		return 22;
 	}
 
-	public static void action_Click(UIComponent sender, EventArgs e)
-	{
-		if (The.InGameUI.SelectedEntity.HasValue)
-		{
-			The.InGameUI.HUDActionPanel.ShowInScreenSpace(sender.AbsolutePosition.X - The.InGameUI.HUDActionPanel.DisplayWindow.Width, sender.AbsolutePosition.Y);
-		}
-	}
-
 	public void ShowCenterButton(bool show)
 	{
 		btTrack.Visible = show;

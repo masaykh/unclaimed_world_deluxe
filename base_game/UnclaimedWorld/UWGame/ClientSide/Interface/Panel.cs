@@ -394,30 +394,6 @@ public class Panel
 		return textButton;
 	}
 
-	protected ActionButtonPanel CreateActionButtons(int width)
-	{
-		ActionButtonPanel actionButtonPanel = new ActionButtonPanel(Interface.gui);
-		Window.Add(actionButtonPanel);
-		actionButtonPanel.Init();
-		actionButtonPanel.Width = width;
-		actionButtonPanel.X = 16;
-		actionButtonPanel.Y = Window.Height - actionButtonPanel.Height - 8;
-		return actionButtonPanel;
-	}
-
-	public static Box AddIndentation(GUIManager gui, Window window, Point position, int width, int height)
-	{
-		Box box = new Box(gui);
-		window.Add(box);
-		Rectangle sourceRectangle = gui.GUISpriteSheet.GetSourceRectangle("indent");
-		box.SetSkinLocation(SkinState.Normal, sourceRectangle);
-		box.CornerSize = 9;
-		box.Width = width;
-		box.Height = height;
-		box.Position = position;
-		return box;
-	}
-
 	public static Box AddMetalPlate(GUIManager gui, Window window, Point position, Point dimension)
 	{
 		Box box = new Box(gui);
@@ -501,20 +477,6 @@ public class Panel
 		area.X = 6;
 		area.Y = 45;
 		area.Width = surfaceGrid.SurfaceWidth - 12;
-	}
-
-	public int GetBottom()
-	{
-		return Window.Height - 8;
-	}
-
-	public int GetContentWidth()
-	{
-		return Window.Width - 32;
-	}
-
-	protected void InitSmallPanel()
-	{
 	}
 
 	public static Image AddImage(GUIManager gui, Window window, string spriteName, Point position)

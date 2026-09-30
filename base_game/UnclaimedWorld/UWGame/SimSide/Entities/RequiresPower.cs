@@ -8,11 +8,6 @@ public class RequiresPower
 
 	public List<Entity> PowerCells;
 
-	public bool HasPowerForDuration(float duration)
-	{
-		return true;
-	}
-
 	public void UpdateSimulationInParallel(double deltaTimeInSeconds)
 	{
 	}

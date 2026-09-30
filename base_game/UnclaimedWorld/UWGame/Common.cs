@@ -46,16 +46,6 @@ public static class Common
 
 	private static int indentLength = "   ".Length;
 
-	public static U GetExistingEntryOrAddNew<T, U>(Dictionary<T, U> dictionary, T key) where U : new()
-	{
-		if (!dictionary.TryGetValue(key, out var value))
-		{
-			value = new U();
-			dictionary.Add(key, value);
-		}
-		return value;
-	}
-
 	public static void AppendDivider(StringBuilder text)
 	{
 		AppendLine(text, "---------------");
@@ -396,47 +386,6 @@ public static class Common
 				bool result = false;
 				bool flag = false;
 				foreach (KeyValuePair<T, List<U>> type in typeList)
-				{
-					if (type.Value.Remove(value))
-					{
-						if (removeEmptyList && type.Value.Count == 0)
-						{
-							key2 = type.Key;
-							flag = true;
-						}
-						result = true;
-						break;
-					}
-				}
-				if (flag)
-				{
-					typeList.Remove(key2);
-				}
-				return result;
-			}
-			if (typeList.TryGetValue(key, out var value2))
-			{
-				bool result2 = value2.Remove(value);
-				if (removeEmptyList && value2.Count == 0)
-				{
-					typeList.Remove(key);
-				}
-				return result2;
-			}
-		}
-		return false;
-	}
-
-	public static bool RemoveFromMultiSet<T, U>(Dictionary<T, HashSet<U>> typeList, T key, U value, bool removeEmptyList = false)
-	{
-		if (typeList != null)
-		{
-			if (key == null)
-			{
-				T key2 = default(T);
-				bool result = false;
-				bool flag = false;
-				foreach (KeyValuePair<T, HashSet<U>> type in typeList)
 				{
 					if (type.Value.Remove(value))
 					{
@@ -839,11 +788,6 @@ public static class Common
 	{
 		double num = ((value - oldMean != 0.0 && 6.0 * oldStdDeviation != 0.0) ? Math.Abs((value - oldMean) / (6.0 * oldStdDeviation)) : 0.0);
 		return newMean + (double)Math.Sign(value - oldMean) * (num * 6.0 * newStdDeviation);
-	}
-
-	public static float ShiftValue(float value)
-	{
-		return 2f * (value - 0.5f);
 	}
 
 	public static void GetNormalDistributionFromMinMaxValues(float min, float max, out float? mean, out float? stdDev)
@@ -1311,11 +1255,6 @@ public static class Common
 		return f1;
 	}
 
-	public static Point ClampPositionToMap(int x, int y)
-	{
-		return new Point(Clamp(x, 0, The.Map.mapTileWidth), Clamp(y, 0, The.Map.mapTileHeight));
-	}
-
 	public static double ClampTop(double d1, double top)
 	{
 		if (!(d1 < top))
@@ -1354,24 +1293,6 @@ public static class Common
 			radians -= (float)Math.PI * 2f;
 		}
 		return radians;
-	}
-
-	public static Vector3 WrapVectorBetweenMinusNAndN(Vector3 vec, float N)
-	{
-		return new Vector3(WrapFloatBetweenMinusNAndN(vec.X, N), WrapFloatBetweenMinusNAndN(vec.Y, N), WrapFloatBetweenMinusNAndN(vec.Z, N));
-	}
-
-	public static float WrapFloatBetweenMinusNAndN(float flt, float N)
-	{
-		while (flt < 0f - N)
-		{
-			flt += N * 2f;
-		}
-		while (flt > N)
-		{
-			flt -= N * 2f;
-		}
-		return flt;
 	}
 
 	public static float WrapAngleBetweenZeroAndTwoPi(float radians)
@@ -1478,31 +1399,6 @@ public static class Common
 		return Direction.North;
 	}
 
-	public static Direction Mirror(Direction dir)
-	{
-		return dir switch
-		{
-			Direction.North => Direction.South, 
-			Direction.NorthEast => Direction.SouthWest, 
-			Direction.East => Direction.West, 
-			Direction.SouthEast => Direction.NorthWest, 
-			Direction.South => Direction.North, 
-			Direction.SouthWest => Direction.NorthEast, 
-			Direction.West => Direction.East, 
-			Direction.NorthWest => Direction.SouthEast, 
-			_ => Direction.South, 
-		};
-	}
-
-	public static bool IsDiagonal(Direction dir)
-	{
-		if (dir != Direction.NorthEast && dir != Direction.NorthWest && dir != Direction.SouthEast)
-		{
-			return dir == Direction.SouthWest;
-		}
-		return true;
-	}
-
 	public static T GetRandomEnumValue<T>(T enumType, RandomGenerator randomGenerator)
 	{
 		Array values = Enum.GetValues(enumType.GetType());
@@ -1534,24 +1430,6 @@ public static class Common
 			return Math.Abs(p1.X - p2.X) <= 1;
 		}
 		return Math.Abs(p1.X - p2.X) + Math.Abs(p1.Y - p2.Y) == 2;
-	}
-
-	public static Dictionary<EntityType, int> GroupItemsByType(List<IKnownEntityData> list)
-	{
-		Dictionary<EntityType, int> dictionary = new Dictionary<EntityType, int>();
-		foreach (IKnownEntityData item in list)
-		{
-			int num = ((item.EntityType.ItemType == null || item.EntityType.ItemType.AmmunitionType == null) ? 1 : item.NoOfRounds.Value);
-			if (dictionary.TryGetValue(item.EntityType, out var value))
-			{
-				dictionary[item.EntityType] = value + num;
-			}
-			else
-			{
-				dictionary.Add(item.EntityType, num);
-			}
-		}
-		return dictionary;
 	}
 
 	public static int GetJaggedArrayWidth<T>(T[][] array)
@@ -1663,15 +1541,6 @@ public static class Common
 			return width - 1f - offset;
 		}
 		return offset;
-	}
-
-	public static Vector3 GetAbsolutePosition(Vector3 location, Vector2 offset, bool flip)
-	{
-		if (flip)
-		{
-			return location + new Vector3(0f - offset.X, offset.Y, 0f);
-		}
-		return location + new Vector3(offset.X, offset.Y, 0f);
 	}
 
 	public static string ToHex(this Color color, bool includeHash)

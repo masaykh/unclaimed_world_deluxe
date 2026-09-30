@@ -243,11 +243,6 @@ public class Crop : ResourceContainer
 		return (CropItem)ripeCropItems[0];
 	}
 
-	public Tree GetTree()
-	{
-		return Parent as Tree;
-	}
-
 	public override bool GetClosestAccessibleHarvestLocation(SubtileLayers movemap, Vector3 fromLocation, out Vector3? closestLocation)
 	{
 		Vector3 accessPoint = Parent.AccessPoint;

@@ -153,11 +153,6 @@ public class Stockpile : ISnapshot
 		return mayStockpileCategory.TryGetValue(entityCategory, out categorySetting);
 	}
 
-	public bool TryGetItem(EntityType entityType, out int setting)
-	{
-		return mayStockpileItem.TryGetValue(entityType, out setting);
-	}
-
 	private void MergeWithDefaultSettings()
 	{
 		if (defaultSettings == null)

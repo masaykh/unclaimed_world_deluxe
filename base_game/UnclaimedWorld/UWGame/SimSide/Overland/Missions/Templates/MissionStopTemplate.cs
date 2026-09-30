@@ -66,11 +66,6 @@ public class MissionStopTemplate : ISnapshot, ILookUp<MissionStopTemplate, Missi
 	{
 	}
 
-	public bool IsStart()
-	{
-		return Number == 0;
-	}
-
 	public void AssignIDs()
 	{
 		AddToLookup();

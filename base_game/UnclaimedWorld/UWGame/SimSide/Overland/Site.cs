@@ -517,18 +517,6 @@ public class Site : IHasExposedProperties, ISnapshot, ILookUp<Site, SiteID>
 		};
 	}
 
-	public void PrintGlobalScriptVariables(StringBuilder description)
-	{
-		if (customFields == null)
-		{
-			return;
-		}
-		foreach (KeyValuePair<string, PropertyResult> customField in customFields)
-		{
-			description.AppendLine(customField.Key + " = " + customField.Value.ToString());
-		}
-	}
-
 	public ISnapshot DoSnapshot(Snapshotter sn)
 	{
 		id = SnapshotID(sn, id);

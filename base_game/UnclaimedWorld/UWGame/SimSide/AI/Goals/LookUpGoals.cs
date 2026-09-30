@@ -44,13 +44,6 @@ public class LookUpGoals : ILookUpCollectible, ISnapshot
 		return null;
 	}
 
-	public static List<Goal> GetGoals(Entity entity)
-	{
-		return (from i in collection
-			where i.Value.entity == entity
-			select i.Value).ToList();
-	}
-
 	public static void Remove(Goal goal)
 	{
 		collection.Remove(goal.ID);

@@ -20,11 +20,6 @@ public class DateAndTime : ISnapshot
 
 		public double TotalDays => TimeOfDay + (double)Day + (double)Year * 12.0;
 
-		public double ToYearAndTimeOfYear()
-		{
-			return (double)Year + (double)Day / 12.0 + TimeOfDay;
-		}
-
 		public TimeDateYear(double totalDays)
 		{
 			TimeOfDay = 0.0;
@@ -61,12 +56,6 @@ public class DateAndTime : ISnapshot
 			return secondsPerDay * num;
 		}
 
-		public double ToSeconds()
-		{
-			double totalDays = TotalDays;
-			return secondsPerDay * totalDays;
-		}
-
 		public string ToIntervalString()
 		{
 			string text = ((double)Day + TimeOfDay).ToString("F2");
@@ -81,11 +70,6 @@ public class DateAndTime : ISnapshot
 		{
 			string arg = TimeOfDay.ToString("F1", The.Sim.DateAndTime.numberFormat).Replace("0.", "");
 			return $"DATE: {Year}.{Day}.{arg}";
-		}
-
-		public void ConvertToAbsoluteTime()
-		{
-			AddTime(The.Sim.DateAndTime.CurrentTimeDateYear.TotalDays);
 		}
 
 		public void AddTime(double timeInDays)
@@ -424,13 +408,6 @@ public class DateAndTime : ISnapshot
 			return false;
 		}
 		return false;
-	}
-
-	public static double GetTimeDifferenceInDays(TimeDateYear from, TimeDateYear to)
-	{
-		double totalDays = to.TotalDays;
-		double totalDays2 = from.TotalDays;
-		return totalDays - totalDays2;
 	}
 
 	public static int CompareDates(TimeDateYear date1, TimeDateYear date2)

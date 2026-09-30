@@ -949,16 +949,6 @@ public class UIComponent
 		return result;
 	}
 
-	internal static bool CheckSkinLocation(Rectangle location)
-	{
-		bool result = false;
-		if (location.X >= 0 && location.Y >= 0 && location.Width > 0 && location.Height > 0)
-		{
-			result = true;
-		}
-		return result;
-	}
-
 	public void Redraw()
 	{
 		if (this.RequiresRedraw != null)

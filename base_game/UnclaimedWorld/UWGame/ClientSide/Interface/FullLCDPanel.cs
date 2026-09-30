@@ -12,28 +12,9 @@ public class FullLCDPanel
 
 	public delegate void SetCollapsedSummary(CollapsablePanel cp, object type);
 
-	public static Bar AddLCDDividerLine(GUIManager gui, int yPos, int xMargin, UIComponent lcdSurface)
-	{
-		return AddLCDLine(gui, new Point(xMargin, yPos), lcdSurface.Width - 2 * xMargin - 25, lcdSurface);
-	}
-
 	public static int GetContentWidthFromLCDSurface(UIComponent lcdSurface)
 	{
 		return lcdSurface.Width - 12 - 25;
-	}
-
-	public static Bar AddLCDLine(GUIManager gui, Point pos, int width, UIComponent lcdSurface)
-	{
-		Bar bar = new Bar(gui);
-		lcdSurface.Add(bar);
-		bar.Position = pos;
-		bar.EdgeSize = 6;
-		Rectangle sourceRectangle = gui.GUISpriteSheet.GetSourceRectangle("lcd_line");
-		bar.SetSkinLocation(SkinState.Normal, sourceRectangle);
-		bar.Width = width;
-		bar.Height = sourceRectangle.Height;
-		bar.RenderType = RenderType.CRTAndLCD;
-		return bar;
 	}
 
 	public static Bar AddLCDLineThin(GUIManager gui, Point pos, int width, UIComponent lcdSurface)

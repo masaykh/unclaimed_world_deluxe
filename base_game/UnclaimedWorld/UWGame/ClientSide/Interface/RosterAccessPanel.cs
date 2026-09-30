@@ -201,11 +201,6 @@ public class RosterAccessPanel
 		window.Remove(btGraphs);
 	}
 
-	public void DisableContacts()
-	{
-		window.Remove(btDiplomacy);
-	}
-
 	public void DisablePersonell()
 	{
 		window.Remove(btPersonnel);

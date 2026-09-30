@@ -187,7 +187,4 @@ internal static class Program
 		(sender as UnclaimedWorld).Controller.Destroy();
 	}
 
-	private static void OnProcessExit(object sender, EventArgs e)
-	{
-	}
 }

@@ -372,13 +372,6 @@ public class ListBox : UIComponent, IHasText
 		}
 	}
 
-	public void FitToLongestEntry()
-	{
-		foreach (Label entry in entries)
-		{
-		}
-	}
-
 	public static void SetSurfaceWidthForScrollbar(ListBoxType type, UIComponent viewPort, UIComponent surface)
 	{
 		switch (type)

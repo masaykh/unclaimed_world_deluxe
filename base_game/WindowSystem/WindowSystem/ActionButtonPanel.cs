@@ -108,21 +108,6 @@ public class ActionButtonPanel : UIComponent
 		bt3.Click += bt3_Click;
 	}
 
-	public void SpreadButtons()
-	{
-		if (!Contains(bt3))
-		{
-			bt2.X = Width - bt2.Width - 2;
-		}
-	}
-
-	public void ClearCommands()
-	{
-		Remove(bt1);
-		Remove(bt2);
-		Remove(bt3);
-	}
-
 	public void SetCommands(string text1, string tooltip1)
 	{
 		Remove(bt2);

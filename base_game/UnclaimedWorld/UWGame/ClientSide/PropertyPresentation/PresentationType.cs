@@ -94,26 +94,6 @@ public class PresentationType : IGameData
 		return null;
 	}
 
-	public void GetCustomPresentation(List<string> multiResult, out string propertyTerm, out Color? propertyColor, out string propertyIconName, out string propertyTermTooltip, string typeKey)
-	{
-		propertyColor = null;
-		propertyTerm = null;
-		propertyIconName = null;
-		propertyTermTooltip = null;
-		if (multiResult.Count == 2)
-		{
-			if (IconPresentation != null)
-			{
-				propertyIconName = multiResult[0];
-			}
-			else
-			{
-				propertyTerm = multiResult[0];
-			}
-			propertyTermTooltip = multiResult[1];
-		}
-	}
-
 	public Color? GetIconColor(float value1, float? value2, string typeKey)
 	{
 		return GetThreshold(value1, value2, typeKey)?.IconTint;

@@ -13,11 +13,6 @@ public class SetMember
 		representative = this;
 	}
 
-	public SetMember FindSet()
-	{
-		return representative;
-	}
-
 	public void Union(SetMember setToAdd)
 	{
 		Union(this, setToAdd);

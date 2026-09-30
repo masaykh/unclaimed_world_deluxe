@@ -117,25 +117,6 @@ public class Snapshotter
 			}
 		}
 
-		public void SetTypeAsAccountedFor(Type type, bool postpone = false)
-		{
-			if (TypesUnaccountedFor.TryGetValue(type, out var value))
-			{
-				value--;
-				if (value <= 0)
-				{
-					TypesUnaccountedFor.Remove(type);
-				}
-				else
-				{
-					TypesUnaccountedFor[type] = value;
-				}
-				if (postpone)
-				{
-					Common.AddToDictWithSums(PostponedTypes, type);
-				}
-			}
-		}
 	}
 
 	private class FieldInfoComparer : IEqualityComparer<FieldInfo>
@@ -288,17 +269,6 @@ public class Snapshotter
 		snapshotting = false;
 		m_reader = null;
 		return obj;
-	}
-
-	public uint DoCRC()
-	{
-		mode = Mode.CRC;
-		CRC = new CRC();
-		snapshotting = true;
-		The.Sim.DoSnapshot(The.Snapshotter);
-		snapshotting = false;
-		Log("CRC value is " + CRC.GetCurrentCRCValue + " <------------- LOOK");
-		return CRC.GetCurrentCRCValue;
 	}
 
 	public object DoUnknownObject(object a, Type type = null, bool verifyField = true)
@@ -1596,56 +1566,6 @@ public class Snapshotter
 		return partAndRoot;
 	}
 
-	public TravelLocation? DoTravelLocationNullable(TravelLocation? travelLocation, bool verifyField = true)
-	{
-		if (verifyField)
-		{
-			VerifyField(typeof(TravelLocation?));
-		}
-		if (mode == Mode.Load)
-		{
-			if (m_reader.ReadString() == "null")
-			{
-				return null;
-			}
-			long? allegianceID = DoInt64Nullable(null, verifyField: false);
-			long siteID = DoInt64(0L, verifyField: false);
-			long? expeditionID = DoInt64Nullable(null, verifyField: false);
-			long? terminalEntityID = DoInt64Nullable(null, verifyField: false);
-			return new TravelLocation(siteID, allegianceID, expeditionID, terminalEntityID);
-		}
-		if (mode == Mode.Save)
-		{
-			if (travelLocation.HasValue)
-			{
-				m_writer.Write("TravelLocation?");
-				DoInt64Nullable(travelLocation.Value.AllegianceID, verifyField: false);
-				DoInt64(travelLocation.Value.SiteID, verifyField: false);
-				DoInt64Nullable(travelLocation.Value.ExpeditionID, verifyField: false);
-				DoInt64Nullable(travelLocation.Value.TerminalEntityID, verifyField: false);
-			}
-			else
-			{
-				m_writer.Write("null");
-			}
-		}
-		else if (mode == Mode.CRC)
-		{
-			if (travelLocation.HasValue)
-			{
-				DoInt64Nullable(travelLocation.Value.AllegianceID, verifyField: false);
-				DoInt64(travelLocation.Value.SiteID, verifyField: false);
-				DoInt64Nullable(travelLocation.Value.ExpeditionID, verifyField: false);
-				DoInt64Nullable(travelLocation.Value.TerminalEntityID, verifyField: false);
-			}
-			else
-			{
-				CRC.AddData(BitConverter.GetBytes(0));
-			}
-		}
-		return travelLocation;
-	}
-
 	public StorageTarget? DoStorageTargetNullable(StorageTarget? storageTarget, bool verifyField = true)
 	{
 		if (verifyField)
@@ -2060,54 +1980,6 @@ public class Snapshotter
 				queue.Enqueue((T)obj);
 			}
 			return queue;
-		}
-		if (mode == Mode.Save)
-		{
-			if (collection == null)
-			{
-				m_writer.Write("null");
-			}
-			else
-			{
-				m_writer.Write(name);
-			}
-		}
-		if (collection == null)
-		{
-			return null;
-		}
-		int count = collection.Count;
-		count = DoInt32(count, verifyField: false);
-		foreach (T item in collection)
-		{
-			DoElement(typeInfo, item);
-		}
-		return collection;
-	}
-
-	public SerializableQueue<T> DoSerializableQueue<T>(SerializableQueue<T> collection, bool verifyField = true)
-	{
-		GetStaticTypeInfo<T>(out var typeInfo);
-		Type typeFromHandle = typeof(SerializableQueue<T>);
-		string name = typeFromHandle.Name;
-		if (verifyField)
-		{
-			VerifyField(typeFromHandle);
-		}
-		if (mode == Mode.Load)
-		{
-			if (m_reader.ReadString() == "null")
-			{
-				return null;
-			}
-			int num = DoInt32(0, verifyField: false);
-			SerializableQueue<T> serializableQueue = (SerializableQueue<T>)Activator.CreateInstance(typeFromHandle);
-			for (int i = 0; i < num; i++)
-			{
-				object obj = DoElement(typeInfo, default(T));
-				serializableQueue.Enqueue((T)obj);
-			}
-			return serializableQueue;
 		}
 		if (mode == Mode.Save)
 		{
@@ -2805,64 +2677,6 @@ public class Snapshotter
 		return dict;
 	}
 
-	public SortedList<K, V> DoSortedList<K, V>(SortedList<K, V> sortedList, bool verifyField = true)
-	{
-		GetStaticTypeInfo<K>(out var typeInfo);
-		GetStaticTypeInfo<V>(out var typeInfo2);
-		Type typeFromHandle = typeof(SortedList<K, V>);
-		string value = typeFromHandle.Name + typeInfo.Type.Name + typeInfo2.Type.Name;
-		if (verifyField)
-		{
-			VerifyField(typeFromHandle);
-		}
-		if (mode == Mode.Load)
-		{
-			if (m_reader.ReadString() == "null")
-			{
-				return null;
-			}
-			int num = DoInt32(0, verifyField: false);
-			SortedList<K, V> sortedList2 = (SortedList<K, V>)Activator.CreateInstance(typeFromHandle);
-			for (int i = 0; i < num; i++)
-			{
-				object obj = DoElement(typeInfo, default(K));
-				object obj2 = DoElement(typeInfo2, default(V));
-				if (typeInfo.Type.IsEnum)
-				{
-					sortedList2.Add((K)obj, (V)obj2);
-				}
-				else
-				{
-					sortedList2.Add((K)obj, (V)obj2);
-				}
-			}
-			return sortedList2;
-		}
-		if (mode == Mode.Save)
-		{
-			if (sortedList == null)
-			{
-				m_writer.Write("null");
-			}
-			else
-			{
-				m_writer.Write(value);
-			}
-		}
-		if (sortedList == null)
-		{
-			return null;
-		}
-		int count = sortedList.Count;
-		count = DoInt32(count, verifyField: false);
-		foreach (KeyValuePair<K, V> sorted in sortedList)
-		{
-			DoElement(typeInfo, sorted.Key);
-			DoElement(typeInfo2, sorted.Value);
-		}
-		return sortedList;
-	}
-
 	public Dictionary<K, V> DoDictionary<K, V>(Dictionary<K, V> dict, bool verifyField = true)
 	{
 		GetStaticTypeInfo<K>(out var typeInfo);
@@ -2953,64 +2767,6 @@ public class Snapshotter
 				}
 			}
 			return sortedDictionary;
-		}
-		if (mode == Mode.Save)
-		{
-			if (dict == null)
-			{
-				m_writer.Write("null");
-			}
-			else
-			{
-				m_writer.Write(value);
-			}
-		}
-		if (dict == null)
-		{
-			return null;
-		}
-		int count = dict.Count;
-		count = DoInt32(count, verifyField: false);
-		foreach (KeyValuePair<K, V> item in dict)
-		{
-			DoElement(typeInfo, item.Key);
-			DoElement(typeInfo2, item.Value);
-		}
-		return dict;
-	}
-
-	public SerializableDictionary<K, V> DoSerializableDictionary<K, V>(SerializableDictionary<K, V> dict, bool verifyField = true)
-	{
-		GetStaticTypeInfo<K>(out var typeInfo);
-		GetStaticTypeInfo<V>(out var typeInfo2);
-		Type typeFromHandle = typeof(SerializableDictionary<K, V>);
-		string value = typeFromHandle.Name + typeInfo.Type.Name + typeInfo2.Type.Name;
-		if (verifyField)
-		{
-			VerifyField(typeFromHandle);
-		}
-		if (mode == Mode.Load)
-		{
-			if (m_reader.ReadString() == "null")
-			{
-				return null;
-			}
-			int num = DoInt32(0, verifyField: false);
-			SerializableDictionary<K, V> serializableDictionary = (SerializableDictionary<K, V>)Activator.CreateInstance(typeFromHandle);
-			for (int i = 0; i < num; i++)
-			{
-				object obj = DoElement(typeInfo, default(K));
-				object obj2 = DoElement(typeInfo2, default(V));
-				if (typeInfo.Type.IsEnum)
-				{
-					serializableDictionary.Add((K)obj, (V)obj2);
-				}
-				else
-				{
-					serializableDictionary.Add((K)obj, (V)obj2);
-				}
-			}
-			return serializableDictionary;
 		}
 		if (mode == Mode.Save)
 		{

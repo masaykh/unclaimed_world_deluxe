@@ -22,11 +22,6 @@ public class UnclaimedWorld : Game
 
 	private static readonly string dialogInstructions = "Whoops - fatal error. Press Ctrl-C to copy the contents of this dialog and paste the text into the forums: " + Environment.NewLine + Environment.NewLine;
 
-	public Point GetScreenResolution()
-	{
-		return new Point(GraphicsDeviceManager.PreferredBackBufferWidth, GraphicsDeviceManager.PreferredBackBufferHeight);
-	}
-
 	public UnclaimedWorld()
 	{
 		Thread.CurrentThread.CurrentCulture = Config.Culture;

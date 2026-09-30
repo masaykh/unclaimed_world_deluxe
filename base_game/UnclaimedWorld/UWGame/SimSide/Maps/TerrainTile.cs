@@ -238,14 +238,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		}
 	}
 
-	public void DeleteMemoryOfEntityMovingOffSite(Entity entity)
-	{
-		foreach (Allegiance item in AllegiancesThatSeeThisTile)
-		{
-			item.SharedKnowledge.DeleteMemoryOfEntity(entity.ID, entity.DetectableID, removeAllKnowledge: true);
-		}
-	}
-
 	public void ChangeTileSeenBy(Entity byEntity, Sensor.TileStatus tileStatus)
 	{
 		Allegiance allegiance = byEntity.Intelligence.Allegiance;
@@ -401,26 +393,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		}
 	}
 
-	public void AddToWheelPath(Common.Direction dir, float increment)
-	{
-		if (WheelPaths == null)
-		{
-			WheelPaths = new Entity[8];
-		}
-		if (WheelPaths[(int)dir] == null)
-		{
-			WheelPaths[(int)dir] = new Entity(GameData.Instance.AllEntityTypes["tracks"]);
-		}
-		TerrainPath terrainPath = WheelPaths[(int)dir].TerrainPath;
-		float value = terrainPath.Value;
-		terrainPath.Value = Common.ClampTop(terrainPath.Value + increment, 1f);
-		float pathActivation = GameData.Instance.Constants.PathActivation;
-		if ((value <= pathActivation && terrainPath.Value > pathActivation) || (value > pathActivation && terrainPath.Value <= pathActivation))
-		{
-			RedrawTerrainCostsAroundEdge(dir);
-		}
-	}
-
 	public void AddCenterForGeoLayoutEntities(Entity entity)
 	{
 		if (BaseCenterForMultiTileEntities == null)
@@ -444,39 +416,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 	public Entity GetMainBuildingOnTile()
 	{
 		return null;
-	}
-
-	public bool GetStructuresOnTile(ref List<Entity> listOfStructures)
-	{
-		if (GeoLayoutEntitiesOnTile != null)
-		{
-			for (int num = GeoLayoutEntitiesOnTile.Count - 1; num >= 0; num--)
-			{
-				Entity entity = Entity.FindByID(GeoLayoutEntitiesOnTile[num]);
-				if (entity != null && entity.EntityType.StructureType != null)
-				{
-					Common.AddToList(ref listOfStructures, entity);
-				}
-				else
-				{
-					GeoLayoutEntitiesOnTile.RemoveAt(num);
-				}
-			}
-		}
-		if (listOfStructures != null)
-		{
-			return listOfStructures.Count > 0;
-		}
-		return false;
-	}
-
-	public bool ContainsTileEntity(Entity entity)
-	{
-		if (GeoLayoutEntitiesOnTile != null)
-		{
-			return GeoLayoutEntitiesOnTile.Contains(entity.ID);
-		}
-		return false;
 	}
 
 	public void RedrawTerrainCostsAroundEdge(Common.Direction edge)
@@ -671,42 +610,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		}
 	}
 
-	public bool HasPath(int directionIndex)
-	{
-		if (Roads != null && Roads[directionIndex] != null)
-		{
-			return true;
-		}
-		float pathActivation = GameData.Instance.Constants.PathActivation;
-		if (WheelPaths != null && WheelPaths[directionIndex] != null && WheelPaths[directionIndex].TerrainPath.Value > pathActivation)
-		{
-			return true;
-		}
-		if (FootPaths != null && FootPaths[directionIndex] != null && FootPaths[directionIndex].TerrainPath.Value > pathActivation)
-		{
-			return true;
-		}
-		return false;
-	}
-
-	public SurfaceType.TerrainFeatures HighestRankedPathFeature(int directionIndex)
-	{
-		if (Roads != null && Roads[directionIndex] != null)
-		{
-			return SurfaceType.TerrainFeatures.GravelRoad;
-		}
-		float pathActivation = GameData.Instance.Constants.PathActivation;
-		if (WheelPaths != null && WheelPaths[directionIndex] != null && WheelPaths[directionIndex].TerrainPath.Value > pathActivation)
-		{
-			return SurfaceType.TerrainFeatures.WheelPath;
-		}
-		if (FootPaths != null && FootPaths[directionIndex] != null && FootPaths[directionIndex].TerrainPath.Value > pathActivation)
-		{
-			return SurfaceType.TerrainFeatures.FootPath;
-		}
-		return SurfaceType.TerrainFeatures.None;
-	}
-
 	public void AddProcess(SimProcess process)
 	{
 		if (ProcessesOnTile == null)
@@ -818,66 +721,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		}
 	}
 
-	public bool HasGatherableResources()
-	{
-		if (TileResources != null)
-		{
-			foreach (KeyValuePair<ResourceType, TileResourceContainer> tileResource in TileResources)
-			{
-				if (tileResource.Value.NoOfHarvestableItems > 0)
-				{
-					return true;
-				}
-			}
-		}
-		if (TreesOnTile != null)
-		{
-			foreach (Entity item in TreesOnTile)
-			{
-				item.Find<UWGame.SimSide.Trees.Tree>(out var c);
-				if (c.Crops == null)
-				{
-					continue;
-				}
-				foreach (KeyValuePair<ResourceType, Crop> crop in c.Crops)
-				{
-					if (crop.Value.NoOfHarvestableItems > 0)
-					{
-						return true;
-					}
-				}
-			}
-		}
-		if (Terrain != null)
-		{
-			Terrain terrain = Terrain;
-			if (TerrainHasGatherableResources(terrain))
-			{
-				return true;
-			}
-		}
-		else
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					Terrain terrain = TerrainSubtiles[i][j];
-					if (TerrainHasGatherableResources(terrain))
-					{
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	private bool TerrainHasGatherableResources(Terrain terrain)
-	{
-		return false;
-	}
-
 	public void AddEdgeStructure(Entity feature)
 	{
 		if (EdgeLayoutEntities == null)
@@ -929,15 +772,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		RedrawTerrainCostsAroundEdge(dir);
 	}
 
-	public void RemoveRoad(Entity road, Common.Direction dir)
-	{
-		if (Roads != null)
-		{
-			Roads[(int)dir] = null;
-			roadConnectionsAreDirty = true;
-		}
-	}
-
 	public void AddRenderable(Renderable renderable)
 	{
 		if (RenderablesOnTile == null)
@@ -962,30 +796,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		{
 			TreesOnTile.Remove(tree);
 		}
-	}
-
-	public bool ContainsTree(Entity tree)
-	{
-		if (TreesOnTile != null)
-		{
-			return TreesOnTile.Contains(tree);
-		}
-		return false;
-	}
-
-	public bool ContainsTreeAtSubtile(Point subtile)
-	{
-		if (TreesOnTile != null)
-		{
-			foreach (Entity item in TreesOnTile)
-			{
-				if (MapManager.WorldPosToSubtile(item.PlaySiteLocation) == subtile)
-				{
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	public TerrainTile(int x, int y)
@@ -1117,10 +927,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 	public float GetDustFactor()
 	{
 		return 1f - Moisture;
-	}
-
-	public void AddFirewood()
-	{
 	}
 
 	public TileResourceContainer AddResource(string resourceKeyName, float totalHarvestableBulk)

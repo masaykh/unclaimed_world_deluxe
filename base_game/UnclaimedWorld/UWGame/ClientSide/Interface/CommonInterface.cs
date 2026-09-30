@@ -199,26 +199,6 @@ public abstract class CommonInterface
 		});
 	}
 
-	public void SetFingerCursor(MouseSprites sprite)
-	{
-		// NOTE: none of the finger* fields is ever assigned - not here and not in any subclass -
-		// so every branch of this method has always applied a null cursor, i.e. the default
-		// arrow. Preserved exactly (ApplyCursor maps null to MouseCursor.Arrow, which is what
-		// assigning a null Form.Cursor did). Left in place rather than deleted because the
-		// method is called from the interface code and the fields look like an unfinished
-		// feature, not dead weight to silently discard.
-		ApplyCursor(sprite switch
-		{
-			MouseSprites.Normal => fingerCursor,
-			MouseSprites.Moving => fingerMove,
-			MouseSprites.ResizingNESW => fingerUpRight,
-			MouseSprites.ResizingNWSE => fingerDownRight,
-			MouseSprites.ResizingWE => fingerLeftRight,
-			MouseSprites.ResizingNS => fingerUpDown,
-			_ => fingerCursor,
-		});
-	}
-
 	/// <summary>
 	/// PORT DEVIATION 9 (see PORTING-NOTES.md). Replaces `windowForm.Cursor = x`.
 	/// A null cursor means "the default arrow", which is what assigning null to

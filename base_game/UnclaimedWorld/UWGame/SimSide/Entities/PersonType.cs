@@ -88,11 +88,6 @@ public class PersonType : IXmlSerializable
 		renderable.RenderAsModel.CustomColor1 = GetRandomShirt();
 	}
 
-	public static string FormatVector3(Vector3 v)
-	{
-		return $"new Vector3({v.X}f# {v.Y}f# {v.Z}f)".Replace(",", ".").Replace("#", ",");
-	}
-
 	public static Vector3 HexStringToVector3(string hex)
 	{
 		int num = int.Parse(hex.Substring(0, 2), NumberStyles.AllowHexSpecifier);

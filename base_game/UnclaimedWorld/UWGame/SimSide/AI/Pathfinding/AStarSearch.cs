@@ -262,11 +262,6 @@ public class AStarSearch : ISnapshot
 		}
 	}
 
-	public void FindPathStop()
-	{
-		mStop = true;
-	}
-
 	private bool ComputeSuccessor(PathFinderNode node, SubtileSector sector, int directionIndex, out PathFinderNode nextNode)
 	{
 		nextNode = null;

@@ -268,11 +268,6 @@ public class Household : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGrou
 		UpdateWhenMembersChanged();
 	}
 
-	public bool IsEntitled()
-	{
-		return true;
-	}
-
 	private void AssignHeadsOfHousehold()
 	{
 		Entity entity = null;
@@ -309,18 +304,6 @@ public class Household : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGrou
 		}
 		float num3 = num2 * Common.ClampTop(member.BiologicalEntity.AgeGroup.Age / member.BiologicalEntity.CasteType.MaxAge, 1f);
 		return 0.3f * num + 0.7f * num3;
-	}
-
-	public void MergeHouseholds(Household householdToDissappear)
-	{
-	}
-
-	public void SplitHouseholds(List<Entity> membersOfNewHousehold, bool splitItems, bool splitVehicles, bool splitBuildings)
-	{
-		if (membersOfNewHousehold.Count >= members.Count)
-		{
-			throw new Exception("Illegal split. Household would be destroyed...");
-		}
 	}
 
 	public void RemoveMember(Entity member)

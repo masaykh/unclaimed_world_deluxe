@@ -1092,39 +1092,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		RecomputeUpdateInterval();
 	}
 
-	public void PrintStaticStates(StringBuilder states)
-	{
-		if (spriteConditions == null)
-		{
-			return;
-		}
-		states.Append("\nActual SpriteStateFlags:\n");
-		states.Append(spriteConditions.StateNames);
-		if (selectedSpriteInfo != null)
-		{
-			states.Append("\nBest Match Conditions: ");
-			if (spriteConditions.Equals(selectedSpriteInfo.Conditions))
-			{
-				states.Append("PERFECT");
-			}
-			states.Append("\n");
-			if (selectedSpriteInfo.Conditions != null)
-			{
-				states.Append(selectedSpriteInfo.Conditions.StateNames);
-			}
-			if (selectedSpriteInfo.Forbiddens != null && selectedSpriteInfo.Forbiddens.Any())
-			{
-				states.Append("\nBest Match Forbiddens:\n     ");
-				states.Append(selectedSpriteInfo.Forbiddens.StateNames);
-			}
-			states.Append("\n");
-		}
-		else
-		{
-			states.Append("\n\n   MATCH FAILED -- selectedSpriteInfo is null -- this is bad.\n\n");
-		}
-	}
-
 	public virtual void LocationChanged()
 	{
 		SetSpriteQuadsDirty();
@@ -1305,32 +1272,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		}
 	}
 
-	public bool IsFlashing(AdditionalEffect effectID)
-	{
-		if (AdditionalEffects.TryGetValue(effectID, out var value))
-		{
-			return value.GetNumberOfEnvelopes() > 0;
-		}
-		return false;
-	}
-
-	public bool IsResourceContainerFlashing()
-	{
-		if (RenderAsIcon != null)
-		{
-			if (pulsingEffect != null)
-			{
-				return pulsingEffect.GetValue() == The.InGameUI.SelectedCyclePlayerFlashing;
-			}
-			return false;
-		}
-		if (AdditionalEffects != null && AdditionalEffects.TryGetValue(AdditionalEffect.Outline, out var value))
-		{
-			return value.GetValue() == The.InGameUI.SelectedCyclePlayerFlashing;
-		}
-		return false;
-	}
-
 	public virtual void SetPulsing()
 	{
 		Animation2DPlayer selectedCyclePlayer = The.InGameUI.SelectedCyclePlayer;
@@ -1377,20 +1318,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 			AdditionalEffects.Add(effectID, value);
 		}
 		value.AddNewEnvelope(duration, selectedCyclePlayerFlashing);
-		RecomputeUpdateInterval();
-	}
-
-	public virtual void SetOverlayPulsing()
-	{
-		Animation2DPlayer selectedCyclePlayer = The.InGameUI.SelectedCyclePlayer;
-		if (overlayPulsingEffect == null)
-		{
-			overlayPulsingEffect = new Effect<Animation2DPlayer>(this, selectedCyclePlayer);
-		}
-		else
-		{
-			overlayPulsingEffect.SetDefaultValue(selectedCyclePlayer);
-		}
 		RecomputeUpdateInterval();
 	}
 
@@ -1442,37 +1369,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		}
 	}
 
-	public Color GetOverlayTintColor()
-	{
-		if (overlayTintEffect != null)
-		{
-			return overlayTintEffect.GetValue();
-		}
-		return Color.White;
-	}
-
-	public Color GetTintColor()
-	{
-		if (tintEffect != null)
-		{
-			return tintEffect.GetValue();
-		}
-		return Color.White;
-	}
-
-	public void SetOverlayTintColor(Color color)
-	{
-		if (overlayTintEffect == null)
-		{
-			overlayTintEffect = new Effect<Color>(this, color);
-		}
-		else
-		{
-			overlayTintEffect.SetDefaultValue(color);
-		}
-		RecomputeUpdateInterval();
-	}
-
 	public void SetTintColor(Color color)
 	{
 		if (tintEffect == null)
@@ -1511,16 +1407,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 			tintEffect = new Effect<Color>(this, Color.White);
 		}
 		tintEffect.AddNewEnvelope(time, color);
-		RecomputeUpdateInterval();
-	}
-
-	public void SetOverlayTintForDurationOfTime(Color color, float time)
-	{
-		if (overlayTintEffect == null)
-		{
-			overlayTintEffect = new Effect<Color>(this, Color.White);
-		}
-		overlayTintEffect.AddNewEnvelope(time, color);
 		RecomputeUpdateInterval();
 	}
 
@@ -1575,11 +1461,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		return color.ToVector4() * color2.ToVector4() * fadeProgress;
 	}
 
-	public Color GetCombinedOverlayEffectsAsColor()
-	{
-		return new Color(GetCommonEffects(overlayPulsingEffect, overlayTintEffect, fadeProgress));
-	}
-
 	public Vector4 GetCombinedOverlayEffects()
 	{
 		return GetCommonEffects(overlayPulsingEffect, overlayTintEffect, fadeProgress);
@@ -1612,107 +1493,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 			}
 		}
 		RenderableFactory.Remove(this);
-	}
-
-	public void spawnAttachableRenderable(string asset, bool randomlyRotate, int expireTimer)
-	{
-	}
-
-	public void setTintStatus(TintStatus statusBits)
-	{
-		tintStatus |= statusBits;
-	}
-
-	public void clearTintStatus(TintStatus statusBits)
-	{
-		tintStatus = TintStatus.None;
-	}
-
-	public bool testTintStatus(TintStatus statusBits)
-	{
-		return (tintStatus & statusBits) != 0;
-	}
-
-	public void setTintColor(Color tintColor, uint preColorTime, uint postColorTime, uint sustainedColorTime, float tintFrequency, float tintAmplitude)
-	{
-	}
-
-	public TintEnvelope getColorTintEnvelope()
-	{
-		return colorTintEnvelope;
-	}
-
-	public void setColorTintEnvelope(ref TintEnvelope source)
-	{
-		if (colorTintEnvelope != null)
-		{
-			colorTintEnvelope = source;
-		}
-	}
-
-	public void setLightAttenuationStatus(LightAttenuationStatus statusBits)
-	{
-		lightAttenuationStatus |= statusBits;
-	}
-
-	public void clearLightAttenuationStatus(LightAttenuationStatus statusBits)
-	{
-		lightAttenuationStatus = LightAttenuationStatus.None;
-	}
-
-	public bool testLightAttenuationStatus(LightAttenuationStatus statusBits)
-	{
-		return (lightAttenuationStatus & statusBits) != 0;
-	}
-
-	public void setEnvironmentLightAttenuation(ref TintEnvelope source)
-	{
-		if (environmentLightAttenuation != null)
-		{
-			environmentLightAttenuation = source;
-		}
-	}
-
-	public TintEnvelope getEnvironmentLightAttenuation()
-	{
-		return environmentLightAttenuation;
-	}
-
-	public void createSelectionDecal(uint numSelectedUnits, Color color)
-	{
-	}
-
-	public RadiusDecalType getSelectionDecalTemplate()
-	{
-		return selectionDecalType;
-	}
-
-	public void assignSelectionDecalType(ref RadiusDecalType decalType)
-	{
-	}
-
-	public void setSelectionDecalPosition(ref Vector3 position, ref Vector3 normal)
-	{
-	}
-
-	public void setSelectionDecalColor(Color color)
-	{
-	}
-
-	public void removeSelectionDecal()
-	{
-	}
-
-	public void SetMemoryRendering(bool value)
-	{
-		if (value && renderEffect == RenderEffect.Normal)
-		{
-			renderEffect = RenderEffect.Memory;
-		}
-		else
-		{
-			renderEffect = RenderEffect.Normal;
-		}
 	}
 
 	public void SetOverlayRendering(bool value)
@@ -1749,67 +1529,9 @@ public class Renderable : GameObject, ISleepingUpdatable
 		renderEffect = RenderEffect.Normal;
 	}
 
-	public void setSelectable(bool selectable)
-	{
-	}
-
-	public bool isSelectable()
-	{
-		return true;
-	}
-
-	public void reactToGeometryChange()
-	{
-	}
-
-	public float getScale()
-	{
-		return 1f;
-	}
-
-	public void setFullyObscuredByShroud(bool fullyObscured)
-	{
-	}
-
-	public void colorFlash(Color color, uint decayFrames = 16u, uint attackFrames = 0u, uint sustainAtPeak = 0u)
-	{
-	}
-
-	public void colorTint(Color color)
-	{
-	}
-
-	public void setTintEnvelope(Color color, float attack, float decay)
-	{
-	}
-
-	public void flashAsSelected(Color? color = null)
-	{
-	}
-
-	public void updateLightAttenuation()
-	{
-	}
-
 	public bool isSelected()
 	{
 		return selected;
-	}
-
-	public void onSelected()
-	{
-	}
-
-	public void onUnselected()
-	{
-	}
-
-	public void recalcCollisionType()
-	{
-	}
-
-	public void setTimeOfDay(GameTime tod)
-	{
 	}
 
 	public virtual void AttachPooledObjectIfPossible(string attachRenderableKey, AttachPoint attachor, AttacheePoint attacheePoint, bool saveToSnapshot = false)
@@ -2047,10 +1769,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		{
 			RenderAsModel.SetAnimFlagsDirty();
 		}
-	}
-
-	public virtual void SetStaticFlagsDirty()
-	{
 	}
 
 	public void UpdateAnimationConditionState()

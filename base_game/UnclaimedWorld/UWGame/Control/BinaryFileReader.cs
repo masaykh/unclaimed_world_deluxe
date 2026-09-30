@@ -54,12 +54,6 @@ public class BinaryFileReader
 		return reader.ReadSingle();
 	}
 
-	public short ReadShort()
-	{
-		AdvanceReadPosition(2L);
-		return reader.ReadInt16();
-	}
-
 	public char ReadChar()
 	{
 		AdvanceReadPosition(2L);

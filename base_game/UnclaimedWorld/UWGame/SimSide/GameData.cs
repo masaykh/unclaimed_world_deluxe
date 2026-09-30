@@ -1388,11 +1388,6 @@ public class GameData
 		}
 	}
 
-	public static string CreateKeyName()
-	{
-		return Guid.NewGuid().ToString();
-	}
-
 	private void Init2DAnims()
 	{
 		Animation2Ds.Add("campfireFast", new Animation2D(BillboardSpriteSheet.Texture, 0.1f, isLooping: true)

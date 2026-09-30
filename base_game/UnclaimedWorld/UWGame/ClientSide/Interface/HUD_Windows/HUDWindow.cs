@@ -324,26 +324,6 @@ public abstract class HUDWindow
 		grid.Selectability = Grid.SelectabilityOptions.Single;
 	}
 
-	public static void AddCollapsablePanelAndTreeGrid(GUIManager gui, Grid outerGrid, string title, CollapsablePanel.PanelType innerPanelType, out CollapsablePanel panel, out Grid grid)
-	{
-		panel = new CollapsablePanel(gui, CollapsablePanel.PanelType.HUD);
-		panel.CollapsedHeight = outerGrid.ItemHeight;
-		outerGrid.AddEntry(panel, panel);
-		panel.Init();
-		panel.Title = title;
-		panel.Width = outerGrid.Width;
-		grid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
-		grid.FixedItemHeights = false;
-		grid.RenderType = RenderType.Normal;
-		grid.Font = GUIManager.LCDandHUDBodyFontPath;
-		int y = 0;
-		grid.Width = panel.Width;
-		panel.AddContent(grid);
-		grid.ItemHeight = ((innerPanelType == CollapsablePanel.PanelType.DropDownBig) ? 26 : 22);
-		grid.Position = new Point(0, y);
-		grid.CanGrowInHeight = true;
-	}
-
 	protected void CreateMenuGrid(out Grid grid, int? yPos = null, bool hasScrollBar = true)
 	{
 		UIComponent uIComponent = new UIComponent(gui);

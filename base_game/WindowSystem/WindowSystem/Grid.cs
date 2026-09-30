@@ -775,42 +775,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 		return uIComponent;
 	}
 
-	public void AddEntryWithCaptionTwoValuesAndButton(object key, int? leadingTextXPos, string caption, int paddingRight, string value1, string value2, ImageButtonType imageButtonType, ClickHandler clickHandler, EventArgs eventArgs)
-	{
-		UIComponent uIComponent = new UIComponent(guiManager);
-		Label label = new Label(guiManager);
-		label.Text = caption;
-		label.Init(labelType);
-		uIComponent.Add(label);
-		if (leadingTextXPos.HasValue)
-		{
-			label.X += leadingTextXPos.Value;
-		}
-		JustifyItemContent(label);
-		int textWidth = label.TextWidth;
-		label = new Label(guiManager);
-		label.Text = value1;
-		label.Init(labelType);
-		label.Name = "value1";
-		uIComponent.Add(label);
-		label.X = textWidth + 6;
-		label = new Label(guiManager);
-		label.Text = value2;
-		label.Init(labelType);
-		label.Name = "value2";
-		uIComponent.Add(label);
-		label.X = 100;
-		int x = label.X + label.TextWidth + 4;
-		ImageButton imageButton = new ImageButton(guiManager);
-		imageButton.X = x;
-		imageButton.Click += clickHandler;
-		imageButton.Name = "button";
-		uIComponent.Add(imageButton);
-		imageButton.EventArgs = eventArgs;
-		imageButton.Init(imageButtonType);
-		AddEntry(key, uIComponent);
-	}
-
 	public void AddEntryAndButton(object key, int? leadingTextXPos, string entry1, int paddingRight, string entry2, ClickHandler clickHandler, EventArgs eventArgs)
 	{
 		UIComponent uIComponent = new UIComponent(guiManager);
@@ -858,29 +822,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 
 	private void JustifyItemContent(UIComponent content)
 	{
-	}
-
-	public void AddEntryWithIcon(object key, Rectangle iconRect, int margin1, string entry1, int margin2, string entry2)
-	{
-		UIComponent uIComponent = new UIComponent(guiManager);
-		Image image = new Image(guiManager);
-		image.SetSkinLocation(SkinState.Normal, iconRect);
-		image.Position = new Point(0, 0);
-		image.ResizeControlToFitImage();
-		uIComponent.Add(image);
-		Label label = new Label(guiManager);
-		label.Text = entry1;
-		label.Init(labelType);
-		label.X = margin1;
-		uIComponent.Add(label);
-		label.Y += 2;
-		label = new Label(guiManager);
-		label.Text = entry2;
-		label.Init(labelType);
-		label.X = margin2;
-		label.Y += 2;
-		uIComponent.Add(label);
-		AddEntry(key, uIComponent);
 	}
 
 	public void AddEntry(object key, UIComponent item, int? index = null)
@@ -1046,11 +987,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 		return Entries.IndexOf(entry);
 	}
 
-	public int GetIndexByKey(object key)
-	{
-		return Entries.IndexOf(entriesByKey[key]);
-	}
-
 	public void Clear()
 	{
 		foreach (UIComponent entry in entries)
@@ -1072,19 +1008,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 		if (this.SelectedChanged != null)
 		{
 			this.SelectedChanged(this);
-		}
-	}
-
-	public void PublicSetSelectionNoEvent(string itemString)
-	{
-		foreach (KeyValuePair<object, UIComponent> item in entriesByKey)
-		{
-			if (item.Key is string text && text == itemString)
-			{
-				selectedItem = item.Value;
-				SelectInternalNoEvent(item.Value, 0);
-				break;
-			}
 		}
 	}
 
@@ -1201,11 +1124,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 			scrollBar.Value = -surface.Y;
 			viewPort.Redraw();
 		}
-	}
-
-	public bool ScrollBarIsAtEnd()
-	{
-		return scrollBar.IsAtEnd();
 	}
 
 	public bool ScrollBarIsAtTop()

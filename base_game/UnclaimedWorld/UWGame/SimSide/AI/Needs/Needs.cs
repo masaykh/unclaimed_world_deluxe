@@ -214,17 +214,6 @@ public class Needs : ISnapshot
 		}
 	}
 
-	public void UpdateFrequentSimulation(double deltaTimeInSeconds)
-	{
-		foreach (KeyValuePair<string, Need> needs in NeedsList)
-		{
-			if (needs.Value.NeedType.PhysicalEffects != null && needs.Value.NeedType.PhysicalEffects.UseExertionFactorToDecrease)
-			{
-				needs.Value.Update(deltaTimeInSeconds);
-			}
-		}
-	}
-
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);

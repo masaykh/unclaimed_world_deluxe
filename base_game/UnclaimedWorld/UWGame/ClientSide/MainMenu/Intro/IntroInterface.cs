@@ -39,8 +39,4 @@ public class IntroInterface : CommonInterface
 		taText.Text = "entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()";
 	}
 
-	public void StartMovie()
-	{
-		framedCRT.ChangeContent(crtContent);
-	}
 }

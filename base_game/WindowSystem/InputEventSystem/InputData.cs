@@ -150,15 +150,6 @@ public class InputData
 		return false;
 	}
 
-	public bool IsKeyReleased(Keys key)
-	{
-		if (oldKeyState.IsKeyDown(key))
-		{
-			return !newKeyState.IsKeyDown(key);
-		}
-		return false;
-	}
-
 	public Keys[] GetPressedKeys()
 	{
 		return newKeyState.GetPressedKeys();

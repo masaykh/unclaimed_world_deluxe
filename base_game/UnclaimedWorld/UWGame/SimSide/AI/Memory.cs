@@ -129,11 +129,6 @@ public class Memory : ISnapshot
 		timePointForJoiningExpedition = The.Sim.TotalUnPausedGameTimeInSeconds;
 	}
 
-	public void ResetTimepointForJoiningExpedition()
-	{
-		timePointForJoiningExpedition = null;
-	}
-
 	public bool RecentlyJoinedExpedition()
 	{
 		if (timePointForJoiningExpedition.HasValue)

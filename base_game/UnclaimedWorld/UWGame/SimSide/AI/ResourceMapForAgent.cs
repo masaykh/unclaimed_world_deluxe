@@ -343,11 +343,6 @@ public class ResourceMapForAgent : ICyclable, ILookUp<ICyclable, CyclableID>, IS
 		phase = Phase.GetResourceMap;
 	}
 
-	public List<ResourceContainer> GetCropsAtTilePos(List<ResourceContainer> listOfCrops, Point pos)
-	{
-		return listOfCrops.FindAll((ResourceContainer c) => c.MapPosition == pos);
-	}
-
 	private void crops_FinishedEvent()
 	{
 		isWaiting = false;

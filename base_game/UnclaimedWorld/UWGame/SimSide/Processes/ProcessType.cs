@@ -649,16 +649,6 @@ public class ProcessType : IGameData, IXmlSerializable
 		return false;
 	}
 
-	public bool ConsumeInputsAtBeginning()
-	{
-		return !IsReplenishProcess;
-	}
-
-	public bool UsesItemsAsInput()
-	{
-		return true;
-	}
-
 	public void PreInitValidate(ref List<string> listOfErrors)
 	{
 	}
@@ -1078,28 +1068,9 @@ public class ProcessType : IGameData, IXmlSerializable
 	{
 	}
 
-	public int NeededMaterials(float currentProgress, float progressChange, float materialStageLength)
-	{
-		int stage = GetStage(currentProgress, materialStageLength);
-		return GetStage(currentProgress + progressChange, materialStageLength) - stage;
-	}
-
 	public int? GetOutputAmount(EntityType entityType)
 	{
 		return Outputs.FirstOrDefault((Output o) => o.FinalEntityTypeToCreate == entityType)?.Amount.NoOfItems;
-	}
-
-	public static int GetStage(float currentProgress, float materialStageLength)
-	{
-		if (Common.IsEqual(currentProgress, 0f))
-		{
-			return 0;
-		}
-		if (currentProgress >= 1f)
-		{
-			return (int)(1f / materialStageLength);
-		}
-		return (int)(currentProgress / materialStageLength) + 1;
 	}
 
 	public XmlSchema GetSchema()

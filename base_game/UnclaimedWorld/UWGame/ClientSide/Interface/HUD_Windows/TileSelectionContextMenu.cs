@@ -247,21 +247,6 @@ public class TileSelectionContextMenu : HUDWindow
 		}
 	}
 
-	public static bool CreateAndSelectZone(EntityGroup expeditionOwner)
-	{
-		if (CanCreateAndSelectZone())
-		{
-			if (The.InGameUI.SelectedZone == null)
-			{
-				Zone zone = new Zone(expeditionOwner, The.InGameUI.SelectedTiles);
-				The.InGameUI.SelectedZone = zone;
-				zone.MapArea.MapAreaRender.IsSelected = true;
-			}
-			return true;
-		}
-		return false;
-	}
-
 	public static bool CanCreateAndSelectZone()
 	{
 		if (The.InGameUI.SelectedZone == null)

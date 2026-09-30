@@ -150,11 +150,6 @@ public class Client : GameScreen
 
 	public bool BeginRunWasCalled { get; private set; }
 
-	public static bool isHeadless()
-	{
-		return The.Client == null;
-	}
-
 	public Client(Controller controller, ContentManager clientContent = null)
 	{
 		The.Client = this;
@@ -714,53 +709,6 @@ public class Client : GameScreen
 		}
 	}
 
-	public void ScaleSelectedRenderable(string option, bool? newBool, float? newFloat)
-	{
-		if (!newFloat.HasValue || !The.InGameUI.SelectedEntity.HasValue)
-		{
-			return;
-		}
-		Entity entity = Entity.FindByID(The.InGameUI.SelectedEntity.Value);
-		if (entity == null)
-		{
-			return;
-		}
-		Renderable renderable = entity.Renderable;
-		if (renderable != null)
-		{
-			RenderAsModel renderAsModel = renderable.RenderAsModel;
-			if (renderAsModel != null)
-			{
-				renderAsModel.FinalModelScale = newFloat.Value;
-			}
-		}
-	}
-
-	public void SetGaitMinimumSpeed(string option, bool? newBool, float? newFloat)
-	{
-		if (newFloat.HasValue && The.InGameUI.SelectedEntity.HasValue && Entity.FindByID(The.InGameUI.SelectedEntity.Value) != null)
-		{
-			option.Split(new string[1] { " - " }, StringSplitOptions.RemoveEmptyEntries);
-		}
-	}
-
-	public void YawSelectedRenderable(string option, bool? newBool, float? newFloat)
-	{
-		if (newFloat.HasValue && The.InGameUI.SelectedEntity.HasValue)
-		{
-			Entity entity = Entity.FindByID(The.InGameUI.SelectedEntity.Value);
-			if (entity != null)
-			{
-				entity.SetRotationAndDir(newFloat.Value);
-				entity.Renderable.SetToParentLocation();
-			}
-		}
-	}
-
-	public void BuildClicked(object sender)
-	{
-	}
-
 	public override void HandleInput()
 	{
 		if (!The.LoadScreen.IsLoadFinished)
@@ -831,17 +779,6 @@ public class Client : GameScreen
 		else if (inputData.IsKeyTapped(options.CloseRosterPanel))
 		{
 			The.InGameUI.CloseRosterPanel();
-		}
-	}
-
-	public void UpdateFrameRate()
-	{
-		frameRateElapsedTime += The.Sim.GameTime.ElapsedGameTime;
-		if (frameRateElapsedTime > TimeSpan.FromSeconds(1.0))
-		{
-			frameRateElapsedTime -= TimeSpan.FromSeconds(1.0);
-			frameRate = frameCounter;
-			frameCounter = 0;
 		}
 	}
 

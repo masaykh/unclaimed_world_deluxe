@@ -318,11 +318,6 @@ public class Sim : GameScreen, ISnapshot
 		}
 	}
 
-	public static void RemoveLookupCollectible(Type t)
-	{
-		CollectionOfCollections.Remove(t);
-	}
-
 	public Sim(Controller screenManager, StartGameParams startGameParams, int? randomSeed)
 	{
 		base.Controller = screenManager;
@@ -811,42 +806,6 @@ public class Sim : GameScreen, ISnapshot
 		return Common.IsGreaterThanOrEqual(TotalUnPausedGameTimeInSeconds, lastTimepointInSeconds.Value + minimumTimeInSeconds);
 	}
 
-	public double GetTimePhaseProgress(DayPhases phase)
-	{
-		if (phase <= DayPhases.Sleep)
-		{
-			switch (phase)
-			{
-			case DayPhases.Work:
-				if (DateAndTime.TimeOfDay > 0.23 && DateAndTime.TimeOfDay < 0.615)
-				{
-					return (DateAndTime.TimeOfDay - 0.23) / 0.385;
-				}
-				return 0.0;
-			case DayPhases.Leisure:
-				if (DateAndTime.TimeOfDay > 0.615 && DateAndTime.TimeOfDay < 0.923)
-				{
-					return (DateAndTime.TimeOfDay - 0.615) / 0.30800000000000005;
-				}
-				return 0.0;
-			case DayPhases.Sleep:
-			{
-				double num = 0.07699999999999996;
-				if (DateAndTime.TimeOfDay > 0.923)
-				{
-					return (DateAndTime.TimeOfDay - 0.923) / (num + 0.23);
-				}
-				if (DateAndTime.TimeOfDay < 0.23)
-				{
-					return (num + DateAndTime.TimeOfDay) / (num + 0.23);
-				}
-				return 0.0;
-			}
-			}
-		}
-		return 0.0;
-	}
-
 	public void SetGameSpeed(Speeds speed)
 	{
 		this.speed = speed;
@@ -1314,26 +1273,6 @@ public class Sim : GameScreen, ISnapshot
 	private void ExecuteStartAction(string actionKey)
 	{
 		new EventAction(GameData.Instance.AllEventActionTypes[actionKey], null).Execute();
-	}
-
-	public void AddStartLogMessage(string message)
-	{
-		startGameActionLog.Add(message);
-	}
-
-	public void AddStartPopulationSpawnMessage(string message)
-	{
-		startGamePopulationSpawnLog.Add(message);
-	}
-
-	public List<string> GetStartGameLog()
-	{
-		return startGameActionLog;
-	}
-
-	public List<string> GetStartPopulationSpawnLog()
-	{
-		return startGamePopulationSpawnLog;
 	}
 
 	public void InitializeBioEntityToPlace(PersonSex sex, float? age, AIAgeGroup? ageGroup, Allegiance allegiance, Entity entity)

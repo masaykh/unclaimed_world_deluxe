@@ -44,20 +44,6 @@ public class OtherSiteAllegianceManager : ISnapshot
 	{
 	}
 
-	public void AddEmigrantToQueue(EntityID emigrantID)
-	{
-		Common.AddToList(ref waitingImmigrants, emigrantID);
-	}
-
-	public int GetAmountOfWaitingEmigrants()
-	{
-		if (waitingImmigrants != null)
-		{
-			return waitingImmigrants.Count;
-		}
-		return 0;
-	}
-
 	public ISnapshot DoSnapshot(Snapshotter sn)
 	{
 		snapshotParent = sn.SnapshotID<Allegiance, AllegianceID>(Parent).Value;

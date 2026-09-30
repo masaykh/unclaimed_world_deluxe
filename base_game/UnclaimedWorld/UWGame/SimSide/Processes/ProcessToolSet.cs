@@ -162,28 +162,4 @@ public class ProcessToolSet : IGameData
 		return num <= 1f;
 	}
 
-	public List<EntityType> GetImmobileToolChoices()
-	{
-		List<EntityType> list = new List<EntityType>();
-		if (Tools != null)
-		{
-			ToolAlternatives[] tools = Tools;
-			for (int i = 0; i < tools.Length; i++)
-			{
-				Tool[] tools2 = tools[i].Tools;
-				for (int j = 0; j < tools2.Length; j++)
-				{
-					foreach (EntityType toolEntityType in tools2[j].ToolEntityTypes)
-					{
-						if (ToolType.IsImmovable(toolEntityType))
-						{
-							list.Add(toolEntityType);
-							break;
-						}
-					}
-				}
-			}
-		}
-		return list;
-	}
 }

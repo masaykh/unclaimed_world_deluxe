@@ -901,25 +901,6 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 		return processJob;
 	}
 
-	public static IKnownEntityData FindBestTool(List<EntityType> toolTypes, Expedition expedition)
-	{
-		foreach (EntityType toolType in toolTypes)
-		{
-			if (!expedition.OwnedEntities.Structures.TryGetValue(toolType, out var value))
-			{
-				continue;
-			}
-			foreach (EntityID item in Common.Randomize(new List<EntityID>(value), The.Sim.GameplayRandomGenerator))
-			{
-				if (GoalEvaluator.HandleOwnerDataResult(expedition.Allegiance.SharedKnowledge, item, expedition.OwnedEntities, out var entityData))
-				{
-					return entityData;
-				}
-			}
-		}
-		return null;
-	}
-
 	public static bool FindProductionLocation(ProcessType processType, IHasEntityGroup hasEntityGroup, out Vector3? location)
 	{
 		location = null;

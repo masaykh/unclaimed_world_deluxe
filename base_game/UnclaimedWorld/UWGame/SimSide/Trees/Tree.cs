@@ -498,23 +498,6 @@ public class Tree : Component, IHasCrops, ILookUp<IHasCrops, HasCropsID>
 		phosphorous -= bulkToGrow * Parent.EntityType.TreeType.PhosphorousNeedsPerBulk;
 	}
 
-	public void LoseMass(double deltaTimeInSeconds, out float fibrousMaterial, out float nonFibrousMaterial)
-	{
-		float num = The.Sim.GameplayRandomGenerator.RandomBetween(0.5f, 1.2f);
-		float num2 = (float)(deltaTimeInSeconds * (double)num * (double)Parent.EntityType.TreeType.MassLossPercentagePerSecond * (double)Parent.Bulk);
-		if (Parent.EntityType.TreeType.FibrousPercentageOfTotalMass > 0f)
-		{
-			The.Sim.GameplayRandomGenerator.RandomBetween(0.5f, 1.2f);
-			fibrousMaterial = Parent.EntityType.TreeType.FibrousPercentageOfTotalMass * num2;
-		}
-		else
-		{
-			fibrousMaterial = 0f;
-		}
-		nonFibrousMaterial = num2 - fibrousMaterial;
-		Parent.Bulk -= num2;
-	}
-
 	public void RedrawTerrainCosts()
 	{
 		TerrainTile tile = The.Map.GetTile(Parent.MapPosition.Value);

@@ -232,26 +232,6 @@ public class Allegiance : IHasExposedProperties, ICanIterateEntities, ILookUp<IC
 		exposedPropertyValueFunctions.Add("securityRating", GetSecurityRating);
 	}
 
-	public int? GetMaxPopulationMembers()
-	{
-		int? num = null;
-		if (Expeditions != null)
-		{
-			foreach (Expedition expedition in Expeditions)
-			{
-				if (expedition.Population != null)
-				{
-					if (!num.HasValue)
-					{
-						num = 0;
-					}
-					num += expedition.Population.MaxMembers;
-				}
-			}
-		}
-		return num;
-	}
-
 	public void UpdatePlaySite(GameTime gameTime)
 	{
 		if (AllegianceType == AllegianceType.Player && Statistics != null)
@@ -711,18 +691,6 @@ public class Allegiance : IHasExposedProperties, ICanIterateEntities, ILookUp<IC
 	public bool IsUnderThreat()
 	{
 		return SharedKnowledge.AllKnownEntities.ThreatJobs.Count > 0;
-	}
-
-	public bool MembersHaveAIDisabled()
-	{
-		foreach (Entity member in Members)
-		{
-			if (!member.Intelligence.DisableAI)
-			{
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public void Destroy()

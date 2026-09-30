@@ -568,15 +568,6 @@ public class WorldMap : UIComponent
 		niceMax = (float)niceScale.niceMax;
 	}
 
-	public void DrawFatLine(float x, float y, float toX, float toY)
-	{
-		GetVertexPosFromValues(toX, toY, out var xPos, out var yPos);
-		Vector2 p = new Vector2(xPos, yPos);
-		GetVertexPosFromValues(x, y, out xPos, out yPos);
-		Vector2 p2 = new Vector2(xPos, yPos);
-		roundLines.Add(new RoundLine(p2, p));
-	}
-
 	public void BeginDraw()
 	{
 		guiManager.Game.GraphicsDevice.SetRenderTarget(renderTarget);

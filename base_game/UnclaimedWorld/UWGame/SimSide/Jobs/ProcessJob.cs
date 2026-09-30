@@ -336,12 +336,6 @@ public class ProcessJob : Job, IIDEventSubscriber
 		return false;
 	}
 
-	public float GetWorstCaseDurationForEnergyEstimation()
-	{
-		float timeNeeded = ProcessType.GetTimeNeeded();
-		return GameData.Instance.AIConstants.WorkTimeFactorToEvaluateToolEnergyUse * timeNeeded;
-	}
-
 	public bool GetStructureOutputData(out IKnownEntityData outputData)
 	{
 		outputData = null;
@@ -1722,23 +1716,4 @@ public class ProcessJob : Job, IIDEventSubscriber
 		}
 	}
 
-	public bool AssertInputIsAssigned(EntityID? Item)
-	{
-		if (Item.HasValue)
-		{
-			SimProcess simProcess = SimProcess.FindById(ProductionProcess);
-			if (simProcess != null)
-			{
-				if (simProcess.IsStarted)
-				{
-					return true;
-				}
-				if (simProcess.AssignedInputs.Any((KeyValuePair<EntityType, List<Tuple<EntityID, WorldLocation>>> k) => k.Value.Any((Tuple<EntityID, WorldLocation> e) => e.Item1 == Item.Value)))
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 }

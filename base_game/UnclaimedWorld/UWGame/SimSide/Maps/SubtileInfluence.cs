@@ -95,38 +95,6 @@ public class SubtileInfluence
 		}
 	}
 
-	public List<SubtilePos> GetBestRelativePositionsWithSameScore(bool randomize = true)
-	{
-		bestPositions.Clear();
-		byte b = 0;
-		for (int i = 0; i < width; i++)
-		{
-			byte[] array = values[i];
-			for (int j = 0; j < height; j++)
-			{
-				byte b2 = array[j];
-				if (b2 > 0)
-				{
-					if (b2 == b)
-					{
-						bestPositions.Add(new SubtilePos((ushort)i, (ushort)j));
-					}
-					else if (b2 > b)
-					{
-						bestPositions.Clear();
-						b = b2;
-						bestPositions.Add(new SubtilePos((ushort)i, (ushort)j));
-					}
-				}
-			}
-		}
-		if (randomize)
-		{
-			bestPositions = Common.Randomize(bestPositions, The.Sim.GameplayRandomGenerator);
-		}
-		return bestPositions;
-	}
-
 	public List<Tuple<byte, SubtilePos>> GetBestRelativePositions(int maxResults, bool randomize = true)
 	{
 		bestPositionsAndValues.Clear();
@@ -154,26 +122,6 @@ public class SubtileInfluence
 			bestPositionsAndValues = Common.Randomize(bestPositionsAndValues, The.Sim.GameplayRandomGenerator);
 		}
 		return bestPositionsAndValues;
-	}
-
-	public SubtilePos? GetBestPos()
-	{
-		byte b = 0;
-		SubtilePos? result = null;
-		for (int i = 0; i < width; i++)
-		{
-			byte[] array = values[i];
-			for (int j = 0; j < height; j++)
-			{
-				byte b2 = array[j];
-				if (b2 > b)
-				{
-					b = b2;
-					result = new SubtilePos((ushort)i, (ushort)j);
-				}
-			}
-		}
-		return result;
 	}
 
 	private static void GetMinMaxDistances(ref Point fromLocation, ref Point toLocation, ref float minDistance, ref float maxDistance)

@@ -545,11 +545,6 @@ public class ScrollBar : Bar
 		base.Update(gameTime);
 	}
 
-	public bool IsAtEnd()
-	{
-		return (float)value == Range;
-	}
-
 	public bool IsAtTop()
 	{
 		return value == 0;

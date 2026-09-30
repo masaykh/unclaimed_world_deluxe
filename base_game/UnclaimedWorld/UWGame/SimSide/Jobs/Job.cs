@@ -197,15 +197,6 @@ public abstract class Job : ISnapshot, ILookUp<Job, JobID>
 		return jobType;
 	}
 
-	public double? GetTakerScore()
-	{
-		if (TakenBy.Count > 0)
-		{
-			return TakenBy.Get(0).Intelligence.Brain.ScoreTopLevelGoal();
-		}
-		return null;
-	}
-
 	public virtual void Abandon(Entity entity, bool isDestroyingJob = false)
 	{
 		TakenBy.TryRemove(entity);

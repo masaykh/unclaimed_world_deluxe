@@ -440,51 +440,6 @@ public class Structure : Component
 		return CreateIsBlockedMapAvoidConstructions(new Rectangle(structureData.TopLeftMapPosition.Value.X - 1, structureData.TopLeftMapPosition.Value.Y - 1, structureType.WidthInTiles + 2, structureType.HeightInTiles + 2), The.Map.TerrainCosts[SurfaceType.TransportType.Foot]);
 	}
 
-	public Point? FindDumpingAreaOffSite(Edge edge, Point from)
-	{
-		SubtileLayers map = The.Map.TerrainCosts[SurfaceType.TransportType.Foot];
-		Point point = Common.AddPoints(Parent.TopLeftMapPosition.Value, new Point(-1, Parent.EntityType.StructureType.HeightInTiles / 2));
-		bool flag = The.Map.TileIsAccessible(map, from, point);
-		Point point2 = Common.AddPoints(Parent.TopLeftMapPosition.Value, new Point(Parent.EntityType.StructureType.WidthInTiles / 2, Parent.EntityType.StructureType.HeightInTiles));
-		bool flag2 = The.Map.TileIsAccessible(map, from, point2);
-		Point point3 = Common.AddPoints(Parent.TopLeftMapPosition.Value, new Point(Parent.EntityType.StructureType.WidthInTiles, Parent.EntityType.StructureType.HeightInTiles / 2));
-		bool flag3 = The.Map.TileIsAccessible(map, from, point3);
-		switch (edge)
-		{
-		case Edge.Left:
-			if (flag)
-			{
-				return point;
-			}
-			break;
-		case Edge.Bottom:
-			if (flag2)
-			{
-				return point2;
-			}
-			break;
-		case Edge.Right:
-			if (flag3)
-			{
-				return point3;
-			}
-			break;
-		}
-		if (flag)
-		{
-			return point;
-		}
-		if (flag3)
-		{
-			return point3;
-		}
-		if (flag2)
-		{
-			return point2;
-		}
-		return null;
-	}
-
 	public static bool IsNotBlockedOrReserved(MapManager.SubtileValue value)
 	{
 		if (value != MapManager.SubtileValue.Blocked)

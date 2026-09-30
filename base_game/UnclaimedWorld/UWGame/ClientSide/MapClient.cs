@@ -951,10 +951,6 @@ public class MapClient
 		setTileResources.Populate();
 	}
 
-	public void DrawNoiseMap(Microsoft.Xna.Framework.Color color, Tuple<NoiseParams, byte[]> noise)
-	{
-	}
-
 	private void PrintResourceAmountOnTile(TerrainTile terrainTile, ResourceType resourceType, Microsoft.Xna.Framework.Color color)
 	{
 		string text = null;
@@ -1529,38 +1525,6 @@ public class MapClient
 		Shape.Box(vector, bottomRight, m.color, solid: true);
 	}
 
-	public static void AddVisitorMarker(Vector3 l, Microsoft.Xna.Framework.Color c, object key, float size = 5f)
-	{
-		string key2 = key.GetHashCode().ToString() + hash++;
-		VisitorMarkers.Add(key2, new Marker(l, c, size));
-	}
-
-	public void AddDebugMarker(Vector3 l, Microsoft.Xna.Framework.Color c, object key, float size = 5f)
-	{
-		if (!RenderedObjectMarkers.TryGetValue(key, out var value))
-		{
-			value = new List<Marker>();
-			RenderedObjectMarkers.Add(key, value);
-		}
-		value.Add(new Marker(l, c, size));
-	}
-
-	public static void ClearAllVisitorMarkers(object key)
-	{
-		List<string> list = new List<string>();
-		foreach (KeyValuePair<string, Marker> visitorMarker in VisitorMarkers)
-		{
-			if (visitorMarker.Key.StartsWith(key.GetHashCode().ToString()))
-			{
-				list.Add(visitorMarker.Key);
-			}
-		}
-		foreach (string item in list)
-		{
-			VisitorMarkers.Remove(item);
-		}
-	}
-
 	public void ClearAllDebugMarkers()
 	{
 		RenderedObjectMarkers.Clear();
@@ -1935,73 +1899,6 @@ public class MapClient
 			Shape.Line(topLeft, end, Microsoft.Xna.Framework.Color.Black, Microsoft.Xna.Framework.Color.Black);
 			DevText.Print(topLeft, l.ToString(), Microsoft.Xna.Framework.Color.White);
 		}
-	}
-
-	public void SetFogOfWarFadeRate(string option, bool? newBool, float? newFloat)
-	{
-		if (newFloat.HasValue)
-		{
-			fogOfWarFadeRate = newFloat.Value;
-		}
-	}
-
-	public void SetFogOfWarTint(string option, bool? newBool, float? newFloat)
-	{
-		if (newFloat.HasValue)
-		{
-			fogOfWarTint = newFloat.Value;
-		}
-	}
-
-	public void SetCloudEdgeHardness(string option, bool? newBool, float? newFloat)
-	{
-		if (newFloat.HasValue)
-		{
-			cloudSharpness = newFloat.Value;
-		}
-	}
-
-	public void SetCloudOpacity(string option, bool? newBool, float? newFloat)
-	{
-		if (newFloat.HasValue)
-		{
-			cloudOpacity = newFloat.Value;
-		}
-	}
-
-	public void ShowFootRegionMap_OnPress(string option, bool? newBool, float? newFloat)
-	{
-	}
-
-	public void ShowFoot_OnPress(string option, bool? newBool, float? newFloat)
-	{
-		if (newBool == true)
-		{
-			Kensei.Dev.Options.SetOption("Overlays.Terrain costs (ATV)", boolToSet: false);
-			Kensei.Dev.Options.SetOption("Overlays.Terrain costs (Car)", boolToSet: false);
-		}
-	}
-
-	public void ShowATV_OnPress(string option, bool? newBool, float? newFloat)
-	{
-		if (newBool == true)
-		{
-			Kensei.Dev.Options.SetOption("Overlays.Terrain costs (Foot)", boolToSet: false);
-			Kensei.Dev.Options.SetOption("Overlays.Terrain costs (Car)", boolToSet: false);
-		}
-	}
-
-	public void ShowCar_OnPress(string option, bool? newBool, float? newFloat)
-	{
-		if (newBool == true)
-		{
-			Kensei.Dev.Options.SetOption("Overlays.Terrain costs (ATV)", boolToSet: false);
-			Kensei.Dev.Options.SetOption("Overlays.Terrain costs (Foot)", boolToSet: false);
-		}
-	}
-
-	public void RegionsFoot_OnPress(string option, bool? newBool, float? newFloat)
-	{
 	}
 
 	public void DrawResourceOverlays()
@@ -2404,15 +2301,6 @@ public class MapClient
 		if (pos.X >= MapWindowWorldPosition.X - border && pos.X <= MapWindowWorldPosition.X + (float)mapWindowWidth + border && pos.Y >= MapWindowWorldPosition.Y - border)
 		{
 			return pos.Y <= MapWindowWorldPosition.Y + (float)mapWindowHeight + border;
-		}
-		return false;
-	}
-
-	public bool ScreenPositionIsVisible(Vector2 screenPos, int border)
-	{
-		if (screenPos.X >= (float)(-border) && screenPos.X < (float)(mapWindowWidth + border) && screenPos.Y >= (float)(-border) && screenPos.Y < (float)(mapWindowHeight + border))
-		{
-			return true;
 		}
 		return false;
 	}

@@ -223,24 +223,6 @@ public class AudioManager
 		return PlaySound(sound, distanceVolumeFactor, fading, pan, looping, soundEndedCallback);
 	}
 
-	public string PrintSoundsForDebug()
-	{
-		StringBuilder stringBuilder = new StringBuilder();
-		PlayedSound[] array = playingSounds;
-		foreach (PlayedSound playedSound in array)
-		{
-			if (playedSound != null)
-			{
-				stringBuilder.AppendLine(playedSound.ToString());
-			}
-			else
-			{
-				stringBuilder.AppendLine("null");
-			}
-		}
-		return stringBuilder.ToString();
-	}
-
 	private int GetSoundIndex(SoundData sound, SoundEffectInstance instance)
 	{
 		return Array.FindIndex(playingSounds, (PlayedSound s) => s != null && s.SoundData == sound && s.SoundEffectInstance == instance);
@@ -320,20 +302,6 @@ public class AudioManager
 		if (soundIndex >= 0)
 		{
 			playingSounds[soundIndex] = null;
-		}
-	}
-
-	public void StopAllSounds()
-	{
-		for (int i = 0; i < playingSounds.Length; i++)
-		{
-			PlayedSound playedSound = playingSounds[i];
-			if (playedSound != null)
-			{
-				playedSound.SoundEffectInstance.Stop();
-				playedSound.SoundEffectInstance.Dispose();
-				playingSounds[i] = null;
-			}
 		}
 	}
 

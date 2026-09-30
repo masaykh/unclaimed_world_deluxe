@@ -193,15 +193,6 @@ public class Tooltip : HUDWindow
 		}
 	}
 
-	public bool IsShowingTooltipForComponent(UIComponent component)
-	{
-		if (tooltipAnchor == component)
-		{
-			return true;
-		}
-		return false;
-	}
-
 	public void StartCountdownToShow(UIComponent sender)
 	{
 		tooltipAnchor = sender;

@@ -86,27 +86,6 @@ public class ActionSets : IGameData
 		}
 	}
 
-	public void TestFire(Entity triggeringEntity, EntityID? targetEntity, IHasExposedProperties polledEventSource, IHasExposedProperties dynamicTarget)
-	{
-		List<Exception> list = null;
-		ActionSetType[] setsOfActions = SetsOfActions;
-		foreach (ActionSetType actionSetType in setsOfActions)
-		{
-			try
-			{
-				new ActionSetData(actionSetType).Fire(triggeringEntity, targetEntity, polledEventSource, dynamicTarget);
-			}
-			catch (Exception innerException)
-			{
-				Common.AddToList(ref list, new Exception(Environment.NewLine + "Error in ActionSetType " + actionSetType.KeyName + ": " + Environment.NewLine, innerException));
-			}
-		}
-		if (list != null)
-		{
-			throw new AggregateException(list.ToArray());
-		}
-	}
-
 	private void FireSingle(Entity triggeringEntity, EntityID? targetEntity, IHasExposedProperties polledEventSource, IHasExposedProperties dynamicTarget, ref bool isExpired)
 	{
 		List<ActionSetType> list = null;

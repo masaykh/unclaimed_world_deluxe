@@ -567,46 +567,6 @@ public class InGameInterface : CommonInterface
 		}
 	}
 
-	public void SetUIAllegianceToSelectedEntity()
-	{
-		if (!SelectedEntity.HasValue)
-		{
-			return;
-		}
-		Entity entity = Entity.FindByID(SelectedEntity.Value);
-		if (entity == null)
-		{
-			return;
-		}
-		UIAllegiance = entity.Intelligence.Allegiance;
-		List<EntityID> list = null;
-		foreach (KeyValuePair<EntityID, MemoryFact> memoryFact in UIAllegiance.SharedKnowledge.MemoryFacts)
-		{
-			Entity entity2 = Entity.FindByID(memoryFact.Key);
-			if (entity2 != null)
-			{
-				The.Client.SetRenderableOnMemoryFact(memoryFact.Value, entity2, UIAllegiance);
-			}
-			else
-			{
-				Common.AddToList(ref list, memoryFact.Key);
-			}
-		}
-		if (list == null)
-		{
-			return;
-		}
-		foreach (EntityID item in list)
-		{
-			UIAllegiance.SharedKnowledge.DeleteMemoryOfEntity(item, null, removeAllKnowledge: true);
-		}
-	}
-
-	public void ResetUIAllegiance()
-	{
-		UIAllegiance = The.Sim.PlaySite.PlayerAllegiance;
-	}
-
 	private void UpdateMarkerWindows(GameTime elapsedTime, CollideShape2D screenBounds)
 	{
 		RefreshEntityMarkers(elapsedTime, screenBounds);
@@ -876,8 +836,6 @@ public class InGameInterface : CommonInterface
 		PinnedDataTypeTooltips = new HashSet<DataSheet>();
 		UnpinnedDataTypeTooltipsOutsideStack = new HashSet<DataSheet>();
 		gui.HyperlinkClicked += gui_HyperlinkClicked;
-		gui.MouseOverWindow += gui_MouseOverWindow;
-		gui.MouseOutOfWindow += gui_MouseOutOfWindow;
 		Selection = new Selection();
 		SelectRectangle = new SelectRectangle();
 		TerrainBlockingRender = new TerrainBlockingRender();
@@ -968,14 +926,6 @@ public class InGameInterface : CommonInterface
 			NutrientSheetSettings = new NutrientSheetSettings();
 			ThreatRender = new ThreatRender();
 		}
-	}
-
-	private void gui_MouseOutOfWindow(Window obj)
-	{
-	}
-
-	private void gui_MouseOverWindow(Window obj)
-	{
 	}
 
 	public void ShowInGameMenu()
@@ -1244,16 +1194,6 @@ public class InGameInterface : CommonInterface
 		return null;
 	}
 
-	public DataSheet GetParentTooltip(DataSheet tooltip)
-	{
-		int num = EntityTypeTooltipsStack.IndexOf(tooltip);
-		if (num > 0)
-		{
-			return EntityTypeTooltipsStack[num - 1];
-		}
-		return null;
-	}
-
 	private void EnableScenarioUI(ScenarioData scenario)
 	{
 		if (!scenario.EnableMissions)
@@ -1388,14 +1328,6 @@ public class InGameInterface : CommonInterface
 	{
 	}
 
-	public void ShowInventoryPanel()
-	{
-		if (!IsDisplayed(InventoryPanel))
-		{
-			ChangeRosterPanel(InventoryPanel);
-		}
-	}
-
 	public void ChangeRosterPanel(RosterPanel panel)
 	{
 		ChangeRosterPanel(panel, refreshCurrentPanelWithNewContent: false);
@@ -1451,11 +1383,6 @@ public class InGameInterface : CommonInterface
 		}
 	}
 
-	public bool RosterIsDisplayed(RosterPanel roster)
-	{
-		return roster == displayedRosterPanel;
-	}
-
 	private void HideStatusScreen()
 	{
 		if (StatusScreen != null && StatusScreen.DisplayWindow.IsVisibleAndActive)
@@ -1468,18 +1395,9 @@ public class InGameInterface : CommonInterface
 		}
 	}
 
-	public void StocksExpandedPanel_DrawContentEvent(Window sender, SpriteBatch formSpriteBatch)
-	{
-	}
-
 	public bool IsShowingMapEditor()
 	{
 		return displayedRosterPanel == SidePanelEditorEntity;
-	}
-
-	public bool IsMouseInsideInterface()
-	{
-		return false;
 	}
 
 	public void MoveHUDWindows()
@@ -1644,13 +1562,6 @@ public class InGameInterface : CommonInterface
 				item.Entity.SetPosition(mouseWorldLocation);
 			}
 		}
-	}
-
-	public void DrawText(string text, Vector2 pos, Color color)
-	{
-		The.Client.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
-		The.Client.spriteBatch.DrawString(The.InGameUI.InterfaceFont, text, pos, color);
-		The.Client.spriteBatch.End();
 	}
 
 	public void DrawPauseIcon(bool isPaused)

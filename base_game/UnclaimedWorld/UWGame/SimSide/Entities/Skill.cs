@@ -63,11 +63,6 @@ public class Skill : IHasExposedProperties, ISnapshot
 		return ((int)(100f * value)).ToString();
 	}
 
-	public float CalculateProgress(double secondsElapsed, float manSecondsOfWorkNeeded, float? upperSkillBound)
-	{
-		return (float)(secondsElapsed / (double)manSecondsOfWorkNeeded * (double)((!upperSkillBound.HasValue) ? ProductionFactor : Common.ClampTop(upperSkillBound.Value, ProductionFactor)));
-	}
-
 	static Skill()
 	{
 		exposedPropertyValueFunctions = new Dictionary<string, GetPropertyValue>();

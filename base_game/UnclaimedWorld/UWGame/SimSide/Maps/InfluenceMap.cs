@@ -109,22 +109,6 @@ public abstract class InfluenceMap : IMap, ILookUp<IMap, IMapID>, ISnapshot
 		return parameters.map.Map.GetValue(pos) <= parameters.belowOrEqualToValue;
 	}
 
-	public static void AddTilesInSector(Rectangle sectorArea, float weight, byte[][] map, bool[][] isBlocked, byte[][] mapToAdd, bool[][] isBlockedToAdd)
-	{
-		for (int i = sectorArea.Left; i < sectorArea.Right; i++)
-		{
-			byte[] array = map[i];
-			bool[] array2 = isBlocked[i];
-			byte[] array3 = mapToAdd[i];
-			bool[] array4 = isBlockedToAdd[i];
-			for (int j = sectorArea.Top; j < sectorArea.Bottom; j++)
-			{
-				array[j] = (byte)Common.ClampTop((float)(int)array[j] + weight * (float)(int)array3[j], 255f);
-				array2[j] = array2[j] || array4[j];
-			}
-		}
-	}
-
 	public void Destroy()
 	{
 		RemoveIDEntry();

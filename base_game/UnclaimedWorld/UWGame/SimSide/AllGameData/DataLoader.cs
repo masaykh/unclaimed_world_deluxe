@@ -759,10 +759,6 @@ public abstract class DataLoader
 		objectToSerialize = (T)xmlSerializer.Deserialize(textReader);
 	}
 
-	public static void ReplaceEntityTypePlaceholdersOnObjectCollection<T>() where T : IEnumerable
-	{
-	}
-
 	public static List<CustomXmlSerializer.XmlTypeMappingBase> GetListOfTypeMappings(bool useEntityTypePlaceholders = false)
 	{
 		return new List<CustomXmlSerializer.XmlTypeMappingBase>

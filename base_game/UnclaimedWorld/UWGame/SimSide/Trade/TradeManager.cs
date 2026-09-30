@@ -60,17 +60,6 @@ public class TradeManager : ISnapshot
 		CreateRegulators();
 	}
 
-	public static TradeManager CreateFromTradeAmounts(EntityGroup entityGroup, SerializableDictionary<string, TradeAmountType> AvailableForTrade, SerializableDictionary<string, VehiclesForHireType> VehiclesForHire, PricesProfile pricesProfile)
-	{
-		TradeManager tradeManager = new TradeManager(entityGroup);
-		if (AvailableForTrade != null)
-		{
-			tradeManager.SetTradeProperties(AvailableForTrade, pricesProfile);
-		}
-		tradeManager.SetVehiclesForHire(VehiclesForHire);
-		return tradeManager;
-	}
-
 	public void SetVehiclesForHire(SerializableDictionary<string, VehiclesForHireType> VehiclesForHire)
 	{
 		if (VehiclesForHire == null)

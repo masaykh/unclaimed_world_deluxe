@@ -10,11 +10,6 @@ public class Power : Component
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
-	public string EnergyLevelToString()
-	{
-		return (int)(Energy * 100f) + "/100";
-	}
-
 	public override ISnapshot DoSnapshot(Snapshotter sn)
 	{
 		base.DoSnapshot(sn);

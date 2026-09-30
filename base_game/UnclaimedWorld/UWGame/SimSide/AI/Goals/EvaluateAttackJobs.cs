@@ -654,19 +654,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 		return true;
 	}
 
-	public bool WeaponIsSameOrBetterType(EntityID? carriedWeapon, IKnownEntityData otherWeapon)
-	{
-		if (!carriedWeapon.HasValue)
-		{
-			return false;
-		}
-		if (Entity.FindByID(carriedWeapon.Value).EntityType == otherWeapon.EntityType)
-		{
-			return true;
-		}
-		return false;
-	}
-
 	public override void PreSetGoal()
 	{
 		base.PreSetGoal();

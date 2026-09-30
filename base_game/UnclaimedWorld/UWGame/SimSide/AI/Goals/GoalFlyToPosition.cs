@@ -193,22 +193,6 @@ public class GoalFlyToPosition : Goal
 		SetRightDuctAngle(Aircraft, vehicleComponent, num4 - headingDifference, elapsedTime);
 	}
 
-	private static void SetPropellerAngle(Entity aircraft, ref Matrix rotateTransform, string boneName)
-	{
-		aircraft.Renderable.SetModelBoneRotation(boneName, rotateTransform);
-	}
-
-	public static void UpdatePropellers(Entity aircraft, Vehicle vehicleComponent, float elapsedTime, PropDirection direction)
-	{
-		VehicleContainerType vehicleContainerType = (VehicleContainerType)aircraft.EntityType.ContainerType;
-		float num = elapsedTime * vehicleComponent.Aircraft.PropellerSpeed;
-		float num2 = ((direction == PropDirection.Start) ? 1f : (-1f));
-		vehicleComponent.Aircraft.PropellerSpeed = MathHelper.Clamp(vehicleComponent.Aircraft.PropellerSpeed + num2 * elapsedTime * vehicleContainerType.Aircraft.PropellerAcceleration, 0f, vehicleContainerType.Aircraft.MaxPropellerSpeed);
-		Matrix rotateTransform = Matrix.CreateFromYawPitchRoll((float)Math.PI / 2f, 0f, num + (float)Math.PI / 2f);
-		SetPropellerAngle(aircraft, ref rotateTransform, "propeller_joint_right");
-		SetPropellerAngle(aircraft, ref rotateTransform, "propeller_joint_left");
-	}
-
 	public static void SetLeftDuctAngle(Entity aircraft, Vehicle vehicleComponent, float rotate, float elapsedTime)
 	{
 		rotate -= vehicleComponent.Pitch;
@@ -338,8 +322,4 @@ public class GoalFlyToPosition : Goal
 		return Common.WrapAngleBetweenZeroAndTwoPi(currentAngle + num2);
 	}
 
-	public bool IsAtDestination()
-	{
-		return Vector2.DistanceSquared(new Vector2(Aircraft.PlaySiteLocation.X, Aircraft.PlaySiteLocation.Y), destinationPoint) < 16f;
-	}
 }

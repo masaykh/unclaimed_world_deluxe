@@ -150,19 +150,4 @@ public class PriorityQueueB<T> : IPriorityQueue<T>
 		InnerList.Clear();
 	}
 
-	public void RemoveLocation(T item)
-	{
-		int num = -1;
-		for (int i = 0; i < InnerList.Count; i++)
-		{
-			if (mComparer.Compare(InnerList[i], item) == 0)
-			{
-				num = i;
-			}
-		}
-		if (num != -1)
-		{
-			InnerList.RemoveAt(num);
-		}
-	}
 }
