@@ -13,12 +13,6 @@ namespace UWGame.SimSide.Systems.Triggers;
 
 public class Trigger : ISleepingUpdatable, IHasExposedProperties, ISnapshot, ILookUp<Trigger, TriggerID>
 {
-	public enum TriggerMovement
-	{
-		Static,
-		Attached
-	}
-
 	public Entity Parent;
 
 	private EntityID? snapshotParent;

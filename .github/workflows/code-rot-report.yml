@@ -1,0 +1,31 @@
+# Weekly code rot report: what might be dead and needs a person to judge (tools/build/87-report-code-rot.sh).
+#
+# Never fails. What is certainly dead already fails the build, in gates 85 and 86 in publish.yml;
+# this is the rest - public methods nothing names, commented-out code, settings that have stayed
+# TESTING, the PORT DEVIATION index. Read it in the run's summary, or download the artifact.
+name: code-rot-report
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      # The full history: section 3 dates each mod from its first commit.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Report
+        run: sh tools/build/87-report-code-rot.sh > code-rot-report.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: code-rot-report
+          path: code-rot-report.md

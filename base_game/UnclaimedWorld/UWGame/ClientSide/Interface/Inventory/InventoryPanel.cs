@@ -20,12 +20,6 @@ namespace UWGame.ClientSide.Interface.Inventory;
 
 public class InventoryPanel : RosterPanel
 {
-	public enum ProductionMode
-	{
-		Basic,
-		Advanced
-	}
-
 	private class DistanceArg : EventArgs
 	{
 		public InventorySettings.Availability Availability;

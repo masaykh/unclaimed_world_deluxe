@@ -96,11 +96,6 @@
     <UwGameplayMods>$(UwFeatureList.Contains(';gameplaymods;'))</UwGameplayMods>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants Condition="'$(UwHarmony)' == 'true'">$(DefineConstants);UW_FEATURE_HARMONY</DefineConstants>
-    <DefineConstants Condition="'$(UwUnhiddenMod)' == 'true'">$(DefineConstants);UW_FEATURE_UNHIDDENMOD</DefineConstants>
-  </PropertyGroup>
-
   <!--
     Exactly one implementation of each feature is compiled. The *.Absent.cs files are no-op
     stubs with a `const bool Enabled = false`, which keeps the game's own call sites - eleven of

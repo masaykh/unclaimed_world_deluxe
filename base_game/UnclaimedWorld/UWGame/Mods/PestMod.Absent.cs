@@ -32,5 +32,5 @@ public static class PestMod
 
     public static int ExtraMembers(Expedition population) => 0;
 
-    public static float GrowthFactor(Expedition population, int extra) => 1f;
+    public static float GrowthFactor(int extra) => 1f;
 }

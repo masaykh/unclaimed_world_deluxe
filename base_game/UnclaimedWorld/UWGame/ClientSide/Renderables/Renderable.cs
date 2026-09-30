@@ -37,29 +37,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		Outline
 	}
 
-	[Flags]
-	public enum TintStatus : uint
-	{
-		None = 0u,
-		Disabled = 1u,
-		Experience = 2u,
-		Selected = 4u
-	}
-
-	[Flags]
-	public enum LightAttenuationStatus : uint
-	{
-		None = 0u,
-		Normal = 1u,
-		Dark = 2u,
-		Darkening = 4u,
-		Lightening = 8u
-	}
-
-	public class RadiusDecalType
-	{
-	}
-
 	private enum FadeStatus
 	{
 		None,

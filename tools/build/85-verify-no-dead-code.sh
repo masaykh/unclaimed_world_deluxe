@@ -13,6 +13,16 @@
 #   IDE0052  a private member that is assigned but never read
 #   CS0162   code after a constant condition, which can never run
 #
+# and two more, in OUR code only - mods/, tools/, base_game/Shared, UWGame/Port, UWGame/Mods and
+# ReplayTrace.cs:
+#
+#   IDE0060  an unused parameter
+#   IDE0059  a value assigned and overwritten or dropped before anyone reads it
+#
+# In the decompiled game these are ~800 findings of decompiler noise and signatures that overrides
+# and event handlers must keep. In code we wrote they are mistakes. A new file of our own belongs
+# in OURS below.
+#
 # They are errors only here. The everyday build does not enforce code style, and should not: a
 # half-finished edit ought to compile. So the gate writes a temporary root .editorconfig that
 # raises the three to warnings, rebuilds with EnforceCodeStyleInBuild, and collects them.
@@ -24,9 +34,8 @@
 # and member, never by line, so an unrelated edit does not break the gate. An entry that no
 # longer matches anything is reported as stale and also fails: the list must not rot either.
 #
-# NOT CHECKED. Public members nobody calls (no analyzer can see a mod or Harmony patch that might),
-# unused parameters (IDE0060: overrides and event handlers must keep their signature) and
-# assignments the decompiler left behind (IDE0059). Those were swept by hand and are not gated.
+# NOT CHECKED. Public members nobody calls (no analyzer can see a mod or Harmony patch that might):
+# tools/build/86-verify-no-orphans.sh covers the cases where we can know better.
 set -e
 . "$(dirname "$0")/env.sh"
 cd "$UW_REPO"
@@ -53,7 +62,17 @@ fi
 
 WORK=$(mktemp -d)
 trap 'rm -f "$UW_REPO/.editorconfig"; rm -rf "$WORK"' EXIT INT TERM
-printf 'root = true\n[*.cs]\ndotnet_diagnostic.IDE0051.severity = warning\ndotnet_diagnostic.IDE0052.severity = warning\ndotnet_diagnostic.CS0162.severity = warning\n' > .editorconfig
+OURS='{mods/**.cs,tools/**.cs,base_game/Shared/**.cs,base_game/UnclaimedWorld/UWGame/Port/**.cs,base_game/UnclaimedWorld/UWGame/Mods/**.cs,base_game/UnclaimedWorld/UWGame/Control/Replays/ReplayTrace.cs}'
+cat > .editorconfig <<EOF
+root = true
+[*.cs]
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
+dotnet_diagnostic.CS0162.severity = warning
+[$OURS]
+dotnet_diagnostic.IDE0060.severity = warning
+dotnet_diagnostic.IDE0059.severity = warning
+EOF
 
 # GL builds everywhere, so CI (ubuntu) can run this. DX is added on Windows, which is the only
 # place it builds: code under #if UW_DX is then checked too. The findings of both are merged, so
@@ -64,10 +83,17 @@ case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) PLATFORMS="${UW_DEADCODE_PLATFORMS:-GL DX}"; WINDOWS=1 ;;
   *)                    PLATFORMS="${UW_DEADCODE_PLATFORMS:-GL}";    WINDOWS=0 ;;
 esac
+# --quick, for before a commit: GL only, the game, and only the tools with uncommitted changes.
+# Anything not built reports nothing, so the stale-entry check is skipped. CI runs the full check.
+QUICK=0
+[ "${1:-}" = "--quick" ] && { QUICK=1; PLATFORMS=GL; }
 PROJECTS=base_game/UnclaimedWorld/UnclaimedWorld.csproj
 for proj in tools/*/*.csproj; do
   if [ $WINDOWS -eq 0 ] && ! grep -q '<TargetFramework>net[0-9.]*</TargetFramework>' "$proj"; then
     echo "  --    $proj: Windows-only, skipped"
+    continue
+  fi
+  if [ $QUICK -eq 1 ] && [ -z "$(git status --porcelain -- "$(dirname "$proj")")" ]; then
     continue
   fi
   PROJECTS="$PROJECTS $proj"
@@ -87,7 +113,7 @@ done
 # becomes "IDE0052<TAB>base_game/X/Y.cs<TAB>Y.field". CS0162 names no member, so it is keyed by
 # the method it sits in, which the allowlist spells as the file alone plus "-".
 repo_win=$(cd "$UW_REPO" && pwd -W 2>/dev/null || pwd)
-grep -E 'warning (IDE0051|IDE0052|CS0162):' "$WORK/build.log" |
+grep -E 'warning (IDE0051|IDE0052|IDE0059|IDE0060|CS0162):' "$WORK/build.log" |
   sed 's|\\|/|g' |
   awk -v root="$(printf '%s' "$repo_win" | sed 's|\\|/|g')" '
     {
@@ -100,11 +126,12 @@ grep -E 'warning (IDE0051|IDE0052|CS0162):' "$WORK/build.log" |
       print code "\t" path "\t" member
     }' | sort -u > "$WORK/found.txt"
 
-grep -vE '^[[:space:]]*(#|$)' "$ALLOW" | sed 's/[[:space:]]*#.*$//' |
+tr -d '\r' < "$ALLOW" | grep -vE '^[[:space:]]*(#|$)' | sed 's/[[:space:]]*#.*$//' |
   awk '{ print $1 "\t" $2 "\t" $3 }' | sort -u > "$WORK/allowed.txt"
 
 comm -23 "$WORK/found.txt" "$WORK/allowed.txt" > "$WORK/new.txt"
 comm -13 "$WORK/found.txt" "$WORK/allowed.txt" > "$WORK/stale.txt"
+[ $QUICK -eq 1 ] && : > "$WORK/stale.txt"
 
 FAIL=0
 if [ -s "$WORK/new.txt" ]; then

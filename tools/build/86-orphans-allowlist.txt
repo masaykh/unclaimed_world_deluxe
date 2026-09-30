@@ -2,4 +2,14 @@
 #
 #   <check>  <file>  <name>   # why
 #
-# check is stub, mod, item or script. A reason is required; an entry that no longer matches fails.
+# check is stub, mod, type, setting, item or script. A reason is required; an entry that no longer matches fails.
+
+# --- Types reached by name at runtime, which a text search cannot see.
+# An .xnb names its reader by assembly-qualified name; the skin content is read through it.
+type  base_game/WindowSystem/WindowSystem/SkinReader.cs  SkinReader
+# ISnapshot types: a save file names the type of every object in it, and Snapshotter.ResolveSavedType
+# must still find these in a save written by a build that used them.
+type  base_game/UnclaimedWorld/UWGame/SimSide/Items/PowerCell.cs  PowerCell
+type  base_game/UnclaimedWorld/UWGame/SimSide/Expeditions/HumanExpeditionActivities.cs  HumanExpeditionActivities
+# An AttackType.AreaAttack option for data read with --data-from-xml, alongside ConeAttack.
+type  base_game/UnclaimedWorld/UWGame/SimSide/Combat/SplashAttack.cs  SplashAttack

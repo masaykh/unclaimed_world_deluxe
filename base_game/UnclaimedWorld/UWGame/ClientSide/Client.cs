@@ -56,8 +56,6 @@ namespace UWGame.ClientSide;
 
 public class Client : GameScreen
 {
-	public delegate void ButtonClick(object sender);
-
 	public ContentManager Content;
 
 	public SpriteBatch spriteBatch;

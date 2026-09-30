@@ -32,13 +32,6 @@ namespace UWGame.SimSide.AI;
 [DebuggerDisplay("{EntityType.Name}{MapPosition}")]
 public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, ILookUp<MemoryFact, MemoryFactID>, ISnapshot
 {
-	public enum StatusProperty
-	{
-		Condition,
-		AllegianceId,
-		Stance
-	}
-
 	private SharedKnowledge sharedKnowledge;
 
 	private AllegianceID snapshotAllegianceID;

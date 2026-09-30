@@ -21,12 +21,6 @@ public class Panel
 		EventArchive
 	}
 
-	public enum PanelOptions
-	{
-		None,
-		SteelAndDust
-	}
-
 	protected enum Align
 	{
 		Left,

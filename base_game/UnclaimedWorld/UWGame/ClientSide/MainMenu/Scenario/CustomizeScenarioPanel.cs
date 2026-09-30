@@ -17,13 +17,6 @@ public class CustomizeScenarioPanel : Panel
 		public Difficulty Difficulty;
 	}
 
-	private class CustomDifficultyEventArgs : EventArgs
-	{
-		public OptionSet OptionSet;
-
-		public string CustomDifficultyKey;
-	}
-
 	private class CustomDifficultyRandomizeEventArgs : EventArgs
 	{
 		public OptionSet OptionSet;

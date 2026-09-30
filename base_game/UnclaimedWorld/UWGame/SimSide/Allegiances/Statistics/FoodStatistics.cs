@@ -11,13 +11,6 @@ namespace UWGame.SimSide.Allegiances.Statistics;
 
 public abstract class FoodStatistics : Rating
 {
-	public enum SetsOfData
-	{
-		StarvingAbsolute,
-		StarvingPercentage,
-		StarvingDeaths
-	}
-
 	public Dictionary<NeedTypeID, List<DataPoint<float>>> StarvingMemberPercentage = new Dictionary<NeedTypeID, List<DataPoint<float>>>();
 
 	public List<DataPoint<EntityID>> starvingDeaths = new List<DataPoint<EntityID>>();

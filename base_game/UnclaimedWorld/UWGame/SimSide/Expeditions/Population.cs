@@ -133,7 +133,7 @@ public class Population : ISnapshot
 		int amountToFill = MaxMembers + extraMembers - Expedition.Members.Count;
 		if (GrowthInMembersPerDay.HasValue)
 		{
-			membersToSpawn = GetNoToSpawn(GrowthInMembersPerDay.Value * UWGame.Mods.PestMod.GrowthFactor(Expedition, extraMembers), num, ref timeInDaysElapsedSinceMemberSpawn, amountToFill);
+			membersToSpawn = GetNoToSpawn(GrowthInMembersPerDay.Value * UWGame.Mods.PestMod.GrowthFactor(extraMembers), num, ref timeInDaysElapsedSinceMemberSpawn, amountToFill);
 			if (SpawnMembers(ref membersToSpawn, ignoreDanger: false) == SpawnResult.Processing)
 			{
 				isWaitingForRegions = true;

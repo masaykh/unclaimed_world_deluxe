@@ -20,22 +20,6 @@ public class PersonType : IXmlSerializable
 		Black
 	}
 
-	public enum HairColors
-	{
-		Platinum,
-		LightBlonde,
-		Red,
-		MediumBlonde,
-		DarkBlonde,
-		LightBrown,
-		DarkBrown,
-		DarkestBrown,
-		Black,
-		Grey,
-		White,
-		Bald
-	}
-
 	public List<Vector3> ShirtColors = new List<Vector3>();
 
 	public List<Vector3> PantsColors = new List<Vector3>();

@@ -11,7 +11,7 @@ namespace UWGame.Mods;
 /// <c>-p:UwFeatures="harmony"</c>. See the SELECTABLE FEATURES block in UnclaimedWorld.csproj.
 ///
 /// WHY A STUB RATHER THAN #if AT EVERY CALL SITE. The mod is reached from eleven places across
-/// the game's own files. Wrapping each one in <c>#if UW_FEATURE_UNHIDDENMOD</c> would mean
+/// the game's own files. Wrapping each one in an <c>#if</c> would mean
 /// eleven more edits to the studio's source - which matters twice over: it makes the code harder
 /// to read, and it makes the patch series distributed in kit/ larger for no benefit. With a
 /// stub, those eleven call sites are byte-identical whether the feature is in or out.

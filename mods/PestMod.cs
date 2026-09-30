@@ -123,7 +123,7 @@ public static class PestMod
     }
 
     /// <summary>Growth speeds up with the bonus, so a swarm gathers in hours rather than weeks.</summary>
-    public static float GrowthFactor(Expedition population, int extra) => extra > 0 ? 1f + extra / 6f : 1f;
+    public static float GrowthFactor(int extra) => extra > 0 ? 1f + extra / 6f : 1f;
 
     /// <summary>Totals the player's exposed food, at most once a game hour.</summary>
     private static void Measure()

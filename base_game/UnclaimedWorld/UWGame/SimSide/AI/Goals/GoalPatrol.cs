@@ -14,12 +14,6 @@ namespace UWGame.SimSide.AI.Goals;
 
 internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 {
-	public enum CombatAreaMode
-	{
-		Patrol,
-		Attack
-	}
-
 	private Vector3 location;
 
 	private CombatAreaJob job;

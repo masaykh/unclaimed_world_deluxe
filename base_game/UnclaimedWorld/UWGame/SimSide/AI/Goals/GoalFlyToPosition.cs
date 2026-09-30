@@ -11,12 +11,6 @@ namespace UWGame.SimSide.AI.Goals;
 
 public class GoalFlyToPosition : Goal
 {
-	public enum PropDirection
-	{
-		Start,
-		Stop
-	}
-
 	private bool isAtTarget;
 
 	public Entity Aircraft;

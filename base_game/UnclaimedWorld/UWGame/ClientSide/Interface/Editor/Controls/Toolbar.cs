@@ -9,14 +9,6 @@ namespace UWGame.ClientSide.Interface.Editor.Controls;
 
 public class Toolbar : UIComponent
 {
-	public enum PaintTools
-	{
-		None,
-		Pencil,
-		Brush,
-		Eraser
-	}
-
 	public enum Resolution
 	{
 		Subtile,

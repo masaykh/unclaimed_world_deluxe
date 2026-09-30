@@ -140,8 +140,9 @@ iteration. A gap in the automated gates is a gap that reaches players.
 | `tools/build/82-verify-docs-current.sh` | documents that assert something the repo stopped doing |
 | `tools/build/83-verify-debug-scenarios.sh` | every debug scenario fits the map it is registered against |
 | `tools/build/84-verify-user-scenarios.sh` | an exported scenario loads as a user scenario, and one with no tables is refused |
-| `tools/build/85-verify-no-dead-code.sh` | no unused private member, never-read field or unreachable branch outside `85-dead-code-allowlist.txt` |
-| `tools/build/86-verify-no-orphans.sh` | no Absent-stub member the core stopped calling, unnamed mod member, project entry for a missing file, or build script nothing mentions |
+| `tools/build/85-verify-no-dead-code.sh` | no unused private member, never-read field or unreachable branch; in our own code also no unused parameter or discarded assignment. `--quick` before a commit (GL, seconds) |
+| `tools/build/86-verify-no-orphans.sh` | no Absent-stub member the core stopped calling, unnamed mod member or type, dead or unregistered ModSetting, unused or undefined `#if` symbol, project entry for a missing file, or build script nothing mentions |
+| `tools/build/87-report-code-rot.sh` | not a gate: weekly report (`code-rot-report.yml`) of what might be dead — public methods nothing names, commented-out code, settings long TESTING, the PORT DEVIATION index |
 | `tools/ContentProbe` | every asset loads on a real `GraphicsDevice` |
 
 **Three rules learned the hard way:**
@@ -161,7 +162,8 @@ iteration. A gap in the automated gates is a gap that reaches players.
 **Dead code cascades — remove it in the same commit.** Deleting the last caller of something
 orphans it, and that orphans the next thing: the September sweep needed a fourth pass because
 three rounds of removals had each left new unused members behind. After removing a caller, rerun
-gates 85 and 86 and clear what they report before committing. Something kept on purpose goes in
+gates 85 (`--quick` is enough locally) and 86 and clear what they report before committing. A new
+source directory of our own goes in gate 85's `OURS` list, so the stricter rules cover it. Something kept on purpose goes in
 the allowlist **with a reason** (the gate refuses an entry without one); a guard on a const that
 differs per build gets `#pragma warning disable CS0162` and a comment at the site instead. The
 tools build with `-warnaserror`, in CI too: keep them at zero warnings.

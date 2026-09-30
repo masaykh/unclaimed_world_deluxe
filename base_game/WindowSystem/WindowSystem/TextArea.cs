@@ -4,11 +4,6 @@ namespace WindowSystem;
 
 public class TextArea : ListBox
 {
-	public enum TextAreaType
-	{
-		HUD
-	}
-
 	private string text;
 	private static char[] spaces = new char[1] { ' ' };
 

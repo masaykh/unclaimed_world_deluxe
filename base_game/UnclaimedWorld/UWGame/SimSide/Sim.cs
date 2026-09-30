@@ -75,21 +75,6 @@ public class Sim : GameScreen, ISnapshot
 		Female
 	}
 
-	private enum SeasonPrefix : ulong
-	{
-		Early,
-		Mid,
-		Late
-	}
-
-	private enum Seasons : ulong
-	{
-		Spring,
-		Summer,
-		Autumn,
-		Winter
-	}
-
 	public enum DayPhases : ulong
 	{
 		Work,

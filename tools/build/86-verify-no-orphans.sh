@@ -14,6 +14,15 @@
 #           that a stub reads like its mod, not calls anybody needs.
 #   mod     A public or internal member of a mod (mods/*.cs) that is named nowhere at all except
 #           its own declaration. Harmony's by-convention names (Prefix, Postfix, ...) are exempt.
+#   type    A class, struct, enum, interface or delegate whose name appears nowhere but its own
+#           declaration. An attribute counts as used when its short name ([Author]) appears.
+#           The content runtimes (AnimationComponentRuntime, SpriteSheetRuntime) are exempt: .xnb
+#           files name their types, and those files are not in the repository.
+#   setting A ModSetting (mods/*.cs, PortSettings.cs) that nothing reads - it shows in the options
+#           menu and does nothing - or that RegisterSettings does not touch, so it stays out of
+#           ModSettings.xml and the menu until something happens to read it.
+#   symbol  A DefineConstants symbol no #if tests, or an #if symbol nothing defines (and the SDK
+#           does not: DEBUG, TRACE, NET*, ...) - a branch that can never compile in, or a typo.
 #   item    A Compile/None/Content/EmbeddedResource entry in a .csproj/.props/.targets naming a
 #           file that does not exist.
 #   script  A file in tools/build that no other file in the repository mentions: not CI, not a
@@ -55,8 +64,9 @@ perl -0777 -e '
   my @files = grep { length && !m{^(original_src|decomp)/} } split /\0/, do { local $/; open my $f, "<", $ARGV[0] or die; <$f> };
   my %text;
   for my $f (@files) {
-    next unless $f =~ /\.(cs|md|sh|ps1|pl|py|csproj|props|targets|yml|yaml|xml|json|txt)$/i;
+    next unless $f =~ /\.(cs|md|sh|ps1|pl|py|csproj|props|targets|yml|yaml|xml|json|txt|resx|config|mgcb)$/i;
     next unless -f $f;
+    next if $f =~ m{^tools/build/[^/]*allowlist\.txt$};   # listing a name must not count as using it
     open my $h, "<:raw", $f or next; local $/; my $t = <$h>; $t =~ s/\r\n/\n/g; $text{$f} = $t;
   }
   my @out;
@@ -97,6 +107,56 @@ perl -0777 -e '
       push @out, "mod\t$mod\t$name" unless $elsewhere;
     }
   }
+
+  # --- type: types named nowhere but their declaration
+  my %count;
+  for my $t (values %text) { $count{$_}++ for $t =~ /\b([A-Za-z_]\w*)\b/g; }
+  for my $f (sort grep { /\.cs$/ } keys %text) {
+    next if $f =~ m{/Generated/|^base_game/(AnimationComponentRuntime|SpriteSheetRuntime)/};
+    while ($text{$f} =~ /^[ \t]*(?:(?:public|internal|private|protected|static|sealed|abstract|partial|readonly|unsafe|file)\s+)*(?:class|struct|enum|interface|record|delegate)\s+(?:[\w<>\[\],.?]+\s+(?=\w+\s*[(<;]))?(\w+)/mg) {
+      my $name = $1;
+      next if ($count{$name} // 0) > 1;
+      next if $name =~ /^(\w+)Attribute$/ && ($count{$1} // 0) > 0;
+      push @out, "type\t$f\t$name";
+    }
+  }
+
+  # --- setting: declared but never read, or never registered
+  my %qualified;   # "Class.Member" -> files that name it
+  for my $f (grep { /\.cs$/ } keys %text) {
+    my %here; $here{"$1.$2"} = 1 while $text{$f} =~ /\b(\w+)\s*\.\s*(\w+)\b/g;
+    $qualified{$_}{$f} = 1 for keys %here;
+  }
+  for my $f (sort grep { m{^mods/[^/]+\.cs$|^base_game/UnclaimedWorld/UWGame/Mods/PortSettings\.cs$} } keys %text) {
+    my $t = $text{$f};
+    my ($class) = $t =~ /\bstatic\s+(?:partial\s+)?class\s+(\w+)/ or next;
+    my ($reg) = $t =~ /void\s+RegisterSettings\s*\(\s*\)\s*\{(.*?)\n    \}/s;
+    $reg //= "";
+    for my $name ($t =~ /static\s+(?:readonly\s+)?ModSetting\s+(\w+)\s*(?:=>|=|\{)/g) {
+      my $own = () = $t =~ /\b\Q$name\E\b/g;
+      my $inreg = () = $reg =~ /\b\Q$name\E\b/g;
+      my $outside = grep { $_ ne $f } keys %{ $qualified{"$class.$name"} // {} };
+      push @out, "setting\t$f\t$name.unread" if $own - 1 - $inreg + $outside <= 0;
+      push @out, "setting\t$f\t$name.unregistered" if $inreg == 0;
+    }
+  }
+
+  # --- symbol: defined and never tested, or tested and never defined
+  my (%defined, %tested);
+  for my $p (grep { /\.(csproj|props|targets)$/ } keys %text) {
+    while ($text{$p} =~ /<DefineConstants[^>]*>([^<]*)</g) {
+      $defined{$_} = $p for grep { /^\w+$/ } split /\s*;\s*/, $1;
+    }
+  }
+  for my $f (grep { /\.cs$/ } keys %text) {
+    while ($text{$f} =~ /^[ \t]*#\s*(?:el)?if\b([^\n]*)/mg) {
+      my $cond = $1; $cond =~ s{//.*}{};
+      $tested{$_} //= $f for grep { !/^(true|false)$/ } $cond =~ /\b([A-Za-z_]\w*)\b/g;
+    }
+  }
+  my $sdk = qr/^(DEBUG|TRACE|RELEASE|NET\w*|NETCOREAPP\w*|NETSTANDARD\w*|NETFRAMEWORK\w*|WINDOWS\w*|LINUX|OSX|MACOS\w*|ANDROID\w*|IOS\w*)$/;
+  push @out, "symbol\t$defined{$_}\t$_" for grep { $_ !~ $sdk && !$tested{$_} } keys %defined;
+  push @out, "symbol\t$tested{$_}\t$_" for grep { $_ !~ $sdk && !exists $defined{$_} } keys %tested;
 
   # --- item: project entries naming files that do not exist
   for my $p (grep { /\.(csproj|props|targets)$/ } sort keys %text) {

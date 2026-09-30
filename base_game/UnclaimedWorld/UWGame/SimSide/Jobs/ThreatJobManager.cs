@@ -27,12 +27,6 @@ public class ThreatJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnap
 		CreateThreatJobs
 	}
 
-	public enum SpeciesThreatLevel
-	{
-		NoThreat,
-		ThreatToYoung
-	}
-
 	private Regulator regulator;
 
 	private Allegiance allegiance;
