@@ -169,6 +169,32 @@ The compiler is **pinned to a commit** (`UW_SHADOWDUSK_REF`) so an upstream forc
 silently change what your shaders compile to. Bump it deliberately, and re-run the render
 comparison when you do.
 
+## Fonts for translations
+
+The studio's fonts cover ASCII only. `tools/build/36-build-fonts.sh` rebuilds the five TrueType
+ones from their `.spritefont` sources, with the same sizes and spacing, plus the Latin-1, Latin
+Extended-A, Greek and Cyrillic letters each typeface actually has:
+
+```sh
+sh tools/build/36-build-fonts.sh                         # Arial, Arial Bold, Electrolize
+UW_FONT_FACE_LCD=Play sh tools/build/36-build-fonts.sh   # Play replaces Electrolize (fetched, SIL OFL)
+UW_FONT_FACE_LCD=Jura sh tools/build/36-build-fonts.sh   # or Jura
+```
+
+Copy the **contents** of `artifacts/content/fonts/gl` (DesktopGL) or `…/dx` (DirectX) into the
+game's `port-content\`, so that it holds `Arial.xnb` and a `Fonts\` folder. English text looks the
+same by design: it is the same typeface. The new letters show only where text has them.
+Electrolize, the main UI font, has no Cyrillic at all. That is why a replacement is needed.
+
+To check which fonts the game will actually load, without launching it:
+
+```sh
+artifacts/bin/ContentProbe/release_gl/contentprobe.exe "<game>/Content" Arial Fonts/LCDandHUDBody
+#   OK  Arial  -> SpriteFont, lineSpacing=14, 710 glyphs, fallback='?', cyrillic=yes, greek=yes
+```
+
+`cyrillic=yes` means the override is picked up. The stock font reports `95 glyphs … cyrillic=no`.
+
 ## What is committed and what is built
 
 Committed: source, shader **sources** (`assets/effects/*.fx`), scenarios, string tables, tooling.
