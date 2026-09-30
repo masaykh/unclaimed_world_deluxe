@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Interface.HUD_Windows;
 using UWGame.ClientSide.Log;
@@ -25,6 +26,14 @@ public class TalkPanel
 	private double secondsSinceLastLine = double.MaxValue;
 
 	private bool isShown = true;
+
+	/// <summary>
+	/// The newest line this panel knows about. A hidden panel has to look for new lines itself:
+	/// InGameInterface refreshes only visible HUD windows, so HUDTalkPanel.Refresh - the only
+	/// caller of <see cref="ShowSpeaker"/> - never runs while the panel is hidden, and in "when
+	/// someone speaks" mode it never came back (Kastuk).
+	/// </summary>
+	private uint? lastSeenLine;
 
 	public TalkPanel()
 	{
@@ -77,6 +86,17 @@ public class TalkPanel
 		if (secondsSinceLastLine < double.MaxValue)
 		{
 			secondsSinceLastLine += gameTime.ElapsedGameTime.TotalSeconds;
+		}
+		List<TalkEvent> lines = The.Client.Log?.TalkEvents;
+		uint? newest = (lines != null && lines.Count > 0) ? lines[lines.Count - 1].ID : null;
+		if (lastSeenLine == null)
+		{
+			lastSeenLine = newest ?? 0;   // what was said before this panel existed does not count
+		}
+		else if (newest > lastSeenLine)
+		{
+			lastSeenLine = newest;
+			secondsSinceLastLine = 0.0;
 		}
 		bool wanted = mode == UWGame.Mods.HudMod.TalkAlways
 			|| (mode == UWGame.Mods.HudMod.TalkWhenSpoken && secondsSinceLastLine < UWGame.Mods.HudMod.TalkPanelLingerSeconds);

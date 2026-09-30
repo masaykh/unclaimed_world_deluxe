@@ -717,6 +717,18 @@ else
   fail "the ownership self-test reported failures"
 fi
 
+# The HUD mod's LeftAlt gesture: held shows the markers, a quick double press latches them so a
+# Steam overlay screenshot can be taken with them on. Key presses are played through
+# HudMod.MarkersShown with made-up times; no tables, no keyboard.
+say "==> 25. LeftAlt shows markers while held, and a quick double press latches them"
+out=$( cd "$(new_install case25)" && "$EXPORT" . --hud-selftest 2>&1 ) || true
+if echo "$out" | grep -q "hud self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the hud self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -731,7 +743,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 24/24 cases passed."
+  say "mod loader OK - 25/25 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

@@ -122,7 +122,8 @@ public static class HudMod
         revealKey ?? (revealKey = ModSettings.Key(
             ModId, "revealKey", "NAMES AND MARKERS (HOLD)", Keys.LeftAlt,
             toolTip: "The key held to show colonist names, status icons, labels and the zone grid, " +
-                     "when HOLD LEFT ALT FOR NAMES AND MARKERS is on. Drag-select still uses LeftAlt."));
+                     "when HOLD LEFT ALT FOR NAMES AND MARKERS is on. Press it twice quickly to keep " +
+                     "them shown, and twice again to go back. Drag-select still uses LeftAlt."));
 
     public static void RegisterSettings()
     {
@@ -139,7 +140,21 @@ public static class HudMod
     /// <summary>Whether the click sites should leave the markers switch alone.</summary>
     public static bool MarkersOnAlt => MarkersOnAltSetting.On;
 
-    /// <summary>Called from InGameInterface.Update every frame; returns at once unless switched on.</summary>
+    /// <summary>Two presses of the key within this long latch the markers on, or off again.</summary>
+    public const long DoublePressMilliseconds = 1000;
+
+    private static bool keyWasDown;
+    private static long? lastPressAt;
+    private static bool latched;
+
+    /// <summary>
+    /// Called from InGameInterface.Update every frame; returns at once unless switched on.
+    ///
+    /// Held, the key shows the markers while it is down. Pressed twice within a second, it latches
+    /// them on until the next double press - Kastuk: with LeftAlt held, the Steam overlay's
+    /// screenshot key does nothing, so a screenshot with names on needs them to stay by themselves.
+    /// Wall-clock time, not game time: it is a keyboard gesture, and it works while paused.
+    /// </summary>
     public static void UpdateMarkers(InGameInterface ui, bool windowIsActive)
     {
         if (!MarkersOnAlt || ui == null)
@@ -147,6 +162,38 @@ public static class HudMod
             return;
         }
         Keys key = RevealKey.KeyValue == Keys.None ? Keys.LeftAlt : RevealKey.KeyValue;
-        ui.ShowOverlaysAndMarkerWindows = windowIsActive && Keyboard.GetState().IsKeyDown(key);
+        bool down = windowIsActive && Keyboard.GetState().IsKeyDown(key);
+        ui.ShowOverlaysAndMarkerWindows = MarkersShown(down, System.Environment.TickCount64) && windowIsActive;
+    }
+
+    /// <summary>
+    /// One frame of the gesture: whether the markers show, given whether the key is down now and
+    /// the time in milliseconds. Separate from the keyboard so DataExport --hud-selftest can play
+    /// presses through it.
+    /// </summary>
+    public static bool MarkersShown(bool keyDown, long nowMilliseconds)
+    {
+        if (keyDown && !keyWasDown)
+        {
+            if (lastPressAt.HasValue && nowMilliseconds - lastPressAt.Value <= DoublePressMilliseconds)
+            {
+                latched = !latched;
+                lastPressAt = null;   // a third press starts a new pair
+            }
+            else
+            {
+                lastPressAt = nowMilliseconds;
+            }
+        }
+        keyWasDown = keyDown;
+        return keyDown || latched;
+    }
+
+    /// <summary>Back to nothing held and nothing latched.</summary>
+    public static void ResetMarkerGesture()
+    {
+        keyWasDown = false;
+        lastPressAt = null;
+        latched = false;
     }
 }

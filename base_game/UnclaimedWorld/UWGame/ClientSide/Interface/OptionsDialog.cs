@@ -785,15 +785,18 @@ public class OptionsDialog : Panel
 	private int categoryChoiceWidth;
 
 	/// <summary>
-	/// The width of a category's dropdowns: its longest choice as the LCD font draws it, plus the
-	/// arrow button (as wide as the box is tall) and the text box's margins. Kastuk: DANGEROUS
-	/// FAUNA's "x1.5" sat in a box as wide as SAVE DATE FORMAT's longest pattern; then, with widths
-	/// guessed from character counts, PESTS' "Normal" slid under the arrow. Measured, both fit.
+	/// The width of a category's dropdowns: the width the dropdown's own header button asks for to
+	/// show its longest choice. Kastuk: DANGEROUS FAUNA's "x1.5" sat in a box as wide as SAVE DATE
+	/// FORMAT's longest pattern; then PESTS' "Normal" slid under the arrow, twice - first with widths
+	/// guessed from character counts, then with the text measured but the margins guessed (36 px;
+	/// the LCDCombo header keeps 17 left and 25 right, the arrow being part of its skin). So the
+	/// probe is the header itself: a TextButton of the same type, sized by its own
+	/// ScaleWidthToFitText, and whatever the skin needs is counted by the code that draws it.
 	/// </summary>
 	private int ChoiceWidthFor(List<ModSetting> settings, int panelWidth)
 	{
 		int longest = 0;
-		Label probe = null;
+		TextButton probe = null;
 		foreach (ModSetting s in settings)
 		{
 			if (s.Kind != ModSettingKind.Choice || s.Choices == null)
@@ -804,11 +807,11 @@ public class OptionsDialog : Panel
 			{
 				if (probe == null)
 				{
-					probe = new Label(Interface.gui);
-					probe.Init(Label.LabelType.LCDNormal);
+					probe = new TextButton(Interface.gui);
+					probe.Init(TextButton.TextButtonType.LCDCombo);
 				}
 				probe.Text = choice ?? "";
-				probe.FitToText();
+				probe.ScaleWidthToFitText();
 				longest = Math.Max(longest, probe.Width);
 			}
 		}
@@ -817,8 +820,8 @@ public class OptionsDialog : Panel
 		{
 			return full;
 		}
-		const int arrowAndMargins = 22 + 14;
-		return Common.Clamp(longest + arrowAndMargins, 60, full);
+		// A few pixels of air, so the last letter does not touch the arrow.
+		return Common.Clamp(longest + 4, 60, full);
 	}
 
 	/// <summary>One setting's row inside a category; returns the Y below it.</summary>

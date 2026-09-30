@@ -247,6 +247,11 @@ internal static class Program
             return OwnershipSelfTest();
         }
 
+        if (args.Contains("--hud-selftest"))
+        {
+            return HudSelfTest();
+        }
+
         if (scenarioReport)
         {
             // Load the way the GAME loads and only then switch modes, which is the order that
@@ -529,6 +534,45 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Plays key presses through HudMod.MarkersShown, the LeftAlt gesture: held shows the markers
+    /// only while down; two presses within a second latch them on until the next such pair; a
+    /// press alone does not change the latch, and two presses too far apart are not a pair.
+    /// No tables needed.
+    /// </summary>
+    private static int HudSelfTest()
+    {
+        Console.WriteLine("==> hud self-test");
+        UWGame.Mods.HudMod.RegisterSettings();
+        if (UWGame.Mods.ModSettings.Find("hud.revealKey") == null)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        bool Step(bool down, long at) => UWGame.Mods.HudMod.MarkersShown(down, at);
+        UWGame.Mods.HudMod.ResetMarkerGesture();
+        Check(Step(true, 1000) && !Step(false, 1300), "held: shown while down, gone when released");
+        Check(Step(true, 5000) && Step(false, 5100) == false && Step(true, 5600) && Step(false, 5700),
+              "two presses within a second: still shown after release");
+        Check(Step(false, 8000), "latched: stays shown with no key down");
+        Check(Step(true, 9000) && Step(false, 9100), "one press alone leaves the latch on");
+        Check(Step(true, 9500) && !Step(false, 9600), "the next quick pair releases it");
+        Check(Step(true, 20000) && !Step(false, 20100) && Step(true, 21500) && !Step(false, 21600),
+              "two presses 1.5 s apart are not a pair");
+        Check(Step(true, 30000) && !Step(false, 30050) && Step(true, 30900) && Step(false, 31000)
+              && Step(true, 31100) && Step(false, 31200),
+              "a third quick press starts a new pair rather than releasing");
+        UWGame.Mods.HudMod.ResetMarkerGesture();
+        Console.WriteLine(failures == 0 ? "hud self-test OK" : $"hud self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

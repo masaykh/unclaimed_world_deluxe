@@ -47,4 +47,11 @@ public static class HudMod
     public static void UpdateMarkers(InGameInterface ui, bool windowIsActive)
     {
     }
+
+    /// <summary>No gesture: shown while held, as far as anything asks.</summary>
+    public static bool MarkersShown(bool keyDown, long nowMilliseconds) => keyDown;
+
+    public static void ResetMarkerGesture()
+    {
+    }
 }
