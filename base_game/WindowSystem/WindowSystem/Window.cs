@@ -728,18 +728,11 @@ public class Window : UIComponent
 	protected override void OnMove(UIComponent sender)
 	{
 		base.OnMove(sender);
-		if (base.IsAnimating)
-		{
-			_ = transparency;
-			_ = -1f;
-		}
 	}
 
 	private void OnEndAnimating(UIComponent sender)
 	{
 		base.IsAnimating = false;
-		_ = transparency;
-		_ = -1f;
 	}
 
 	protected void OnClose(UIComponent sender, EventArgs e)
@@ -760,11 +753,6 @@ public class Window : UIComponent
 		ViewPort.Height = Height - margin;
 		backgroundMovableArea.Height = ViewPort.Height;
 		RefreshResizableAreas();
-		if (base.IsAnimating)
-		{
-			_ = transparency;
-			_ = -1f;
-		}
 	}
 
 	internal override void Draw(SpriteBatch spriteBatch, Rectangle parentScissor, RenderType typesToRender, float a)

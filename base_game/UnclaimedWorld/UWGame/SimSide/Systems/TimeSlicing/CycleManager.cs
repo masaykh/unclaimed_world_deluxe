@@ -133,11 +133,6 @@ public class CycleManager : ISnapshot
 					timeTaken += num;
 					cyclable.TotalComputationAllInstancesInSeconds += num;
 					cyclable.ComputationTimeSpentInSeconds += num;
-					if (The.Sim != null)
-					{
-						_ = The.Sim.TotalUnPausedGameTimeInSeconds - cyclable.StartedOnTimeInSeconds;
-						_ = 5.0;
-					}
 					if (num5)
 					{
 						UnRegister(cyclable);
@@ -258,7 +253,6 @@ public class CycleManager : ISnapshot
 	{
 		request.StartedOnTimeInSeconds = The.Sim.TotalUnPausedGameTimeInSeconds;
 		request.ComputationTimeSpentInSeconds = 0.0;
-		_ = request is DependentRegionMap;
 		switch (priority)
 		{
 		case Priority.High:

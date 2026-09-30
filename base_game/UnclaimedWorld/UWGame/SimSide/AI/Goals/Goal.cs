@@ -82,11 +82,6 @@ public abstract class Goal : ISnapshot, ILookUp<Goal, GoalID>
 		{
 			if (value != status)
 			{
-				_ = 2;
-				if (value == Status.Failed && !(this is GoalDoTakeFive) && !(this is GoalTakeFive) && !(this is GoalDoProduceAtomic) && entity != null && entity.Name != null && !entity.Name.Contains("Bob"))
-				{
-					entity.Name.Contains("nez");
-				}
 				status = value;
 			}
 		}
@@ -106,7 +101,6 @@ public abstract class Goal : ISnapshot, ILookUp<Goal, GoalID>
 		{
 			if (id != value)
 			{
-				_ = uint.MaxValue;
 				id = value;
 			}
 		}
@@ -586,8 +580,6 @@ public abstract class Goal : ISnapshot, ILookUp<Goal, GoalID>
 		ID = SnapshotID(sn, ID);
 		IDCounter = sn.DoEnum(IDCounter);
 		snapshotEntity = sn.SnapshotID<Entity, EntityID>(entity).Value;
-		_ = snapshotEntity;
-		_ = long.MaxValue;
 		delayPeriodInSeconds = sn.DoDoubleNullable(delayPeriodInSeconds);
 		delayProgress = sn.DoDouble(delayProgress);
 		hasEntered = sn.DoBool(hasEntered);

@@ -77,7 +77,6 @@ public abstract class FoodStatistics : Rating
 		timeDateYear.AddTime(0f - food.DaysForHungerDeathsToAffect);
 		List<DataPoint<EntityID>> dataPointsBetween = Statistic.GetDataPointsBetween(starvingDeaths, timeDateYear, currentTimeDateYear);
 		hungerDeaths = dataPointsBetween.Count;
-		_ = timeDateYear.TotalDays;
 		deathsContribution = 0f;
 		deathsContribution = (float)hungerDeaths * food.HungerDeathRatingPenaltyFactor;
 		if (noOfMembers > 0)

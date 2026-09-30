@@ -299,7 +299,6 @@ public class EventManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	public bool CycleOnce()
 	{
 		bool result = false;
-		_ = phase;
 		timer.Start();
 		switch (phase)
 		{
@@ -338,7 +337,6 @@ public class EventManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 			break;
 		}
 		timer.GetTime();
-		_ = 0.002;
 		return result;
 	}
 

@@ -377,11 +377,6 @@ public class Zone : ILookUp<Zone, ZoneID>, ISnapshot
 		float distance = 0f;
 		Point fromSubtile = MapManager.WorldPosToSubtile(sourceLocation);
 		Point toSubtile = MapManager.TileToCenterSubtile(new Point(destinationTile.X, destinationTile.Y));
-		if (regionMap.ID == (CyclableID)170uL && entity != null && entity.ID == (EntityID)4582L && fromSubtile.X == 114 && fromSubtile.Y == 44)
-		{
-			_ = The.Sim.TotalUnPausedGameTimeInSeconds;
-			_ = 35.0;
-		}
 		RegionMap.Result distance2 = regionMap.GetDistance(entity, fromSubtile, toSubtile, ref distance);
 		if (distance2 != RegionMap.Result.OK)
 		{

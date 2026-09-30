@@ -289,17 +289,10 @@ public class RegionSearcher : ISnapshot
 				}
 				return;
 			}
-			_ = regionPathFinderNodeAStar.Color;
-			_ = 40105;
 			if (regionMap.GetConnectors(regionPathFinderNodeAStar.Color, out var connections))
 			{
 				foreach (KeyValuePair<ushort, RegionEdge> item in connections)
 				{
-					if (item.Key >= 1530)
-					{
-						_ = item.Key;
-						_ = 1545;
-					}
 					newG = regionPathFinderNodeAStar.G + item.Value.Length;
 					if (AStarOpenAndClosed.TryGetValue(item.Key, out var value))
 					{

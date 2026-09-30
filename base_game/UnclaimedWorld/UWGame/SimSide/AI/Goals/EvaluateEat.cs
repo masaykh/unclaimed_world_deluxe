@@ -106,7 +106,6 @@ public class EvaluateEat : GoalEvaluator
 		}
 		if (progress == Progress.GetFoodItems)
 		{
-			_ = entity.PersonEntity;
 			GetAllFoodItems();
 			progress = Progress.ScoreFood;
 		}
@@ -427,10 +426,6 @@ public class EvaluateEat : GoalEvaluator
 			return CalculateResult.Done;
 		default:
 		{
-			if (entity.ID == (EntityID)4951L && !foodData.EntityType.KeyName.Contains("item:smokedStreakFin"))
-			{
-				foodData.EntityType.KeyName.Contains("item:hardtack");
-			}
 			double num = ((!bioEntity.ConsumeProcesses.ContainsKey(foodData.EntityType)) ? ScoreNutrientsInExtractedItems(foodData, ref extractionProcess) : ScoreNutrients(foodData.EntityType, foodData.Bulk, foodData.NutrientBulkAmounts));
 			if (Common.IsZero(num))
 			{

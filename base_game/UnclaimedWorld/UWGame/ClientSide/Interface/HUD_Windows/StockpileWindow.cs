@@ -95,7 +95,6 @@ public class StockpileWindow : HUDWindow
 		tbRemove.Y = 12;
 		tbRemove.X = DisplayWindow.Width - tbRemove.Width - 12;
 		tbRemove.ScaleWidthToFitText();
-		_ = DisplayWindow.Height;
 		SetVerticalPositions();
 	}
 

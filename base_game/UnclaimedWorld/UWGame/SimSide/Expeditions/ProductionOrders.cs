@@ -23,7 +23,6 @@ public class ProductionOrders : ISnapshot
 				totalOrders = 0;
 				foreach (KeyValuePair<EntityType, ProductionOrder> order in Orders)
 				{
-					_ = order.Key;
 					ProductionOrder value = order.Value;
 					if (value.ProductionJobsToComplete.HasValue)
 					{

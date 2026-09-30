@@ -158,11 +158,6 @@ public class SubtileSector : ISnapshot
 	{
 		if (!ScanRectangleWithIntervals())
 		{
-			if (Coords.X == 0)
-			{
-				_ = Coords.Y;
-				_ = 1;
-			}
 			if (!GetUnassignedPoint())
 			{
 				return true;

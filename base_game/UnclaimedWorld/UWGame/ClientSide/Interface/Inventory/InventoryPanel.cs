@@ -620,7 +620,6 @@ public class InventoryPanel : RosterPanel
 		ImageButton imageButton = (ImageButton)sender;
 		EntityType entityType = (EntityType)imageButton.Parent.Parent.Tag1;
 		The.InGameUI.InventorySettings.ToggleTracking(entityType);
-		_ = imageButton.Parent;
 	}
 
 	private void tbStopTracking_Click(UIComponent sender, EventArgs e)
@@ -917,7 +916,6 @@ public class InventoryPanel : RosterPanel
 		grdListView.BeginAddingEntries();
 		foreach (EntityType currentListDatum in currentListData)
 		{
-			currentListDatum.Name.Contains("Bellows");
 			if (!grdListView.TryGetEntry(currentListDatum, out var item))
 			{
 				item = AddItemRow(grdListView, currentListDatum, owner, useCurrentUIOwner: false, gridList: true);

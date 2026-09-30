@@ -83,8 +83,6 @@ public class Needs : ISnapshot
 
 	public void UpdateSetOfNeeds()
 	{
-		_ = Parent.Parent.ID;
-		_ = 4600;
 		List<string> list = null;
 		foreach (KeyValuePair<string, Need> kvp in NeedsList)
 		{

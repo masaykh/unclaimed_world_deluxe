@@ -843,10 +843,6 @@ public class Intelligence : Component
 
 	private void UpdateCommonSystems(GameTime time)
 	{
-		if (Parent.Name != null)
-		{
-			Parent.Name.Contains("Tamara");
-		}
 		if (GatherPolledStatistics)
 		{
 			Statistics.Update(time);

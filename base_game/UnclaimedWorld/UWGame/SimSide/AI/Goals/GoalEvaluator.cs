@@ -393,7 +393,6 @@ public abstract class GoalEvaluator
 			success = false;
 			return CalculateResult.Done;
 		}
-		_ = GameData.Instance.AIConstants.MaxDistanceForReplenishItems;
 		if (!flag && footRegionMap != null)
 		{
 			RequiresFuelType requiresFuelType = entityToReplenish.EntityType.ContainerType.GetRequiresReplenishType().RequiresFuelType;
@@ -425,7 +424,6 @@ public abstract class GoalEvaluator
 			{
 				return CalculateResult.Processing;
 			}
-			_ = success;
 			return CalculateResult.Done;
 		}
 		return CalculateResult.Done;
@@ -575,8 +573,6 @@ public abstract class GoalEvaluator
 			{
 				continue;
 			}
-			_ = item.Distance;
-			_ = 20f;
 			foundReplenishItems.Add(item.Entity);
 			if (action.ReplenishAction == GoalReplenish.ReplenishAction.Refuel)
 			{
@@ -671,8 +667,6 @@ public abstract class GoalEvaluator
 			Entity entity = Entity.FindByID(inUseBy);
 			if (entity != null)
 			{
-				_ = itemData.EntityID;
-				_ = 18;
 				listOfUsers.Add(entity);
 			}
 			else
@@ -951,10 +945,6 @@ public abstract class GoalEvaluator
 			if (listOfEntity.Intelligence.GetScore() > ourScore)
 			{
 				return false;
-			}
-			if (listOfEntity.PersonEntity != null)
-			{
-				listOfEntity.Name.Contains("Augustine Yeboah");
 			}
 		}
 		return true;

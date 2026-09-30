@@ -36,7 +36,6 @@ public class ProcessAction : EventActionType
 		Entity entity = null;
 		if (ActingOnEntityName != null || ActingOnEntityObject != null)
 		{
-			_ = ActingOnEntityName == "Fish trap spot Saltwater 2";
 			if (!EventActionType.GetEntity(ActingOnEntityName, ActingOnEntityObject, action, out entity, ref failReason))
 			{
 				return false;

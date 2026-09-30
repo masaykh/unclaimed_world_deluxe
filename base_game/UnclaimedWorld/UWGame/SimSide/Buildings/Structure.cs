@@ -218,7 +218,6 @@ public class Structure : Component
 		ProcessJob processJob = new ProcessJob(null, ChooseBuildProcess(value, ownerOfBuilding), Parent.EntityType, ownerOfBuilding);
 		processJob.BuildingJob = new BuildingJob(processJob);
 		LookUp<SimProcess, SimProcessID>.FindByID(processJob.ProductionProcess).AddOutputEntity(Parent);
-		_ = The.Map;
 		Edge edge = (Edge)The.Sim.GameplayRandomGenerator.Next(0, 3, "Structure");
 		bool num = PlaceMaterialHaulingJobs(processJob, ownerOfBuilding, edge);
 		if (!num)

@@ -385,8 +385,6 @@ public class WorldMap : UIComponent
 	{
 		float num = (float)The.Sim.World.GetAirDistance(new GeodeticCoordinate(minX, minY), new GeodeticCoordinate(maxX, minY));
 		NiceScale niceScale = new NiceScale(0.0, 0.5f * num);
-		_ = niceScale.tickSpacing;
-		_ = niceScale.niceMin;
 		float num2 = (float)niceScale.niceMax;
 		int width = (int)(num2 / num * (float)canvasWidth);
 		ruler.Width = width;

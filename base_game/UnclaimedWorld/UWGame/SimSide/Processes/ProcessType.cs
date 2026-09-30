@@ -1052,7 +1052,6 @@ public class ProcessType : IGameData, IXmlSerializable
 				outputs[i].PostDataCompleteValidate(ref listOfErrors);
 			}
 		}
-		_ = KeyName == "makeClayPotUnglazed";
 	}
 
 	public TierOrAreaType GetTierArea()

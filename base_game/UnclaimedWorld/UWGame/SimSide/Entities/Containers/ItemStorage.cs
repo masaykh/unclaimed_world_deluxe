@@ -117,7 +117,6 @@ public class ItemStorage : ISnapshot
 		Storage storage = StorageSpaces[condition];
 		if (!testCapacity || storage.HasCapacityForItem(item))
 		{
-			_ = item.Item;
 			storage.Add(item.EntityID);
 			StoredItems.Add(item.EntityID);
 			StorageLookup.Add(item.EntityID, storage);

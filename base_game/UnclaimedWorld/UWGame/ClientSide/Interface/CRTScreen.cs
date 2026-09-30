@@ -26,7 +26,6 @@ public class CRTScreen : DisplayScreen
 	public new void SetupQuadVertices()
 	{
 		base.SetupQuadVertices();
-		_ = Vector2.Zero;
 		float num = destinationRectangle.X;
 		float posRight = num + (float)destinationRectangle.Width;
 		float num2 = destinationRectangle.Y;

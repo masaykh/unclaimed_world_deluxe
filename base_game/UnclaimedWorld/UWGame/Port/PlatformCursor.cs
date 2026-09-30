@@ -17,7 +17,6 @@ public static class PlatformCursor
     {
 #if UW_FNA
         // The shim resolves everything to the system arrow, which SDL already shows.
-        _ = cursor;
 #else
         Mouse.SetCursor(cursor);
 #endif

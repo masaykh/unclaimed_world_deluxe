@@ -108,8 +108,6 @@ internal class GoalArriveAsVisitor : CompositeGoal
 		}
 		else
 		{
-			_ = base.Status;
-			_ = 3;
 		}
 	}
 

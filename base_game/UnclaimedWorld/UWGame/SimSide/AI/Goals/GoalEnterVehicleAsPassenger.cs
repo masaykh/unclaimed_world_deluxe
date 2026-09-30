@@ -117,10 +117,7 @@ internal class GoalEnterVehicleAsPassenger : CompositeGoal
 			AttachPoint attachPointFromKeyName = vehicle.Renderable.RenderAsModel.ModelData.GetAttachPointFromKeyName(slot.PassengerOrCargoSlotType.AttachPointName);
 			if (attachPointFromKeyName != null)
 			{
-				_ = attachPointFromKeyName.Translation;
 				float finalModelScale = entity.Renderable.RenderAsModel.FinalModelScale;
-				_ = attachPointFromKeyName.BoneName;
-				_ = attachPointFromKeyName.AttachedAnimationName;
 				entity.Renderable.SetAnimationStateFlag(AnimModifier.Passenger);
 				RenderAsModel.GetAttachTransformations(entity.Renderable, attachPointFromKeyName, AttacheePoint.Bottom, null, out var _, out var translation, out var rotation);
 				vehicle.Renderable.AttachEntityAndCreateLocalTransform(entity.Renderable, finalModelScale, attachPointFromKeyName, entity.Renderable.RenderAsModel.ModelData.BottomAttachee, AttacheePoint.Bottom, translation, rotation);

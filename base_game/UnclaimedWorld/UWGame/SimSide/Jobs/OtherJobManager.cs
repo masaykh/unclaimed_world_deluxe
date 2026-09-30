@@ -431,7 +431,6 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 					}
 					if (entityData2.EntityType != value || !Entity.IsFunctional(entityData2))
 					{
-						_ = entityData2.EntityType.NonLivingType.SalvageProcessType;
 						if (!Salvage.SalvageJobExists(entityData2))
 						{
 							CreateSalvageUpgradeJob(entityData2, owner);

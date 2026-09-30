@@ -22,7 +22,6 @@ public class KillStatistics : ISnapshot
 
 	private void CheckAchievements()
 	{
-		_ = The.Sim.StartGameParams.StartScenarioParams;
 		if (The.Sim.StartGameParams.GetRGScenario() == StartGameParams.RGScenario.MuckrootMiningCamp && !The.Sim.Controller.StatsAndAchievements.IsAchievementUnlocked(AchievementID.swarmerKills) && Kills.TryGetValue(GameData.Instance.AllEntityTypes["entity:swarmer"], out var value) && value >= 300)
 		{
 			The.Sim.Controller.StatsAndAchievements.UnlockAchievement(AchievementID.swarmerKills);

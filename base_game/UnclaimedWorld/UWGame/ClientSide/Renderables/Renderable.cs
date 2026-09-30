@@ -2043,10 +2043,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 
 	public virtual void SetAnimFlagsDirty()
 	{
-		if (Entity != null && Entity.Name != null)
-		{
-			Entity.Name.Contains("Pezal");
-		}
 		if (RenderAsModel != null)
 		{
 			RenderAsModel.SetAnimFlagsDirty();

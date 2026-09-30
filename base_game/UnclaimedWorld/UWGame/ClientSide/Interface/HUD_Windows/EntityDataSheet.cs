@@ -562,7 +562,6 @@ public class EntityDataSheet : DataSheet
 		WeaponType weaponType = GetWeaponType();
 		if (weaponType != null)
 		{
-			_ = GameData.Instance.AIConstants.Ratings.Security;
 			grdGeneralOuter.AddEntry(weaponHeader, weaponHeader);
 			grdGeneralOuter.AddEntry(lblWeaponDefenseRating, lblWeaponDefenseRating);
 			if (weaponType.IsIntrinsic == true)
@@ -1146,7 +1145,6 @@ public class EntityDataSheet : DataSheet
 			FoodNutrientAmount[] foodNutrientTypes = entityType.ItemType.FoodType.FoodNutrientProfile.FoodNutrientTypes;
 			foreach (FoodNutrientAmount foodNutrientAmount in foodNutrientTypes)
 			{
-				_ = foodNutrientAmount.Amount;
 				string satisfiedDailyIntake = foodNutrientAmount.GetSatisfiedDailyIntake(entityType.ItemType.MaximumBulk.Value, adultNeedsAndWeight, weight);
 				if (satisfiedDailyIntake != null)
 				{

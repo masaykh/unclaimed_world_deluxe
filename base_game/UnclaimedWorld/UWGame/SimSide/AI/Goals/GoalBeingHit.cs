@@ -16,11 +16,6 @@ public class GoalBeingHit : Goal
 	public GoalBeingHit(Entity owner)
 		: base(owner)
 	{
-		if (The.Sim.TotalUnPausedGameTimeInSeconds > 24.0)
-		{
-			_ = entity.ID;
-			_ = 19;
-		}
 	}
 
 	public override bool IsSame(Job job)

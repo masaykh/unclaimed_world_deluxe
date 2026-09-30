@@ -80,7 +80,6 @@ public class AnimatedHead
 	private void TwistBone(BonePose bonePose, ref Matrix twist, bool resetAnimator = false)
 	{
 		Matrix defaultTransform = twist * Matrix.CreateTranslation(bonePose.DefaultTransform.Translation);
-		_ = parent.RenderableType.AnimatedHeadType.TurnToLookLerpFactor;
 		bonePose.DefaultTransform = defaultTransform;
 		bonePose.UseSpecialTransform = true;
 	}

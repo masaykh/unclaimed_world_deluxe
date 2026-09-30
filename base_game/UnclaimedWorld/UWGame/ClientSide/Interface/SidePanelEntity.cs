@@ -59,7 +59,6 @@ public class SidePanelEntity : RosterPanel
 	{
 		statusContent = The.InGameUI.StatusScreen.GetNewSurfaceContent();
 		statusContent.DebugTag = "entityStatus";
-		_ = The.Sim.Controller.Game;
 		GUIManager gui = The.InGameUI.gui;
 		imStatusBackground = new Image(gui);
 		statusContent.Add(imStatusBackground);
@@ -307,7 +306,6 @@ public class SidePanelEntity : RosterPanel
 			bool flag2 = false;
 			if (flag)
 			{
-				_ = customPanel.Category.Name == "SKILLS";
 				flag2 = PresentationTypeCategoryProcessor.DisplayCategory(customPanel.Category, hasExposedProperties, customPanel.Grid, ref numberOfItems);
 				customPanel.Panel.Summary = "";
 				if (customPanel.Category.SetCountAsSummary)
@@ -360,7 +358,6 @@ public class SidePanelEntity : RosterPanel
 		OwnerID? uIOwnerID = The.InGameUI.GetUIOwnerID();
 		foreach (KeyValuePair<EntityType, List<EntityID>> item2 in entityData.ContainedEntitiesByType)
 		{
-			_ = entityData.TotalStored.HasValue;
 			EntityType key = item2.Key;
 			if (key.ItemType != null)
 			{

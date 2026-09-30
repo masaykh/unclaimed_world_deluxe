@@ -243,7 +243,6 @@ public class HuntWindow : HUDWindow
 			return;
 		}
 		List<Tuple<EntityType, bool>> data = GetPreyToDisplay();
-		_ = grid.Entries.Count;
 		grid.BeginAddingEntries();
 		foreach (Tuple<EntityType, bool> item2 in data)
 		{

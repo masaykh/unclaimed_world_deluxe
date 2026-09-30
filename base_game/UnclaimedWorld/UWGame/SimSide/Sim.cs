@@ -1297,15 +1297,12 @@ public class Sim : GameScreen, ISnapshot
 		switch (startGameMode)
 		{
 		case StartGameMode.Edit:
-			_ = StartGameParams.StartGameEditorParams;
 			return The.Map.LoadMapQueued();
 		case StartGameMode.DebugNewGame:
-			_ = StartGameParams.StartDebugScenarioParams;
 			return The.Map.LoadMapQueued();
 		case StartGameMode.DebugLoadSaved:
 			return LoadSavedGame(StartGameParams.SavedGameToLoad);
 		case StartGameMode.ScenarioNewGame:
-			_ = StartGameParams.StartScenarioParams;
 			return The.Map.LoadMapQueued();
 		case StartGameMode.ScenarioLoadSaved:
 			return LoadSavedGame(StartGameParams.SavedGameToLoad);
@@ -1521,7 +1518,6 @@ public class Sim : GameScreen, ISnapshot
 			TriggerSystem.Update(gameTime);
 			World.Update(gameTime);
 			The.Client.MarkPerformanceTime("World.Update", Color.Blue);
-			entities.GetItem((Entity e) => e.EntityID == (EntityID)14180L);
 			entities.Update(gameTime);
 			The.Client.MarkPerformanceTime("Entities.Update", Color.Beige);
 			LookUp<EntityGroup, EntityGroupID>.IterateMembers(delegate(EntityGroup g)
@@ -1572,6 +1568,5 @@ public class Sim : GameScreen, ISnapshot
 
 	public override void Draw(GameTime gameTime)
 	{
-		_ = The.LoadScreen.IsLoadFinished;
 	}
 }

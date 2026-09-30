@@ -343,7 +343,6 @@ internal class GoalProduce : CompositeGoal, ITopLevelGoal
 		}
 		if (base.Status == Status.Completed)
 		{
-			_ = job;
 		}
 		else if (base.Status == Status.Failed && job != null)
 		{

@@ -87,10 +87,6 @@ public class EvaluateHaulingJobs : GoalEvaluator, IScoreJob
 	public CalculateResult ScoreThisJob(RegionMap regionMap, ThreatStance threatStance, Entity entity, Job job, int proposedNumberOfWorkers, double? ageContribution, double? timeContribution, out double rating, ToolParams? toolParams, AttackParams? attackParams, HaulingParams? haulingParams = null)
 	{
 		IKnownEntityData itemToHaul = null;
-		_ = haulingParams.Value.Item;
-		_ = 38;
-		_ = haulingParams.Value.Item;
-		_ = 39;
 		if (!CanTakeStanceForJob(job, regionMap, threatStance, out var regionMapToUse, out var _))
 		{
 			rating = 0.0;
@@ -651,7 +647,6 @@ public class EvaluateHaulingJobs : GoalEvaluator, IScoreJob
 		if (job2 != null && job2.TakenBy.Count > 0)
 		{
 			job2.TakenBy.Get(0);
-			_ = base.entity;
 			needsToBeCancelled.Add(job2.TakenBy.Get(0));
 		}
 		if (itemData is Entity entity)

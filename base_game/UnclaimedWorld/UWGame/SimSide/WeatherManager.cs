@@ -254,8 +254,6 @@ public class WeatherManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapsh
 		switch (phase)
 		{
 		case Phase.Temperature:
-			_ = The.Map.mapTileWidth;
-			_ = The.Map.TileMap;
 			cycleTileY++;
 			if (cycleTileY == The.Map.mapTileHeight)
 			{

@@ -43,7 +43,6 @@ internal class GoalScouting : CompositeGoal, ITopLevelGoal
 		CompositeGoal.AddNightActivityGear(ref gearTasks);
 		FindOptionalEquipmentIfNeeded(vector.Value, job, equipWeapon: true, equipFood: true, mountWeapon: true, gearTasks);
 		Common.DistanceOctile(vector.Value, entity.PlaySiteLocation);
-		_ = 1500f;
 		if (job.Location.HasValue)
 		{
 			locationOfScoutPoint = job.Location.Value;
@@ -62,10 +61,6 @@ internal class GoalScouting : CompositeGoal, ITopLevelGoal
 
 	public double ScoreGoal()
 	{
-		if (entity.Name != null)
-		{
-			entity.Name.Contains("onlan");
-		}
 		return ScoreJobGoal(job);
 	}
 
@@ -81,10 +76,6 @@ internal class GoalScouting : CompositeGoal, ITopLevelGoal
 
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
-		if (entity.Name != null)
-		{
-			entity.Name.Contains("onlan");
-		}
 		if (!ArePreconditionsOK())
 		{
 			base.Status = Status.Failed;

@@ -324,7 +324,6 @@ public class HUDOverlayPanel : HUDWindow
 		{
 			CollapsablePanel cpCategory = null;
 			grid = null;
-			_ = resourceType.ResourceItemType;
 			if (grid == null)
 			{
 				if (categoryGrid.TryGetEntry(category, out item))

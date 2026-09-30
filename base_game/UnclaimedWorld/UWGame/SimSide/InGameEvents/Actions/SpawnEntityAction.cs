@@ -188,7 +188,6 @@ public class SpawnEntityAction : EventActionType
 			}
 			else if (entityData.MemberOf != null)
 			{
-				_ = entityData.MemberOf.AllegianceKey == "otherSite1Allegiance1";
 				memberOfAllegianceKey = entityData.MemberOf.AllegianceKey;
 				memberOfExpeditionKey = entityData.MemberOf.ExpeditionKey;
 			}

@@ -125,7 +125,6 @@ public class GroupNode : PresentationNode
 		{
 			return;
 		}
-		_ = container.Height;
 		int num = 21;
 		UIComponent uIComponent = container.FindChildById(UIComponent.DataControlID.Connector, firstLevelOnly: true);
 		int x = (IsOuterGroup ? 9 : 15);

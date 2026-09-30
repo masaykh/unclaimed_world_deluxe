@@ -67,7 +67,6 @@ public class RenderAsBillboard : ILocatable, IComparable, IUpdatable
 		{
 			Texture2D texture = spritesheet.Texture;
 			Rectangle sourceRectangle = spritesheet.GetSourceRectangle(renderAsBillboardType.AssetName);
-			_ = renderAsBillboardType.AssetName == "clayGranary_construct";
 			quad.SetStaticFrame(sourceRectangle, texture);
 			shadowQuad.SetStaticFrame(sourceRectangle, texture);
 			if (drawAsOverlay)

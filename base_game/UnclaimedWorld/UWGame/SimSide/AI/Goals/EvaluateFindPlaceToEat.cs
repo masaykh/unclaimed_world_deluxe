@@ -11,7 +11,6 @@ public class EvaluateFindPlaceToEat : GoalEvaluator
 
 	public override CalculateResult CalculateDesirability(double minimumRatingToConsider, ref double result)
 	{
-		_ = entity.PersonEntity;
 		result = 0.0;
 		return CalculateResult.Done;
 	}

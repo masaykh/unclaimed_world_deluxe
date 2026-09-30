@@ -33,8 +33,6 @@ public abstract class ComfortStatistics : Rating
 
 	protected void ScoreComfortNeeds(int noOfMembers, out Dictionary<NeedTypeID, float> hasSatisifiedComfort, out float totalComfortEffects)
 	{
-		_ = The.Sim.DateAndTime.CurrentTimeDateYear;
-		_ = GameData.Instance.AIConstants.Ratings.Comfort;
 		GatherComfortNeeds(out var currentDataPointsOut, out var currentNoOfMembers);
 		AddToHasSatisifedComfortNeedDataLists(currentDataPointsOut, currentNoOfMembers);
 		totalComfortEffects = 0f;

@@ -162,7 +162,6 @@ public class TextArea : ListBox
 		{
 			return null;
 		}
-		_ = Text;
 		List<string> list = SplitIntoWords(Text);
 		List<string> list2 = new List<string>();
 		string text = "";
@@ -171,7 +170,6 @@ public class TextArea : ListBox
 		for (int i = 0; i < list.Count; i++)
 		{
 			string text2 = list[i];
-			text2.StartsWith("§");
 			string text4;
 			if (text2.StartsWith("\n"))
 			{

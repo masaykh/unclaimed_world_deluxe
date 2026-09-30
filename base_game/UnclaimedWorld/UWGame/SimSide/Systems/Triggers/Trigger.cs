@@ -186,8 +186,6 @@ public class Trigger : ISleepingUpdatable, IHasExposedProperties, ISnapshot, ILo
 		else
 		{
 			The.AgentQuadTree.GetObjectsIntersectingBounds(area, filter, ref entitiesInRangeOfCurrentTrigger);
-			_ = entitiesInRangeOfCurrentTrigger.Count;
-			_ = 0;
 		}
 		foreach (Pair<Entity, Vector2> item in entitiesInRangeOfCurrentTrigger)
 		{

@@ -376,7 +376,6 @@ public class ListBox : UIComponent, IHasText
 	{
 		foreach (Label entry in entries)
 		{
-			_ = entry;
 		}
 	}
 

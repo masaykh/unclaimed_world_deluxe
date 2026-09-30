@@ -45,7 +45,6 @@ public static class PlatformDisplay
             return;
         }
 #if UW_FNA
-        _ = position;
 #else
         window.Position = position;
 #endif
@@ -67,7 +66,6 @@ public static class PlatformDisplay
             return;
         }
 #if UW_FNA
-        _ = hardwareModeSwitch;
 #else
         graphics.HardwareModeSwitch = hardwareModeSwitch;
 #endif

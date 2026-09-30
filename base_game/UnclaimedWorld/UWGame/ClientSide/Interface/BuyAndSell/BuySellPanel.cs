@@ -537,7 +537,6 @@ public class BuySellPanel : Panel
 		presentItemTypes.Clear();
 		categoryGrids.Clear();
 		allAvailableItems.Clear();
-		_ = grdCategoryView.Entries.Count;
 		grdCategoryView.BeginAddingEntries();
 		bool isPlayerOwnedLocation = GetIsPlayerOwnedLocation(ownerOfItems);
 		foreach (EntityType item3 in data)
@@ -611,7 +610,6 @@ public class BuySellPanel : Panel
 		decimal? num = null;
 		foreach (EntityType item2 in data)
 		{
-			item2.KeyName.Contains("hauling");
 			num = GetAgreedPrice(ownerOfItems, npcBuyer, item2);
 			bool itemSourceIsInvalid = false;
 			if (!GetTradeItems(ownerOfItems, npcBuyer, isPlayerOwnedLocation, item2, out var items, num, out var available, out var demandedItems, out itemSourceIsInvalid))

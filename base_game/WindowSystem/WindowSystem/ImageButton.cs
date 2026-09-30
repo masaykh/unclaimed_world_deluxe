@@ -771,7 +771,6 @@ public class ImageButton : Icon, ICanBeChecked
 			iconOffSetYPos = -1;
 			break;
 		case ImageButtonType.LCD:
-			_ = iconSprite == "basic_icon_crosshairs";
 			sourceRectangle = base.GUIManager.GUISpriteSheet.GetSourceRectangle("basic_button_light");
 			Width = sourceRectangle.Width;
 			Height = sourceRectangle.Height;
@@ -994,7 +993,6 @@ public class ImageButton : Icon, ICanBeChecked
 	protected override void OnMouseOver(UIComponent sender, MouseEventArgs args)
 	{
 		base.OnMouseOver(sender, args);
-		_ = DebugTag == "cbStockpile";
 		if (!Enabled)
 		{
 			if (string.IsNullOrEmpty(ToolTip))

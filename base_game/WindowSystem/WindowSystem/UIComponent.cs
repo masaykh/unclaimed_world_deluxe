@@ -407,7 +407,6 @@ public class UIComponent
 		{
 			if (location.X != value)
 			{
-				_ = 1581;
 				location.X = value;
 				if (this.Move != null)
 				{
@@ -1017,7 +1016,6 @@ public class UIComponent
 		{
 			parentScissor.Intersects(ref value, out result);
 		}
-		_ = DebugTag == "rbDisabled";
 		if (!result)
 		{
 			return;

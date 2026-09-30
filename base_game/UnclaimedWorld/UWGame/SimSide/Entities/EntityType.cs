@@ -566,7 +566,6 @@ public class EntityType : IXmlSerializable, IGameData, IHasCategory<EntityCatego
 	{
 		if (!string.IsNullOrEmpty(DetectionTag))
 		{
-			_ = DetectionTag == "inDeeperWaterFishingSpot";
 			DataLoader.AddToTagCollection(this, DetectionTag, GameData.Instance.DetectableTypeByTag);
 		}
 		if (Person != null)
@@ -656,7 +655,6 @@ public class EntityType : IXmlSerializable, IGameData, IHasCategory<EntityCatego
 	{
 		if (IntelligenceType != null)
 		{
-			_ = Person;
 			IntelligenceType.PostLoadContentInitialize(this);
 		}
 		if (StructureType != null)

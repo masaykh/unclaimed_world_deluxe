@@ -75,7 +75,6 @@ public class Minimap
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 		GUIManager gui = The.InGameUI.gui;
-		_ = The.Sim.Controller.Game;
 		int cornerSize = 30;
 		DisplayWindow = new Window(gui);
 		DisplayWindow.CornerSize = cornerSize;
@@ -276,7 +275,6 @@ public class Minimap
 	{
 		if (tile.TreesOnTile != null)
 		{
-			_ = The.InGameUI.UIAllegiance.SharedKnowledge;
 			foreach (Entity item in tile.TreesOnTile)
 			{
 				if (item.EntityType.TreeType.CropTypes == null)

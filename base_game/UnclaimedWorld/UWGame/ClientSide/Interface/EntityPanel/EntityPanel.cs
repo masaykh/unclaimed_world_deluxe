@@ -58,7 +58,6 @@ public class EntityPanel : ExpandedPanel
 		this.tabLayout = tabLayout;
 		entityCRTContent = new EntityCRTContent(intf.gui, this, framedCRT);
 		int num = 0;
-		_ = framedCRT.DisplayWindow.Height;
 		HalfPanel.Hide();
 		FullPanel = Window;
 		lblFullPanelTitle.Width = 300;
@@ -260,6 +259,5 @@ public class EntityPanel : ExpandedPanel
 
 	public override void DrawContent(Window sender, SpriteBatch formSpriteBatch)
 	{
-		_ = SelectedEntity;
 	}
 }

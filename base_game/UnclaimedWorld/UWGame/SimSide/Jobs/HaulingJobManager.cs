@@ -278,19 +278,11 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 		score = 0.0;
 		damageScore = 1f;
 		float num = ScoreStockpileSettings(combo, itemData);
-		if (itemData.EntityID == (EntityID)12L)
-		{
-			_ = combo.StorageLocation.NormalStorage.HasValue;
-		}
 		if (num > -1f)
 		{
 			damageScore = ScoreItemStorage(combo, itemData, cachedItemStorageScores, allegiance.SharedKnowledge);
 			if (damageScore > -1f)
 			{
-				if (itemData.EntityID == (EntityID)3L)
-				{
-					_ = -1f;
-				}
 				if (ScoreItemLocation(regionMap, allegiance, combo, itemData, airliftCapacityScore, cachedItemLocationScores, notifyWhenFinished, out var result, getPathsNow) == Result.Wait)
 				{
 					score = 0.0;
@@ -298,8 +290,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 				}
 				if (combo.StorageLocation != null && combo.StorageLocation.TradeOfferStorage.HasValue)
 				{
-					_ = itemData.EntityID;
-					_ = 24633;
 					score = 0.5 * (double)damageScore + 0.15 * result + 0.1 * (double)num + 10.0;
 				}
 				else
@@ -706,8 +696,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 
 	private static void AddStorageSpace(List<StorageLocation> allStorageLocations, Point? storageCenterMapPosition, IKnownEntityData entityData, Stockpile stockpile, Storage storage, StorageTarget? normalStorage, StorageTarget? tradeOfferStorage)
 	{
-		_ = entityData.EntityID;
-		_ = 3970;
 		allStorageLocations.Add(new StorageLocation
 		{
 			NormalStorage = normalStorage,
@@ -781,8 +769,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 		for (int i = num; i < num2 && i < allItems.Count; i++)
 		{
 			IKnownEntityData knownEntityData = allItems[i];
-			_ = knownEntityData.EntityID;
-			_ = 4555;
 			CreateCombosForItem(AllStorageLocations, allCombos, knownEntityData);
 		}
 		itemCounter = num2;
@@ -859,10 +845,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			combos.RemoveAt(index);
 			index--;
 			return false;
-		}
-		if (itemData.EntityType.KeyName.ToLower().Contains("vinegar"))
-		{
-			_ = itemData.ContainedBy.HasValue;
 		}
 		if (ItemTypeIsNeededForProcess(entityGroup, itemData.EntityType))
 		{
@@ -1037,10 +1019,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			ItemStorageCombo combo = allCombos[i];
 			if (IsComboValid(parent, sharedKnowledge, allCombos, ref i, out combo, out var itemData))
 			{
-				if (itemData.EntityType.KeyName.ToLower().Contains("vinegar"))
-				{
-					_ = itemData.ContainedBy.HasValue;
-				}
 				AssignItemToStorage(combo, itemData, assignedItems);
 			}
 		}
@@ -1079,8 +1057,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			{
 				continue;
 			}
-			_ = data.EntityID;
-			_ = 5293;
 			bool haulToTrade = false;
 			Vector3? toLocation;
 			if (!assignedItem2.Value.StorageLocation.GetStorageTarget.HasValue)
@@ -1156,7 +1132,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 	{
 		Point tilePos = new Point(tile.X, tile.Y);
 		Tuple<List<Tuple<IKnownEntityData, Point>>, float[][]> tuple = null;
-		_ = GameData.Instance.Constants.BulkCapacityForSubTile;
 		tuple = GetTileGroundStorageData(allTileData, tilePos);
 		Vector3? vector = FindSimilarItemToStackWithInTile(item, tuple, tile);
 		if (vector.HasValue)

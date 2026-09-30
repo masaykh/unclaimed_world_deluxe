@@ -122,7 +122,6 @@ internal class EvaluateEmigrate : GoalEvaluator
 		{
 			foreach (Tuple<Route, double> item in routesAndDistances)
 			{
-				_ = item.Item2;
 				if (item.Item1 != null && item.Item1.RouteType == routeType)
 				{
 					return item.Item1.ID;

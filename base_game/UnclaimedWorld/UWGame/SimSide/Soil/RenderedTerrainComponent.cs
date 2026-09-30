@@ -84,6 +84,5 @@ public abstract class RenderedTerrainComponent : ISnapshot
 	{
 		sn.RegisterLoadPostProcessCall(this);
 		Parent = LookUpSortedDictionary<Terrain, TerrainID>.FindByID(snapshotParent);
-		_ = Parent;
 	}
 }

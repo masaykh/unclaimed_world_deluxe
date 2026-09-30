@@ -154,7 +154,6 @@ public class WeaponsPage : TabPagePanel
 			return;
 		}
 		Dictionary<EntityType, OwnerAmmoOfType> data = GetAmmoToDisplay(ownedEntities);
-		_ = grid.Entries.Count;
 		grid.BeginAddingEntries();
 		foreach (KeyValuePair<EntityType, OwnerAmmoOfType> item2 in data)
 		{

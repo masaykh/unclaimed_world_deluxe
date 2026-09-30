@@ -424,7 +424,6 @@ public class MapClient
 
 	private void UpdateScrolling(GameTime time)
 	{
-		_ = time.ElapsedGameTime.TotalSeconds;
 		float num = 0f;
 		float num2 = 0f;
 		Options options = The.Client.Controller.Options;
@@ -1792,7 +1791,6 @@ public class MapClient
 			{
 				Vector2 topLeft = SubtileEdgeToScreen(j, i);
 				ushort num2 = (flag ? regionMap.GetRegionColorInProgress(j, i) : regionMap.GetRegionColor(j, i));
-				_ = 63;
 				if (num2 > 0)
 				{
 					UWGame.SimSide.Maps.Region region = (flag ? regionMap.GetRegionInProgress(num2) : regionMap.GetRegion(num2));
@@ -1815,8 +1813,6 @@ public class MapClient
 		}
 		foreach (UWGame.SimSide.Maps.Region item in hashSet)
 		{
-			_ = item.Color;
-			_ = 63;
 			Vector2 topLeft = WorldPosToScreen(item.CenterLocation);
 			DevText.Print(topLeft, item.Color.ToString());
 			Dictionary<ushort, RegionEdge> value;
@@ -2318,7 +2314,6 @@ public class MapClient
 				}
 				foreach (Allegiance item in tile.AllegiancesThatSeeThisTile)
 				{
-					_ = item.ID;
 					Microsoft.Xna.Framework.Color colour = item.DebugColor * num6;
 					Shape.Box(topLeft, new Vector2(topLeft.X + (float)num, topLeft.Y + (float)num), colour, solid: true);
 				}

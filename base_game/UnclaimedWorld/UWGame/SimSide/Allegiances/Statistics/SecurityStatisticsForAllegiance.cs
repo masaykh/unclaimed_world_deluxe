@@ -52,7 +52,6 @@ public class SecurityStatisticsForAllegiance : SecurityStatistics
 		noOfDefensiveAgents = 0;
 		averageRating = 0f;
 		ICanIterateEntities canIterateEntities = LookUpICanIterateEntities.FindByID(Parent.CanIterateEntitiesID);
-		_ = canIterateEntities.GetAllegiance;
 		Security security = GameData.Instance.AIConstants.Ratings.Security;
 		int agents = 0;
 		float score = 0f;

@@ -63,7 +63,6 @@ public class BonePoseCollection : ReadOnlyCollection<BonePose>
 				Matrix matrix2 = Matrix.CreateFromQuaternion(Quaternion.CreateFromRotationMatrix(matrix));
 				Matrix matrix3 = Matrix.CreateFromQuaternion(Quaternion.CreateFromRotationMatrix(currentTransform));
 				_ = Vector3.Transform(translation, matrix2) + matrix.Translation;
-				_ = matrix.Translation + currentTransform.Translation;
 				transforms[i] = matrix3 * matrix2;
 				transforms[i] = currentTransform * matrix;
 			}

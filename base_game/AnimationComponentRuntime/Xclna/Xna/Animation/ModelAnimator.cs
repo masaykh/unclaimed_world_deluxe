@@ -83,7 +83,6 @@ public class ModelAnimator
 		{
 			foreach (Effect effect in mesh.Effects)
 			{
-				_ = effect;
 				numEffects++;
 			}
 		}
@@ -377,7 +376,6 @@ public class ModelAnimator
 				{
 					foreach (Effect effect in modelMesh.Effects)
 					{
-						_ = effect;
 						worldParams[num].SetValue(world);
 						matrixPaletteParams[num].SetValue(palette[i]);
 						num++;
@@ -387,7 +385,6 @@ public class ModelAnimator
 				{
 					foreach (Effect effect2 in modelMesh.Effects)
 					{
-						_ = effect2;
 						worldParams[num].SetValue(pose[modelMesh.ParentBone.Index] * world);
 						num++;
 					}

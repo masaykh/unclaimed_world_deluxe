@@ -63,10 +63,6 @@ public abstract class AnimationController : IAnimationController
 		}
 		set
 		{
-			if (animation.Name == "idleToSleep")
-			{
-				_ = 1000000;
-			}
 			if (value < 0)
 			{
 				throw new ArgumentOutOfRangeException("ElapsedTime", "When setting the ElapsedTime for an animation, the value  must be between 0 and the animation duration.");
@@ -140,10 +136,6 @@ public abstract class AnimationController : IAnimationController
 	{
 		IsManual = true;
 		long num = animation.StartOffset + (long)(((double)animation.Duration - (double)animation.StartOffset) * scalar);
-		if (animation.Name == "idleToSleep")
-		{
-			_ = 1000000;
-		}
 		ElapsedTime = num;
 		if (ElapsedTime > animation.Duration)
 		{

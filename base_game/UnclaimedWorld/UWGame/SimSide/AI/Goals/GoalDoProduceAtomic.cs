@@ -97,8 +97,6 @@ public class GoalDoProduceAtomic : Goal
 
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
-		_ = entity.ID;
-		_ = 4941;
 		SimProcess simProcess = LookUp<SimProcess, SimProcessID>.FindByID(parentGoal.ProductionProcess);
 		float progress;
 		if (simProcess == null)
@@ -116,8 +114,6 @@ public class GoalDoProduceAtomic : Goal
 				base.Status = Status.Failed;
 				return;
 			}
-			_ = entity.ID;
-			_ = 4941;
 			goalProgress += elapsed.ElapsedGameTime.TotalSeconds;
 			if (goalProgress > GameData.Instance.AIConstants.AtomicGoalPeriodInSeconds)
 			{

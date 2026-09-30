@@ -40,7 +40,6 @@ public abstract class Job : ISnapshot, ILookUp<Job, JobID>
 		}
 		private set
 		{
-			_ = uint.MaxValue;
 			id = value;
 		}
 	}
@@ -108,8 +107,6 @@ public abstract class Job : ISnapshot, ILookUp<Job, JobID>
 	public void AddToLookup()
 	{
 		ID = GetUniqueID();
-		_ = ID;
-		_ = 423;
 		if (ID != JobID.Invalid)
 		{
 			LookUp<Job, JobID>.Add(ID, this);

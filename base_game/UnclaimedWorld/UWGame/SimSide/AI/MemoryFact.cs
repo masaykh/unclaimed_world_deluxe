@@ -588,8 +588,6 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 	public bool Init(Entity entity, Allegiance allegiance)
 	{
 		DebugLog.Add("[MF] MemoryFact created");
-		_ = entity.EntityID;
-		_ = 4991;
 		isDeprecated = false;
 		EntityID = entity.EntityID;
 		EntityType = entity.EntityType;
@@ -814,11 +812,6 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 		}
 		if (entity.Locomotor != null)
 		{
-			if (entity.Find<Vehicle>(out var c6))
-			{
-				_ = c6.Roll;
-				_ = c6.Pitch;
-			}
 			Stance = entity.Stance;
 		}
 		if (entity.EntityType.BiologicalType != null)
@@ -909,7 +902,6 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 		{
 			if (!(key == "residents"))
 			{
-				_ = key == "itemParts";
 			}
 			else
 			{

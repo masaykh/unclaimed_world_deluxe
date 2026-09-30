@@ -80,8 +80,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 	{
 		itemToHaul = item;
 		this.job = job;
-		_ = job.ID;
-		_ = 3288;
 		if (job is HaulingJobAnyItemOfType haulingJobAnyItemOfType)
 		{
 			string text = "";
@@ -109,8 +107,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 	{
 		itemToHaul = item;
 		this.job = job;
-		_ = job.ID;
-		_ = 3288;
 		if (job is HaulingJobAnyItemOfType haulingJobAnyItemOfType)
 		{
 			string text = "";
@@ -374,7 +370,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 				else
 				{
 					Entity entity = (Entity)data;
-					_ = entity.Item;
 					if (ItemIsCurrentlyHauledByUs(entity))
 					{
 						num -= entity.Bulk;
@@ -384,14 +379,8 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 		}
 		Vector3? toLocation = job.ToLocation;
 		EntityID? lastDestinationEntity = job.GetToStorageEntity;
-		_ = itemData.PlaySiteLocation;
 		while (num > 0f)
 		{
-			if (base.entity.ID == (EntityID)25178L)
-			{
-				_ = itemData.EntityID;
-				_ = 25221;
-			}
 			HaulingJob addedJob;
 			IKnownEntityData addedItem;
 			ExtraCargoResult extraCargoResult = FindExtraCargo(base.entity, itemData, toLocation, lastDestinationEntity, num, usingAirTransport, out addedJob, out addedItem);
@@ -408,11 +397,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 				return ExtraCargoResult.Wait;
 			case ExtraCargoResult.OK:
 			{
-				if (base.entity.ID == (EntityID)25178L)
-				{
-					_ = addedItem.EntityID;
-					_ = 25221;
-				}
 				addedJob.TakeJob(base.entity);
 				addedItem.AssignedToJob = addedJob.ID;
 				GoalHaul item = new GoalHaul(base.entity, addedJob, addedItem.EntityID, vehicleID, this, isOuterGoal: false, addedJob.NewOwner, ownersOfVehicles);
@@ -424,7 +408,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 			default:
 				return ExtraCargoResult.OK;
 			}
-			_ = addedItem.PlaySiteLocation;
 			num -= addedItem.Bulk;
 		}
 		return ExtraCargoResult.OK;
@@ -470,7 +453,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 			}
 			else
 			{
-				_ = entity.Item;
 				if (!ItemIsCurrentlyHauledByUs(entity))
 				{
 					num2 -= entity.Bulk;
@@ -597,11 +579,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 
 	private RateCargoResult RateItemAsAdditionalCargo(HaulingJob hj, IKnownEntityData toStorageEntityData, IKnownEntityData item, IKnownEntityData lastItem, Vector3? lastDestination, IKnownEntityData lastDestinationEntity, bool usingAirTransport, ref IKnownEntityData bestItem, ref float bestDistance, ref HaulingJob bestJob, MovementMap moveMap, Entity entity)
 	{
-		if (entity.ID == (EntityID)25178L)
-		{
-			_ = item.EntityID;
-			_ = 25221;
-		}
 		HaulingJobAnyItemOfType obj = hj as HaulingJobAnyItemOfType;
 		HaulingJobSpecificItem haulingJobSpecificItem = hj as HaulingJobSpecificItem;
 		if (((obj != null && item.IsUnassigned(entityIntelligence.Allegiance.SharedKnowledge)) || (haulingJobSpecificItem != null && item.IsUnassignedToAnythingButThisJob(haulingJobSpecificItem, entityIntelligence.Allegiance.SharedKnowledge))) && item.IsItemValidForHauling(entity, entityIntelligence, hj))
@@ -826,8 +803,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 			base.Status = Status.Failed;
 			return 0.0;
 		}
-		_ = entity.ID;
-		_ = 4889;
 		return ScoreJobGoal(job, null, null, new HaulingParams
 		{
 			Item = job.Item.Value,
@@ -1202,8 +1177,6 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 		{
 			foreach (GoalID snapshotAddedNestedGoal in snapshotAddedNestedGoals)
 			{
-				_ = snapshotAddedNestedGoal;
-				_ = uint.MaxValue;
 			}
 			addedNestedGoals = snapshotAddedNestedGoals.Select((GoalID g) => (GoalHaul)LookUpGoals.FindByID(g)).ToList();
 		}

@@ -1413,12 +1413,6 @@ public class InGameInterface : CommonInterface
 			CloseRosterPanel();
 			return;
 		}
-		if (refreshCurrentPanelWithNewContent)
-		{
-			IsDisplayed(panel);
-		}
-		else
-			_ = 0;
 		if (panel != displayedRosterPanel && displayedRosterPanel != null)
 		{
 			displayedRosterPanel.Hide();
@@ -1492,7 +1486,6 @@ public class InGameInterface : CommonInterface
 	{
 		foreach (HUDWindow hudWindow in hudWindows)
 		{
-			_ = hudWindow is EntityListWindow;
 			if (hudWindow.DisplayWindow.Visible && hudWindow.WorldPosition.HasValue)
 			{
 				hudWindow.DisplayWindow.Position = The.MapUI.WorldPosToScreenPoint(hudWindow.WorldPosition.Value);
@@ -1541,9 +1534,7 @@ public class InGameInterface : CommonInterface
 
 	public override void Update(GameTime gameTime)
 	{
-		_ = The.Client.IsExiting;
 		base.Update(gameTime);
-		_ = The.Client.IsExiting;
 		if (The.Sim == null)
 		{
 			return;

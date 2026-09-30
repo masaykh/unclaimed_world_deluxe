@@ -210,8 +210,6 @@ public class PathPlanner : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 		AStarSearch.SearchStatus searchStatus = search.CycleSearch();
 		if (searchStatus == AStarSearch.SearchStatus.TargetNotFound || searchStatus == AStarSearch.SearchStatus.TargetFound)
 		{
-			_ = entityID;
-			_ = 24374;
 			Entity entity = Entity.FindByID(entityID);
 			if (entity != null)
 			{

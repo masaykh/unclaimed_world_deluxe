@@ -118,10 +118,6 @@ public class EvaluateJob : GoalEvaluator, IScoreJob
 
 	public override CalculateResult CalculateDesirability(double minimumRatingToConsider, ref double result)
 	{
-		if (entity.Name != null)
-		{
-			entity.Name.Contains("zov");
-		}
 		bestCombo = null;
 		bestScore = minimumRatingToConsider;
 		if (progress == Progress.NotStarted)
@@ -165,7 +161,6 @@ public class EvaluateJob : GoalEvaluator, IScoreJob
 				return CalculateResult.Done;
 			}
 		}
-		_ = bestCombo;
 		result = 0.0;
 		return CalculateResult.Done;
 	}
@@ -418,9 +413,6 @@ public class EvaluateJob : GoalEvaluator, IScoreJob
 	{
 		FilterAndSortCombos();
 		bestCombo = null;
-		if (allCombos.Count <= 0 || entity.Name == null || entity.Name.Contains("coyd"))
-		{
-		}
 		while (finalComboSelectionIndex < allCombos.Count)
 		{
 			ToolOrWeaponInstanceCombo toolOrWeaponInstanceCombo = allCombos[finalComboSelectionIndex];

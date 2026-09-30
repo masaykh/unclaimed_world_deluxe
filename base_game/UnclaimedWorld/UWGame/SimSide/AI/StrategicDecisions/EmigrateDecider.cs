@@ -238,7 +238,6 @@ public class EmigrateDecider : StrategyDecider, ISnapshot
 		float rating = parent.Intelligence.Statistics.GetRating(RatingTypes.Food);
 		float rating2 = parent.Intelligence.Statistics.GetRating(RatingTypes.Security);
 		float rating3 = parent.Intelligence.Statistics.GetRating(RatingTypes.Comfort);
-		parent.Name.Contains("Darzi");
 		if (parent.PersonEntity != null)
 		{
 			num = Personality.ComputeHappinessComponent(personality.Principles[RatingTypes.Food], rating);

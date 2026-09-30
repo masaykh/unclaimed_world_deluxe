@@ -103,8 +103,6 @@ internal class GoalEnterVehicleAsDriver : CompositeGoal
 			if (entity.Renderable.RenderAsModel.ModelData.DriverAttachor != null)
 			{
 				AttachPoint driverAttachor = entity.Renderable.RenderAsModel.ModelData.DriverAttachor;
-				_ = driverAttachor.Translation;
-				_ = driverAttachor.BoneName;
 				float finalModelScale = base.entity.Renderable.RenderAsModel.FinalModelScale;
 				RenderAsModel.GetAttachTransformations(base.entity.Renderable, driverAttachor, AttacheePoint.Bottom, null, out var _, out var translation, out var rotation);
 				entity.Renderable.AttachEntityAndCreateLocalTransform(base.entity.Renderable, finalModelScale, driverAttachor, base.entity.Renderable.RenderAsModel.ModelData.BottomAttachee, AttacheePoint.Bottom, translation, rotation);

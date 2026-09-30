@@ -54,8 +54,6 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 	public GoalEat(Entity entity, EntityID foodItem, EntityID? placeToEat, EntityGroupID? ownerOfFoodItem, ProcessType extractionProcessToUse, List<EntityGroupID> ownersVehicles)
 		: base(entity)
 	{
-		_ = entity.ID;
-		_ = 4600;
 		this.ownerOfFoodItem = ownerOfFoodItem;
 		ownersOfVehicles = ownersVehicles;
 		if (extractionProcessToUse == null)

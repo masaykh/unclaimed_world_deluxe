@@ -81,9 +81,6 @@ public class ChangeResourcesAction : EventActionType
 					break;
 				}
 				num2 = GetResourceNoiseValue(CreateNoiseSeed(resourceContainer.ResourceType), NoiseParameters, resourceContainer.MapPosition);
-				if (!(num2 > 0f))
-				{
-				}
 			}
 			int noOfHarvestableItems = resourceContainer.NoOfHarvestableItems;
 			int f;
@@ -104,7 +101,6 @@ public class ChangeResourcesAction : EventActionType
 				break;
 			}
 			f = Common.ClampBottom(f, 0);
-			_ = 0;
 			resourceContainer.SetResourceItems(f);
 		}
 	}

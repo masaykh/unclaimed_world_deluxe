@@ -67,8 +67,6 @@ public class FramedCRT
 		DisplayWindow.HasOverlayComponents = true;
 		DisplayWindow.ShowPanel = false;
 		DisplayWindow.DebugTag = "crtWindow";
-		_ = edgeWidth;
-		_ = edgeWidth;
 		SurfacePanel = new UIComponent(intf.gui);
 		DisplayWindow.Add(SurfacePanel);
 		SurfacePanel.ClipThis = false;

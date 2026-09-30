@@ -361,7 +361,6 @@ public class Sensor : Component
 		}
 		num8 = Common.Clamp(num8, 0f, 1f);
 		float detectionFactor = Parent.GetDetectionFactor(detectable, requiresExamineAction);
-		_ = 0f;
 		float num9 = num8 * (1f - num4) * detectionFactor * num2 * value + GameData.Instance.AIConstants.DetectionBonusForRememberedEntitiesInSameSpot * num3;
 		return The.Sim.GameplayRandomGenerator.NextDouble("Sensor") <= (double)num9;
 	}

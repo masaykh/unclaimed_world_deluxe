@@ -401,7 +401,6 @@ public class FillableBarSlider : UIComponent
 		{
 			int num = base.X + knob.Width / 2 - parentBar.SliderScaleStartX;
 			int num2 = args.Position.X - mouseClickPosition.X;
-			_ = 0;
 			mouseClickPosition = base.AbsolutePosition;
 			guiManager.SetMousePosition(mouseClickPosition.X, mouseClickPosition.Y + Height / 2);
 			num += num2;

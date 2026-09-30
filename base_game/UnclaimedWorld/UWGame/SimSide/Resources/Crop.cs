@@ -111,9 +111,7 @@ public class Crop : ResourceContainer
 
 	public void GetGrowthNeeds(double deltaTimeInSeconds, out float water, out float nitrogen, out float phosphorous, float age, float plantBulk)
 	{
-		_ = resourceType.CropType.MaxSizeShareOfWholePlant;
 		Common.GetInterpolatedFunctionValue(age, resourceType.CropType.AgeProduction);
-		_ = The.Sim.DateAndTime.DaysPerSecond;
 		water = 0f;
 		nitrogen = 0f;
 		phosphorous = 0f;
@@ -142,8 +140,6 @@ public class Crop : ResourceContainer
 	protected override void UpdateBulkAndSprites(int noOfItems)
 	{
 		base.UpdateBulkAndSprites(noOfItems);
-		_ = TotalBulk;
-		_ = TotalBulkOfRipeItems;
 		TotalBulk = 0f;
 		TotalBulkOfRipeItems = 0f;
 		ripeCropItems.Clear();

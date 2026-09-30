@@ -116,8 +116,6 @@ public class GoalMoveToPosition : CompositeGoal
 
 	private void Init()
 	{
-		_ = entity.ID;
-		_ = 12615;
 		timePointForLastRepath = The.Sim.TotalUnPausedGameTime;
 	}
 
@@ -364,7 +362,6 @@ public class GoalMoveToPosition : CompositeGoal
 		}
 		else
 		{
-			entity.ToString().Contains("August");
 			base.Status = Status.Failed;
 		}
 	}

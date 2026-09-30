@@ -102,7 +102,6 @@ public class Snapshotter
 				if (fieldInfo.FieldType != typeof(Version) && fieldInfo.FieldType != typeof(Regulator) && fieldInfo.FieldType != typeof(Renderable) && !fieldInfo.IsLiteral && !fieldInfo.Name.Contains("IsSnapshotted") && !fieldInfo.Name.Contains("CachedAnonymousMethod"))
 				{
 					Type fieldType = fieldInfo.FieldType;
-					_ = fieldInfo.FieldType.Name;
 					Fields.Add(fieldInfo);
 					if (!TypesUnaccountedFor.TryGetValue(fieldType, out value))
 					{
@@ -490,8 +489,6 @@ public class Snapshotter
 		}
 		else
 		{
-			_ = mode;
-			_ = 2;
 		}
 		return val;
 	}
@@ -524,8 +521,6 @@ public class Snapshotter
 		}
 		else
 		{
-			_ = mode;
-			_ = 2;
 		}
 		return val;
 	}
@@ -558,8 +553,6 @@ public class Snapshotter
 		}
 		else
 		{
-			_ = mode;
-			_ = 2;
 		}
 		return val;
 	}

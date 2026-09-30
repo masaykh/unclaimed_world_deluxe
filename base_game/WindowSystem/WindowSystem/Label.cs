@@ -1085,7 +1085,6 @@ public class Label : UIComponent, IHasText
 
 	public override void CleanUp()
 	{
-		_ = base.IsInitialized;
 		base.CleanUp();
 	}
 

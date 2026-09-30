@@ -112,11 +112,6 @@ public abstract class BodyPart : ISnapshot, IHasBodyParts, IHasExposedProperties
 
 	public float DoDamage(float damage)
 	{
-		if (The.Sim.TotalUnPausedGameTimeInSeconds > 23.0)
-		{
-			_ = Body.Parent.ID;
-			_ = 19;
-		}
 		float damageDone = GetDamageDone(damage, Hitpoints);
 		Hitpoints -= damageDone;
 		Hitpoints = Common.ClampBottom(Hitpoints, 0f);

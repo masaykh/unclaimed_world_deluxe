@@ -36,7 +36,6 @@ public class RenderAsModelType
 	{
 		if (AnimConditions != null)
 		{
-			_ = AssetName == "man";
 			AnimConditionsByAction = new Dictionary<AnimAction, List<AnimConditionInfo>>();
 			AnimConditionInfo[] animConditions = AnimConditions;
 			foreach (AnimConditionInfo animConditionInfo in animConditions)

@@ -68,7 +68,6 @@ public class HarvestJob : ISnapshot
 
 	public GoalEvaluator.CalculateResult ScoreThisJobWithoutTools(RegionMap regionMap, ThreatStance threatStanceToUse, Entity entity, Intelligence entityIntelligence, int proposedNumberOfWorkers, double? ageContribution, double? timeContribution, ref double rating, ref IResourceItem currentResourceItem, EntityGroup owner, float priority, ref bool jobIsValid)
 	{
-		_ = entity.PersonEntity;
 		ProcessType processType = ProcessJob.ProcessType;
 		if (entityIntelligence.HasSkill(processType.RequiredSkillType))
 		{

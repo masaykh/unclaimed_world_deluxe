@@ -52,7 +52,6 @@ public class SkinnedComponent : UIComponent
 		}
 		set
 		{
-			_ = DebugTag == "cbStockpile";
 			SetActiveSkin((int)value);
 		}
 	}
@@ -81,7 +80,6 @@ public class SkinnedComponent : UIComponent
 
 	public virtual void SetSkinLocation(int index, Rectangle? location, Color? edgeColor = null, Color? centerColor = null, bool flipHorizontally = false, bool modulateColor = false)
 	{
-		_ = location.HasValue;
 		if (locations.ContainsKey(index))
 		{
 			if (location.HasValue)
@@ -128,10 +126,6 @@ public class SkinnedComponent : UIComponent
 	{
 		if (index != currentSkin)
 		{
-			if (DebugTag == "cbAttackVermin")
-			{
-				_ = 7;
-			}
 			ComponentSkin componentSkin = null;
 			if (index != -1)
 			{

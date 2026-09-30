@@ -251,7 +251,6 @@ public class GoalFollowPath : CompositeGoal
 		}
 		else
 		{
-			_ = GroupMoveActivity;
 		}
 	}
 

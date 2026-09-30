@@ -463,9 +463,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 		double value = ScoreTimeOfDay();
 		float value2 = ScoreFitness(entity);
 		float energyLevelFactorOnDamageForMelee = GoalDoAttack.GetEnergyLevelFactorOnDamageForMelee(entity);
-		if (allCombos.Count <= 0 || entity.Name == null || entity.Name.Contains("coyd"))
-		{
-		}
 		while (scoreComboIndex < allCombos.Count)
 		{
 			WeaponInstanceCombo weaponInstanceCombo = allCombos[scoreComboIndex];
@@ -505,10 +502,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 		combo = null;
 		allCombos.RemoveAll((WeaponInstanceCombo c) => c.Score == 0f);
 		allCombos.Sort((WeaponInstanceCombo a, WeaponInstanceCombo b) => b.Score.CompareTo(a.Score));
-		if (allCombos.Count > 0 && entity.Name != null)
-		{
-			entity.Name.Contains("coyd");
-		}
 		AttackJob attackJob = null;
 		IKnownEntityData effectiveWeaponInHand = null;
 		for (; finalComboSelectionIndex < allCombos.Count; finalComboSelectionIndex++)

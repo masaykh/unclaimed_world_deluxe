@@ -230,7 +230,6 @@ internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 			Message.MessageTypes messageType = message.MessageType;
 			if ((uint)(messageType - 5) <= 1u)
 			{
-				entity.ToString().Contains("August");
 				base.Status = Status.Failed;
 				entityIntelligence.Memory.SetRecentlyOnPatrol(null);
 				job.Abandon(entity);

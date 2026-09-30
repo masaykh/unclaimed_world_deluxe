@@ -84,7 +84,6 @@ public class Personality : ISnapshot
 
 	public RatingTypes GetHighestUnhappiness()
 	{
-		_ = Principles.Count;
 		float num = 10f;
 		RatingTypes? ratingTypes = null;
 		foreach (KeyValuePair<RatingTypes, float> principle in Principles)
@@ -198,7 +197,6 @@ public class Personality : ISnapshot
 
 	private void UpdatePrinciples(double? timeSinceLastUpdate)
 	{
-		_ = Parent.Intelligence.Allegiance;
 		foreach (RatingTypes item in Principles.Keys.ToList())
 		{
 			float rating = Parent.Intelligence.Statistics.GetRating(item) + GameData.Instance.AIConstants.Ratings.PrinciplesTargetDelta;

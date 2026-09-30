@@ -1860,7 +1860,6 @@ public class CreateMissionPanel : RosterPanel
 
 	private void Populate()
 	{
-		_ = missionTemplate;
 	}
 
 	public override void Hide()

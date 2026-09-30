@@ -632,7 +632,6 @@ public class MapLoader
 
 	private static bool ReduceSubdivisionCombineTiles(Rectangle tileArea, HashSet<TerrainTile> grownTilesFromWaterEdge)
 	{
-		_ = The.Map;
 		The.Map.IterateTileArea(tileArea, delegate(TerrainTile tile)
 		{
 			if (!grownTilesFromWaterEdge.Contains(tile))
@@ -877,11 +876,6 @@ public class MapLoader
 		tile.Terrain = terrain;
 		tile.Terrain.NormalizeVegetation();
 		tile.Terrain.NormalizeSoil();
-		if (tile.X == 208)
-		{
-			_ = tile.Y;
-			_ = 38;
-		}
 		tile.Terrain.RecomputeDisplayAmounts();
 	}
 
@@ -1067,9 +1061,6 @@ public class MapLoader
 			entity.InitializeModelAndOnScreenFunctionality();
 		}
 		IOwner owner = null;
-		if (entityData.MemberOf == null)
-		{
-		}
 		if ((entityData.OwnedBy != null || owningExpeditionKey != null) && entityData.Person == null)
 		{
 			owner = expedition;
@@ -1209,7 +1200,6 @@ public class MapLoader
 		{
 			entity.SetRotationAndDir(MathHelper.ToRadians(entityData.Rotation.Value));
 		}
-		_ = entityData.Threat;
 		if (entityData.Tree != null)
 		{
 			entity.Find<UWGame.SimSide.Trees.Tree>(out var c);

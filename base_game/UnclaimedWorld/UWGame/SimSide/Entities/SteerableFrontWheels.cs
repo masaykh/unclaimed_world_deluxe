@@ -11,7 +11,6 @@ public class SteerableFrontWheels : Component
 	public SteerableFrontWheels(Entity parent)
 		: base(parent)
 	{
-		_ = parent.Renderable;
 	}
 
 	public SteerableFrontWheels()

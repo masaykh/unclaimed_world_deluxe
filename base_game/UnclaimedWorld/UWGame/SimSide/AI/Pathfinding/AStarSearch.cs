@@ -205,7 +205,6 @@ public class AStarSearch : ISnapshot
 		: this(layers, start)
 	{
 		this.highLevelPath = highLevelPath;
-		_ = this.highLevelPath;
 		this.destination = destination;
 		finalDestination = destination;
 		Initialize();
@@ -274,10 +273,6 @@ public class AStarSearch : ISnapshot
 		sbyte[] array = mDirection[directionIndex];
 		int num = relativeX + array[0];
 		int num2 = relativeY + array[1];
-		if (num == 40)
-		{
-			_ = 8;
-		}
 		int num3 = -1;
 		int num4;
 		if (num >= sector.SubtileArea.Width)
@@ -436,9 +431,6 @@ public class AStarSearch : ISnapshot
 		{
 			return SearchStatus.TargetNotFound;
 		}
-		if (closeNodeCounter > 10000)
-		{
-		}
 		while (num < 40 && mOpen.Count > 0 && !mStop)
 		{
 			PathFinderNode pathFinderNode = mOpen.Pop();
@@ -539,7 +531,6 @@ public class AStarSearch : ISnapshot
 			pathFinderNode = openAndClosed[y * width + x];
 			num2++;
 			num++;
-			_ = 30;
 		}
 		if (flag)
 		{

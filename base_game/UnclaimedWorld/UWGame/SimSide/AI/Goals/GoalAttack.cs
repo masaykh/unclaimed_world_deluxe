@@ -159,10 +159,6 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 
 	public override void Deactivate()
 	{
-		if (entity.Name != null)
-		{
-			entity.Name.Contains("Lehner");
-		}
 		entityIntelligence.CombatInfo.Target = null;
 		AttackJob attackJob = (AttackJob)LookUp<Job, JobID>.FindByID(jobID);
 		if (manageLocks)
@@ -433,10 +429,6 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 
 	public override bool HandleMessage(Message message)
 	{
-		if (entity.Name != null)
-		{
-			entity.Name.Contains("Lehner");
-		}
 		if (!ForwardMessageToFrontMostSubgoal(message))
 		{
 			switch (message.MessageType)
@@ -453,7 +445,6 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 					entityIntelligence.SetTriggerCooldown(trigger, trigger.TriggerType.CooldownInTicks);
 					Tuple<EntityID, EntityType> obj = (Tuple<EntityID, EntityType>)trigger.messageInfo;
 					EntityID item = obj.Item1;
-					_ = obj.Item2;
 					AttackJob attackJob = (AttackJob)LookUp<Job, JobID>.FindByID(jobID);
 					if (attackJob == null || item != attackJob.Target)
 					{
@@ -503,10 +494,6 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 		goalMove_RepathDoneEventMethodID = sn.DoEnumNullable(goalMove_RepathDoneEventMethodID);
 		snapshotParentGoal = sn.SnapshotID<Goal, GoalID>(parentGoal);
 		replenishActions = sn.DoList(replenishActions);
-		if (parentGoal == null)
-		{
-			_ = replenishActions;
-		}
 		sn.Ignore(jobID);
 		sn.Ignore(parentGoal);
 		return this;

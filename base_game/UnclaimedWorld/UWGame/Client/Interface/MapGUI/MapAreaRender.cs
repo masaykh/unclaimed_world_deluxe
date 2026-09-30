@@ -82,7 +82,6 @@ public class MapAreaRender
 			return;
 		}
 		Rectangle? destination = null;
-		_ = The.Map;
 		Color currentColor;
 		if (isSelected)
 		{

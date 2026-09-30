@@ -256,7 +256,6 @@ public class SidePanelEditorEntity : RosterPanel
 	private void InitStatusContentPanel()
 	{
 		statusContent = The.InGameUI.StatusScreen.GetNewSurfaceContent();
-		_ = The.Sim.Controller.Game;
 		GUIManager gui = The.InGameUI.gui;
 		InitStatusImage();
 		InitBillboardPanel();

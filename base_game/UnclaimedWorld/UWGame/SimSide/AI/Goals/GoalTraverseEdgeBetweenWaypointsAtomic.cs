@@ -269,8 +269,6 @@ internal class GoalTraverseEdgeBetweenWaypointsAtomic : Goal
 		if (point != point2)
 		{
 			tileProgress = GoalTraverseEdgeBetweenWaypoints.TileProgress.MovingFromEdge;
-			_ = detectedDirection;
-			_ = movesAlong8Dir;
 			if (!The.Map.SubtileIsOnMap(point))
 			{
 				base.Status = Status.Failed;
@@ -377,7 +375,6 @@ internal class GoalTraverseEdgeBetweenWaypointsAtomic : Goal
 
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
-		entity.ToString().Contains("onlan");
 		if (GoalTraverseEdgeBetweenWaypoints.IsAtWaypoint(entity.PlaySiteLocation, WaypointRay, To, permittedDistanceSquared))
 		{
 			base.Status = Status.Completed;

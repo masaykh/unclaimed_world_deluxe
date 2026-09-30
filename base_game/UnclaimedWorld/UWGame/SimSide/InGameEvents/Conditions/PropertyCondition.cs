@@ -148,7 +148,6 @@ public class PropertyCondition : FilterCondition
 				return Common.DistanceOctile(result.LocationResult.Value, locationCompareValue.Value) < num;
 			}
 		}
-		_ = IsNull == true;
 		return false;
 	}
 

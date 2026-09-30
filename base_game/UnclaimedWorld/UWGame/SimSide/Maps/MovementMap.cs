@@ -192,7 +192,6 @@ public class MovementMap : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	public bool CycleOnce()
 	{
 		DiscomfortMap discomfortMap = GetDiscomfortMap();
-		_ = IDName == "ExposedHumanNormal";
 		switch (phase)
 		{
 		case Phase.ComputeChildMaps:

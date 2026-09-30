@@ -35,10 +35,6 @@ public class TileLayer : Layer
 		affectedSector = null;
 		GetSectorAndRelativeCoords(x, y, out var sectorX, out var sectorY, out var relativeX, out var relativeY);
 		TileSector tileSector = Sectors[sectorX][sectorY];
-		if (sectorX > 0)
-		{
-			_ = 0;
-		}
 		byte b = 0;
 		if (tileSector == null)
 		{

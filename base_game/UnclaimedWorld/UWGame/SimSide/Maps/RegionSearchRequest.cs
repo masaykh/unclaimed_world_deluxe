@@ -51,11 +51,6 @@ public class RegionSearchRequest : ISnapshot, ILookUp<RegionSearchRequest, Regio
 	public RegionSearchRequest(EntityID? entityID, Point fromSubtile, Point toSubtile, bool sendMessageToEntity, MethodID? notifyWhenFinished)
 	{
 		AddToLookup();
-		if (The.Sim.TotalUnPausedGameTimeInSeconds > 35.0 && fromSubtile.X == 118)
-		{
-			_ = fromSubtile.Y;
-			_ = 61;
-		}
 		Entity = entityID;
 		FromSubtile = fromSubtile;
 		ToSubtile = toSubtile;

@@ -561,9 +561,7 @@ public class GUIManager
 					UIComponent uIComponent2 = item.CheckFocus(args.Position.X, args.Position.Y, mode);
 					if (uIComponent2 != null)
 					{
-						_ = uIComponent2.Visible;
 						uIComponent = uIComponent2;
-						_ = uIComponent is ScrollBar;
 					}
 				}
 			}

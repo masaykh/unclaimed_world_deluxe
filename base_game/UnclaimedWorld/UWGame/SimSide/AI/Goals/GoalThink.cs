@@ -275,7 +275,6 @@ public class GoalThink : CompositeGoal
 		CleanupSubgoals(base.Status, ref hasFailedSubgoal);
 		if (arbitrateRegulator.IsReady())
 		{
-			entity.ToString().Contains("Lewis");
 			Arbitrate(ArbitrateMode.NoCurrentGoal);
 			base.Status = Status.Active;
 		}
@@ -287,7 +286,6 @@ public class GoalThink : CompositeGoal
 
 	public Status ProcessThink(GameTime elapsed)
 	{
-		entity.ToString().Contains("onlan");
 		if (!hasArbitratedWhileBusy)
 		{
 			ActivateIfInactive();
@@ -296,11 +294,9 @@ public class GoalThink : CompositeGoal
 		{
 			hasArbitratedWhileBusy = false;
 		}
-		entity.ToString().Contains("Millet");
 		Status status = ProcessSubgoals(elapsed);
 		if (!hasArbitratedWhileBusy && (status == Status.Completed || status == Status.Failed || IsIdle()))
 		{
-			entity.ToString().Contains("onlan");
 			base.Status = Status.Inactive;
 		}
 		else
@@ -325,10 +321,6 @@ public class GoalThink : CompositeGoal
 		}
 		if (((useHighFrequency && arbitrateRegulator.IsReady()) || (!useHighFrequency && arbitrateRegulatorWhileBusy.IsReady())) && entityIntelligence.Brain.Arbitrate(ArbitrateMode.HasCurrentGoal))
 		{
-			if (entity.Name != null)
-			{
-				entity.Name.Contains("eboah");
-			}
 			newGoal = GetTopLevelGoal();
 			hasArbitratedWhileBusy = true;
 			return true;
@@ -359,10 +351,6 @@ public class GoalThink : CompositeGoal
 		}
 		else
 		{
-			if (entity.Name != null)
-			{
-				entity.Name.Contains("eboah");
-			}
 			double? score = entityIntelligence.GetScore();
 			num = (score.HasValue ? score.Value : 0.0);
 		}
@@ -380,20 +368,12 @@ public class GoalThink : CompositeGoal
 				}
 				if (result >= bestScore)
 				{
-					if (result > num && (entity.ID == (EntityID)5043L || entity.ID == (EntityID)4814L) && mode == ArbitrateMode.NoCurrentGoal)
-					{
-						_ = goalEvaluator is EvaluateHaulingJobs;
-					}
 					bestScore = result;
 					bestEvaluator = goalEvaluator;
 				}
 				entityIntelligence.GetScore();
 			}
 			evaluatorBeingProcessed++;
-		}
-		if (entity.Name != null && !entity.Name.Contains("onlan"))
-		{
-			entity.Name.Contains("eboah");
 		}
 		if (bestEvaluator != null)
 		{
@@ -421,10 +401,6 @@ public class GoalThink : CompositeGoal
 				}
 				case ArbitrateMode.HasCurrentGoal:
 				{
-					if (entity.Name != null)
-					{
-						_ = entity.PersonEntity;
-					}
 					entityIntelligence.GetScore();
 					string entityAIState = entity.Name + bestScore + bestEvaluator.ToString();
 					if (bestEvaluator.CanTakeGoal() && bestEvaluator.CancelCurrentTakers())
@@ -676,11 +652,6 @@ public class GoalThink : CompositeGoal
 				base.entity.Find<BodyComponent>(out var c);
 				if (num > GameData.Instance.Constants.DamageAmountFractionCausingHitReaction * c.Body.MaxHitpoints)
 				{
-					if (The.Sim.TotalUnPausedGameTimeInSeconds > 17.0)
-					{
-						_ = base.entity.ID;
-						_ = 19;
-					}
 					RemoveAllSubgoals();
 					AddSubgoal(new GoalBeingHit(base.entity));
 				}
@@ -730,10 +701,6 @@ public class GoalThink : CompositeGoal
 
 	public override void AddSubgoal(Goal g)
 	{
-		if (entity.PersonEntity != null)
-		{
-			_ = g is GoalWait;
-		}
 		bool flag = Subgoals.Count == 0;
 		if (base.ID != GoalID.Invalid)
 		{

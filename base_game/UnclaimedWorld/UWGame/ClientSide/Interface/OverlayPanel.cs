@@ -80,7 +80,6 @@ public class OverlayPanel
 		if (!intf.HUDOverlayPanel.DisplayWindow.IsVisibleAndActive)
 		{
 			_ = (int)Common.Clamp(0.22 * (double)The.MapUI.mapWindowWidth, 200.0, 280.0);
-			_ = 280;
 			intf.HUDOverlayPanel.ShowInScreenSpace(sender.AbsolutePosition.X - 45, sender.AbsolutePosition.Y - intf.HUDOverlayPanel.DisplayWindow.Height - 7);
 			intf.HUDOverlayPanel.Refresh();
 		}

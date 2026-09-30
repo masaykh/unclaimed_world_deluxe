@@ -43,7 +43,5 @@ public class GoalMoveAsGroup : CompositeGoal
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
 		base.Status = ProcessSubgoals(elapsed);
-		_ = base.Status;
-		_ = 2;
 	}
 }

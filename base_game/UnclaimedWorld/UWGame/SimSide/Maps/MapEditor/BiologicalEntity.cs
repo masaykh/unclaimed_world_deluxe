@@ -53,7 +53,6 @@ public class BiologicalEntity
 			SetCaste(CasteKey ?? casteKey, c);
 			if (!string.IsNullOrEmpty(RaceKey))
 			{
-				_ = RaceKey == "ManOchreClothesBlackHairTexture";
 				c.SetRaceOnNewEntity(RaceKey);
 			}
 			float? num = null;

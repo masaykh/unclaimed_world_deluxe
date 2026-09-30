@@ -174,7 +174,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 
 	public void AssertSearch(RegionSearchPlanner planner, RegionSearchRequest searchRequest)
 	{
-		_ = planner.Start;
 		layers.GetRegion(searchRequest.FromSubtile.X, searchRequest.FromSubtile.Y);
 	}
 
@@ -365,7 +364,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 	{
 		bool result = false;
 		timer.Start();
-		_ = IDName == "ExposedIndigHerbivoreCautiousFoot";
 		switch (progress)
 		{
 		case Progress.InitFromScratch:
@@ -484,8 +482,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 			break;
 		}
 		timeTaken = timer.GetTime();
-		_ = timeTaken;
-		_ = 0.002;
 		return result;
 	}
 
@@ -1234,7 +1230,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 		int num = thisSector.SubtileArea.Height - 1;
 		for (int i = 0; i < num; i++)
 		{
-			_ = num - 1;
 			ushort regionInProgress = thisSector.GetRegionInProgress(relativeX, i);
 			ushort regionInProgress2 = thisSector.GetRegionInProgress(relativeX, i + 1);
 			ushort regionInProgress3 = unfinishedSector.GetRegionInProgress(relativeX2, i);

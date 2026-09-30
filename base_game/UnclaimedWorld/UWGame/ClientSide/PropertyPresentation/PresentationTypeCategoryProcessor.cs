@@ -97,7 +97,6 @@ internal class PresentationTypeCategoryProcessor
 
 	public static void DetermineEntryKey(string caption, Presentation presentation, IHasExposedProperties hasExposedProperties, out string entryKey)
 	{
-		_ = presentation.PresentationTypeKey == "storageCapacityPresentation";
 		hasExposedProperties.GetDefaultKey(out entryKey);
 		entryKey = entryKey + caption + presentation.PropertyNameForValue + presentation.PresentationTypeKey;
 	}

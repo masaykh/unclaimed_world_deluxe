@@ -248,7 +248,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 			FinalModelBasicTexture = GameData.Instance.ExtraModelTextures[FinalModelBasicTextureName];
 		}
 		InitializeAnimatedModel(createAnimationTracks: true);
-		_ = Matrix.Identity;
 		Matrix identity = Matrix.Identity;
 		Matrix identity2 = Matrix.Identity;
 		Matrix matrix = Matrix.CreateScale(FinalModelScale);
@@ -768,10 +767,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 		}
 		if (bestMatch != null)
 		{
-			if (bestMatch.SoundAndAnimationSet != null && bestMatch.SoundAndAnimationSet.BaseAnimations != null)
-			{
-				bestMatch.SoundAndAnimationSet.BaseAnimations.Contains("idleToSleep");
-			}
 			AdoptAnimInfo(bestMatch);
 		}
 		return true;
@@ -896,7 +891,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 
 	public void StartAnimation(string animKey, AnimationTrack track, Playback playback, StartingPoint startingPoint, BlendMode mode, float speedFactor = 1f, Looping looping = Looping.No, float? startOffsetToAdd = null, bool? setCallback = false, EventHandler pickNewRandomAnim = null)
 	{
-		_ = animKey == "sleepToIdle";
 		AnimationController animationController = null;
 		if (animKey != null)
 		{

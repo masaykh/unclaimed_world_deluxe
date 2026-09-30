@@ -151,10 +151,6 @@ public class Body : IHasBodyParts, ISnapshot
 
 	public void RegainHitpoints(double deltaTimeInSeconds)
 	{
-		if (Parent.Name != null)
-		{
-			Parent.Name.Contains("Conlan");
-		}
 		if (GlobalHitpoints < MaxHitpoints)
 		{
 			BiologicalEntity biologicalEntity = Parent.BiologicalEntity;

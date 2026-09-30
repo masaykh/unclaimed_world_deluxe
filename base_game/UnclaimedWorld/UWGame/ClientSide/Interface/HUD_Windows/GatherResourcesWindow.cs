@@ -84,7 +84,6 @@ public class GatherResourcesWindow : HUDWindow
 		outerGrid.Font = GUIManager.LCDandHUDBodyFontPath;
 		outerGrid.Height = 136;
 		Add(outerGrid);
-		_ = DisplayWindow.Height;
 		btCancel = new TextButton(gui);
 		Add(btCancel);
 		btCancel.Text = "CANCEL";

@@ -271,7 +271,6 @@ public class GatheringSite : IExit, ILookUp<GatheringSite, GatheringSiteID>, ISn
 
 	private void UpdateVisitorPositionsToDraw()
 	{
-		_ = hasEverAddedVisitor;
 	}
 
 	public bool IsDoorAvailable()

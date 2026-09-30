@@ -239,7 +239,6 @@ public class Water
 		totalElapsedUnpausedTime = (float)(The.Sim.TotalUnPausedGameTime.TotalMilliseconds / 100.0);
 		SetUpWaterVerticesAndIndicesInCurrentView();
 		waterEffect.CurrentTechnique = waterEffect.Techniques["Water"];
-		_ = The.MapUI.MapWindowWorldPosition;
 		Matrix identity = Matrix.Identity;
 		waterEffect.Parameters["xWorld"].SetValue(identity);
 		waterEffect.Parameters["reflectWorldViewProjection"].SetValue(reflectionViewMatrix * The.Client.Projection);

@@ -22,7 +22,6 @@ internal class EvaluateLeisureWalk : GoalEvaluator
 	public override CalculateResult CalculateDesirability(double minimumRatingToConsider, ref double result)
 	{
 		bestActivity = null;
-		_ = entity.Intelligence;
 		return CalculateResult.Done;
 	}
 

@@ -173,8 +173,6 @@ internal class GoalHunt : CompositeGoal, ITopLevelGoal
 		}
 		else
 		{
-			_ = base.Status;
-			_ = 3;
 		}
 	}
 

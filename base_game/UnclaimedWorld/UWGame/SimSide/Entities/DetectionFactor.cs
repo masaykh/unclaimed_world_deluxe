@@ -41,7 +41,6 @@ public class DetectionFactor : IXmlSerializable
 
 	public void PostLoadContentInitialize(ref List<string> errors)
 	{
-		_ = TypeTag == "inDeeperWaterFishingSpot";
 		if (!string.IsNullOrEmpty(TypeTag))
 		{
 			DetectableTypes = GameData.Instance.DetectableTypeByTag[TypeTag];

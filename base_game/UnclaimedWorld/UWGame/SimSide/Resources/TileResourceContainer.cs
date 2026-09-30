@@ -230,7 +230,6 @@ public class TileResourceContainer : ResourceContainer, ISleepingUpdatable
 		}
 		else
 		{
-			_ = resourceItems.Count;
 		}
 	}
 

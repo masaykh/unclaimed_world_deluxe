@@ -134,8 +134,6 @@ public class Kills : LedgerSheet
 		}
 		EntityGroup ownedEntities = firstPlayerExpedition.OwnedEntities;
 		KillStatistics killStatistics = The.InGameUI.UIAllegiance.Statistics.KillStatistics;
-		_ = The.Sim.DateAndTime.CurrentTimeDateYear;
-		_ = base.FromDate;
 		int num = 0;
 		outerGrid.BeginAddingEntries();
 		foreach (KeyValuePair<EntityType, int> kill in killStatistics.Kills)

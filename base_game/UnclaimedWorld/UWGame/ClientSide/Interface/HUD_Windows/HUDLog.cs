@@ -177,10 +177,8 @@ public class HUDLog : HUDWindow
 		}
 		int f = currentPage - 2;
 		f = Common.ClampBottom(f, 1);
-		_ = currentPage;
 		int d = currentPage + 2;
 		d = Common.ClampTop(d, totalPages);
-		_ = totalPages;
 		TextButton textButton = pagerButtons[thisPageButtonIndex];
 		textButton.Text = currentPage.ToString();
 		textButton.IsChecked = true;

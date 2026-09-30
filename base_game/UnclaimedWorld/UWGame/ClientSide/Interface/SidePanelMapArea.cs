@@ -80,7 +80,6 @@ public class SidePanelMapArea : RosterPanel
 	private void InitStatusContentPanel()
 	{
 		statusContent = The.InGameUI.StatusScreen.GetNewSurfaceContent();
-		_ = The.Sim.Controller.Game;
 		GUIManager gui = The.InGameUI.gui;
 		imStatusBackground = new Image(gui);
 		statusContent.Add(imStatusBackground);
@@ -251,7 +250,6 @@ public class SidePanelMapArea : RosterPanel
 	public static UIComponent AddItemRow(Grid grdItems, EntityType entityType, EntityGroup owner, bool useCurrentUIOwner, Action<UIComponent, EventArgs> clickMethodToSeeListOfItems)
 	{
 		UIComponent uIComponent = new UIComponent(The.InGameUI.gui);
-		_ = entityType.Name == "Firewood";
 		DataTypeButton dataTypeButton = new DataTypeButton(The.InGameUI.gui, DataSheet.InfoToShow.Data, entityType, GoalEvaluator.GetOwnerID(owner), useCurrentUIOwner);
 		dataTypeButton.Init(TextButton.TextButtonType.LCDToolTipBlack);
 		dataTypeButton.ID = UIComponent.DataControlID.Caption;
@@ -459,7 +457,6 @@ public class SidePanelMapArea : RosterPanel
 	private static List<EntityID> GetListOfItems(EntityType entityType)
 	{
 		MapArea mapArea = TileSelectionContextMenu.GetMapArea();
-		_ = The.InGameUI.UIAllegiance.SharedKnowledge;
 		List<EntityID> list = new List<EntityID>();
 		mapArea.GetEntitiesInArea(null, list, (IKnownEntityData e) => e.EntityType == entityType, The.InGameUI.UIAllegiance);
 		return list;

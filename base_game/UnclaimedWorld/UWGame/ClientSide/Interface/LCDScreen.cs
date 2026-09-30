@@ -32,7 +32,6 @@ public class LCDScreen : DisplayScreen
 	protected override void SetupQuadVertices()
 	{
 		base.SetupQuadVertices();
-		_ = Vector2.Zero;
 		float num = destinationRectangle.X;
 		float posRight = num + (float)destinationRectangle.Width;
 		float num2 = destinationRectangle.Y;

@@ -26,7 +26,6 @@ public class EvaluateReturnHome : GoalEvaluator
 
 	public override CalculateResult CalculateDesirability(double minimumRatingToConsider, ref double result)
 	{
-		_ = entity.Name == "Ward Conlan";
 		if (entityIntelligence.CurrentExpedition == null)
 		{
 			result = 0.0;

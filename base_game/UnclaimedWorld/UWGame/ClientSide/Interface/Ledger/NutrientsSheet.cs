@@ -113,7 +113,6 @@ public class NutrientsSheet : LedgerSheet
 		{
 			return;
 		}
-		_ = expedition.OwnedEntities;
 		NutrientStatistics nutrientStatistics = The.InGameUI.UIAllegiance.Statistics.NutrientStatistics;
 		Dictionary<FoodNutrientType, List<DataPoint<float>>> dict = nutrientStatistics.Stats[NutrientStatistics.StatTypes.Produced];
 		Dictionary<FoodNutrientType, List<DataPoint<float>>> dict2 = nutrientStatistics.Stats[NutrientStatistics.StatTypes.Consumed];

@@ -390,8 +390,6 @@ public class AgentStorage : Container, IStorage, IIDEventSubscriber
 
 	protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
 	{
-		_ = entity.ID;
-		_ = 18;
 		bool flag = false;
 		flag = ItemStorage.Remove(entity, removeFromChildStorage: true);
 		if (!flag && Equipment != null)
@@ -431,8 +429,6 @@ public class AgentStorage : Container, IStorage, IIDEventSubscriber
 
 	protected override bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, bool ignoreCapacity = false, bool replenish = false, bool isProductionOutput = false, UpgradeCategory upgradeCategory = null)
 	{
-		_ = entity.ID;
-		_ = 18;
 		if (!compartment.HasValue || compartment.Value == StorageCompartment.Haul)
 		{
 			bool num = ItemStorage.Add(entity, placeInStorage, ignoreCapacity);

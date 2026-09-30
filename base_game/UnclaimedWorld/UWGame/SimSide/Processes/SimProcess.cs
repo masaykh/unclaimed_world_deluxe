@@ -179,7 +179,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 		set
 		{
 			status = value;
-			_ = 1;
 		}
 	}
 
@@ -597,7 +596,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 			}
 			if (GoalEvaluator.EntityDataResultCausesSkip(result))
 			{
-				_ = 4;
 				HandleDestroyedOutput();
 				return false;
 			}
@@ -722,8 +720,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 
 	public StatusOfProcess Start(Entity startingAgent, OwnerID? ownerOfOutput, ToolTypeCombination stationaryToolsCombo, List<EntityID> stationaryTools)
 	{
-		_ = startingAgent.EntityID;
-		_ = 4941;
 		this.ownerOfOutput = ownerOfOutput;
 		StationaryTools = stationaryTools;
 		StationaryToolsTypeCombination = stationaryToolsCombo;
@@ -1468,7 +1464,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 
 	private bool ConsumeAndCreateOutputs(Entity startingAgent)
 	{
-		_ = ContainerToPlaceOutputsIn.HasValue;
 		Entity entity = null;
 		if (ContainerToPlaceOutputsIn.HasValue)
 		{

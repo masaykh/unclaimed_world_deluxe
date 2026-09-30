@@ -184,8 +184,6 @@ public class GoalReplenish : CompositeGoal
 		if (!preconditionsRegulator.IsReady() || ArePreconditionsOK())
 		{
 			base.Status = ProcessSubgoals(elapsed);
-			_ = base.Status;
-			_ = 3;
 		}
 		else
 		{

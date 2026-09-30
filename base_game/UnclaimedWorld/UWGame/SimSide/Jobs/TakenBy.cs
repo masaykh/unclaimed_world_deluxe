@@ -81,9 +81,6 @@ public class TakenBy : ISnapshot
 
 	public void RemoveAll()
 	{
-		if (job.ID == (JobID)3288uL)
-		{
-		}
 		while (takenBy.Count != 0)
 		{
 			Remove(takenBy[0]);
@@ -92,10 +89,7 @@ public class TakenBy : ISnapshot
 
 	public void Remove(Entity entity)
 	{
-		_ = job.ID;
-		_ = 3288;
 		takenBy.RemoveAll((Entity e) => e == entity);
-		_ = job;
 	}
 
 	public bool Contains(Entity entity)
@@ -110,8 +104,6 @@ public class TakenBy : ISnapshot
 
 	public void Add(Entity entity)
 	{
-		_ = job.ID;
-		_ = 3288;
 		takenBy.Add(entity);
 	}
 

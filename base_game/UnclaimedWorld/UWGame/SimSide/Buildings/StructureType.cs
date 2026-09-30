@@ -64,7 +64,6 @@ public class StructureType : IXmlSerializable
 
 	public void PostLoadContentInitialize(EntityType parent)
 	{
-		_ = IsAddon;
 		WidthInTiles = 1;
 		HeightInTiles = 1;
 	}

@@ -196,7 +196,6 @@ public class AgentCollisionResponder : ICollisionResponder, ISnapshot
 		Entity entity2 = null;
 		foreach (Collidable<Entity> collidee in collidees)
 		{
-			_ = collidee;
 			if (entity != Parent.Parent.Parent && entity != null && CheckIfEntityIsClosestCollidingEntitySoFar(entity, closestAgentDistance))
 			{
 				entity2 = entity;

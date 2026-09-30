@@ -187,10 +187,6 @@ internal class GoalDoTakeFive : CompositeGoal
 				HandleSubstitutedGoalByArbitrator();
 				return;
 			}
-			if (entity.Name != null)
-			{
-				entity.Name.Contains("Pezal");
-			}
 			if (TestForDanger && !ValidateSafetyAndTakeAction(GameData.Instance.AIConstants.HighestDiscomfortLevelForLeisureActivityToContinue))
 			{
 				return;
@@ -333,10 +329,6 @@ internal class GoalDoTakeFive : CompositeGoal
 		{
 			bool turnCompletely = The.Sim.GameplayRandomGenerator.NextDouble(null) > 0.3;
 			AddSubgoal(new GoalWait(entity, The.Sim.GameplayRandomGenerator.RandomBetween(0f, 0.9f)));
-			if (entity.Name != null)
-			{
-				entity.Name.Contains("Ward");
-			}
 			RemoveAllSubgoals();
 			AddSubgoal(new GoalTurnToFace(entity, location.HasValue ? new Vector2?(location.Value.ToVector2()) : ((Vector2?)null), entityToFace, turnCompletely, setCenterOfAttentionToTurnTarget: true, interestAndHandleTrigger));
 		}

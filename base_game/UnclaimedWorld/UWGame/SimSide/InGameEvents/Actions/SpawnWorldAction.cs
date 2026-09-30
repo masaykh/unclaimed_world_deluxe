@@ -36,7 +36,6 @@ public class SpawnWorldAction : EventActionType
 
 	public void PostInitValidate(List<string> listOfErrors)
 	{
-		_ = WorldData;
 	}
 
 	public void PostLoadContentValidate(List<string> listOfErrors)

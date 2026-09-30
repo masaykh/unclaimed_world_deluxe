@@ -322,7 +322,6 @@ public class Population : ISnapshot
 				return spawnResult;
 			}
 		}
-		_ = randomLocation.HasValue;
 		float? age = null;
 		string caste = null;
 		if (entityData.BioEntity != null && !entityData.BioEntity.AgeGroup.HasValue && entityData.BioEntity.AgeInYears == null && entityData.BioEntity.CultureTemplates == null)

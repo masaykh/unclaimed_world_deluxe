@@ -59,7 +59,6 @@ public class CRTAnimator
 	private void InitDisplay(ReflectionToUse reflection, float alpha)
 	{
 		GUIManager gui = The.InGameUI.gui;
-		_ = The.Sim.Controller.Game;
 		SurfacePanel = new UIComponent(gui);
 		DisplayWindow.Add(SurfacePanel);
 		SetSurfacePanelPosition();

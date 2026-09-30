@@ -134,7 +134,6 @@ public class StaticFilterSettingType : FilterSettingType
 	private HashSet<EntityType> GetComfortRatingTypes(Predicate<EntityType> filter)
 	{
 		HashSet<EntityType> hashSet = new HashSet<EntityType>();
-		_ = The.InGameUI.UIAllegiance.RepresentativeEntityType;
 		foreach (KeyValuePair<string, EntityType> allEntityType in GameData.Instance.AllEntityTypes)
 		{
 			if ((filter == null || filter(allEntityType.Value)) && ComfortStatisticsForAllegiance.AffectsComfortRating(The.InGameUI.UIAllegiance, allEntityType.Value))

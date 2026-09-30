@@ -63,7 +63,6 @@ public class BuySellPanelSettings : ISnapshot
 
 	public static bool FilterTradeItems(EntityType entityType)
 	{
-		entityType.KeyName.Contains("hauling");
 		if (entityType.TerrainType == null && entityType.TreeType == null && entityType.StructureType == null && entityType.Category != null)
 		{
 			return true;

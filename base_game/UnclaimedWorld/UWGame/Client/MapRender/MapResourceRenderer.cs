@@ -180,7 +180,6 @@ internal class MapResourceRenderer
 				{
 					continue;
 				}
-				_ = renderAsBillboard.Parent.AsRenderable;
 				if (renderAsBillboard.Parent.Entity.Find<Tree>(out var c) && c != null && c.Crops != null)
 				{
 					foreach (KeyValuePair<ResourceType, Crop> crop in c.Crops)
@@ -235,7 +234,6 @@ internal class MapResourceRenderer
 	{
 		groundOutlineSprites.Clear();
 		bool isInGodMode = GameWorldRenderer.GetIsInGodMode();
-		_ = The.InGameUI.UIAllegiance.SharedKnowledge;
 		The.Client.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 		for (int i = renderer.TileStartX; i <= renderer.TileEndX; i++)
 		{
@@ -253,7 +251,6 @@ internal class MapResourceRenderer
 				{
 					foreach (IResourceItem resourceItem in tileResource.Value.ResourceItems)
 					{
-						resourceItem.Container.ResourceType.Name.Equals("Clamwich");
 						bool value = false;
 						if (The.InGameUI.OverlaySettings.ResourceTypesToDisplay.TryGetValue(resourceItem.Container.ResourceType, out value) && value)
 						{

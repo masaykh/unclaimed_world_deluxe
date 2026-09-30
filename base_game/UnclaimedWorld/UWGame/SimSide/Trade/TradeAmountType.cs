@@ -36,10 +36,6 @@ public class TradeAmountType
 
 	public string GetEntityTypeKey()
 	{
-		if (EntityType != null)
-		{
-			EntityType.Contains("robot");
-		}
 		if (EntityDataKey != null)
 		{
 			return GameData.Instance.AllEntityData[EntityDataKey].EntityKey;

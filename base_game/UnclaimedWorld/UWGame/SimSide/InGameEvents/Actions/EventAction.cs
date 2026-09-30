@@ -124,7 +124,6 @@ public class EventAction : ISleepingUpdatable, ISnapshot
 			result = stringBuilder.ToString();
 		}
 		timer.GetTime();
-		_ = 0.002;
 		return result;
 	}
 

@@ -29,7 +29,6 @@ internal class Plot
 
 	public void ComputePlotRanges(DateAndTime.TimeDateYear fromDate)
 	{
-		_ = fromDate.TotalDays;
 		if (!Statistic.GetDataPointsBetween(Data, fromDate, The.Sim.DateAndTime.CurrentTimeDateYear, out MinIndex, out MaxIndex, ExtendLastValue))
 		{
 			return;

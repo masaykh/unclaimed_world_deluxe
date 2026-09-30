@@ -571,7 +571,6 @@ public class Allegiance : IHasExposedProperties, ICanIterateEntities, ILookUp<IC
 		membersAboveRange = new List<Entity>();
 		membersBelowRange = new List<Entity>();
 		membersUnqualified = new List<Entity>();
-		_ = tier.UpperEdge;
 		TierType.GetTierBelow(Array.FindIndex(GameData.Instance.Tiers, (TierType t) => t == tier), out previousTier, out var lowerTierEdge);
 		if (previousTier == null)
 		{

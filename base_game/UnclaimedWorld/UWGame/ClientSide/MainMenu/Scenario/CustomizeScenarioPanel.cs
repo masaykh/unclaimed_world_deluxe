@@ -307,7 +307,6 @@ public class CustomizeScenarioPanel : Panel
 		OptionSet[] optionSets = screen.Scenario.ScenarioData.OptionSets;
 		foreach (KeyValuePair<string, string[]> item in mainDifficulty.OptionsToUse)
 		{
-			_ = item.Key == "equipment";
 			OptionSet optionSet = optionSets.FirstOrDefault((OptionSet o) => o.KeyName == item.Key);
 			string randomOptionKey = Common.GetRandomListMember(item.Value, screen.Controller.RandomGenerator);
 			Option value = optionSet.Options.FirstOrDefault((Option o) => o.KeyName == randomOptionKey);

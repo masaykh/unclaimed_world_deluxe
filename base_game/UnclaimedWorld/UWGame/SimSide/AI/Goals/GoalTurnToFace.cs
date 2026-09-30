@@ -69,7 +69,6 @@ public class GoalTurnToFace : Goal
 			SetCenterOfAttention();
 			return;
 		}
-		_ = entity.PlaySiteLocation;
 		if (turnCompletely)
 		{
 			allowedRotationMargin = 0.05f;

@@ -34,7 +34,6 @@ public class SpokenLine : HUDWindow
 		speaker.Intelligence.TalkActionEnded += Intelligence_TalkActionEnded;
 		string text2 = "";
 		string text3 = "";
-		_ = speaker.EntityType.Person;
 		Text = text2 + text3 + text;
 	}
 

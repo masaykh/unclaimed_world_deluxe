@@ -35,7 +35,6 @@ public class CustomDataPresentation : IGameDataObject
 		}
 		foreach (PresentationTypeCategory finalPresentationTypeCategory in FinalPresentationTypeCategories)
 		{
-			_ = finalPresentationTypeCategory;
 		}
 	}
 

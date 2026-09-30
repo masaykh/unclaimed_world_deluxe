@@ -60,8 +60,6 @@ internal static class SkinnedVertexCompat
         // shards fanning across the screen, exactly as they did on MonoGame before deviation 14 -
         // then FNA has the same bug and this needs re-implementing at content-load time instead,
         // by rebuilding the ModelMeshPart rather than reassigning its buffer.
-        _ = model;
-        _ = device;
         return;
 #else
         if (model == null) return;

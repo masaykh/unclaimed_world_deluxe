@@ -794,7 +794,6 @@ public class Grid : UIComponent, IKeyedEntryComponent
 		label.Name = "value1";
 		uIComponent.Add(label);
 		label.X = textWidth + 6;
-		_ = label.X;
 		label = new Label(guiManager);
 		label.Text = value2;
 		label.Init(labelType);

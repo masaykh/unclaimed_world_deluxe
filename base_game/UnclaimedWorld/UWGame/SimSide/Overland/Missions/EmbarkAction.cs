@@ -60,7 +60,6 @@ public class EmbarkAction : MissionAction
 		}
 		foreach (Entity passenger2 in passengers)
 		{
-			_ = passenger2;
 		}
 	}
 

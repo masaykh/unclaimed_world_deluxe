@@ -266,8 +266,6 @@ internal class GoalTraverseEdgeBetweenWaypoints : CompositeGoal
 					tileProgress = goalTraverseEdgeBetweenWaypointsAtomic.tileProgress;
 					timeSpentSliding = goalTraverseEdgeBetweenWaypointsAtomic.TimeSpentSliding;
 				}
-				_ = base.ID;
-				_ = uint.MaxValue;
 				ValidateSafetyAndTakeAction();
 			}
 			break;

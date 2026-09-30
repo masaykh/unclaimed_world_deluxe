@@ -77,7 +77,6 @@ public abstract class PresentationNode
 		{
 			entryValue = result.Value.NumberResult;
 		}
-		entryKey.Contains("2progressprogressStatusIcons");
 		if (!entryComponent.TryGetEntry(entryKey, out var entry))
 		{
 			uint? entityID2 = null;
@@ -158,7 +157,6 @@ public abstract class PresentationNode
 				float? numberResult = propertyResult.Value.NumberResult;
 				Pair<float, float> numberPairResult = propertyResult.Value.NumberPairResult;
 				string stringResult = propertyResult.Value.StringResult;
-				_ = propertyResult.Value;
 				DateAndTime.TimeDateYear? dateResult = propertyResult.Value.DateResult;
 				if (numberResult.HasValue)
 				{

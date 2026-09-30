@@ -53,7 +53,6 @@ internal class GoalDoAttack : CompositeGoal
 		this.attackType = attackType;
 		this.bodyPartToAttackID = bodyPartToAttackID;
 		this.weapon = weapon;
-		_ = weapon.HasValue;
 	}
 
 	public GoalDoAttack()
@@ -430,10 +429,6 @@ internal class GoalDoAttack : CompositeGoal
 			{
 				return false;
 			}
-			if (num < attackType.RoundsToSpend.Value)
-			{
-				_ = num / attackType.RoundsToSpend.Value;
-			}
 		}
 		return true;
 	}
@@ -577,7 +572,6 @@ internal class GoalDoAttack : CompositeGoal
 			{
 				Tuple<EntityID, EntityType> obj = (Tuple<EntityID, EntityType>)((Trigger)message.OtherInfo).messageInfo;
 				EntityID item = obj.Item1;
-				_ = obj.Item2;
 				if (job != null)
 				{
 					if (item == job.Target)

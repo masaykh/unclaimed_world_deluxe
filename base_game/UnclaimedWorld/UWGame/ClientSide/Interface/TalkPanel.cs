@@ -55,7 +55,6 @@ public class TalkPanel
 		crtWindow.Show();
 		HUDTalkPanel = new HUDTalkPanel(num2, plasticPanel.Y + 184, num, num3);
 		crtAnimator = new CRTAnimator(crtWindow, crtWindow.AbsolutePosition, Point.Zero, crtWindow.Width, crtWindow.Height, ReflectionToUse.None, 0.8f);
-		_ = The.InGameUI.gui;
 		crtContent = new UIComponent(The.InGameUI.gui);
 		crtContent.Width = crtAnimator.SurfacePanel.Width;
 		crtContent.Height = crtAnimator.SurfacePanel.Height;

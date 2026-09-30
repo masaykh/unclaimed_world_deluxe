@@ -48,8 +48,6 @@ internal class GoapFindPreyAction : GoapAction
 		{
 			return false;
 		}
-		_ = currentJob.TakenBy.Count;
-		_ = 0;
 		return true;
 	}
 

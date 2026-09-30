@@ -283,7 +283,6 @@ public class GoalFlyToPosition : Goal
 	private bool IsWaypointWithinTurningRadiusAtMaxSpeed(Vector2 waypoint)
 	{
 		VehicleContainerType obj = (VehicleContainerType)Aircraft.EntityType.ContainerType;
-		_ = obj.Aircraft.MaxAirSpeed;
 		float num = obj.Aircraft.MaxAirSpeed / Aircraft.EntityType.LocomotorType.MaxAngularSpeed;
 		Vector2 vector = new Vector2(Aircraft.FacingNormal.Y, 0f - Aircraft.FacingNormal.X);
 		Vector2 vector2 = Aircraft.PlaySiteLocation.ToVector2();

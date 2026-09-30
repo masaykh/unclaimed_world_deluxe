@@ -239,8 +239,6 @@ public class IntelligenceType : IXmlSerializable
 		{
 			foreach (AgentActionHook item in value3)
 			{
-				_ = item.Hook;
-				_ = 23;
 				Common.AddToMultiList(EventActions, item.Hook, GameData.Instance.AllActionSets[item.ActionSetsKey]);
 			}
 		}

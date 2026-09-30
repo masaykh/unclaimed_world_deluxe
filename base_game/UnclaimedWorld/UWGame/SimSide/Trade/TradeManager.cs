@@ -310,7 +310,6 @@ public class TradeManager : ISnapshot
 		List<Tuple<EntityType, EntityData, int>> list = null;
 		foreach (KeyValuePair<EntityType, TradeAmount> tradeAmount in TradeAmounts)
 		{
-			tradeAmount.Key.KeyName.Contains("hauling");
 			TradeAmount value = tradeAmount.Value;
 			int? num = null;
 			if (value.StartAmount.HasValue)
@@ -547,7 +546,6 @@ public class TradeManager : ISnapshot
 
 	private bool ProduceItems(EntityType entityType, EntityData entityData, int itemsToSpawn, List<Entity> terminals)
 	{
-		entityType.KeyName.Contains("hauling");
 		float value = GetBulkOfTradeItem(entityType).Value;
 		Allegiance allegiance = owner.GetAllegiance();
 		Expedition expedition = owner.GetExpedition();

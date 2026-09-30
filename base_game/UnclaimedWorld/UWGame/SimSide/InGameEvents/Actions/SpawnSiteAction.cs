@@ -62,7 +62,6 @@ public class SpawnSiteAction : EventActionType
 
 	public void PostInitValidate(List<string> listOfErrors)
 	{
-		_ = SiteData;
 	}
 
 	public void PostLoadContentValidate(List<string> listOfErrors)

@@ -23,8 +23,6 @@ public class ThreatRender : ÏnfluenceRender
 
 	public void SetupQuad(VertexOverlayGroundSpriteQuad[] overlayVertices, ref int index)
 	{
-		_ = GameData.Instance.GUIConstants.OverlayLowAlpha;
-		_ = GameData.Instance.GUIConstants.OverlayHiAlpha;
 		int num = index;
 		TileLayer map = The.InGameUI.UIAllegiance.SharedKnowledge.PlaySiteKnowledge.ThreatMaps[The.InGameUI.UIAllegiance.RepresentativeEntityType][ThreatStance.Normal].Map;
 		MapClient.OverlayLimit overlayLimit = null;

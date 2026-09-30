@@ -1046,8 +1046,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 				Find<BiologicalEntity>(out var c3);
 				if (c3.Needs != null)
 				{
-					_ = ID;
-					_ = 4600;
 					c3.Needs.UpdateNeedsTotalBulk();
 				}
 			}
@@ -1405,8 +1403,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		{
 			IDCounter++;
 		}
-		_ = ID;
-		_ = 9;
 		if (ID != EntityID.Invalid)
 		{
 			LookUp<Entity, EntityID>.Add(ID, this);
@@ -1508,8 +1504,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		Components = sn.DoDictionary(Components);
 		DebugLog = (DebugLog)sn.DoISnapshot(DebugLog);
 		SpawnedByOwner = sn.DoEnumNullable(SpawnedByOwner);
-		_ = ID;
-		_ = 4528;
 		containedBy = sn.DoEntityIDNullable(containedBy);
 		CustomFields = sn.DoDictionary(CustomFields);
 		DrivingVehicle = sn.DoEntityIDNullable(DrivingVehicle);
@@ -2256,7 +2250,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	public Entity(EntityType entityType, bool isStructureBeingPlaced = false, bool isItemBeingProduced = false)
 	{
 		EntityType = entityType;
-		_ = EntityType.KeyName == "entity:dog";
 		AddToLookup();
 		((ILookUp<IComposite, CompositeID>)this).AddToLookup();
 		((ILookUp<IDetectable, DetectableID>)this).AddToLookup();
@@ -3396,7 +3389,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 			string key = "entityDied";
 			The.Sim.TriggerSystem.RegisterTrigger(new Trigger(null, Location, GameData.Instance.AllTriggerTypes[key], new Tuple<EntityID, EntityType>(EntityID, EntityType)));
 			GetContainedBy(out container);
-			_ = Location;
 			if (Contains != null)
 			{
 				Contains.IterateContained(delegate(Entity e)
@@ -3845,10 +3837,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	public void Update(GameTime time, out bool wasDestroyed)
 	{
 		bool flag = IsCompleted();
-		if (name != null)
-		{
-			name.Contains("onlan");
-		}
 		if (!IsDead && flag && EntityType.IntelligenceType != null && Find<Intelligence>(out var c))
 		{
 			c.Update(time);
@@ -4141,7 +4129,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 
 	public void Destroy(bool destroyParts = true, bool parentIsDestroyed = false)
 	{
-		_ = PersonEntity;
 		EntityType.EventActions.TryGetValue(EntityEventHooks.ToBeDestroyed, out var value);
 		Goal.FireEventActions(this, null, value);
 		Site site = Site;
@@ -4789,7 +4776,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	public PropertyResult? GetPropertyValue(string propertyKey, SharedKnowledge getterKnowledge, IHasExposedProperties parent = null)
 	{
 		PropertyResult? result = null;
-		_ = propertyKey == "harvestDate";
 		if (exposedPropertyValueFunctions.ContainsKey(propertyKey))
 		{
 			return exposedPropertyValueFunctions[propertyKey](this, getterKnowledge, parent);
@@ -6017,8 +6003,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 			{
 				value.PropertyKeyName = entityData.EntityType.NonLivingType.FinalDegradeType.KeyName;
 			}
-			_ = entityData.EntityID;
-			_ = 6604;
 			if (entityData.PartIsBroken)
 			{
 				value.NumberResult = 0f;

@@ -536,7 +536,6 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 
 	public void UpdateDirectOrderJobs(EntityType entityType)
 	{
-		entityType.Name.Contains("glassyPorridge");
 		int num = 0;
 		GameData.Instance.ItemHarvestSource.TryGetValue(entityType, out var _);
 		ProductionOrder productionOrder = owner.ProductionOrders.Orders[entityType];

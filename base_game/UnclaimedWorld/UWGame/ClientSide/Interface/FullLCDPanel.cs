@@ -404,7 +404,6 @@ public class FullLCDPanel
 				}
 				foreach (ICategoryType item8 in list3)
 				{
-					_ = item8;
 				}
 			}
 			else
@@ -420,7 +419,6 @@ public class FullLCDPanel
 				}
 				foreach (ICategoryType item10 in list3)
 				{
-					_ = item10;
 				}
 			}
 		}

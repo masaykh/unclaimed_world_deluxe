@@ -1891,7 +1891,6 @@ public class GameData
 	{
 		foreach (KeyValuePair<string, AttackType> allAttackType in AllAttackTypes)
 		{
-			_ = allAttackType.Key == "shootImprovedFireExtinguisherBushDragonPoison";
 			Dictionary<BodyPartType, float> dictionary = new Dictionary<BodyPartType, float>();
 			AttackScoresAgainstBodyParts.Add(allAttackType.Value, dictionary);
 			Dictionary<BodyType, float> dictionary2 = new Dictionary<BodyType, float>();

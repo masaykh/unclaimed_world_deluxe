@@ -79,8 +79,6 @@ public abstract class DataLoader
 
 	public bool QueueInitGameData(Scenario scenario)
 	{
-		_ = Sim.CurrentSerializeMode;
-		_ = 1;
 		bool flag = scenario?.ScenarioData.EnableMissions ?? true;
 		switch (queueState)
 		{

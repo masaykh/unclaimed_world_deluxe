@@ -28,8 +28,6 @@ public class StatusScreen
 	public StatusScreen()
 	{
 		GUIManager gui = The.InGameUI.gui;
-		_ = The.Sim.Controller.Game;
-		_ = The.InGameUI;
 		int num = 41;
 		centerWindow = new Window(The.InGameUI.gui);
 		centerWindow.Position = new Point(The.Client.Controller.DrawArea.Width - num, 235);

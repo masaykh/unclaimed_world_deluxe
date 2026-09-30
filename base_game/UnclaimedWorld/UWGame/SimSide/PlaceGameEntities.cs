@@ -2554,7 +2554,6 @@ public class PlaceGameEntities
 		AddFinishedStructureIfKnown("structure:skimmerEngineTop", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(54, 40)) + new Vector3(32f, 0f, 0f));
 		AddFinishedStructureIfKnown("structure:skimmerEngineSide", null, expedition, flipHorizontally: false, MapManager.TileToWorldPos(new Point(56, 42)) + new Vector3(-16f, -20f, 0f));
 		AddFinishedStructureIfKnown("structure:skimmerTail", new Point(53, 41), expedition);
-		_ = The.Client;
 		The.Client.ParticleManager.AddEmitter("smallFog", MapManager.TileToWorldPosVector2(new Point(61, 42)));
 		The.Client.ParticleManager.AddEmitter("smallFog", MapManager.TileToWorldPosVector2(new Point(63, 43)));
 		The.Client.ParticleManager.AddEmitter("smallFog", MapManager.TileToWorldPosVector2(new Point(64, 42)));
@@ -2709,7 +2708,6 @@ public class PlaceGameEntities
 	{
 		if (entity.Locomotor != null && The.Map.SubtileIsCompletelyBlocked(The.Map.TerrainCosts[SurfaceType.TransportType.Foot], MapManager.WorldPosToSubtile(entity.PlaySiteLocation)))
 		{
-			_ = entity.EntityType.KeyName != "entity:bird";
 		}
 	}
 
@@ -2980,7 +2978,6 @@ public class PlaceGameEntities
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:firegrassSod"]), new Point(5, 7));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:firewood"]), new Point(5, 7));
 		AddColonyItem(new Entity(GameData.Instance.AllEntityTypes["item:firewood"]), new Point(5, 7));
-		_ = 0;
 		Entity entity = PlacePerson("Sebastian", "Zyp 1", Reproduction.Male, new Point(4, 3), Color.White, 40f, noSkills: false, expedition);
 		entity.BiologicalEntity.Needs.NeedsList["sleep"].CurrentLevel = 1f;
 		entity.BiologicalEntity.Needs.NeedsList["sleep"].PhysicalNeed.DaysAtZero = 0.5f;

@@ -58,8 +58,6 @@ internal class EvaluateFindHome : GoalEvaluator
 			}
 			if (mostDesirableHome != null)
 			{
-				_ = entity.ID;
-				_ = 5142;
 				result = 0.8 * num + 0.2 * num2;
 				result *= Priority;
 				return CalculateResult.Done;

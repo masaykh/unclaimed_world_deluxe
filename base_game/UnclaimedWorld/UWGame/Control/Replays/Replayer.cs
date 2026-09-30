@@ -105,7 +105,6 @@ public class Replayer
 		trace.BeginComparing(replayFolderPath);
 		cycleSchedule = new CycleSchedule();
 		cycleSchedule.BeginReplaying(replayFolderPath);
-		_ = replayFolderPath + "\\AIStates.UWRepStates";
 		CurrentReplay = new ReplayData(controller);
 		CurrentReplay.LoadReplay(replayFolderPath, replayFilePath, commandFilePath, gameParamsPath, timeToPause);
 		isActive = true;

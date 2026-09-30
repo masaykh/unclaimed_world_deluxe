@@ -80,7 +80,6 @@ public class Toolbar : UIComponent
 		grdOptions.Font = GUIManager.LCDandHUDBodyFontPath;
 		grdOptions.Width = Width;
 		grdOptions.Position = new Point(0, hzButtons.Bottom + 6);
-		_ = hzButtons.Bottom;
 		radiusOption = new RadiusOption(gui);
 		alphaOption = new AlphaOption(gui);
 		base.Height = grdOptions.Bottom;

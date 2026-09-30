@@ -103,7 +103,6 @@ public class MapEditorSaveLoadPanel : Panel
 
 	private string ShortenPath(string path, int maxLength)
 	{
-		_ = path.Length;
 		string[] array = path.Split('\\');
 		int num = (array.Length - 1) / 2;
 		int num2 = num;

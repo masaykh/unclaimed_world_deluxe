@@ -30,8 +30,6 @@ public class SetPropertyAction : EventActionType
 	public override bool Execute(EventAction action, ref string failReason)
 	{
 		List<IHasExposedProperties> list = null;
-		_ = PropertyKey == "disableSpecialAction";
-		_ = PropertyKey == "addTrigger";
 		list = ((TargetObject == null) ? TargetObject.GetRootElementAsList() : TargetObject.GetResult(action));
 		IHasExposedProperties hasExposedProperties = null;
 		if (list != null && list.Count > 0)

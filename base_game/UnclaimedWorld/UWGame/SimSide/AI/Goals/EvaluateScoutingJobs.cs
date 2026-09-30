@@ -167,7 +167,6 @@ internal class EvaluateScoutingJobs : GoalEvaluator, IScoreJob
 				if (locationInScoutingArea.HasValue)
 				{
 					Common.DistanceOctile(locationInScoutingArea.Value, entity.PlaySiteLocation);
-					_ = 1500f;
 				}
 			}
 			entityIntelligence.TopScoringJobs.Add(new GoalAndScore
@@ -229,10 +228,6 @@ internal class EvaluateScoutingJobs : GoalEvaluator, IScoreJob
 	{
 		base.SetGoal();
 		Intelligence intelligence = entity.Intelligence;
-		if (entity.Name != null)
-		{
-			entity.Name.Contains("onlan");
-		}
 		intelligence.SetTopLevelGoal(new GoalScouting(entity, mostDesirableJob, GetOwnerIDs(ownersOfVehicles), locationInScoutingArea)
 		{
 			GoalEvaluator = this

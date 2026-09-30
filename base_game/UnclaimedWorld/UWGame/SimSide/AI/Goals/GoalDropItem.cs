@@ -341,7 +341,6 @@ internal class GoalDropItem : CompositeGoal
 		{
 			if (dropAtLocation.HasValue && Common.DistanceOctile(base.entity.PlaySiteLocation, dropAtLocation.Value) < GameData.Instance.Constants.InteractionDistanceForAgents)
 			{
-				_ = dropAtLocation.Value;
 			}
 			if (base.entity.Contains.Uncontain(entity, destroy: false, shouldQueue: false, placeInStorage, entity2, null, null, null, dropAtLocation))
 			{

@@ -19,11 +19,6 @@ public class Region : ISnapshot
 
 	public Region(Point centerInSubTiles, ushort color)
 	{
-		if (color == 321 && centerInSubTiles.X == 118)
-		{
-			_ = centerInSubTiles.Y;
-			_ = 61;
-		}
 		CenterInSubtiles = centerInSubTiles;
 		CenterLocation = MapManager.SubTileToWorldPos(centerInSubTiles);
 		Color = color;

@@ -147,7 +147,6 @@ public class EvaluateSleep : GoalEvaluator
 	{
 		Expedition currentExpedition = entityIntelligence.CurrentExpedition;
 		int numberOfSleepingIndependents = currentExpedition.GetNumberOfSleepingIndependents();
-		_ = currentExpedition.IndependentMembers.Count;
 		if (numberOfSleepingIndependents >= currentExpedition.NoOfIndependentMembersAllowedToSleep())
 		{
 			Need need = base.entity.BiologicalEntity.Needs.NeedsList["sleep"];
@@ -449,7 +448,6 @@ public class EvaluateSleep : GoalEvaluator
 	{
 		MapManager.GetClampedMapAreaUsingTiles(center, radius, out var minX, out var maxX, out var minY, out var maxY);
 		SubtileLayers mapCosts = The.Map.TerrainCosts[SurfaceType.TransportType.Foot];
-		_ = entityIntelligence.Allegiance;
 		EntityGroup entityGroup = null;
 		EntityGroup entityGroup2 = null;
 		if (entity.Intelligence.CurrentExpedition != null)

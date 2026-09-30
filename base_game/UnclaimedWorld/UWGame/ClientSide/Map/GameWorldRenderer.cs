@@ -910,11 +910,6 @@ public class GameWorldRenderer
 				{
 					foreach (KeyValuePair<ResourceType, TileResourceContainer> tileResource in terrainTile.TileResources)
 					{
-						if (terrainTile.X == 18)
-						{
-							_ = terrainTile.Y;
-							_ = 10;
-						}
 						if (flag2 || sharedKnowledge.AllDetectedEntities.Contains(tileResource.Value.DetectableID))
 						{
 							AddRenderableToRender(drawModels, drawBillboards, currentRow, tileResource.Value.Renderable, j, i);
@@ -1057,10 +1052,6 @@ public class GameWorldRenderer
 				{
 					if (PositionIsOnTile(item.MapPosition.Value, tileX, tileY))
 					{
-						if (renderable.Entity != null)
-						{
-							renderable.Entity.ToString().Contains("Tipi");
-						}
 						if (TileEntitiesAreInSight(tileX, tileY))
 						{
 							sortedObjectsToDraw[currentRow].Add(item);
@@ -1241,9 +1232,6 @@ public class GameWorldRenderer
 	public void UpdateModelMatricesWithNewPositions()
 	{
 		bool drawModels = true;
-		if (The.Sim.Mode == Sim.EngineMode.Edit)
-		{
-		}
 		float x = The.MapUI.MapWindowWorldPosition.X + (float)The.MapUI.mapWindowWidth / 2f;
 		float y = The.MapUI.MapWindowWorldPosition.Y + (float)The.MapUI.mapWindowHeight / 2f;
 		CameraTarget = new Vector3(x, y, 0f);
@@ -1470,7 +1458,6 @@ public class GameWorldRenderer
 	{
 		groundFeatureQuadIndex = 0;
 		bool flag = true;
-		_ = The.InGameUI.UIAllegiance.SharedKnowledge;
 		for (int i = TileStartX; i <= TileEndX; i++)
 		{
 			TerrainTile[] array = The.Map.TileMap[i];
@@ -1874,7 +1861,6 @@ public class GameWorldRenderer
 			for (int i = 0; i < item.terrainInBatch.Count; i++)
 			{
 				RenderedTerrainType renderedTerrainType = item.terrainInBatch[i];
-				_ = renderedTerrainType.TextureName == "greengrass";
 				terrainEffect.Parameters[textureParams[i]].SetValue(terrainTextures[renderedTerrainType.TextureName]);
 				if (renderedTerrainType is SoilComponentType { RenderAsRocksType: not null } soilComponentType && soilComponentType.RenderAsRocksType.DepthMapTextureName != null)
 				{
@@ -2011,7 +1997,6 @@ public class GameWorldRenderer
 	/// <summary>
 	private void DrawTopAndBottomEdges(Rectangle rect, Rectangle sourcerect)
 	{
-		_ = DiffuseMSRenderTarget.Width / 2;
 		int num = (int)(float)(DiffuseMSRenderTarget.Width / rect.Width + 1);
 		for (int i = 0; i < Common.Max(1, DiffuseMSRenderTarget.Height / rect.Height); i++)
 		{

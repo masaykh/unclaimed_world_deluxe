@@ -326,11 +326,6 @@ public class DependentRegionMap : RegionMap, IIDEventSubscriber
 
 	protected override bool BuildRegionGraphBetweenSectors()
 	{
-		if (base.ID == (CyclableID)202uL)
-		{
-			_ = The.Sim.TotalUnPausedGameTimeInSeconds;
-			_ = 15.0;
-		}
 		bool isLastSector;
 		SubtileSector currentSector = GetCurrentSector(out isLastSector);
 		if (currentSector != null)

@@ -483,7 +483,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 	{
 		foreach (Point neighboringTile in GetNeighboringTiles(new Point(X, Y), edge))
 		{
-			_ = neighboringTile;
 		}
 	}
 
@@ -768,8 +767,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 
 	public void AddRememberedRootEntity(SharedKnowledge sharedKnowledge, MemoryFact memoryFact)
 	{
-		_ = memoryFact.EntityID;
-		_ = 4852;
 		if (RememberedRootEntitiesOnTile == null)
 		{
 			RememberedRootEntitiesOnTile = new Dictionary<SharedKnowledge, List<MemoryFact>>();
@@ -878,7 +875,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 
 	private bool TerrainHasGatherableResources(Terrain terrain)
 	{
-		_ = terrain.Vegetation;
 		return false;
 	}
 
@@ -1047,7 +1043,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 				roadsOrPaths[i].Renderable.RenderAsConnectedGroundSprite.IsRenderedAsConnection = false;
 			}
 		}
-		_ = The.Map;
 		for (int j = 0; j < 8; j++)
 		{
 			if (roadsOrPaths[j] == null)
@@ -1281,11 +1276,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 
 	public ISnapshot DoSnapshot(Snapshotter sn)
 	{
-		if (X == 18)
-		{
-			_ = Y;
-			_ = 10;
-		}
 		if (sn.mode != Snapshotter.Mode.Load)
 		{
 			snapshotAllegiancesThatSeeThisTile = AllegiancesThatSeeThisTile.Select((Allegiance a) => a.ID).ToList();
@@ -1384,8 +1374,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		{
 			foreach (KeyValuePair<AllegianceID, List<ZoneID>> snapshotZone in snapshotZones)
 			{
-				_ = snapshotZone.Key;
-				_ = long.MaxValue;
 			}
 		}
 		snapshotZones = sn.DoMultiMap(snapshotZones);
@@ -1441,11 +1429,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 
 	public void LoadPostProcess(Snapshotter sn)
 	{
-		if (X == 9)
-		{
-			_ = Y;
-			_ = 9;
-		}
 		sn.RegisterLoadPostProcessCall(this);
 		AllegiancesThatSeeThisTile = new HashSet<Allegiance>(snapshotAllegiancesThatSeeThisTile.Select((AllegianceID a) => LookUp<Allegiance, AllegianceID>.FindByID(a)));
 		EntitiesThatSeeThisTile = new HashSet<Entity>(snapshotEntitiesThatSeeThisTile.Select((EntityID e) => Entity.FindByID(e)));
@@ -1501,7 +1484,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 			Zones = new Dictionary<Allegiance, List<Zone>>();
 			foreach (KeyValuePair<AllegianceID, List<ZoneID>> snapshotZone in snapshotZones)
 			{
-				_ = snapshotZone.Key;
 				Zones.Add(LookUp<Allegiance, AllegianceID>.FindByID(snapshotZone.Key), snapshotZone.Value.Select((ZoneID z) => LookUp<Zone, ZoneID>.FindByID(z)).ToList());
 			}
 			snapshotZones = null;

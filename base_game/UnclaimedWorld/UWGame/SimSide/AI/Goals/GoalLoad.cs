@@ -56,7 +56,6 @@ internal class GoalLoad : CompositeGoal
 			}
 			if (!flag)
 			{
-				_ = data.PlaySiteLocation;
 				AddSubgoal(new GoalMoveToPosition(entity, null, data, GoalMoveToPosition.VehicleUse.NoVehicle));
 				if (!PickupItemOrUnloadFirst(data, mountAfterPickup: false, bendDown: true, standUpAfterwards: true, compartment))
 				{

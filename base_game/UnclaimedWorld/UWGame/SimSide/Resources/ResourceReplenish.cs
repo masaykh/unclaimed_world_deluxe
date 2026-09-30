@@ -42,7 +42,6 @@ public class ResourceReplenish : ISnapshot
 
 	public float GetCurrentReplenishRate(ResourceContainer parent, out bool maximumReached)
 	{
-		_ = parent.ResourceType;
 		float maximumReplenishRate = GetMaximumReplenishRate(parent);
 		if (maxResourceItemsEverSet <= parent.NoOfHarvestableItems)
 		{

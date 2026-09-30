@@ -90,7 +90,6 @@ public class UnclaimedWorld : Game
 		{
 			RootDirectory = "Content"
 		};
-		_ = GraphicsAdapter.DefaultAdapter.SupportedDisplayModes;
 		bool flag = false;
 		int num = 0;
 		do

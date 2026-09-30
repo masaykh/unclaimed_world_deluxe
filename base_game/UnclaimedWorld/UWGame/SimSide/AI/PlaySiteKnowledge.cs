@@ -96,7 +96,6 @@ public class PlaySiteKnowledge : ISnapshot, IIDEventSubscriber
 
 	public void AddOrUpdateKnownEntityLocation(Entity entity, Vector2 location)
 	{
-		_ = entity.EntityType.TreeType;
 		EntityID iD = entity.ID;
 		if (IsOutsiderAgentOnPlaySite(entity))
 		{
@@ -114,7 +113,6 @@ public class PlaySiteKnowledge : ISnapshot, IIDEventSubscriber
 			KnownEntityDataTree.UpdateObject(iD, location);
 			return;
 		}
-		entity.ToString().Contains("Mudbrick");
 		KnownEntityDataTree.AddObject(iD, location);
 	}
 

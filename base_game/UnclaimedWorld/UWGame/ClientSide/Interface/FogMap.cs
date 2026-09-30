@@ -96,10 +96,6 @@ public class FogMap
 			for (int j = 0; j < mapWidth; j++)
 			{
 				TerrainTile terrainTile = tileMap[j][i];
-				if (j == 9)
-				{
-					_ = 9;
-				}
 				Color value = (terrainTile.HasEverBeenSeenByPlayer ? ((!terrainTile.AllegiancesThatSeeThisTile.Contains(uIAllegiance)) ? color : Color.Transparent) : Color.Black);
 				mapTextureColors[num + j] = Color.Lerp(mapTextureColors[num + j], value, fogOfWarFadeRate);
 			}

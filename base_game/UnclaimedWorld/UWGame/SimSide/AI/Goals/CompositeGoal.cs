@@ -1494,7 +1494,6 @@ public abstract class CompositeGoal : Goal
 	{
 		if (base.ID == GoalID.Invalid)
 		{
-			_ = SkipThisAssert;
 			return;
 		}
 		if (entity.PersonEntity != null && g is GoalWait && Subgoals.Count > 2)
@@ -1516,11 +1515,6 @@ public abstract class CompositeGoal : Goal
 
 	protected bool ForwardMessageToFrontMostSubgoal(Message message)
 	{
-		if (The.Sim.TotalUnPausedGameTimeInSeconds > 24.0 && entity.ID == (EntityID)19L && message.MessageType != Message.MessageTypes.Hit)
-		{
-			_ = message.MessageType;
-			_ = 28;
-		}
 		if (Subgoals.Count > 0 && Subgoals.Peek().isActive())
 		{
 			return Subgoals.Peek().HandleMessage(message);
@@ -1558,7 +1552,6 @@ public abstract class CompositeGoal : Goal
 	{
 		sn.RegisterLoadPostProcessCall(this);
 		base.LoadPostProcess(sn);
-		entity.ToString().Contains("Millet");
 		foreach (GoalID snapshotSubgoal in snapshotSubgoals)
 		{
 			Subgoals.Enqueue(LookUpGoals.FindByID(snapshotSubgoal));

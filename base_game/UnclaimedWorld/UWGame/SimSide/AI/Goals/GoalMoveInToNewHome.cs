@@ -24,8 +24,6 @@ internal class GoalMoveInToNewHome : CompositeGoal, ITopLevelGoal
 
 	protected override void Activate()
 	{
-		_ = base.entity.ID;
-		_ = 5142;
 		base.Status = Status.Active;
 		RemoveAllSubgoals();
 		if (EntityResultCausesFailedGoal(entityIntelligence.GetKnownData(newHome, out var data)))

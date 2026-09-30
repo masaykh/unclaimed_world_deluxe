@@ -44,7 +44,6 @@ public class CombatInfo : ISnapshot
 		else
 		{
 			isCenterLocation = false;
-			_ = attacker.Intelligence;
 			SubtileInfluence subtileInfluence = DrawMeleePositionInfluenceMap(attacker, target);
 			if (InfluenceMap.GetBestSubtileLocationThatIsntBlocked(subtileInfluence.Values, out var bestSubtilePoint) == -1)
 			{

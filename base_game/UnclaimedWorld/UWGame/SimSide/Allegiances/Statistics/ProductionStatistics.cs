@@ -145,7 +145,6 @@ public class ProductionStatistics : ISnapshot
 		{
 			return;
 		}
-		_ = startScenarioParams.ScenarioName;
 		if (eventType != StatTypes.Produced || The.Sim.StartGameParams.GetRGScenario() != StartGameParams.RGScenario.FieldsOfTauCeti)
 		{
 			return;

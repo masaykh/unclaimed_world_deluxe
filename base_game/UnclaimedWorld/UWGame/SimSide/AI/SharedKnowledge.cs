@@ -286,7 +286,6 @@ public class SharedKnowledge : ISnapshot
 		}
 		foreach (DetectableID item2 in list2)
 		{
-			_ = 12947;
 			AllDetectedEntities.Remove(item2);
 		}
 	}
@@ -514,7 +513,6 @@ public class SharedKnowledge : ISnapshot
 				float? interestLevelForSpottedResourceStdDeviation = resourceDetectionFactor.InterestLevelForSpottedResourceStdDeviation;
 				if (!interestLevelForSpottedResourceStdDeviation.HasValue)
 				{
-					_ = GameData.Instance.Constants.InterestLevelForSpottedResourceStdDeviation;
 				}
 				else
 				{
@@ -524,7 +522,6 @@ public class SharedKnowledge : ISnapshot
 			else
 			{
 				d = GameData.Instance.Constants.InterestLevelForSpottedResourceMean;
-				_ = GameData.Instance.Constants.InterestLevelForSpottedResourceStdDeviation;
 			}
 			if (!Common.IsZero(d))
 			{
@@ -758,7 +755,6 @@ public class SharedKnowledge : ISnapshot
 
 	public void AddToCollectionsOfKnownEntities(Entity entity)
 	{
-		_ = entity.ID;
 		if (!AllKnownEntities.Contains(entity))
 		{
 			AllKnownEntities.AddEntity(entity);
