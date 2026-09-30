@@ -33,8 +33,6 @@ public class SidePanelEntity : RosterPanel
 
 	private DataTypeButton selectedEntityTypeDataButton;
 
-	private const int containsPanelSortOrder = 17;
-
 	public SidePanelEntity()
 		: base(The.InGameUI.sidePanelHeight, isInfoPanel: true)
 	{
@@ -279,11 +277,6 @@ public class SidePanelEntity : RosterPanel
 		}
 	}
 
-	private bool EntityCanBeSalvaged(IKnownEntityData entity)
-	{
-		return entity?.EntityType.CanBeSalvagedDirectly() ?? false;
-	}
-
 	private void ShowNextOrPrevious(int currentIndex)
 	{
 		int count = The.Sim.PlaySite.PlayerAllegiance.Persons.Count;
@@ -462,34 +455,6 @@ public class SidePanelEntity : RosterPanel
 		StockButton stockButton = sender as StockButton;
 		The.InGameUI.EntityListWindow.SetDataSource(stockButton.EntityType, stockButton.EntityList);
 		The.InGameUI.EntityListWindow.OpenNextToStockButton(sender);
-	}
-
-	private void previous_Click(UIComponent sender, EventArgs e)
-	{
-		if (intface.SelectedEntity.HasValue)
-		{
-			Entity entity = Entity.FindByID(intface.SelectedEntity.Value);
-			if (entity != null)
-			{
-				int num = The.InGameUI.UIAllegiance.MembersList.IndexOf(entity);
-				num = ((num != -1) ? (num - 1) : 0);
-				ShowNextOrPrevious(num);
-			}
-		}
-	}
-
-	private void next_Click(UIComponent sender, EventArgs e)
-	{
-		if (intface.SelectedEntity.HasValue)
-		{
-			Entity entity = Entity.FindByID(intface.SelectedEntity.Value);
-			if (entity != null)
-			{
-				int num = The.InGameUI.UIAllegiance.MembersList.IndexOf(entity);
-				num = ((num != -1) ? (num + 1) : 0);
-				ShowNextOrPrevious(num);
-			}
-		}
 	}
 
 	public static void SetSummaryAsTotal(CollapsablePanel cpCategory, object o)

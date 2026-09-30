@@ -66,11 +66,6 @@ public class Conversation : ILookUp<Conversation, ConversationID>, ISnapshot
 		noOfSpokenLines++;
 	}
 
-	private void Intelligence_TalkActionEnded()
-	{
-		TalkActionEnded();
-	}
-
 	public void TalkActionEnded()
 	{
 		if (noOfSpokenLines == TotalNoOfTalkActions)

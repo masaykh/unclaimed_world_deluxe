@@ -5,8 +5,6 @@ namespace UWGame.SimSide.Overland.Locations;
 
 public class GridCoordinate : IEquatable<GridCoordinate>
 {
-	private const double MaximumDelta = 1.5;
-
 	public double X { get; set; }
 
 	public double Y { get; set; }

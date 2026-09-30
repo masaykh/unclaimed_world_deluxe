@@ -22,15 +22,7 @@ public class ActionPicker : UIComponent
 	private ImageButton btSell;
 
 	private ImageButton btBuy;
-
-	private ImageButton btLoad;
-
-	private ImageButton btUnload;
-
 	private ImageButton btEmbark;
-
-	private ImageButton btDisembark;
-
 	private MissionStopTemplate missionStopTemplate;
 
 	private MissionTemplate missionTemplate;
@@ -145,10 +137,6 @@ public class ActionPicker : UIComponent
 		}
 	}
 
-	private void UpdateEnabledStatus(ImageButton bt, IKnownEntityData terminalData)
-	{
-	}
-
 	private bool ActionExists(ActionTypes action, ref List<string> errors)
 	{
 		if (missionStopTemplate.Actions.Any((MissionActionTemplate a) => a.ActionType == action))
@@ -172,15 +160,6 @@ public class ActionPicker : UIComponent
 			btBuy.Enabled = false;
 			btBuy.ToolTip = "Buy is unavailable here: " + string.Join(" \n", errors);
 		}
-	}
-
-	private void UpdateAction(ImageButton bt)
-	{
-	}
-
-	private void RemoveActionOption(ActionTypes action)
-	{
-		list.RemoveEntry(action);
 	}
 
 	private void bt_Click(UIComponent sender, EventArgs e)

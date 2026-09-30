@@ -39,23 +39,6 @@ public class UpgradeWindow : HUDWindow
 	private Image headerIcon;
 
 	protected int itemHeight = 18;
-
-	private const int produceColumnX = 226;
-
-	private const int maxOrdersX = 238;
-
-	private const int itemTypeIconColumnX = 18;
-
-	private const int captionX = 38;
-
-	private const int categoryCheckedX = 330;
-
-	private const int stageIconX = 41;
-
-	private const int allowX = 267;
-
-	private const int blockX = 337;
-
 	private Grid outerGrid;
 
 	private Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems = new Dictionary<EntityType, InventoryPanel.Availability>();
@@ -67,11 +50,6 @@ public class UpgradeWindow : HUDWindow
 	private Label lblHeader;
 
 	private TextButton btCancel;
-
-	private const int rowHeight = 36;
-
-	private const int expandedPanelMargin = 3;
-
 	private List<Tuple<EntityCategory, CollapsablePanel>> categoryPanels = new List<Tuple<EntityCategory, CollapsablePanel>>();
 
 	private List<Grid> categoryGridsThatWereAddedTo = new List<Grid>();
@@ -168,31 +146,11 @@ public class UpgradeWindow : HUDWindow
 		categoryGrid.IsOuterGrid = false;
 	}
 
-	private void tbCategoryAllow_Click(UIComponent sender, EventArgs e)
-	{
-		if ((sender as TextButton).IsChecked)
-		{
-			EntityCategory category = ((ItemCategoryButtonEventArgs)e).Category;
-			CollapsablePanel obj = (CollapsablePanel)outerGrid.EntriesByKey[category];
-			((TextButton)obj.FindChildById(UIComponent.DataControlID.UpgradeProhibit)).IsChecked = false;
-			AllowItems(obj);
-		}
-	}
-
 	private static void AllowItems(CollapsablePanel cpCategory)
 	{
 		foreach (UIComponent entry in ((Grid)cpCategory.ExpandedPanel.Controls[0]).Entries)
 		{
 			((ImageButton)entry.FindChildById(UIComponent.DataControlID.CurrentOrders)).IsChecked = true;
-		}
-	}
-
-	private static void ProhibitItems(CollapsablePanel cpCategory)
-	{
-		foreach (UIComponent entry in ((Grid)cpCategory.ExpandedPanel.Controls[0]).Entries)
-		{
-			((TextButton)entry.FindChildById(UIComponent.DataControlID.UpgradeAllowItem)).IsChecked = false;
-			((TextButton)entry.FindChildById(UIComponent.DataControlID.UpgradeProhibitIem)).IsChecked = true;
 		}
 	}
 
@@ -285,44 +243,9 @@ public class UpgradeWindow : HUDWindow
 		entityTypeButton.X = 38;
 	}
 
-	private void btTopAll_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
 	private void btCancel_Click(UIComponent sender, EventArgs e)
 	{
 		Hide();
-	}
-
-	private void GetUserSettings(out SerializableDictionary<string, bool> mayStockpileCategory, out SerializableDictionary<string, bool> mayStockpileItem)
-	{
-		mayStockpileCategory = new SerializableDictionary<string, bool>();
-		mayStockpileItem = new SerializableDictionary<string, bool>();
-		foreach (KeyValuePair<object, UIComponent> item in outerGrid.EntriesByKey)
-		{
-			EntityCategory entityCategory = item.Key as EntityCategory;
-			CollapsablePanel obj = item.Value as CollapsablePanel;
-			TextButton textButton = (TextButton)obj.FindChildById(UIComponent.DataControlID.UpgradeAllow);
-			TextButton textButton2 = (TextButton)obj.FindChildById(UIComponent.DataControlID.UpgradeProhibit);
-			if (textButton.IsChecked)
-			{
-				mayStockpileCategory.Add(entityCategory.KeyName, value: true);
-			}
-			else if (textButton2.IsChecked)
-			{
-				mayStockpileCategory.Add(entityCategory.KeyName, value: false);
-			}
-			foreach (KeyValuePair<object, UIComponent> item2 in ((Grid)obj.ExpandedPanel.Controls[0]).EntriesByKey)
-			{
-				EntityType entityType = (EntityType)item2.Key;
-				TextButton textButton3 = (TextButton)item2.Value.FindChildById(UIComponent.DataControlID.UpgradeAllowItem);
-				mayStockpileItem.Add(entityType.KeyName, textButton3.IsChecked);
-			}
-		}
-	}
-
-	private void btTopNone_Click(UIComponent sender, EventArgs e)
-	{
 	}
 
 	public new void Hide()
@@ -459,10 +382,6 @@ public class UpgradeWindow : HUDWindow
 		}
 		SetDisplayName(zoneName, lblName, lblHeader, headerIcon);
 		Populate(fillUserControls);
-	}
-
-	private void FillToplevelControls(Stockpile stockpile)
-	{
 	}
 
 	private void UpdateItemRow(UIComponent itemRow, UpgradeCategory category, EntityType entityType, IKnownEntityData entityData, EntityGroup owner, bool fillUserControls)

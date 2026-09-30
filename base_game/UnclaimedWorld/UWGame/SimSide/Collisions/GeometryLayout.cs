@@ -61,14 +61,6 @@ public class GeometryLayout : ISnapshot
 		}
 	}
 
-	private void SetAccessPointsDirty(List<Entity> neighbours)
-	{
-		foreach (Entity neighbour in neighbours)
-		{
-			neighbour.SetAccessPointDirty();
-		}
-	}
-
 	private void AddTileReferencesToEntity()
 	{
 		if (baseCenterTile.HasValue)
@@ -315,15 +307,6 @@ public class GeometryLayout : ISnapshot
 			}
 		}
 		CalculateTouchedTiles();
-	}
-
-	private bool AllowEntityOnShapes(Entity entity)
-	{
-		if (entity != parent && entity.EntityType.TerrainType == null)
-		{
-			return entity.EntityType.TreeType != null;
-		}
-		return true;
 	}
 
 	public bool IsWithinPad(GeometryLayoutType geoType, float padRadiusSquared, Vector2 worldPos)

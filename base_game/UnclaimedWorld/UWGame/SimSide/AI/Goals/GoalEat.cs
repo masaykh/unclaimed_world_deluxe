@@ -436,16 +436,6 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 		}
 	}
 
-	private bool IsInRangeOfFood(Entity food)
-	{
-		if (Common.DistanceOctile(entity.PlaySiteLocation, food.PlaySiteLocation) > 30f)
-		{
-			base.Status = Status.Failed;
-			return false;
-		}
-		return true;
-	}
-
 	public override void Deactivate()
 	{
 		if (itemToConsumeID.HasValue)

@@ -27,11 +27,6 @@ public class GUIConstants : IGameDataObject, IXmlSerializable
 	public Color AttainableColor = "#4AA863".ColorFromHex();
 
 	public Color UnattainableColor = "#c6000e".ColorFromHex();
-
-	private const string positiveHex = "#048628";
-
-	private const string negativeHex = "#953540";
-
 	public string PositiveTintHex = "#048628";
 
 	public string NegativeTintHex = "#953540";

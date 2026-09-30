@@ -6,8 +6,6 @@ public struct GeodeticCoordinate
 
 	private readonly double longitude;
 
-	private const int EqualityDecimals = 4;
-
 	public double Latitude => latitude;
 
 	public double Longitude => longitude;

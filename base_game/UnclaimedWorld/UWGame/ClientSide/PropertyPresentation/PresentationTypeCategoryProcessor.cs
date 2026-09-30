@@ -99,25 +99,11 @@ internal class PresentationTypeCategoryProcessor
 		}
 	}
 
-	private static void RemoveEmptyPresentations(Dictionary<LeafNode, List<PresentationData>> processedData)
-	{
-		foreach (LeafNode emptyPropertyPresentation in emptyPropertyPresentations)
-		{
-			processedData.Remove(emptyPropertyPresentation);
-		}
-		emptyPropertyPresentations.Clear();
-	}
-
 	public static void DetermineEntryKey(string caption, Presentation presentation, IHasExposedProperties hasExposedProperties, out string entryKey)
 	{
 		_ = presentation.PresentationTypeKey == "storageCapacityPresentation";
 		hasExposedProperties.GetDefaultKey(out entryKey);
 		entryKey = entryKey + caption + presentation.PropertyNameForValue + presentation.PresentationTypeKey;
-	}
-
-	private static float GetInvertedValue(float value)
-	{
-		return 1f - value;
 	}
 
 	private static Dictionary<object, PresentationData> ProcessCategoryData(PresentationTypeCategory categoryToProcess, IHasExposedProperties hasExposedProperties)

@@ -28,9 +28,6 @@ internal class GoalDoTakeFive : CompositeGoal
 	public bool HasTriedToStartConversation;
 
 	public bool IsListening;
-
-	private const float idleDuration = 5f;
-
 	public static float TimeToWaitBeforeTurningBodyToListen = 0.85f;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;

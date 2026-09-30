@@ -50,12 +50,6 @@ public abstract class HUDWindow
 
 	public const int buttonWidth = 48;
 
-	private const int captionX = 0;
-
-	private const int buildX = 150;
-
-	private const int beginX = 100;
-
 	protected int CloseButtonYPos
 	{
 		set
@@ -118,11 +112,6 @@ public abstract class HUDWindow
 		{
 			DisplayWindow.ViewPort.MouseOut += ViewPort_MouseOut;
 		}
-	}
-
-	private void DisplayWindow_Click(UIComponent sender, EventArgs e)
-	{
-		DisplayWindow.BringToTop();
 	}
 
 	public void ChangeSurface(string surfaceSpriteName)

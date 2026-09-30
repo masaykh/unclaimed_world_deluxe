@@ -7,8 +7,6 @@ namespace UWGame.SimSide.AI.Goals;
 
 internal class EvaluateLeisureWalk : GoalEvaluator
 {
-	private Rectangle stayInside;
-
 	private LeisureWalkActivity bestActivity;
 
 	public List<EntityGroup> OwnersOfActivities;

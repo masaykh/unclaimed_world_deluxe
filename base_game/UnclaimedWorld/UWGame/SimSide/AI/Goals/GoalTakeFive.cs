@@ -148,19 +148,6 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		}
 	}
 
-	private static byte SetValue(MapManager.SubtileValue value)
-	{
-		if (MapManager.TestForFlag(value, MapManager.SubtileValue.Reserved))
-		{
-			return 0;
-		}
-		if (MapManager.IsBlocked(value))
-		{
-			return 0;
-		}
-		return 1;
-	}
-
 	protected override void Activate()
 	{
 		base.Status = Status.Active;

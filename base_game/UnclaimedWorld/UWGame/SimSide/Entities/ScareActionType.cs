@@ -10,11 +10,6 @@ namespace UWGame.SimSide.Entities;
 public class ScareActionType : IXmlSerializable
 {
 	public BodyPartType[] DependsOn;
-
-	private float Period;
-
-	private float EnergyCost;
-
 	public string AnimationKey;
 
 	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(AttackType))

@@ -159,8 +159,4 @@ public class HUDDateAndWeather : HUDWindow
 	public void Show()
 	{
 	}
-
-	private void closeButton_Click(UIComponent sender, EventArgs e)
-	{
-	}
 }

@@ -23,9 +23,6 @@ public class FramedCRT
 	public CRTScreen CRTScreen;
 
 	private Box frame;
-
-	private Box frameDropShadow;
-
 	public Window DisplayWindow;
 
 	public Window cablesWindow;
@@ -43,11 +40,6 @@ public class FramedCRT
 	private int edgeWidth = 37;
 
 	public Image backgroundNoise;
-
-	private float timeBetweenInterference;
-
-	private float timeBetweenInterferencePassed;
-
 	public CRTNoise CRTNoise;
 
 	private CommonInterface intf;

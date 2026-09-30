@@ -18,9 +18,6 @@ public class UnclaimedWorld : Game
 	public GraphicsDeviceManager GraphicsDeviceManager;
 
 	public Controller Controller;
-
-	private const int maxFSRetries = 5;
-
 	public static readonly Point MaxScreenDimensions = new Point(4096, 4096);
 
 	private static readonly string dialogInstructions = "Whoops - fatal error. Press Ctrl-C to copy the contents of this dialog and paste the text into the forums: " + Environment.NewLine + Environment.NewLine;

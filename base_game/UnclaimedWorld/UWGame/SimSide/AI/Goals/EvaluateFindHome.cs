@@ -175,12 +175,6 @@ internal class EvaluateFindHome : GoalEvaluator
 		}
 	}
 
-	private Point GetRandomTilePosNearExpeditionForNewHome()
-	{
-		Point point = MapManager.WorldPosToTile(entityIntelligence.CurrentExpedition.Center.Value);
-		return new Point(point.X + The.Sim.GameplayRandomGenerator.RandomSign() * The.Sim.GameplayRandomGenerator.Next(8, 15, "EvaluateFindHome"), point.Y + The.Sim.GameplayRandomGenerator.RandomSign() * The.Sim.GameplayRandomGenerator.Next(8, 15, "EvaluateFindHome"));
-	}
-
 	public override bool CancelCurrentTakers()
 	{
 		return true;

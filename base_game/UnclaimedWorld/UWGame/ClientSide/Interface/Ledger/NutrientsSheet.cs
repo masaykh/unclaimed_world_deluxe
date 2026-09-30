@@ -14,20 +14,6 @@ namespace UWGame.ClientSide.Interface.Ledger;
 
 public class NutrientsSheet : LedgerSheet
 {
-	private const int columnWidth = 90;
-
-	private const int nameWidth = 150;
-
-	private const int productionX = 150;
-
-	private const int consumedX = 240;
-
-	private const int overconsumedX = 330;
-
-	private const int storedX = 465;
-
-	private const int daysLeftX = 555;
-
 	private int bottomPartHeight = 40;
 
 	private string overconsumedTooltip;
@@ -370,29 +356,5 @@ public class NutrientsSheet : LedgerSheet
 		label6.ID = DataControlID.DaysLeft;
 		uIComponent.CenterChildVertically(label6);
 		return uIComponent;
-	}
-
-	private void AddCategoryRow(ref CollapsablePanel cpCategory, ref Grid categoryGrid, object key)
-	{
-		GUIManager gUIManager = base.GUIManager;
-		EntityCategory entityCategory = key as EntityCategory;
-		cpCategory = new CollapsablePanel(gUIManager, CollapsablePanel.PanelType.DropDownBig);
-		cpCategory.HeadingYPos = 4;
-		cpCategory.CollapsedHeight = 28;
-		outerGrid.AddEntry(key, cpCategory);
-		cpCategory.OrderByTag1 = entityCategory.Name;
-		cpCategory.Init();
-		cpCategory.Title = entityCategory.Name;
-		cpCategory.Width = outerGrid.Width;
-		categoryGrid = new Grid(gUIManager, ListBoxType.LCD, Label.LabelType.LCDNormal);
-		categoryGrid.DebugTag = "categoryGrid";
-		categoryGrid.FixedItemHeights = true;
-		categoryGrid.Width = cpCategory.Width;
-		cpCategory.AddContent(categoryGrid);
-		categoryGrid.ScrollBarEnabled = false;
-		categoryGrid.ItemHeight = 26;
-		categoryGrid.CanGrowInHeight = true;
-		categoryGrid.Font = GUIManager.LCDandHUDBodyFontPath;
-		categoryGrid.IsOuterGrid = false;
 	}
 }

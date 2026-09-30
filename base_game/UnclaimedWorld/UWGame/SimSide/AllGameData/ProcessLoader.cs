@@ -77,9 +77,6 @@ public class ProcessLoader
 	public const string packingDownWithoutLossSummary = "This object can be packed down and set up repeatedly without losing any parts.";
 
 	public const string clearAwaySummary = "Remove all traces of this structure.";
-
-	private const float baseDaysOfWorkNeeded = 1f / 3f;
-
 	public const float timeToPrepareTool = 0.002f;
 
 	public const float timeToReloadInSeconds = 1.92f;

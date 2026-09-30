@@ -13,9 +13,6 @@ public class EventArchivePanel : RosterPanel
 	private TextArea area;
 
 	private DialogOption[] dialogOptions;
-
-	private const int maxNoOfButtons = 4;
-
 	private TextButton[] buttons = new TextButton[4];
 
 	private ImageButton previousButton;
@@ -23,16 +20,6 @@ public class EventArchivePanel : RosterPanel
 	private ImageButton nextButton;
 
 	private List<TextButton> buttonsOnForm = new List<TextButton>();
-
-	private const int itemHeight = 36;
-
-	private const int horizPadding = 6;
-
-	private const int vertPadding = 4;
-
-	private const int leftButtonXPos = 20;
-
-	private const int rightButtonEdge = 312;
 
 	public EventArchivePanel()
 		: base("EVENT ARCHIVE", 487, 486)
@@ -92,11 +79,6 @@ public class EventArchivePanel : RosterPanel
 				DisplayNextOrPreviousEvent(num);
 			}
 		}
-	}
-
-	private void btClose_Click(UIComponent sender, EventArgs e)
-	{
-		Hide();
 	}
 
 	private void previousButton_Click(UIComponent sender, EventArgs e)

@@ -15,18 +15,6 @@ namespace UWGame.ClientSide.Interface.Ledger;
 
 public class FoodProduction : LedgerSheet
 {
-	private const int columnWidth = 90;
-
-	private const int nameWidth = 215;
-
-	private const int itemTypeIconColumnX = 12;
-
-	private const int nameX = 30;
-
-	private const int productionX = 245;
-
-	private const int consumedX = 335;
-
 	private int degradedX = 425;
 
 	private int critterEatenX = 515;

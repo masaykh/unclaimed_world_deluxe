@@ -8,9 +8,6 @@ namespace UWGame.ClientSide.MainMenu.LoadMap;
 public class LoadMapInterface : CommonInterface
 {
 	private int loadPanelWidth = 600;
-
-	private int totalHeight = 800;
-
 	public MapEditorSaveLoadPanel loadPanel;
 
 	public LoadMapScreen loadMapScreen;

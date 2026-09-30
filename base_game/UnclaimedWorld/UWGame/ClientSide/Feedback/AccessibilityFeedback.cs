@@ -11,9 +11,6 @@ public class AccessibilityFeedback : ISleepingUpdatable
 	public EntityID? EntityID;
 
 	public JobID? JobID;
-
-	private const double timeInSecondsToRevert = 5.0;
-
 	private int noOfTimesWasInaccessible;
 
 	private int noOfTimesWasBlockedByThreat;

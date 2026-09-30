@@ -6,8 +6,6 @@ namespace UWGame.SimSide.Overland.Missions;
 
 public class LoadAction : MissionAction
 {
-	private const double timeInDaysToLoad = 0.1;
-
 	private double elapsedTime;
 
 	public LoadActionTemplate LoadActionType;

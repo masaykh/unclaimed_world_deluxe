@@ -512,11 +512,6 @@ public class Locomotor : Component
 		Parent.Location = Parent.ModifyNewLocationToStayOnFreeTerrain(position, pushVector);
 	}
 
-	private bool IsEntityIdle(Entity entity)
-	{
-		return entity.Intelligence.IsIdle();
-	}
-
 	public void Launch(Vector3 from, Vector3 velocity)
 	{
 		if (BallisticLocomotor != null)

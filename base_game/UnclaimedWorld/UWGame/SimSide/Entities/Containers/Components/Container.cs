@@ -355,11 +355,6 @@ public abstract class Container : ISnapshot
 		}
 	}
 
-	private void PlaceOnGround(Entity entityToBePlaced, Vector3? placeOnGround)
-	{
-		PlaceOnGround(entityToBePlaced, Parent, placeOnGround);
-	}
-
 	private static void PlaceOnGround(Entity entityToBePlaced, Entity parentOrPartOfEntity, Vector3? placeOnGround)
 	{
 		entityToBePlaced.Site = parentOrPartOfEntity.Site;

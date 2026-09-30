@@ -88,9 +88,6 @@ public class InventorySettings : ISnapshot
 	private Dictionary<EntityType, Dictionary<ProcessType, AttainableInfo>> attainableInfoInProgress = new Dictionary<EntityType, Dictionary<ProcessType, AttainableInfo>>();
 
 	private HashSet<EntityType> beingEvaluated = new HashSet<EntityType>();
-
-	private const int noOfProcessesToComputePerFrame = 50;
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public Availability AvailabilitySettings

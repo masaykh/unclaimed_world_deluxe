@@ -80,21 +80,8 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 		}
 	}
 
-	private void cbDrawCoords_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
-	private void cbDrawResources_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
 	private void saveDialog_SaveOrLoadClick(object sender, EventArgs e)
 	{
-	}
-
-	private void btClear_Click(UIComponent sender, EventArgs e)
-	{
-		intface.InterfaceMode = InGameInterface.InterfaceState.EditorClearTile;
 	}
 
 	private void InitStatusContentPanel()
@@ -115,10 +102,6 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 		lblStatusInfo2.Position = new Point(8, 100);
 		lblStatusInfo2.Init(Label.LabelType.CRTSmall);
 		lblStatusInfo2.Width = 200;
-	}
-
-	private void RefreshStatusScreen()
-	{
 	}
 
 	private void PopulateGrid()

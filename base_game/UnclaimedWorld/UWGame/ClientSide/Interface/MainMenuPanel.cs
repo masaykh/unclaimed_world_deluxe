@@ -10,11 +10,6 @@ public class MainMenuPanel : Panel
 	public const int ButtonWidth = 106;
 
 	public const int PanelHeight = 177;
-
-	private const int blotTop = 67;
-
-	private const int blotX = 23;
-
 	public const int ButtonTop = 76;
 
 	private OptionsDialog optionsDialog;
@@ -136,18 +131,9 @@ public class MainMenuPanel : Panel
 		((MainMenuInterface)Interface).mainMenuScreen.ShowCredits();
 	}
 
-	private void btLoad_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
 	private void btExit_Click(UIComponent sender, EventArgs e)
 	{
 		((MainMenuInterface)Interface).mainMenuScreen.Exit();
-	}
-
-	private void btIntro_Click(UIComponent sender, EventArgs e)
-	{
-		((MainMenuInterface)Interface).mainMenuScreen.ShowIntro();
 	}
 
 	private void btOptions_Click(UIComponent sender, EventArgs e)
@@ -163,11 +149,6 @@ public class MainMenuPanel : Panel
 	private void btEditMap_Click(UIComponent sender, EventArgs e)
 	{
 		((MainMenuInterface)Interface).mainMenuScreen.EditMap();
-	}
-
-	private void btLoadReplay_Click(UIComponent sender, EventArgs e)
-	{
-		((MainMenuInterface)Interface).mainMenuScreen.LoadReplay();
 	}
 
 	private void btLoadGame_Click(UIComponent sender, EventArgs e)

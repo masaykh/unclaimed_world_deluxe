@@ -70,11 +70,6 @@ public class EvaluateSleep : GoalEvaluator
 	private int scoreContainerIndex;
 
 	private int scoreGroundLocationIndex;
-
-	private int finalComboSelectionIndex;
-
-	private bool scoringWasInterrupted;
-
 	private float MaxSleepIncreasePerDay = GameData.Instance.Constants.SleepNeed.GainPerDayWhenSleeping * GameData.Instance.Constants.SleepNeed.MaximumSleepNeedGainFactorForPeople;
 
 	private float priority;
@@ -486,30 +481,6 @@ public class EvaluateSleep : GoalEvaluator
 				}
 			}
 		}
-	}
-
-	private RegionMap.Result ScoreDistanceFromSleepLocation(Vector3 sleepLocation, out double distanceScore)
-	{
-		distanceScore = 0.0;
-		ThreatStance threatStanceToUse;
-		RegionMap regionMapAndStanceForEvaluator = GoalEvaluator.GetRegionMapAndStanceForEvaluator(entity, null, out threatStanceToUse);
-		Point fromSubtile = MapManager.WorldPosToSubtile(entity.AccessPoint.Value);
-		Point toSubtile = MapManager.WorldPosToSubtile(sleepLocation);
-		float distance = -1f;
-		RegionMap.Result distance2 = regionMapAndStanceForEvaluator.GetDistance(entity, fromSubtile, toSubtile, ref distance);
-		if (distance2 != RegionMap.Result.OK)
-		{
-			return distance2;
-		}
-		if (distance > 400f)
-		{
-			distanceScore = Common.Clamp(distance * 0.0001f, 0f, 1f);
-		}
-		else
-		{
-			distanceScore = 0.0;
-		}
-		return distance2;
 	}
 
 	public double ScoreSleepNeed()

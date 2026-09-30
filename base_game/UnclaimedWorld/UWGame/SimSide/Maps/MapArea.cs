@@ -642,24 +642,6 @@ public class MapArea : ISnapshot
 		});
 	}
 
-	private void GetAllHarvestJobsInArea(Dictionary<ResourceType, List<ProcessJob>> allJobs)
-	{
-		EntityGroup expeditionOwner = The.Sim.PlaySite.GetFirstPlayerExpedition().OwnedEntities;
-		IterateArea(delegate(TerrainTile tile)
-		{
-			if (tile.HarvestJobs != null && tile.HarvestJobs.TryGetValue(expeditionOwner.ID, out var value))
-			{
-				foreach (KeyValuePair<ResourceType, List<ProcessJob>> item in value)
-				{
-					if (item.Value.Count > 0)
-					{
-						allJobs.Add(item.Key, item.Value);
-					}
-				}
-			}
-		});
-	}
-
 	public void GetEntitiesInArea(List<IKnownEntityData> entities, List<EntityID> entityIDs, Predicate<IKnownEntityData> entitiesToInclude, Allegiance allegianceViewpoint)
 	{
 		IKnownEntityData entityData = null;

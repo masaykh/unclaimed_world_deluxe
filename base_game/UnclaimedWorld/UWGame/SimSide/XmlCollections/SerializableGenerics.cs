@@ -4,8 +4,6 @@ namespace UWGame.SimSide.XmlCollections;
 
 public static class SerializableGenerics
 {
-	private const string OF = "Of";
-
 	public static string GetKeyValuePairName(Type tKey, Type tValue)
 	{
 		return GetTypeName(tKey) + GetTypeName(tValue);

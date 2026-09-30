@@ -28,10 +28,6 @@ public class CultureTemplate : IGameData
 
 	private List<StringChance> lastNames;
 
-	private const float commonChance = 0.2f;
-
-	private const float uncommonChance = 0.1f;
-
 	public string KeyName { get; set; }
 
 	public string Name { get; set; }

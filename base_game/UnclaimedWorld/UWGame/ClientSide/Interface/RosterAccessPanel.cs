@@ -11,13 +11,7 @@ public class RosterAccessPanel
 	private Window window;
 
 	protected InGameInterface intf = The.InGameUI;
-
-	private const int height = 500;
-
 	public const int Width = 51;
-
-	private const int buttonLeft = 12;
-
 	public ImageButton btStock;
 
 	public ImageButton btJobs;
@@ -323,12 +317,6 @@ public class RosterAccessPanel
 	{
 		The.InGameUI.ChangeRosterPanel(The.InGameUI.WorldMapPanel);
 		DeselectOtherRadioButtons(btWorld);
-	}
-
-	private void tbDiplomacy_Click(UIComponent sender, EventArgs e)
-	{
-		The.InGameUI.ChangeRosterPanel(The.InGameUI.DiplomacyPanel);
-		DeselectOtherRadioButtons(btDiplomacy);
 	}
 
 	private void tbJobs_Click(UIComponent sender, EventArgs e)

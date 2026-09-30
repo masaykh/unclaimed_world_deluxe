@@ -2929,20 +2929,6 @@ public class TerrainFeatureLoader
 		return new CollideShape2D(new Vector2(x, y), radius);
 	}
 
-	private static GeometryLayoutType MakeCircle(float x, float y, float radius)
-	{
-		GeometryLayoutType geometryLayoutType = new GeometryLayoutType();
-		geometryLayoutType.Shapes = new CollideShape2D[1]
-		{
-			new CollideShape2D(new Vector2(x, y), radius)
-		};
-		return geometryLayoutType;
-	}
-
-	private static void AddRockWithGeoLayout()
-	{
-	}
-
 	private static EntityType AddRockTypeWithGeoLayout(List<EntityType> listOfEntityTypes, string keyName, float widthHeightRatio, float bulk, GeometryLayoutType geoType)
 	{
 		EntityType entityType = AddRockTypeWithoutLayout(listOfEntityTypes, "terrain:" + keyName, keyName, keyName, widthHeightRatio, bulk);

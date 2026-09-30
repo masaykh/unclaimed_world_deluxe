@@ -28,10 +28,6 @@ public class GroupNode : PresentationNode
 	[XmlIgnore]
 	public bool IsOuterGroup;
 
-	private const int headingHeight = 25;
-
-	private const int nestedGroupIndentation = 14;
-
 	public override void Display(PresentationTypeCategory categoryToProcess, IHasExposedProperties hasExposedProperties, IHasExposedProperties parent, IKeyedEntryComponent populatable, bool isIndented, ref Dictionary<object, object> entryKeys, ref int? numberOfItems)
 	{
 		Dictionary<object, object> entryKeys2 = null;

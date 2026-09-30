@@ -12,8 +12,6 @@ public class StockButton : TextButton
 
 	public List<EntityID> EntityList = new List<EntityID>();
 
-	private const string clickToSeeListTooltip = "\n \nClick to see the list";
-
 	public StockButton(GUIManager gui, EntityType entityType)
 		: base(gui)
 	{

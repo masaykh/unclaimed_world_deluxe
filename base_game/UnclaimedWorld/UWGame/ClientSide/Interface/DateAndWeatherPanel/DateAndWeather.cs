@@ -10,14 +10,7 @@ public class DateAndWeather
 	public Window PlasticPanel;
 
 	private Bar frame;
-
-	private const int hudWidth = 385;
-
 	public const int Width = 445;
-
-	private const int frameEdgeWidth = 33;
-
-	private const int hudWindowXPos = 30;
 
 	public DateAndWeather(int xPos)
 	{

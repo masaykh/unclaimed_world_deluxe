@@ -20,13 +20,4 @@ public class InputState
 		CurrentKeyboardState = Keyboard.GetState();
 		CurrentGamePadState = GamePad.GetState(PlayerIndex.One);
 	}
-
-	private bool IsNewKeyPress(Keys key)
-	{
-		if (CurrentKeyboardState.IsKeyDown(key))
-		{
-			return LastKeyboardState.IsKeyUp(key);
-		}
-		return false;
-	}
 }

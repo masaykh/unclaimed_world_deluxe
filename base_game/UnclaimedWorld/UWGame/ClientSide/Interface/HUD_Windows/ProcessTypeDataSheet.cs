@@ -9,9 +9,6 @@ namespace UWGame.ClientSide.Interface.HUD_Windows;
 public class ProcessTypeDataSheet : DataSheet
 {
 	private ProcessType processType;
-
-	private const float outputsIndex = 200f;
-
 	private Grid grdOutputs;
 
 	private UIComponent outputsHeader;
@@ -71,14 +68,6 @@ public class ProcessTypeDataSheet : DataSheet
 	{
 		lbl.Text = "REQUIREMENTS";
 		PadHeader(lbl);
-	}
-
-	private UIComponent AddOutputItemRow(EntityType outputEntityType, bool ownsItem, int amount)
-	{
-		UIComponent uIComponent = new UIComponent(gui);
-		grdOutputs.AddEntry(outputEntityType, uIComponent);
-		CreateItemGridRow(outputEntityType, uIComponent, out var _);
-		return uIComponent;
 	}
 
 	private void PopulateOutputsList(EntityGroup resolvedOwner)

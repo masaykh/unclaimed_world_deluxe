@@ -60,10 +60,6 @@ public class OptionsDialog : Panel
 	private readonly List<KeyValuePair<ModSetting, UIComponent>> modControls =
 		new List<KeyValuePair<ModSetting, UIComponent>>();
 
-	private const int xPos = 6;
-
-	private const string emptyKey = "";
-
 	public event EventHandler CancelClick;
 
 	public event EventHandler OKClick;
@@ -308,16 +304,6 @@ public class OptionsDialog : Panel
 	private float SliderValueToVolumeQuad(int value)
 	{
 		return MathHelper.Clamp((float)(Math.Pow(MathHelper.Clamp(value, 0f, 100f), 4.0) * 9.99999993922529E-09), 0.001f, 1f);
-	}
-
-	private int VolumeToSliderIncrementsLog(float volume)
-	{
-		return (int)MathHelper.Clamp((float)(Math.Pow(101.0, volume) - 1.0), 0f, 100f);
-	}
-
-	private float SliderValueToVolumeLog(int value)
-	{
-		return SliderValueToVolumeQuad(value);
 	}
 
 	private void fbMusicVolume_SliderMouseUp(object sender, EventArgs e)

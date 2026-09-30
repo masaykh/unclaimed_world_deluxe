@@ -90,14 +90,6 @@ public class SidePanelEditorEntity : RosterPanel
 		saveDialog.SaveOrLoadClick += saveDialog_SaveOrLoadClick;
 	}
 
-	private void cbDrawCoords_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
-	private void cbDrawResources_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
 	private void cbDelete_Click(UIComponent sender, EventArgs e)
 	{
 		if (cbDelete.IsChecked)
@@ -281,16 +273,6 @@ public class SidePanelEditorEntity : RosterPanel
 		lblStatusInfo2.Width = 200;
 	}
 
-	private void RefreshStatusScreen()
-	{
-		if (SelectedEntityType != null && SelectedEntityType.RenderableTypeMode != null && SelectedEntityType.RenderableTypeMode.DefaultClientState != null && SelectedEntityType.RenderableTypeMode.DefaultClientState.RenderAsBillboardType != null)
-		{
-			ShowBillboardPanel();
-			RosterPanel.CreateAndPlaceBillboards(intface.gui, pnBillboards, SelectedEntityType, statusBillboardPanelCenter, 130f, doScaling: true);
-			SetHeaderText(SelectedEntityType.Name.ToUpper(Config.Culture));
-		}
-	}
-
 	private void PopulateGrid()
 	{
 		outerGrid.BeginAddingEntries();
@@ -472,11 +454,6 @@ public class SidePanelEditorEntity : RosterPanel
 			}
 		}
 		return false;
-	}
-
-	private void critterGrid_SelectedChanged(UIComponent sender)
-	{
-		HandleUserSelectedAnEntityType(sender);
 	}
 
 	private void treeGrid_SelectedChanged(UIComponent sender)

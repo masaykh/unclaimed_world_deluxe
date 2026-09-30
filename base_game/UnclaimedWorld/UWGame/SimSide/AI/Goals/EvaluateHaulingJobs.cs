@@ -176,19 +176,6 @@ public class EvaluateHaulingJobs : GoalEvaluator, IScoreJob
 		return job.ScoreTimePassed();
 	}
 
-	private bool IsCurrentlyHaulingItem(IKnownEntityData entityData)
-	{
-		if (entityData.AssignedToJob.HasValue)
-		{
-			Job job = LookUp<Job, JobID>.FindByID(entityData.AssignedToJob.Value);
-			if (job != null && job is HaulingJob haulingJob && haulingJob.TakenBy.Contains(entity))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public override CalculateResult CalculateDesirability(double minimumRatingToConsider, ref double desirability)
 	{
 		desirability = 0.0;

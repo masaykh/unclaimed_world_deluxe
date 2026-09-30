@@ -143,18 +143,6 @@ public class Item : Component, IIDEventSubscriber
 		return Parent.OwnedBy.HasValue;
 	}
 
-	private void AddItemToCollection(Dictionary<EntityType, List<Entity>> belongingCollection)
-	{
-		if (belongingCollection.ContainsKey(Parent.EntityType))
-		{
-			belongingCollection[Parent.EntityType].Add(Parent);
-			return;
-		}
-		List<Entity> list = new List<Entity>();
-		list.Add(Parent);
-		belongingCollection.Add(Parent.EntityType, list);
-	}
-
 	public void Destroy()
 	{
 	}

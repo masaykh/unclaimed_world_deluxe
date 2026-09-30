@@ -69,8 +69,6 @@ public abstract class CommonInterface
 
 	protected Tooltip Tooltip;
 
-	private const int tooltipOverlap = 8;
-
 	public CommonInterface(UnclaimedWorld game, bool addGuiManagerNow = true, bool addTooltip = false)
 	{
 		Game = game;

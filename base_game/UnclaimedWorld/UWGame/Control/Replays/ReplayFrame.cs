@@ -14,9 +14,6 @@ public class ReplayFrame
 	public MouseState MouseState;
 
 	public ReplayVerificationData RecordedVerificationData = new ReplayVerificationData();
-
-	private int replayFormatVersion;
-
 	private static Dictionary<Keys, bool> keyStates;
 
 	private List<Keys> changedKeys = new List<Keys>();

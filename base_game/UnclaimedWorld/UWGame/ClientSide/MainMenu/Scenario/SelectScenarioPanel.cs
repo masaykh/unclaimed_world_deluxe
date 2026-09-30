@@ -25,26 +25,13 @@ public class SelectScenarioPanel : Panel
 	private UIComponent lcdSurface;
 
 	private Grid grid;
-
-	private string replayFileName;
-
 	private SelectScenarioInterface selectScenarioInterface;
-
-	private const int itemHeight = 112;
-
 	private int itemPadding = 6;
-
-	private const int selectButtonWidth = 80;
-
 	public const int ThumbnailPanelWidth = 112;
 
 	public const int DescriptionPanelWidth = 469;
 
 	public const int SelectPanelWidth = 148;
-
-	private const int horizPadding = 8;
-
-	private const int vertPadding = 5;
 
 	public event EventHandler CancelClick;
 
@@ -162,15 +149,6 @@ public class SelectScenarioPanel : Panel
 			AddItemRow(item);
 		}
 		grid.EndAddingEntries();
-	}
-
-	private void btClose_Click(UIComponent sender, EventArgs e)
-	{
-		Window.Hide();
-		if (this.CancelClick != null)
-		{
-			this.CancelClick(sender, e);
-		}
 	}
 
 	private void InitButtons()

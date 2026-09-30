@@ -5,9 +5,6 @@ namespace UWGame.SimSide.Vehicles;
 public class CargoSlot
 {
 	private PassengerOrCargoSlot parent;
-
-	private int sequence;
-
 	public float BulkCarried;
 
 	public Entity TargetedByHauler;

@@ -37,9 +37,6 @@ public class EntityListWindow : HUDWindow
 	private string hyperLinkToolTip = "LMB: Select the link target.\n RMB: Center on target.\n Double click: Select and center.";
 
 	private int gridY;
-
-	private const int hzlStatusWidth = 60;
-
 	private static int locationX = 15;
 
 	private static int statusX = locationX + 110 + 6;
@@ -51,10 +48,6 @@ public class EntityListWindow : HUDWindow
 	private static int captionX = discardClaimX + 20 + 9;
 
 	private static int spaceOnLeftAndBetween = 9;
-
-	private const string selectTooltip = "Click to select";
-
-	private const string selectTooltipOffsite = "Cannot be selected. The item is off site.";
 
 	public EntityListWindow()
 		: base(596, 180, hasSurface: true, hasCloseButton: true, isMovable: true, "HUD_window_base", hideWhenMouseExits: false, Level.EntityTypeInfo)

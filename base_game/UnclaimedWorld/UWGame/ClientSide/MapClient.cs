@@ -784,24 +784,6 @@ public class MapClient
 		return false;
 	}
 
-	private void HandleHoverOverTile(Microsoft.Xna.Framework.Color? hoverTintingColor = null)
-	{
-		The.InGameUI.SetHoverEntity(null);
-		if (IsMouseInsideMap())
-		{
-			TerrainTile tile = The.Map.GetTile(MouseTilePosition);
-			if (The.InGameUI.HoverTile != tile || The.InGameUI.Selection.HoverTintingColor != hoverTintingColor)
-			{
-				The.InGameUI.HoverTile = tile;
-				The.InGameUI.Selection.StartHoverOverTile(hoverTintingColor);
-			}
-		}
-		else
-		{
-			The.InGameUI.HoverTile = null;
-		}
-	}
-
 	private void HandleMouseClickInTile()
 	{
 		EntityID? pickedEntity = GetPickedEntity();

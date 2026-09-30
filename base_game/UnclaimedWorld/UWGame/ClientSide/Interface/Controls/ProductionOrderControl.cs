@@ -24,13 +24,6 @@ public class ProductionOrderControl : UIComponent
 	public const string btPadlockTooltip = "Switch to standing order mode.";
 
 	public const string btPadlockEnabledTooltip = "Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.";
-
-	private const string tbBuildToolTip = "Build: Click the button, then place the structure on the terrain";
-
-	private const string lblMaxOrderToolTip = "Maximum number of structures we can build";
-
-	private const string lblImmovableToolTip = "{0} must first be selected, then the item can be built from the action menu";
-
 	public const string orderSpamWarning = "Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.";
 
 	private EntityType entityType;

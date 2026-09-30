@@ -92,10 +92,6 @@ public class AttackWindow : HUDWindow
 		btOK.Y = btCancel.Y;
 	}
 
-	private void DisplayWindow_Resize(UIComponent sender)
-	{
-	}
-
 	private void btCancel_Click(UIComponent sender, EventArgs e)
 	{
 		Hide();
@@ -168,31 +164,6 @@ public class AttackWindow : HUDWindow
 			Vector2 location = MapManager.TileToWorldPosVector2(tile.TilePos.ToPoint());
 			The.Sim.PlaySite.PlaySite.ExpeditionRadiusQuadTree.GetCollidablesContainingPoint(location, expeditions);
 		}
-	}
-
-	private void Populate()
-	{
-		UIComponent item = null;
-		EntityGroup owner = mapArea.GetOwner();
-		if (owner == null)
-		{
-			grid.Clear();
-			return;
-		}
-		List<Tuple<EntityType, bool>> data = GetPreyToDisplay();
-		_ = grid.Entries.Count;
-		grid.BeginAddingEntries();
-		foreach (Tuple<EntityType, bool> item2 in data)
-		{
-			if (!grid.TryGetEntry(item2.Item1, out item))
-			{
-				item = AddRow(item2.Item1, owner);
-			}
-		}
-		grid.DeleteEntries((EntityType e) => data.Any((Tuple<EntityType, bool> t) => t.Item1 == e));
-		grid.Sort((UIComponent i) => i.OrderByTag1, Grid.Sorting.Ascending);
-		grid.EndAddingEntries();
-		isFirstUpdate = false;
 	}
 
 	public override void ShowOnPlayfield(int screenPosX, int screenPosY, bool avoidRightInterfaceArea = true)

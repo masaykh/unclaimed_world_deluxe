@@ -212,10 +212,6 @@ public class Household : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGrou
 		return false;
 	}
 
-	private void FillNewHome()
-	{
-	}
-
 	public int NoOfChildren()
 	{
 		int num = 0;
@@ -266,25 +262,10 @@ public class Household : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGrou
 		((ILookUp<IOwner, OwnerID>)this).RemoveIDEntry();
 	}
 
-	private void FoodExtraction_FoodProcessesChanged()
-	{
-		ownedEntities.SetFoodDirty();
-	}
-
 	public void AddMember(Entity entity)
 	{
 		members.Add(entity);
 		UpdateWhenMembersChanged();
-	}
-
-	private void Members_ListItemAdded(object sender)
-	{
-		AssignHeadsOfHousehold();
-	}
-
-	private void Members_ListItemRemoved(object sender, int indexOfRemovedItem)
-	{
-		AssignHeadsOfHousehold();
 	}
 
 	public bool IsEntitled()

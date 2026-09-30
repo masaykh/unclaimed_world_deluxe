@@ -37,9 +37,6 @@ public class BuySellPanel : Panel
 	private Grid grdCategoryView;
 
 	private Grid grdListView;
-
-	private LCDInnerPanel lcdMessagePanel;
-
 	private LCDScreen lcdScreen;
 
 	private UIComponent lcdSurface;
@@ -49,9 +46,6 @@ public class BuySellPanel : Panel
 	private int itemTypeIconColumnX = 40;
 
 	private int captionX = 70;
-
-	private int quantityX = 235;
-
 	private int sliderX = 242;
 
 	private int offerDemandX = 384;
@@ -85,11 +79,6 @@ public class BuySellPanel : Panel
 	private UIComponent sortingButtonsContainer;
 
 	private FillableBar sliderBeingDragged;
-
-	private const int gridTopMargin = 50;
-
-	private const int gridBottomMargin = 50;
-
 	private Label lblNoWaresNote;
 
 	private Label lblTotalItemCost;

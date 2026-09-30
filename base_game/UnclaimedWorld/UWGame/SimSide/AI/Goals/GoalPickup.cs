@@ -301,11 +301,6 @@ internal class GoalPickup : CompositeGoal
 		}
 	}
 
-	private AgentStorage.BurdenState GetNewHaulBurdenState(IKnownEntityData itemToPickUpData)
-	{
-		return AgentStorage.GetHaulBurdenState(entity.AgentStorage.GetHaulingPercentageOfCapacity(entity.AgentStorage.TotalStored + itemToPickUpData.Bulk));
-	}
-
 	public override void OnExit()
 	{
 		base.OnExit();

@@ -10,21 +10,7 @@ public class Tooltip : HUDWindow
 	private TextArea area;
 
 	public Window SpawningWindow;
-
-	private const int width = 200;
-
-	private const int height = 80;
-
 	private double timePassed;
-
-	private const double timeBeforeAppearing = 0.4;
-
-	private const double timeBeforeDisappearing = 7.0;
-
-	private int screenPosX;
-
-	private int screenPosY;
-
 	private UIComponent tooltipAnchor;
 
 	public string Text

@@ -82,9 +82,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 	private Dictionary<AllegianceID, List<ZoneID>> snapshotZones;
 
 	public const float FreezingPointInKelvin = 273.15f;
-
-	private const float WaterAmountToConsiderSoilFullyFlooded = 10000f;
-
 	public float Humidity = 0.2f;
 
 	private float waterAmount;
@@ -226,24 +223,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 	{
 		Moisture = (float)Math.Pow(WaterAmount / 10000f, 0.5);
 		Moisture = Common.ClampTop(Moisture, 1f);
-	}
-
-	private float ComputeDryingFactor()
-	{
-		float num = Common.ClampBottom(Temperature - 273.15f, 0f) / 100f;
-		float num2 = 0.5f - Moisture;
-		float num3 = 0.2f - Humidity;
-		float num4 = Common.ClampTop(The.Sim.PlaySite.PlaySite.Weather.WindSpeed / 10f, 2f);
-		return Common.ClampBottom(num + num2 + num3 + num4, 0f);
-	}
-
-	private float ComputeRottingFactor()
-	{
-		float num = Temperature - 273.15f;
-		float num2 = Common.Clamp((0f - num * num + 64f * num + 300f) / 1400f, 0f, 1f);
-		float num3 = Moisture;
-		float humidity = Humidity;
-		return num2 + num3 + humidity;
 	}
 
 	public bool TileIsInFogOfWar(Allegiance allegiance)
@@ -505,28 +484,6 @@ public class TerrainTile : IDrawnAsGroundSprite, ISnapshot, ILookUp<TerrainTile,
 		foreach (Point neighboringTile in GetNeighboringTiles(new Point(X, Y), edge))
 		{
 			_ = neighboringTile;
-		}
-	}
-
-	private void RedrawRoadCosts(Common.Direction dir)
-	{
-		if (Roads != null && Roads[(int)dir] != null && Roads[(int)dir].IsCompleted())
-		{
-			Roads[(int)dir].DirectionalLayout.RedrawRoadCost();
-			return;
-		}
-		float pathActivation = GameData.Instance.Constants.PathActivation;
-		if (WheelPaths != null && WheelPaths[(int)dir] != null && WheelPaths[(int)dir].TerrainPath.Value > pathActivation)
-		{
-			WheelPaths[(int)dir].DirectionalLayout.RedrawRoadCost();
-		}
-		else if (FootPaths != null && FootPaths[(int)dir] != null && FootPaths[(int)dir].TerrainPath.Value > pathActivation)
-		{
-			FootPaths[(int)dir].DirectionalLayout.RedrawRoadCost();
-		}
-		else
-		{
-			SetEdgeTerrainCost(GameData.Instance.AllEntityTypes["terrain:plains"].TerrainType.PathType, dir);
 		}
 	}
 

@@ -27,9 +27,6 @@ public abstract class CompositeGoal : Goal
 	protected List<EntityGroupID> ownersOfVehicles;
 
 	private List<EntityID> optionalEquipmentAssignedToThisJob = new List<EntityID>();
-
-	private const int searchLimit = 6000;
-
 	private static List<ItemType.TaskType> longerJourneyTask = new List<ItemType.TaskType> { ItemType.TaskType.LongerJourneys };
 
 	public bool SkipThisAssert;

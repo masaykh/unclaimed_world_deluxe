@@ -13,9 +13,6 @@ public class PathPlanner : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	private EntityID entityID;
 
 	public AStarSearch search;
-
-	private const int searchLimitToGetUnblocked = 800;
-
 	public static double totalComputationAllInstancesInSeconds;
 
 	private CyclableID id = CyclableID.Invalid;

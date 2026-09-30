@@ -41,9 +41,6 @@ public class DisplayPanelRenderer
 	private short[] lcdIndices;
 
 	private int noOfLCDQuads = 6;
-
-	private int LCDQuadIndex;
-
 	public Dictionary<Level, List<CRTScreen>> CRTPanels = new Dictionary<Level, List<CRTScreen>>();
 
 	public Dictionary<Level, List<LCDScreen>> LCDPanels = new Dictionary<Level, List<LCDScreen>>();

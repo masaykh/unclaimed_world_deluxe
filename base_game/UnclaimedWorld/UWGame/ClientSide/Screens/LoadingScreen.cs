@@ -77,9 +77,6 @@ public class LoadingScreen : GameScreen
 	private bool threadlocked;
 
 	private string graph = "";
-
-	private float angle;
-
 	private double graphValue;
 
 	public bool IsLoadFinished { get; set; }

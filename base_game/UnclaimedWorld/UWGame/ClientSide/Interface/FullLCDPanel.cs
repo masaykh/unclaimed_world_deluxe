@@ -12,14 +12,6 @@ public class FullLCDPanel
 
 	public delegate void SetCollapsedSummary(CollapsablePanel cp, object type);
 
-	private const int lcdPaddingLeft = 12;
-
-	private const int lcdPaddingRight = 12;
-
-	private const int lcdPaddingTop = 12;
-
-	private const int lcdPaddingBottom = 12;
-
 	public static Bar AddLCDDividerLine(GUIManager gui, int yPos, int xMargin, UIComponent lcdSurface)
 	{
 		return AddLCDLine(gui, new Point(xMargin, yPos), lcdSurface.Width - 2 * xMargin - 25, lcdSurface);

@@ -140,10 +140,6 @@ public class InGameMenuDialog : Panel
 		base.DrawContent(sender, formSpriteBatch);
 	}
 
-	private void InitButtons()
-	{
-	}
-
 	private void btQuitToDesktop_Click(UIComponent sender, EventArgs e)
 	{
 		The.Sim.Controller.Game.Exit();

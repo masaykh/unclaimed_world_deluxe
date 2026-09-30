@@ -39,15 +39,6 @@ public class SaveLoadGamePanel : Panel
 	private TextArea taNote;
 
 	private ErrorsAndMessages output;
-
-	private const int itemHeight = 112;
-
-	private const int selectButtonWidth = 80;
-
-	private const int horizPadding = 8;
-
-	private const int vertPadding = 5;
-
 	private int itemPadding = 6;
 
 	private string saveFileFullPath;
@@ -533,9 +524,5 @@ public class SaveLoadGamePanel : Panel
 		{
 			this.CancelClick(this, null);
 		}
-	}
-
-	private void Load(string loadFileName)
-	{
 	}
 }

@@ -66,11 +66,6 @@ public class Evaluator
 		return Evaluate(text);
 	}
 
-	private static bool EquationHasVariables(string equation)
-	{
-		return new Regex("[A-Za-z]").IsMatch(equation);
-	}
-
 	private void SetVariables()
 	{
 		foreach (Match item in new Regex("([A-Za-z]+)").Matches(equation, 0))

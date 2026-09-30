@@ -394,12 +394,6 @@ public class EmigrateDecider : StrategyDecider, ISnapshot
 		}
 	}
 
-	private void Emigrate()
-	{
-		ownAllegiance.OtherSiteAllegianceManager.AddEmigrantToQueue(parent.EntityID);
-		isWaitingToEmigrate = true;
-	}
-
 	public bool HasDesireToEmigrate(Allegiance toAllegiance)
 	{
 		AllegianceRatings ratings = GetRatings(toAllegiance.ID);

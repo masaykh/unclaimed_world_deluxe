@@ -11,9 +11,6 @@ namespace UWGame.SimSide.Jobs;
 public class CombatInfo : ISnapshot
 {
 	public EntityID? Target;
-
-	private const byte valueForCorrectDistance = 10;
-
 	private static Dictionary<Entity, Vector3> setOfEntitiesToDraw = new Dictionary<Entity, Vector3>();
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;

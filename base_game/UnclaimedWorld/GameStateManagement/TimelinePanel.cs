@@ -6,10 +6,6 @@ namespace GameStateManagement;
 
 public class TimelinePanel : HUDWindow
 {
-	private const int minHeight = 26;
-
-	private const int defaultHeight = 260;
-
 	private TextArea text;
 
 	public const int Width = 360;

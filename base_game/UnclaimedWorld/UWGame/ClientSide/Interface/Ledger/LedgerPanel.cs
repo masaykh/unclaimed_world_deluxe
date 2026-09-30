@@ -16,14 +16,6 @@ public class LedgerPanel : RosterPanel
 
 	private TextArea taHelp;
 
-	private const int headerHeight = 80;
-
-	private const int windowWidth = 740;
-
-	private string sheetKey = "sheetKey";
-
-	private int sheetHeight = 600;
-
 	public LedgerPanel()
 		: base("LEDGER", 740, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
 	{

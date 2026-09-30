@@ -1374,11 +1374,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 		scannedSectors.Add(thisSector.Coords);
 	}
 
-	private bool IsDependentRegion(ushort region)
-	{
-		return region > ColorStartOfRange;
-	}
-
 	public void AddEdgesIfNotExists(ushort fromRegionColor, ushort toRegionColor)
 	{
 		if (fromRegionColor == 0 || toRegionColor == 0 || fromRegionColor == toRegionColor)
@@ -1417,15 +1412,6 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 
 	public void AddLog(string text)
 	{
-	}
-
-	private bool Intersects(Rectangle r1, Rectangle r2)
-	{
-		if (r2.Left <= r1.Left + r1.Width && r2.Left + r2.Width >= r1.Left && r2.Top <= r1.Top + r1.Height)
-		{
-			return r2.Top + r2.Height >= r1.Top;
-		}
-		return false;
 	}
 
 	public CyclableID GetUniqueID()

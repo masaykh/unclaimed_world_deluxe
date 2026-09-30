@@ -7,17 +7,9 @@ namespace UWGame.ClientSide.Interface.HUD_Windows;
 
 public class HelpTopicDialog : HUDWindow
 {
-	private const int minWidth = 420;
-
-	private const int minHeight = 400;
-
 	private UIComponent listSurface;
 
 	private Grid surfaceGrid;
-
-	private const int surfaceHeight = 354;
-
-	private const int borderWidth = 2;
 
 	public HelpTopicDialog(HelpTopic helpTopic)
 		: base(420, 400, hasSurface: true, hasCloseButton: true, isMovable: true)
@@ -43,11 +35,6 @@ public class HelpTopicDialog : HUDWindow
 	{
 		listSurface.Height = DisplayWindow.ViewPort.Height - listSurface.Y - 10;
 		surfaceGrid.Height = listSurface.Height;
-	}
-
-	private void bt_Click(UIComponent sender, EventArgs e)
-	{
-		Hide();
 	}
 
 	public void Populate(LayoutElement[] flowLayoutElements)

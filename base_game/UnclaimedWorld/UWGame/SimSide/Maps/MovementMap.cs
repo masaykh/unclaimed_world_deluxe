@@ -43,9 +43,6 @@ public class MovementMap : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	private SurfaceType.TransportType[] transportsToInclude;
 
 	private int cycleRegionMapTransportIndex;
-
-	private const Phase StartPhase = Phase.ComputeChildMaps;
-
 	private Phase phase;
 
 	private List<Point> listOfSectorsToAdd = new List<Point>();
@@ -455,18 +452,6 @@ public class MovementMap : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 			return true;
 		}
 		return false;
-	}
-
-	private static void ClearTilesInSector(Sector sector, byte[][] map)
-	{
-		for (int i = sector.TileArea.Left; i < sector.TileArea.Right; i++)
-		{
-			byte[] array = map[i];
-			for (int j = sector.TileArea.Top; j < sector.TileArea.Bottom; j++)
-			{
-				array[j] = 0;
-			}
-		}
 	}
 
 	public MovementMap GetCurrent()

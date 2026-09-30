@@ -8,12 +8,6 @@ namespace UWGame.ClientSide.Interface.HUD_Windows;
 
 public class HUDLog : HUDWindow
 {
-	private const int minHeight = 26;
-
-	private const int defaultHeight = 80;
-
-	private const int pagerHeight = 32;
-
 	private Grid grid;
 
 	private List<TextButton> pagerButtons = new List<TextButton>();
@@ -33,18 +27,7 @@ public class HUDLog : HUDWindow
 	private int logMessagesPerPage;
 
 	private Dictionary<uint, UIComponent> messageRowCache = new Dictionary<uint, UIComponent>();
-
-	private const int maxRowsToStore = 1000;
-
-	private const int noOfPageButtonsToEachSide = 2;
-
-	private const int pagerXPos = 210;
-
 	private int xPosOfCurrentPageButton;
-
-	private const int pageButtonSpacing = 4;
-
-	private const int spacingToEndButtons = 12;
 
 	public HUDLog(int xPos, int width)
 		: base(width, 80)
@@ -305,33 +288,6 @@ public class HUDLog : HUDWindow
 			startIndex = 0;
 			endIndex = 0;
 		}
-	}
-
-	private int GetFirstIndexOfNewMessagesToShow()
-	{
-		int result = -1;
-		if (grid.Count > 0)
-		{
-			uint num = (uint)grid.Entries[grid.Count - 1].Tag1;
-			for (int num2 = logdata.Count - 1; num2 >= 0; num2--)
-			{
-				Event obj = logdata[num2];
-				if (obj.ID <= num)
-				{
-					result = num2 + 1;
-					if (result < logdata.Count)
-					{
-						return result;
-					}
-					return -1;
-				}
-			}
-		}
-		else
-		{
-			result = 0;
-		}
-		return result;
 	}
 
 	public override void Refresh()

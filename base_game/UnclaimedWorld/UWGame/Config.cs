@@ -38,25 +38,7 @@ public static class Config
 	public const string AIStatesFileName = "AIStates.UWRepStates";
 
 	public const string MapDataName = "MapData.xml";
-
-	private const string dataFolder = "data/BaseData";
-
-	private const string scenarioFolder = "data/Scenarios";
-
 	public const string mapsFolder = "data/Maps";
-
-	private const string userModsFolder = "user/Mods";
-
-	private const string userFolder = "user";
-
-	private const string userScenarioFolder = "user/Scenarios";
-
-	private const string userMapsFolder = "user/Maps";
-
-	private const string replaysFolder = "Replays";
-
-	private const string saveGamesFolder = "SaveGames";
-
 	public static CultureInfo Culture;
 
 	static Config()

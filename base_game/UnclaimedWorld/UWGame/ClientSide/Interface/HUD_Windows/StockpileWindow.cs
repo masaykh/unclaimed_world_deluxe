@@ -30,19 +30,6 @@ public class StockpileWindow : HUDWindow
 	private EntityID? structure;
 
 	protected int itemHeight = 18;
-
-	private const int quantityX = 238;
-
-	private const int itemTypeIconColumnX = 18;
-
-	private const int captionX = 38;
-
-	private const int stageIconX = 41;
-
-	private const int allowX = 251;
-
-	private const int blockX = 337;
-
 	private Grid outerGrid;
 
 	private Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems = new Dictionary<EntityType, InventoryPanel.Availability>();
@@ -60,11 +47,6 @@ public class StockpileWindow : HUDWindow
 	private Image headerIcon;
 
 	private UIComponent listSurface;
-
-	private const int rowHeight = 36;
-
-	private const int expandedPanelMargin = 3;
-
 	private Dictionary<EntityType, int> allItems = new Dictionary<EntityType, int>();
 
 	private List<Tuple<EntityCategory, CollapsablePanel>> categoryPanels = new List<Tuple<EntityCategory, CollapsablePanel>>();
@@ -252,10 +234,6 @@ public class StockpileWindow : HUDWindow
 		}
 	}
 
-	private void DeselectTopLevel()
-	{
-	}
-
 	private UIComponent AddItemRow(Grid categoryGrid, EntityType entityType, EntityGroup owner)
 	{
 		UIComponent uIComponent = new UIComponent(gui);
@@ -297,13 +275,6 @@ public class StockpileWindow : HUDWindow
 		fillableBar.MaxSliderValueSymbol = "...";
 		fillableBar.MaxSliderValueTooltip = "No limit";
 		return uIComponent;
-	}
-
-	private void itemRadioGroup_NewMemberChecked(ICanBeChecked obj, EventArgs e)
-	{
-		EntityType item = ((ItemTypeButtonEventArgs)e).Item;
-		CollapsablePanel cpCategory = (CollapsablePanel)outerGrid.EntriesByKey[item.Category];
-		UpdateOverridingSettingIcon(cpCategory, item.Category);
 	}
 
 	private void UpdateOverridingSettingIcon(CollapsablePanel cpCategory, EntityCategory category, Stockpile stockpile = null)
@@ -350,18 +321,6 @@ public class StockpileWindow : HUDWindow
 		entityTypeButton.X = 38;
 	}
 
-	private void tbItems_Click(UIComponent sender, EventArgs e)
-	{
-		if (!GetData(out var owner, out var _, out var _, out var _))
-		{
-			Hide();
-		}
-		else
-		{
-			The.InGameUI.EntityListWindow.PopulateAndShowOnPlayfield(sender, ((ItemTypeButtonEventArgs)e).Item, owner);
-		}
-	}
-
 	private void bt_RemoveClick(UIComponent sender, EventArgs e)
 	{
 		if (The.InGameUI.SelectedZone != null)
@@ -369,10 +328,6 @@ public class StockpileWindow : HUDWindow
 			The.InGameUI.SelectedZone.Stockpile = null;
 			Hide();
 		}
-	}
-
-	private void btTopAll_Click(UIComponent sender, EventArgs e)
-	{
 	}
 
 	private bool GetData(out EntityGroup owner, out IKnownEntityData structureData, out MapArea mapArea, out Stockpile stockpile)
@@ -467,10 +422,6 @@ public class StockpileWindow : HUDWindow
 				}
 			}
 		}
-	}
-
-	private void btTopNone_Click(UIComponent sender, EventArgs e)
-	{
 	}
 
 	public new void Hide()
@@ -663,10 +614,6 @@ public class StockpileWindow : HUDWindow
 				MapArea.CountEntity(allItems, data2, ItemIsOwnedByAllegiance);
 			}
 		}
-	}
-
-	private void FillToplevelControls(Stockpile stockpile)
-	{
 	}
 
 	private bool OneOrMoreItemsInCategoryAreDifferent(CollapsablePanel cp, EntityCategory category, Stockpile stockpile, out bool hiddenItemsAreDifferent)

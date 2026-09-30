@@ -179,9 +179,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	private Regulator bioSystemsRegulator;
 
 	private float avoidDetectionFactor;
-
-	private const float constantDetectionFactor = 0.2f;
-
 	public Dictionary<string, PropertyResult> CustomFields;
 
 	private CompositeID compositeID;
@@ -5081,23 +5078,6 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		{
 			listToBeFilledWithParts.Add(part.ConvertToDesiredType<T>());
 		}
-	}
-
-	private void GetInhabitants(ref List<IHasExposedProperties> listOfChildren)
-	{
-		if (EntityType.StructureType == null || Contains == null)
-		{
-			return;
-		}
-		List<IHasExposedProperties> listOfInhabitants = new List<IHasExposedProperties>();
-		Contains.IterateContained(delegate(Entity entity)
-		{
-			if (entity.EntityType.BiologicalType != null)
-			{
-				listOfInhabitants.Add(entity.ConvertToDesiredType<IHasExposedProperties>());
-			}
-		});
-		listOfChildren = listOfInhabitants;
 	}
 
 	private static void GetContained(SharedKnowledge getterKnowledge, IHasExposedProperties hasProperties, ref List<IHasExposedProperties> listOfChildren)

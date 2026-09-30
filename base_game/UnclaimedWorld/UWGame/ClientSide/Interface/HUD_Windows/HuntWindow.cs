@@ -54,12 +54,6 @@ public class HuntWindow : HUDWindow
 
 	private bool isFirstUpdate;
 
-	private const int orderedX = 195;
-
-	private const int gridHeaderY = 28;
-
-	private const int maxPreyToHunt = 10;
-
 	public HuntWindow()
 		: base(334, 275, hasSurface: true, hasCloseButton: false, isMovable: true, "HUD_window_base", hideWhenMouseExits: false, Level.Bottom)
 	{
@@ -452,12 +446,6 @@ public class HuntWindow : HUDWindow
 			UIComponent parent = sender.Parent;
 			UpdateRow(parent, (EntityType)parent.Tag1, (bool)parent.Tag2, ownedEntities);
 		}
-	}
-
-	private void tbItems_Click(UIComponent sender, EventArgs e)
-	{
-		EntityGroup ownedEntities = The.Sim.PlaySite.GetFirstPlayerExpedition().OwnedEntities;
-		The.InGameUI.EntityListWindow.PopulateAndShowOnPlayfield(sender, ((ItemTypeButtonEventArgs)e).Item, ownedEntities);
 	}
 
 	private void fillableBar_SliderMouseDown(object sender, EventArgs e)

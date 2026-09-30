@@ -7,8 +7,6 @@ namespace UWGame.ClientSide.Interface;
 
 public class MainMenuDevPanel : Panel
 {
-	private int controlTop = 70;
-
 	public MainMenuDevPanel(MainMenuInterface intf, Point position)
 		: base(intf, "DEV OPTIONS", position, new Vector2(360f, 177f), Level.Dialogs, PanelType.MainMenu)
 	{

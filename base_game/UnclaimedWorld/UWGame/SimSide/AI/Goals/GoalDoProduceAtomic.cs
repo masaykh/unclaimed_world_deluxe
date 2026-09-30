@@ -71,10 +71,6 @@ public class GoalDoProduceAtomic : Goal
 		base.OnEnter();
 	}
 
-	private void EmptyToolContainers()
-	{
-	}
-
 	private bool Produce(GameTime elapsed)
 	{
 		SimProcess simProcess = LookUp<SimProcess, SimProcessID>.FindByID(parentGoal.ProductionProcess);

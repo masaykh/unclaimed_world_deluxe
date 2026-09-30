@@ -48,9 +48,6 @@ public abstract class InfluenceMap : IMap, ILookUp<IMap, IMapID>, ISnapshot
 	public string IDName;
 
 	private List<Dependence> children = new List<Dependence>();
-
-	private const float subTileWidthReciprocal = 0.33333f;
-
 	public byte BlockingLimit;
 
 	private static string spacer = "\t";

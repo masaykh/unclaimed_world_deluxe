@@ -60,17 +60,7 @@ public class CustomizeScenarioPanel : Panel
 	private Label lblExtraOptions;
 
 	private int scoreHeaderRight = 856;
-
-	private const int minimumContentWidth = 640;
-
-	private const int maximumContentWidth = 1024;
-
 	private CommonInterface customizeScenarioInterface;
-
-	private const int itemHeight = 90;
-
-	private int itemPadding = 6;
-
 	private CustomizeScenarioScreen screen;
 
 	private RadioGroup mainDifficultyRadioGroup;
@@ -88,19 +78,6 @@ public class CustomizeScenarioPanel : Panel
 	private Image columnDivider2;
 
 	private int selectionColumnWidth;
-
-	private const int setTitleColumnX = 0;
-
-	private const int difficultyColumnX = 180;
-
-	private const int randomizeColumnX = 480;
-
-	private const int selectionColumnX = 640;
-
-	private const int scoreColumnX = 800;
-
-	private const int columnSpacing = 12;
-
 	private TextButton btStart;
 
 	private TextButton btCancel;
@@ -108,9 +85,6 @@ public class CustomizeScenarioPanel : Panel
 	private int mainDifficultyYPos;
 
 	private int nameColumnWidth = 80;
-
-	private const int difficultyWidth = 180;
-
 	private int randomizeWidth = 60;
 
 	public event EventHandler CancelClick;
@@ -692,10 +666,6 @@ public class CustomizeScenarioPanel : Panel
 		}
 	}
 
-	private void ShowRandomOption()
-	{
-	}
-
 	private void cbRandomize_Click(UIComponent sender, EventArgs e)
 	{
 		CheckBox obj = sender as CheckBox;
@@ -717,14 +687,6 @@ public class CustomizeScenarioPanel : Panel
 			comboBox.Enabled = false;
 			comboBox.Clear();
 		}
-	}
-
-	private void tbSelect_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
-	private void Populate()
-	{
 	}
 
 	private void PopulateCustomOptions()

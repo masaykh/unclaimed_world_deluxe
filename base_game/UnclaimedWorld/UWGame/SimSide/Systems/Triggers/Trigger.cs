@@ -276,19 +276,6 @@ public class Trigger : ISleepingUpdatable, IHasExposedProperties, ISnapshot, ILo
 		return null;
 	}
 
-	private OwnerID? GetOwnerOfCarcass()
-	{
-		if (Parent.EntityType.IntelligenceType != null && Parent.Intelligence.CurrentExpedition != null)
-		{
-			return ((ILookUp<IOwner, OwnerID>)Parent.Intelligence.CurrentExpedition).ID;
-		}
-		if (Parent.OwnedBy.HasValue)
-		{
-			return Parent.OwnedBy;
-		}
-		return null;
-	}
-
 	private void SendMessages(Entity entity)
 	{
 		bool flag = false;

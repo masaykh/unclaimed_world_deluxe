@@ -19,9 +19,6 @@ public class FilterPropertiesPanel : UIComponent
 	private TextBox tbSearch;
 
 	private ImageButton ibSearch;
-
-	private const string addFilterPromptKey = "ADDFILTER";
-
 	private FilterPropertySettings FilterPropertySettings;
 
 	public event Action FiltersChanged;

@@ -90,15 +90,6 @@ public class LoadReplayPanel : Panel
 			: "Select a replay to load.";
 	}
 
-	private void btClose_Click(UIComponent sender, EventArgs e)
-	{
-		Window.Hide();
-		if (this.CancelClick != null)
-		{
-			this.CancelClick(sender, e);
-		}
-	}
-
 	private void InitButtons()
 	{
 		Rectangle sourceRectangle = Interface.gui.GUISpriteSheet.GetSourceRectangle("main_panel_dirt_center");

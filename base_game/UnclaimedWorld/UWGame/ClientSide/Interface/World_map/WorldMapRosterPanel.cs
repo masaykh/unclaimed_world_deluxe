@@ -5,8 +5,6 @@ namespace UWGame.ClientSide.Interface.World_map;
 
 public class WorldMapRosterPanel : RosterPanel
 {
-	private const int windowWidth = 600;
-
 	private WorldMap worldMap;
 
 	public WorldMapRosterPanel()

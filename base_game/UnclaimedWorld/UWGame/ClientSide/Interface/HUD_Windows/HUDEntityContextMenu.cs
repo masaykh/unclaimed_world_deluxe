@@ -51,16 +51,6 @@ public class HUDEntityContextMenu : HUDWindow
 
 	public UpgradeWindow UpgradeWindow;
 
-	private const string stockpileTooltip = "Choose the types of items that can be stored in this structure";
-
-	private const string stockpileBrokenTooltip = "The structure is broken and is unusable for stockpiling.";
-
-	private const string offeredForTradeTooltip = "Choose the types of items that can be offered for trade in this structure";
-
-	private const string upgradeTooltip = "Choose improvements for the structure";
-
-	private const int maxNumberOfMissingInputsToDisplayProcessesWithout = 1;
-
 	public HUDEntityContextMenu()
 		: base(240, 220)
 	{

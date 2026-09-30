@@ -17,9 +17,6 @@ public class LogPanel
 	private List<LogAlert> inactiveAlerts = new List<LogAlert>();
 
 	public const int AlertWindowOverlap = 4;
-
-	private const int plasticEdgeWidth = 26;
-
 	private int maxWidth = 100;
 
 	public LogPanel(int xPos, int width)

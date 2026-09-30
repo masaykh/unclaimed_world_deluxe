@@ -12,9 +12,6 @@ internal class GoalDoTakeFiveAtomic : Goal
 	public double TimeAlreadyRested;
 
 	private double startedAt;
-
-	private const double maxPeriodInSeconds = 0.2;
-
 	private static Pool<GoalDoTakeFiveAtomic> freeGoals = new Pool<GoalDoTakeFiveAtomic>(40);
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;

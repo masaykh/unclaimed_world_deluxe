@@ -95,9 +95,6 @@ public class MapManager : ISnapshot
 	public const int tileSizeOver4 = 12;
 
 	public const int tileWidthSquared = 2304;
-
-	private const float locationEpsilon = 0.01f;
-
 	public Vector3 MaxWorldPos;
 
 	public static sbyte[,] direction = new sbyte[8, 2]
@@ -1756,11 +1753,6 @@ public class MapManager : ISnapshot
 			}
 		}
 		return null;
-	}
-
-	private bool TerrainDepthIsUnderWaterLevel(float terrainDepth, float waterLevelBelowTerrain)
-	{
-		return terrainDepth - waterLevelBelowTerrain > 0f;
 	}
 
 	public bool IsBaseCenterOfWorkingBuilding(Point pos, ref Entity structure)

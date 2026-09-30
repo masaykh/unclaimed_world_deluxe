@@ -50,9 +50,6 @@ public class GraphPanel : RosterPanel
 		Color.LightGreen,
 		Color.MediumVioletRed
 	};
-
-	private const int windowWidth = 600;
-
 	private Dictionary<ulong, Plot> plots = new Dictionary<ulong, Plot>();
 
 	public GraphPanel()

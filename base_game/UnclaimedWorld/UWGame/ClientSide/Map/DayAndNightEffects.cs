@@ -24,17 +24,6 @@ public class DayAndNightEffects
 	public Curve TimeOfDayBlues;
 
 	public SunAnimations SunAnimation;
-
-	private const float sunriseOnCurve = 42f;
-
-	private const float sunriseOnCurveEnds = 80f;
-
-	private const float sunsetOnCurveStarts = 191f;
-
-	private const float sunsetOnCurve = 242f;
-
-	private const float sundiskHitsHorizon = 0.04f;
-
 	private Matrix shadowWarping = Matrix.CreateScale(new Vector3(1.2f, 0.8f, 1f));
 
 	public Matrix SunShadowRotationMatrix;
@@ -44,9 +33,6 @@ public class DayAndNightEffects
 	public float ShadowLength;
 
 	public float ShadowXAlignment;
-
-	private const float maxShadowLengthScaling = 10f;
-
 	private Matrix? shadowMatrix;
 
 	private Plane lightPlane = new Plane(-Vector3.UnitZ, 0f);

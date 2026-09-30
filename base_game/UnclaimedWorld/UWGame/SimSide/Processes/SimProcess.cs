@@ -696,10 +696,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 		Common.AddToDictionary(ref assignedSubstances, pool.SubstanceType, new Tuple<SubstancePoolID, float>(pool.ID, amount));
 	}
 
-	private void RequestSubstance()
-	{
-	}
-
 	private void HandleDestroyedOutput()
 	{
 		Destroy();
@@ -715,11 +711,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 		Destroy();
 	}
 
-	private void HandleDestroyedActingOn()
-	{
-		Destroy();
-	}
-
 	private void HandleDestroyedImmovableTool()
 	{
 		Destroy();
@@ -727,11 +718,6 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 
 	private void HandleNoWorkers()
 	{
-	}
-
-	private void HandleNoSubstances()
-	{
-		Destroy();
 	}
 
 	public StatusOfProcess Start(Entity startingAgent, OwnerID? ownerOfOutput, ToolTypeCombination stationaryToolsCombo, List<EntityID> stationaryTools)

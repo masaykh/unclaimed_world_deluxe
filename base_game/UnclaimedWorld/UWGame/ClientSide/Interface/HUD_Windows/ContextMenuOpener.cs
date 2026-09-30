@@ -41,20 +41,6 @@ public class ContextMenuOpener : HUDWindow
 		DisplayWindow.Width = btCycle.Right + 6;
 	}
 
-	private void pnZones_HeightResize(UIComponent sender)
-	{
-		DisplayWindow.Height = pnZones.Y + pnZones.Height;
-	}
-
-	private void grdSkills_HeightResize(UIComponent sender)
-	{
-		pnZones.Height = grdZones.Y + grdZones.Height + 10;
-	}
-
-	private void btModify_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
 	private void btCycle_Click(UIComponent sender, EventArgs e)
 	{
 		CycleEntities(The.InGameUI.SelectedTiles);
@@ -130,10 +116,6 @@ public class ContextMenuOpener : HUDWindow
 		}
 	}
 
-	private void ViewPort_MouseOut(MouseEventArgs args)
-	{
-	}
-
 	private void bt_MouseOver(UIComponent sender, MouseEventArgs args)
 	{
 		if (btExpand.Enabled)
@@ -152,10 +134,6 @@ public class ContextMenuOpener : HUDWindow
 		{
 			btExpand.Enabled = true;
 		}
-	}
-
-	private void PopulateZoneList()
-	{
 	}
 
 	public override void Hide()

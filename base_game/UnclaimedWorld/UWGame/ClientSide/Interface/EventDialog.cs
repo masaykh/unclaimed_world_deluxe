@@ -26,11 +26,6 @@ public class EventDialog : Panel
 	private TextArea area;
 
 	private Image image;
-
-	private const int width = 786;
-
-	private const int height = 308;
-
 	private Box display;
 
 	private Box crtPlasticEdge;
@@ -42,22 +37,12 @@ public class EventDialog : Panel
 	private CRTScreen crtScreen;
 
 	private Grid surfaceGrid;
-
-	private const int titleHeight = 30;
-
 	private DialogOption[] dialogOptions;
-
-	private const int maxNoOfButtons = 4;
-
 	private TextButton[] buttons = new TextButton[4];
 
 	private List<TextButton> buttonsOnForm = new List<TextButton>();
 
 	private Mode mode;
-
-	private const int leftButtonXPos = 451;
-
-	private const int rightButtonEdge = 756;
 
 	public string Text
 	{
@@ -124,15 +109,6 @@ public class EventDialog : Panel
 	{
 		Rectangle sourceRectangle = gui.GUISpriteSheet.GetSourceRectangle("basic_dirt_bottom");
 		Panel.AddImage(gui, Form, sourceRectangle, new Point(445, Form.Height - sourceRectangle.Height)).RenderType = RenderType.Overlay;
-	}
-
-	private bool IsNewestEvent()
-	{
-		if (The.Client.CurrentEventDialogIndex == The.Client.EventDialogsData.Count - 1)
-		{
-			return true;
-		}
-		return false;
 	}
 
 	private void button_Click(UIComponent sender, EventArgs e)

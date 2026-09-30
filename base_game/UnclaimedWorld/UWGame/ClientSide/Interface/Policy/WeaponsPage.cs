@@ -17,15 +17,6 @@ public class WeaponsPage : TabPagePanel
 	private Grid grid;
 
 	private Expedition expedition;
-
-	private const int allowVerminX = 300;
-
-	private const int itemTypeIconColumnX = 10;
-
-	private const int typeX = 22;
-
-	private const int bulletsX = 200;
-
 	private int gridHeaderY = 40;
 
 	private string availableTooltip = "The amount of ammunition available";
@@ -91,16 +82,6 @@ public class WeaponsPage : TabPagePanel
 		label3.FitToText();
 		label3.X = 300;
 		label3.Y = gridHeaderY;
-	}
-
-	private void btOK_Click(UIComponent sender, EventArgs e)
-	{
-		foreach (KeyValuePair<object, UIComponent> item in grid.EntriesByKey)
-		{
-			item.Value.FindChildById<CheckBox>(DataControlID.Selector, out var child, firstLevelOnly: false);
-			EntityType entityType = (EntityType)item.Key;
-			SetUseAgainstVermin(expedition, child.IsChecked, entityType);
-		}
 	}
 
 	private static void SetUseAgainstVermin(Expedition expedition, bool newValue, EntityType entityType)

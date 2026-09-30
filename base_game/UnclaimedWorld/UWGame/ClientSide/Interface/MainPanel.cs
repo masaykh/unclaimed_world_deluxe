@@ -16,9 +16,6 @@ public class MainPanel
 	public Window DisplayWindow;
 
 	protected InGameInterface intf = The.InGameUI;
-
-	private const int height = 52;
-
 	public ImageButton btHelp;
 
 	public TextButton tbMain;
@@ -36,8 +33,6 @@ public class MainPanel
 	private Rectangle pauseIcon;
 
 	private Rectangle pausePosition;
-
-	private const int buttonHeight = 32;
 
 	public MainPanel()
 	{

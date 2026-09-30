@@ -32,9 +32,6 @@ public class EventManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 	private Regulator regulator;
 
 	private HighResolutionTime timer;
-
-	private const int eventActionsPerCycle = 5;
-
 	private SleepyUpdater<PolledEvent> polledEvents = new SleepyUpdater<PolledEvent>(Module.Sim, staggerUpdates: true);
 
 	private List<PolledEvent> snapshotPolledEvents;

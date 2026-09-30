@@ -3775,12 +3775,6 @@ public class PlaceGameEntities
 		c.Body.ChangeMaxHitpoints(1000f);
 	}
 
-	private void MapEditorTest()
-	{
-		The.MapUI.ZoomToMapPosition(16, 16);
-		new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(10, 10)));
-	}
-
 	private static void BushDragon()
 	{
 		The.MapUI.ZoomToMapPosition(157, 56);

@@ -197,15 +197,6 @@ internal class GoalFindPrey : CompositeGoal, ITopLevelGoal
 		return ScoreJobGoal(job);
 	}
 
-	private bool EntityCanBeMarkedAsHuntTarget(Entity entity)
-	{
-		if (entity != null && entity.EntityType.Person == null && entity.Intelligence != null && entity.Intelligence.Allegiance != null && entity.Intelligence.Allegiance.AllegianceType != AllegianceType.Player)
-		{
-			return true;
-		}
-		return false;
-	}
-
 	public override Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		base.DoVersion(sn);

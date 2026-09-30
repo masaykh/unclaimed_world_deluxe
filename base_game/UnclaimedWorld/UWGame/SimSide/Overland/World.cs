@@ -37,9 +37,6 @@ public class World : ISnapshot, IHasExposedProperties
 	public Dictionary<RouteType, Dictionary<SiteID, Dictionary<SiteID, RouteID>>> AllRoutes = new Dictionary<RouteType, Dictionary<SiteID, Dictionary<SiteID, RouteID>>>();
 
 	public EntityID? LastSpawnedEntity;
-
-	private const string keyName = "world";
-
 	private Dictionary<string, PropertyResult> customFields;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;

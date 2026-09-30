@@ -43,9 +43,6 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 	private bool chaseProgressWasMade = true;
 
 	private float? currentPathLength;
-
-	private const double timeBetweenChaseProgressEvaluation = 3.0;
-
 	private Regulator chaseProgressRegulator;
 
 	private float? previousDistanceToTarget;
@@ -407,11 +404,6 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 			chaseProgressWasMade = false;
 		}
 		currentPathLength = newPathLength;
-	}
-
-	private bool ChaseProgressWasMade()
-	{
-		return chaseProgressWasMade;
 	}
 
 	public override bool IsSame(Job job)

@@ -98,8 +98,6 @@ public class RegionSearcher : ISnapshot
 		}
 	}
 
-	private const int nodesPerCycle = 20;
-
 	private PriorityQueueB<RegionPathFinderNodeBFS> BFSOpen;
 
 	private PriorityQueueB<RegionPathFinderNodeAStar> AStarOpen;

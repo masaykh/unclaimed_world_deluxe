@@ -1303,15 +1303,6 @@ public class EntityGroup : ISnapshot, ILookUp<EntityGroup, EntityGroupID>
 		return 0.75 * urgencyScore + 0.25 * survivalScore;
 	}
 
-	private double ScoreSurvivalImportance(bool isEatable)
-	{
-		if (isEatable)
-		{
-			return 1.0;
-		}
-		return 0.0;
-	}
-
 	private double ScoreHowLongStocksWillLast(EntityType entityType, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems)
 	{
 		float intervalInDaysForComputingProductImportance = GameData.Instance.AIConstants.IntervalInDaysForComputingProductImportance;
@@ -1326,16 +1317,6 @@ public class EntityGroup : ISnapshot, ILookUp<EntityGroup, EntityGroupID>
 	private float ComputeEventRate(EntityType entityType, DateAndTime.TimeDateYear from, DateAndTime.TimeDateYear to, double interval, ProductionStatistics.StatTypes statType)
 	{
 		return (float)((double)Statistic.SumDataPoints(GetAllegiance().Statistics.ProductionStatistics.Stats[statType], entityType, from, to) / interval);
-	}
-
-	private void ComputeProductionRate(EntityType entityType, out int currentStockAmount, out int stockpiledAndProduced, out float productionRate, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems)
-	{
-		currentStockAmount = GetCurrentStockAmount(entityType, allAvailableItems);
-		int currentJobs;
-		float averageSpeed;
-		int num = CountOutstandingJobOutput(entityType, countUnstarted: false, out currentJobs, out averageSpeed);
-		stockpiledAndProduced = currentStockAmount + num;
-		productionRate = (float)num * averageSpeed;
 	}
 
 	private int GetCurrentStockAmount(EntityType entityType, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems)

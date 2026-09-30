@@ -64,17 +64,7 @@ public class AudioManager
 	private MediaState mediaPlayerState;
 
 	private float mediaPlayerVolume;
-
-	private const int MaxSounds = 32;
-
 	private bool canPlayMusic;
-
-	private const float centerRadiusForMaxVolume = 500f;
-
-	private const float centerRadiusForMinVolume = 850f;
-
-	private const float minVolumeFactor = 0.2f;
-
 	public int MusicFadeInMilliseconds = 800;
 
 	private float CurrentMusicVolume

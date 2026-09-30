@@ -584,22 +584,6 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 		return num;
 	}
 
-	private void CancelHaulingJobsForProcessJobs(List<ProcessJob> jobs)
-	{
-		List<Job> haulingJobs = owner.HaulingJobs;
-		for (int num = haulingJobs.Count - 1; num >= 0; num--)
-		{
-			Job job = haulingJobs[num];
-			for (int num2 = jobs.Count - 1; num2 >= 0; num2--)
-			{
-				if ((job as HaulingJob).RequiredByProcessJob == jobs[num2])
-				{
-					job.Destroy(cancelTakers: true);
-				}
-			}
-		}
-	}
-
 	private static bool TestIsUnstarted(ProcessJob processJob, ref int removedJobs)
 	{
 		if (processJob.IsStarted(out var isStarted) && isStarted)
@@ -812,18 +796,6 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 			return !The.Map.SubtileIsCompletelyBlocked(The.Map.TerrainCosts[SurfaceType.TransportType.Foot], MapManager.WorldPosToSubtilePos(container.AccessPoint));
 		}
 		return false;
-	}
-
-	private Zone SelectGatherZone(ResourceType resource)
-	{
-		foreach (Zone zone in owner.Zones)
-		{
-			if (zone.AllowStandingOrderHarvest.Contains(resource))
-			{
-				return zone;
-			}
-		}
-		return null;
 	}
 
 	private bool CreateProcessJobAndHaulingJobs(EntityType entityType, ProcessType processType)

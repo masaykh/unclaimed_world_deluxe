@@ -26,8 +26,6 @@ public class FloodFill
 		new sbyte[2] { -1, -1 }
 	};
 
-	private const byte distance = 1;
-
 	public FloodFillResult DoFloodFill(MapManager.SubtileValue[][] terrainGrid, ushort[][] allNodes, byte[][] allNodeDistances, Point from, ushort regionColor, int radius)
 	{
 		int jaggedArrayWidth = Common.GetJaggedArrayWidth(allNodes);

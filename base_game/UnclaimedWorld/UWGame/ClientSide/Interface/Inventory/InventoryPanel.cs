@@ -55,19 +55,9 @@ public class InventoryPanel : RosterPanel
 	}
 
 	private Expedition expedition;
-
-	private const int topPanelExpandedNoTrackingHeight = 112;
-
-	private const int topPanelExpandedWithTrackingHeight = 150;
-
-	private const int topPanelCollapsedHeight = 34;
-
 	public const int DefaultStocksMaxValue = 5;
 
 	public const int MaxStockOrder = 99;
-
-	private const int maxNumberOfMissingInputsToDisplayBuildingsWithout = 1;
-
 	private bool haveActiveTracking = true;
 
 	private Rectangle screenDimensions = new Rectangle(40, 700, 400, 300);
@@ -89,9 +79,6 @@ public class InventoryPanel : RosterPanel
 	private int captionX = 30;
 
 	private int availableX = 204;
-
-	private int unavailableX = 243;
-
 	private int itemTypeProductionTargetColumnX = 300;
 
 	private LCDInnerPanel filterAndTrackingPanel;
@@ -109,9 +96,6 @@ public class InventoryPanel : RosterPanel
 	private ImageButton ibCyclopedia;
 
 	private ImageButton btIncludeSalvage;
-
-	private const string tbTrackNotTrackedTooltip = "Track this item/structure";
-
 	public const string TrackingLimitTooltip = "No more objects can be tracked, cancel some of the other tracked objects first.";
 
 	public const string expandFilterTooltip = "Display search options";
@@ -151,9 +135,6 @@ public class InventoryPanel : RosterPanel
 	private Color encyclopediaTint;
 
 	private Dictionary<EntityType, bool> standingOrderButtonWasChecked = new Dictionary<EntityType, bool>();
-
-	private const int orderedX = 200;
-
 	private TextButton latestCheckedTextButton;
 
 	public InventoryPanel()
@@ -551,23 +532,6 @@ public class InventoryPanel : RosterPanel
 		haveActiveTracking = cbEntityTracking.Count != 0;
 		ExpandOrCollapseTopPanel(The.InGameUI.InventorySettings.IsExpanded);
 		Refresh();
-	}
-
-	private void HideOrDisplayTrackingOptions()
-	{
-		if (haveActiveTracking && cbEntityTracking.Count == 0)
-		{
-			haveActiveTracking = false;
-			UpdateGridYPosition(112);
-			rowDivider2.Visible = false;
-		}
-		if (!haveActiveTracking && cbEntityTracking.Count > 0)
-		{
-			haveActiveTracking = true;
-			UpdateGridYPosition(150);
-			rowDivider2.Visible = true;
-		}
-		ExpandOrCollapseTopPanel(!The.InGameUI.InventorySettings.IsExpanded);
 	}
 
 	private void UpdateGridYPosition(int filterPanelHeight)
@@ -1047,19 +1011,6 @@ public class InventoryPanel : RosterPanel
 		}
 	}
 
-	private void InventoryPanel_MouseOver(UIComponent sender, MouseEventArgs args)
-	{
-		if (viewType == ViewType.List)
-		{
-			SetTrackingVisibility(grdListView, args);
-			return;
-		}
-		foreach (Grid categoryGrid in categoryGrids)
-		{
-			SetTrackingVisibility(categoryGrid, args);
-		}
-	}
-
 	private void SetTrackingVisibility(Grid grid, MouseEventArgs args)
 	{
 		foreach (UIComponent entry in grid.Entries)
@@ -1181,11 +1132,6 @@ public class InventoryPanel : RosterPanel
 		categoryGrid.CanGrowInHeight = true;
 		categoryGrid.Font = GUIManager.LCDandHUDBodyFontPath;
 		categoryGrid.IsOuterGrid = false;
-	}
-
-	private int GetMaxProduction(EntityType entityType)
-	{
-		return 5;
 	}
 
 	private UIComponent AddItemRow(Grid grid, EntityType entityType, EntityGroup owner, bool useCurrentUIOwner, bool gridList)
@@ -1528,20 +1474,6 @@ public class InventoryPanel : RosterPanel
 		return false;
 	}
 
-	private static ProcessType SelectProcessTypeForOutput(List<ProcessType> listOfProcesses)
-	{
-		if (listOfProcesses.Count == 1)
-		{
-			return listOfProcesses[0];
-		}
-		ProcessType processType = listOfProcesses.FirstOrDefault((ProcessType p) => p.IsPartOfProductionChainButCannotOrderFromInventory());
-		if (processType == null)
-		{
-			return listOfProcesses[0];
-		}
-		return processType;
-	}
-
 	public override void Hide()
 	{
 		base.Hide();
@@ -1800,15 +1732,6 @@ public class InventoryPanel : RosterPanel
 			The.InGameUI.EntityListWindow.SetDataSource(stockButton.EntityType, stockButton.EntityList);
 			The.InGameUI.EntityListWindow.OpenNextToStockButton(sender);
 		}
-	}
-
-	private void salvage_Click(UIComponent sender, EventArgs e)
-	{
-	}
-
-	private void keepInStore_CountChanged(int newCount, EventArgs e)
-	{
-		expedition.OwnedEntities.ProductionOrders.Orders[((ItemTypeButtonEventArgs)e).Item].AmountToKeepInStore = newCount;
 	}
 
 	private void ExpandStockItem_OnPress(object sender, EventArgs e)

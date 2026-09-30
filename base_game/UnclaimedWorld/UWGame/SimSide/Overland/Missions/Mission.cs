@@ -119,10 +119,6 @@ public class Mission : ISnapshot, ILookUp<Mission, MissionID>, ICommunicates
 
 	public bool IsSnapshotted { get; set; }
 
-	private void CreateRegulators()
-	{
-	}
-
 	public string GetMissionMarker()
 	{
 		string text = "hiker_map_icon";
@@ -280,11 +276,6 @@ public class Mission : ISnapshot, ILookUp<Mission, MissionID>, ICommunicates
 			CurrentMissionStop.MissionStopTemplate.RecalculateNumbers();
 			CurrentMissionStop.TravelAction.Start();
 		}
-	}
-
-	private void RecalculateNumbers()
-	{
-		StartMissionStop.MissionStopTemplate.SetNumber(0);
 	}
 
 	public EntityType GetMainTransportation()

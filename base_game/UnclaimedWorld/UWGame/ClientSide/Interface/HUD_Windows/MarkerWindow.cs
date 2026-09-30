@@ -58,23 +58,11 @@ public class MarkerWindow : HUDWindow
 	private Image imAttack;
 
 	public Zone Zone;
-
-	private const int iconSpacing = 2;
-
 	private EntityID? entityID;
 
 	private HorizontalList entityHorizontalList;
 
 	private EntityActivityHUDWindow activityWindow;
-
-	private const string personBackgroundSprite = "HUD_windowCharacter_base_small";
-
-	private const string otherAllegianceBackgroundSprite = "HUD_windowRed_base_small";
-
-	private const string specialSiteBackgroundSprite = "HUD_windowOrange_base_small";
-
-	private const string defaultBackgroundSprite = "HUD_window_base_small";
-
 	private Point offsetFromEntity = new Point(0, 90);
 
 	public bool IsRenewedThisFrame;
@@ -733,10 +721,6 @@ public class MarkerWindow : HUDWindow
 				The.InGameUI.HUDActionPanel.ShowOnPlayfield(DisplayWindow.AbsolutePosition.X + DisplayWindow.Width - 4, DisplayWindow.AbsolutePosition.Y, modal: false, Expedition);
 			}
 		}
-	}
-
-	private void bt_MouseOver(UIComponent sender, MouseEventArgs args)
-	{
 	}
 
 	public void Update()

@@ -47,9 +47,6 @@ public class OverlaySettings : ISnapshot
 	private Dictionary<ResourceCategory, List<ResourceType>> resourceCategoryItemSettings = new Dictionary<ResourceCategory, List<ResourceType>>();
 
 	public bool ShowOverlaysOnGameArea;
-
-	private const string buildTooltip = "Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas.";
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public bool IsSnapshotted { get; set; }

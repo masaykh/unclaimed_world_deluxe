@@ -7,8 +7,6 @@ namespace UWGame.SimSide.Maps.Regions;
 
 public class TerrainRegionMap : RegionMap
 {
-	private const float refreshIntervalInSeconds = 4f;
-
 	public IDActionEvent RegionsAreInvalid = new IDActionEvent();
 
 	public IDActionEvent RegionsFinished = new IDActionEvent();

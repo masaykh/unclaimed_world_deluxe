@@ -345,9 +345,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 	private Vector4 overlayGradient3 = Color.White.ToVector4();
 
 	private RenderEffect renderEffect;
-
-	private float strobe;
-
 	private List<Tuple<string, string, AttacheePoint>> snapshotAttachables;
 
 	public Entity Entity { get; set; }
@@ -1620,10 +1617,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		RenderableFactory.Remove(this);
 	}
 
-	private void BindToEntityID(EntityID id)
-	{
-	}
-
 	public void spawnAttachableRenderable(string asset, bool randomlyRotate, int expireTimer)
 	{
 	}
@@ -1775,16 +1768,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 	public float getScale()
 	{
 		return 1f;
-	}
-
-	private void setFogOfWarClearFrame(uint frame)
-	{
-		fogOfWarClearFrame = frame;
-	}
-
-	private uint getFogOfWarClearFrame()
-	{
-		return fogOfWarClearFrame;
 	}
 
 	public void setFullyObscuredByShroud(bool fullyObscured)
@@ -2299,20 +2282,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		return currentInterval;
 	}
 
-	private double? GetEnvelopeEffectsUpdateInterval()
-	{
-		double? currentInterval = null;
-		if (tintEffect != null)
-		{
-			UpdateTimePoints.GetSoonestInterval(tintEffect.GetUpdateInterval(), ref currentInterval);
-		}
-		if (pulsingEffect != null)
-		{
-			UpdateTimePoints.GetSoonestInterval(pulsingEffect.GetUpdateInterval(), ref currentInterval);
-		}
-		return currentInterval;
-	}
-
 	private double? GetAdditionalEffectsUpdateInterval()
 	{
 		double? currentInterval = null;
@@ -2455,19 +2424,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 		}
 	}
 
-	private void StopSounds()
-	{
-		StopSound(StateSoundPlaying);
-		if (ActionSoundsPlaying == null)
-		{
-			return;
-		}
-		foreach (Tuple<SoundData, SoundEffectInstance> item in ActionSoundsPlaying)
-		{
-			StopSound(item);
-		}
-	}
-
 	private void StopSound(Tuple<SoundData, SoundEffectInstance> sound)
 	{
 		if (sound != null && sound.Item2.State == SoundState.Playing)
@@ -2582,38 +2538,6 @@ public class Renderable : GameObject, ISleepingUpdatable
 	public virtual void StopOverridingAnimTransforms(string boneName)
 	{
 		RenderAsModel.ModelAnimator.BonePoses[boneName].UseSpecialTransform = false;
-	}
-
-	private void DrawEntityWaypoints(GameWorldRenderer.RenderTechnique technique)
-	{
-		Color pink = Color.Pink;
-		if (technique != GameWorldRenderer.RenderTechnique.Standard || Entity == null || !Entity.Find<Intelligence>(out var c))
-		{
-			return;
-		}
-		The.Client.DrawPoint(The.MapUI.WorldPosToScreen(Location.Value), Color.White);
-		if (c.GroupMoveAssignedWaypoint != null)
-		{
-			The.Client.DrawPoint(The.MapUI.WorldPosToScreen(c.GroupMoveAssignedWaypoint.Location), pink);
-		}
-		List<Waypoint> waypointPath = c.Brain.GetWaypointPath();
-		if (waypointPath != null)
-		{
-			Vector2? vector = The.MapUI.WorldPosToScreen(Location.Value);
-			foreach (Waypoint item in waypointPath)
-			{
-				if (vector.HasValue)
-				{
-					Shape.Line(vector.Value, The.MapUI.WorldPosToScreen(item.Location), pink, pink);
-				}
-				vector = The.MapUI.WorldPosToScreen(item.Location);
-				Shape.Box(new Vector2(vector.Value.X - 2f, vector.Value.Y - 2f), new Vector2(vector.Value.X + 2f, vector.Value.Y + 2f), Color.Black, solid: true);
-			}
-		}
-		if (Entity.Find<Locomotor>(out var c2))
-		{
-			The.Client.DrawPoint(The.MapUI.WorldPosToScreen(c2.CurrentMoveTarget), Color.Red);
-		}
 	}
 
 	public static void GetExcludedStanceFlags(AnimModifier? stanceFlag, List<AnimModifier> excludedFlagsResult)

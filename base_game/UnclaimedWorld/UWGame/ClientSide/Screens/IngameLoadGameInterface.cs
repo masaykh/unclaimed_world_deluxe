@@ -30,8 +30,4 @@ public class IngameLoadGameInterface : CommonInterface
 			SaveLoadMessageBox.Update(gameTime);
 		}
 	}
-
-	private void Form_Close(UIComponent sender)
-	{
-	}
 }

@@ -57,9 +57,6 @@ public class Controller : DrawableGameComponent
 	private Recorder recorder;
 
 	private string replayDisplayedTime;
-
-	private bool skipRendering;
-
 	private bool traceEnabled;
 
 	private bool replayPaused;
@@ -87,9 +84,6 @@ public class Controller : DrawableGameComponent
 	public StatsAndAchievements StatsAndAchievements;
 
 	private UnclaimedWorld game;
-
-	private bool monkey = true;
-
 	public object UpdateScreensLock = new object();
 
 	private RasterizerState rasterizerSampleClosest = new RasterizerState
@@ -491,10 +485,6 @@ public class Controller : DrawableGameComponent
 		{
 			The.IngameLoadScreen.Update(gameTime, otherScreenHasFocus: false, coveredByOtherScreen: false);
 		}
-	}
-
-	private void CreateSteamMiniDump(string msg, Exception ex)
-	{
 	}
 
 	private void HandleReplay(ref GameTime gameTime)

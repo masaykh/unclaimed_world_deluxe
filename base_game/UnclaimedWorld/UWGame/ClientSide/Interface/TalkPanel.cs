@@ -19,9 +19,6 @@ public class TalkPanel
 	private CRTAnimator crtAnimator;
 
 	private UIComponent crtContent;
-
-	private const double timeToShowFaceMean = 6.0;
-
 	private double timeLeftToShowFace;
 
 	/// <summary>Seconds since the last line was spoken (HudMod's TALK PANEL, "when someone speaks").</summary>

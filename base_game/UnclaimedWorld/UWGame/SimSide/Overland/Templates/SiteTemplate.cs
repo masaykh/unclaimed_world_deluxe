@@ -60,11 +60,6 @@ public class SiteTemplate : IGameData
 		}
 	}
 
-	private bool HasSkill(string[] group, SkillType skill)
-	{
-		return group?.Any((string s) => s == skill.KeyName) ?? false;
-	}
-
 	public void PreInitValidate(ref List<string> errors)
 	{
 	}

@@ -13,8 +13,6 @@ namespace UWGame.SimSide.AI.Goals;
 
 public class GoalFollowPath : CompositeGoal
 {
-	private const int numberSpacing = 100;
-
 	public GroupMoveActivity GroupMoveActivity;
 
 	public List<PathFinderNode> Path;
@@ -500,11 +498,6 @@ public class GoalFollowPath : CompositeGoal
 	{
 		base.Terminate();
 		entity.Locomotor.LeggedLocomotor.TargetSpeed = MovementSpeeds.Normal;
-	}
-
-	private bool EdgeIsOnRoadOrPath(PathFinderNode from, PathFinderNode to)
-	{
-		return false;
 	}
 
 	private List<Vector3> SplitPathIntoSegmentsAndSmoothe(List<PathFinderNode> path)

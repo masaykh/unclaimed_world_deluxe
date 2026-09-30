@@ -27,10 +27,6 @@ public class EvaluateEat : GoalEvaluator
 		ScoreFood
 	}
 
-	private const float fullLevel = 0.9f;
-
-	private const float almostFullLevel = 0.7f;
-
 	private EntityGroup foodItemsGroup;
 
 	private BiologicalEntity bioEntity;
@@ -157,19 +153,6 @@ public class EvaluateEat : GoalEvaluator
 		return CalculateResult.Done;
 	}
 
-	private CalculateResult ScoreGatheringSite(RegionMap regionMapToUse, ThreatStance threatStanceToUse, IKnownEntityData food, ref double score)
-	{
-		score = 0.0;
-		double travelTimeScore = 0.0;
-		RegionMap.Result result = GoalEvaluator.ScoreTravelTime(regionMapToUse, threatStanceToUse, entity.AccessPoint.Value, food.PlaySiteLocation, entity, ref travelTimeScore);
-		if (result == RegionMap.Result.Wait)
-		{
-			return CalculateResult.Processing;
-		}
-		_ = 2;
-		return CalculateResult.Done;
-	}
-
 	private FoodLevels GetLowestFoodLevel()
 	{
 		FoodLevels result = FoodLevels.Full;
@@ -235,11 +218,6 @@ public class EvaluateEat : GoalEvaluator
 			return true;
 		}
 		return false;
-	}
-
-	private bool HasRoomInStomach(IKnownEntityData item)
-	{
-		return currentStomachRoom > item.Bulk;
 	}
 
 	private double ScoreNutrientsInExtractedItems(IKnownEntityData foodSource, ref ProcessType extractionProcess)
@@ -345,15 +323,6 @@ public class EvaluateEat : GoalEvaluator
 		return num / (float)noOfNeeds;
 	}
 
-	private CalculateResult GetAllGatheringPlacesSortedByDistance(Entity entity, EntityType entityType, EntityGroup owner, SharedKnowledge sharedKnowledge, RegionMap footRegionMap, ref List<ItemDistance> sortedList, float? maxDistance = null)
-	{
-		if (owner.Structures.TryGetValue(entityType, out var value))
-		{
-			return GoalEvaluator.GetSortedListOfEntities(entity, owner, sharedKnowledge, footRegionMap, value, ref sortedList, (IKnownEntityData itemData) => itemData.EntityType.GatheringSiteType != null && itemData.IsCompleted(), maxDistance);
-		}
-		return CalculateResult.Done;
-	}
-
 	public CalculateResult ScoreEating(double minimumRatingToConsider, ref double bestScore)
 	{
 		ThreatStance threatStanceToUse;
@@ -417,15 +386,6 @@ public class EvaluateEat : GoalEvaluator
 			bestScore = 0.0;
 		}
 		return CalculateResult.Done;
-	}
-
-	private double ScoreFreshMeal(IKnownEntityData food)
-	{
-		if (food.EntityType.ItemType.FoodType.IsMeal && food.Condition.Value > 0.949999988079071)
-		{
-			return 1.0;
-		}
-		return 0.0;
 	}
 
 	public static double ScoreCondition(IKnownEntityData food, double? minimumDaysLeftUntilSpoiling)

@@ -975,55 +975,6 @@ public class EvaluateJob : GoalEvaluator, IScoreJob
 		}
 	}
 
-	private bool CanCarryAllTools(EntityType tool0, EntityType tool1, EntityType tool2 = null)
-	{
-		float num = 0f;
-		if (!ToolType.IsImmovable(tool0))
-		{
-			num += tool0.ItemType.MaximumBulk.Value;
-		}
-		if (!ToolType.IsImmovable(tool1))
-		{
-			num += tool1.ItemType.MaximumBulk.Value;
-		}
-		if (!ToolType.IsImmovable(tool2))
-		{
-			num += tool2.ItemType.MaximumBulk.Value;
-		}
-		return entity.AgentStorage.ItemStorage.HasCapacityForItemWhenEmpty(num);
-	}
-
-	private bool CanCarryAllTools(Entity tool0, Entity tool1, Entity tool2 = null)
-	{
-		float num = 0f;
-		if (!ToolType.IsImmovable(tool0.EntityType))
-		{
-			num += tool0.Bulk;
-		}
-		if (!ToolType.IsImmovable(tool1.EntityType))
-		{
-			num += tool1.Bulk;
-		}
-		if (!ToolType.IsImmovable(tool2.EntityType))
-		{
-			num += tool2.Bulk;
-		}
-		return entity.AgentStorage.ItemStorage.HasCapacityForItemWhenEmpty(num);
-	}
-
-	private bool CanCarryAllTools(List<Entity> tools)
-	{
-		float num = 0f;
-		foreach (Entity tool in tools)
-		{
-			if (!ToolType.IsImmovable(tool.EntityType))
-			{
-				num += tool.Bulk;
-			}
-		}
-		return entity.AgentStorage.ItemStorage.HasCapacityForItemWhenEmpty(num);
-	}
-
 	private bool IsValidTool(EntityID toolID, float? jobDurationInDays, SharedKnowledge sharedKnowledge, EntityGroup ownerOfTools, out bool inUseByNonWorkerProcess, ref bool anyToolInUse, ref bool anyToolIsBroken)
 	{
 		bool isBroken;

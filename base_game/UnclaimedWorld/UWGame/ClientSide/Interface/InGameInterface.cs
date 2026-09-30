@@ -132,9 +132,6 @@ public class InGameInterface : CommonInterface
 	public int MainTop;
 
 	public const int SmallPanelTop = 213;
-
-	private const int rosterPanelBottomMargin = 100;
-
 	public int expandedInterfaceLeft;
 
 	public const int rosterPanelTop = 18;
@@ -260,9 +257,6 @@ public class InGameInterface : CommonInterface
 	public RatingsPanel RatingsPanel;
 
 	public CounterPanel CounterPanel;
-
-	private Rectangle characterNearbyBounds;
-
 	public SelectRectangle SelectRectangle;
 
 	public StatusScreen StatusScreen;
@@ -278,9 +272,6 @@ public class InGameInterface : CommonInterface
 	public object Help;
 
 	private DateAndWeather dateAndWeather;
-
-	private Window window;
-
 	public Animation2D SelectedCycleAnimationQuick;
 
 	public Animation2DPlayer SelectedCyclePlayerFlashing;

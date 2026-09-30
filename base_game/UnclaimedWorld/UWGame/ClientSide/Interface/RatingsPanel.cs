@@ -121,21 +121,6 @@ public class RatingsPanel : Panel
 		OpenGraphRosterPanel(Graphs.FoodRating);
 	}
 
-	private void lblComfort_TooltipDisplayed(UIComponent sender, bool value)
-	{
-		RequestRatingsBreakdown(RatingTypes.Comfort, value);
-	}
-
-	private void lblSecurity_TooltipDisplayed(UIComponent sender, bool value)
-	{
-		RequestRatingsBreakdown(RatingTypes.Security, value);
-	}
-
-	private void lblFoodSupply_TooltipDisplayed(UIComponent sender, bool value)
-	{
-		RequestRatingsBreakdown(RatingTypes.Food, value);
-	}
-
 	private void lblComfort_TooltipRequested(UIComponent sender)
 	{
 		RefreshRatingTooltip(RatingTypes.Comfort, lblComfort);

@@ -13,9 +13,6 @@ public class TerrainTileUpdateManager : ICyclable, ILookUp<ICyclable, CyclableID
 	private double deltaTimeInSeconds;
 
 	private Regulator regulator;
-
-	private const double oneOverThousand = 0.001;
-
 	private static double totalComputationAllInstancesInSeconds;
 
 	private CyclableID id = CyclableID.Invalid;

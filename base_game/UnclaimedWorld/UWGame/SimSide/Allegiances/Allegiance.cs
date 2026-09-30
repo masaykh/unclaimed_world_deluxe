@@ -267,11 +267,6 @@ public class Allegiance : IHasExposedProperties, ICanIterateEntities, ILookUp<IC
 		SharedKnowledge.Update(gameTime);
 	}
 
-	private void FoodExtraction_FoodProcessesChanged()
-	{
-		SharedKnowledge.SetFoodDirty();
-	}
-
 	public void UpdateOffPlaySite(GameTime gameTime)
 	{
 		OtherSiteAllegianceManager.Update(gameTime);

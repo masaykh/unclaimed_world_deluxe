@@ -3127,18 +3127,6 @@ public class Snapshotter
 		return true;
 	}
 
-	private void ReturnToVerifyingPreviousClass()
-	{
-		if (snapshotClassesBeingVerified.Count > 0)
-		{
-			snapshotClassBeingVerified = snapshotClassesBeingVerified.Peek();
-		}
-		else
-		{
-			snapshotClassBeingVerified = null;
-		}
-	}
-
 	public ISnapshot DoISnapshot<T>(T snap, bool verifyField = true) where T : ISnapshot
 	{
 		Type typeFromHandle = typeof(T);

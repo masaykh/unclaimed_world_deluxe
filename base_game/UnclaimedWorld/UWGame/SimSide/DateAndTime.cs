@@ -138,11 +138,6 @@ public class DateAndTime : ISnapshot
 	public float UnshiftedAzimuth;
 
 	public float SunElevation;
-
-	private const float axialTilt = (float)Math.PI / 8f;
-
-	private const float latitude = (float)Math.PI / 4f;
-
 	private float cosLatitude;
 
 	private float sinLatitude;

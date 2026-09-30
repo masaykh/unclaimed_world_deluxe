@@ -29,23 +29,8 @@ public class TiersPage : TabPagePanel
 	private Grid grdTiers;
 
 	private UIComponent tierHeaderContainer;
-
-	private const int tierHeight = 128;
-
-	private const int tierWidth = 129;
-
-	private const int tierStartX = 51;
-
 	private int ratingsBarWidth;
-
-	private const int tiersToShow = 4;
-
 	private int firstTier;
-
-	private const int normalTooltipWidth = 200;
-
-	private const int wideTooltipWidth = 360;
-
 	private Dictionary<TierArea, string> tierButtonTooltips = new Dictionary<TierArea, string>();
 
 	private Color comfortColor = Util.ColorFromHex("ECBCCF").Value;

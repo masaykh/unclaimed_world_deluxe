@@ -101,28 +101,6 @@ public class PolicyAdoptedByVoting
 		content = The.Sim.PlaySite.GetPropertyValue(tierArea.KeyName + "PolicyAdopted", null);
 	}
 
-	private void GetDialogTextProperties2People(RatingTypes mainIssue, out PropertyResult? content)
-	{
-		content = The.Sim.PlaySite.GetPropertyValue("meeting2Security", null);
-	}
-
-	private void GetDialogTextProperties3OrMore(TierArea tierArea, RatingTypes mainIssue, out PropertyResult? content)
-	{
-		content = null;
-		switch (mainIssue)
-		{
-		case RatingTypes.Security:
-			content = The.Sim.PlaySite.GetPropertyValue("meeting3Security", null);
-			break;
-		case RatingTypes.Comfort:
-			content = The.Sim.PlaySite.GetPropertyValue("meeting3Comfort", null);
-			break;
-		case RatingTypes.Food:
-			content = The.Sim.PlaySite.GetPropertyValue("meeting3Food", null);
-			break;
-		}
-	}
-
 	private void GetDialogTextPropertiesAllAgree(TierArea tierArea, out PropertyResult? content)
 	{
 		content = null;

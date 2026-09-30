@@ -7,11 +7,6 @@ namespace UWGame.ClientSide.Interface;
 public class StatusScreen
 {
 	public Window DisplayWindow;
-
-	private Image plastic;
-
-	private Image fingerprint;
-
 	private Box plasticEdge;
 
 	public const int HeightOfStatusImage = 130;
@@ -200,24 +195,6 @@ public class StatusScreen
 	public void Switch()
 	{
 		crtAnimator.Switch();
-	}
-
-	private void DrawRubber(GUIManager gui, Game game)
-	{
-		int i = 0;
-		int num = 0;
-		for (Rectangle sourceRectangle = gui.GUISpriteSheet.GetSourceRectangle("TV_rubber_texture"); i < DisplayWindow.Width; i += sourceRectangle.Width)
-		{
-			for (num = 0; num < DisplayWindow.Height; num += sourceRectangle.Height)
-			{
-				Image image = new Image(gui);
-				image.SetSkinLocation(SkinState.Normal, sourceRectangle);
-				image.Alpha = 0.2f;
-				DisplayWindow.Add(image);
-				image.Position = new Point(i, num);
-				image.ResizeControlToFitImage();
-			}
-		}
 	}
 
 	public void SetCenterButtonChecked(bool enable)

@@ -28,9 +28,6 @@ public class GoalFlyToPosition : Goal
 	private Point destination;
 
 	private Vector2 destinationPoint;
-
-	private const float atDestinationLimit = 16f;
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public Point Destination

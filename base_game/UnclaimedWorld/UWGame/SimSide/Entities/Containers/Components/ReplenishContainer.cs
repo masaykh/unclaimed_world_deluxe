@@ -34,12 +34,6 @@ internal class ReplenishContainer : Container, IReplenishes, IHasReplenishItems
 		return Contains(entityID);
 	}
 
-	private void RemoveOutdatedItem(AmmoOfType ammoOfType, EntityID entityID)
-	{
-		ammoOfType.Items.Remove(entityID);
-		ammoOfType.TotalIsDirty = true;
-	}
-
 	public override void IterateContained(Action<Entity> iterateMethod)
 	{
 		replenishItems.IterateContained(iterateMethod);

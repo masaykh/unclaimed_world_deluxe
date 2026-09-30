@@ -100,11 +100,6 @@ internal class GoalDoAttack : CompositeGoal
 		}
 	}
 
-	private float GetMissDuration()
-	{
-		return 0.72f;
-	}
-
 	private void SetFirstPartAnimationState()
 	{
 		float attackTypeActionPointOrDefault = GetAttackTypeActionPointOrDefault();

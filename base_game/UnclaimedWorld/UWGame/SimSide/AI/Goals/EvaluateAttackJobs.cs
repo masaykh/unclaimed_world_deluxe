@@ -45,9 +45,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 	private List<EntityGroup> ownersOfVehicles;
 
 	private OwnerID? ownerOfCarcass;
-
-	private List<AttackType> AvailableAttackTypes;
-
 	private List<WeaponInstanceCombo> allCombos = new List<WeaponInstanceCombo>();
 
 	private int scoreComboIndex;
@@ -85,9 +82,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 	private WeaponInstanceCombo selectedCombo;
 
 	private List<ReplenishItemsForAction> replenishItemsForWeapon;
-
-	private int comboProgress;
-
 	private bool scoringWasInterrupted;
 
 	public override float Priority => priority;
@@ -639,15 +633,6 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 	private bool WeaponIsCarried(IKnownEntityData weapon)
 	{
 		return entity.AgentStorage.Contains(weapon.EntityID);
-	}
-
-	private bool WeCarrySameOrBetterWeaponType(IKnownEntityData weapon)
-	{
-		if (WeaponIsSameOrBetterType(entity.AgentStorage.MountedToolOrWeapon, weapon))
-		{
-			return true;
-		}
-		return false;
 	}
 
 	public bool UncarriedWeaponIsBetterThanCarriedWeapons(WeaponInstanceCombo weaponCombo)

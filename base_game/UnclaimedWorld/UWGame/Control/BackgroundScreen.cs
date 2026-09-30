@@ -41,9 +41,6 @@ internal class BackgroundScreen : GameScreen
 	private Texture2D backgroundTexture;
 
 	private Rectangle backgroundDest;
-
-	private Rectangle titleDest;
-
 	private Background backgroundType;
 
 	public BackgroundScreen(Background background)

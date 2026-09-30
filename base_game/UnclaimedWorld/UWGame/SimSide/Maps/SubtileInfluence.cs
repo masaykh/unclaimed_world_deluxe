@@ -183,13 +183,6 @@ public class SubtileInfluence
 		maxDistance = Math.Max(maxDistance, val);
 	}
 
-	private static void GetMinMaxDistances(ref Vector2 fromLocation, ref Vector2 toLocation, ref float minDistance, ref float maxDistance)
-	{
-		float val = Common.DistanceOctile(fromLocation, toLocation);
-		minDistance = Math.Min(minDistance, val);
-		maxDistance = Math.Max(maxDistance, val);
-	}
-
 	public static SubtileInfluence FindFreeSpotNearLocation(Vector3 targetLocation, int sizeOfMapInSubtiles, Vector3? fromLocation, Entity entity, bool useMovementMap)
 	{
 		SubtileInfluence subtileInfluence = new SubtileInfluence(targetLocation, sizeOfMapInSubtiles);

@@ -28,21 +28,6 @@ public class TabButtonPanel
 	public const int verticalWidth = 94;
 
 	public const int verticalOverlap = 16;
-
-	private const int buttonYSpacing = 59;
-
-	private Point pos;
-
-	private const int buttonXSpacing = 69;
-
-	private const int metalPosX = 12;
-
-	private const int metalPosY = 12;
-
-	private const int markingsTop = 10;
-
-	private const int markingsLeft = 6;
-
 	private Image imBottomDirt;
 
 	private Box metal;

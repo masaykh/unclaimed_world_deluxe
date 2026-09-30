@@ -41,24 +41,4 @@ public class SetMember
 		}
 		while (setMember2 != null);
 	}
-
-	private void Union(SetMember representative, SetMember set1, SetMember set2)
-	{
-		representative.listLength = set1.representative.listLength + set2.representative.listLength;
-		SetMember setMember = set1.representative;
-		while (setMember.next != null)
-		{
-			setMember.representative = representative;
-			setMember = setMember.next;
-		}
-		SetMember setMember2 = set2.representative;
-		do
-		{
-			setMember.next = setMember2;
-			setMember2.representative = representative;
-			setMember = setMember2;
-			setMember2 = setMember2.next;
-		}
-		while (setMember2 != null);
-	}
 }

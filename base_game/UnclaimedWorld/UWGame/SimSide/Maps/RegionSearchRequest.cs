@@ -175,8 +175,4 @@ public class RegionSearchRequest : ISnapshot, ILookUp<RegionSearchRequest, Regio
 	{
 		sn.RegisterLoadPostProcessCall(this);
 	}
-
-	private void sn_FinalLoadProcess(Snapshotter sn)
-	{
-	}
 }

@@ -81,8 +81,6 @@ public class GameWorldRenderer
 
 		public TerrainTilePosition Parent;
 
-		private const float oneOverTextureSize = 0.001953125f;
-
 		public TerrainPosition(TerrainTilePosition parent, Terrain terrain, int? sx = null, int? sy = null)
 		{
 			Parent = parent;
@@ -165,15 +163,6 @@ public class GameWorldRenderer
 	private short[] groundFeatureIndices;
 
 	public const int noOfFeatureQuads = 15000;
-
-	private const int noOfRoadQuads = 15000;
-
-	private const int noOfLightSourceQuads = 200;
-
-	private const int noOfOverlayQuads = 2000;
-
-	private const int noOfInfluenceQuads = 10000;
-
 	private List<Renderable> overlayModelEntities = new List<Renderable>();
 
 	private List<Renderable> lightEmittingModels = new List<Renderable>();
@@ -199,9 +188,6 @@ public class GameWorldRenderer
 	private short[] lightSourceIndices;
 
 	private Plane noClippingPlane;
-
-	private const int terrainsPerBatch = 3;
-
 	public Matrix TerrainViewMatrix;
 
 	public Vector3 TerrainCameraPosition;
@@ -209,13 +195,6 @@ public class GameWorldRenderer
 	public int noOfVerticesHorizontal;
 
 	public int noOfVerticesVertical;
-
-	private const int xTilesToIncludeInDraw = 2;
-
-	private const int yBottomTilesToIncludeInDraw = 4;
-
-	private const int yTopTilesToIncludeInDraw = 2;
-
 	public SpriteSheet GhostedStructuresSpriteSheet;
 
 	public RenderTarget2D DiffuseMSRenderTarget;
@@ -292,15 +271,6 @@ public class GameWorldRenderer
 	private Vector4 TimeOfDayLightingFactor;
 
 	private BloomComponent bloom;
-
-	private const float amountToLowerBloomThresholdAtDawn = 0.5f;
-
-	private const float amountToRaiseBloomIntensityAtDawn = 0.8f;
-
-	private const float amountToLowerBloomThresholdAtSunset = 0.4f;
-
-	private const float amountToRaiseBloomIntensityAtSunset = 0.4f;
-
 	private float windTime;
 
 	public List<TerrainBatch> terrainBatches = new List<TerrainBatch>();
@@ -352,11 +322,6 @@ public class GameWorldRenderer
 	private List<IDrawnAsGroundSprite> outlineSprites = new List<IDrawnAsGroundSprite>();
 
 	public const int GutterSize = 2;
-
-	private bool first;
-
-	private static double a;
-
 	private Viewport DrawAreaViewport;
 
 	public GameWorldRenderer()
@@ -849,27 +814,6 @@ public class GameWorldRenderer
 			SetupTerrainVertex(tile, null, null, batch);
 			SetupTerrainVertex(rightTile, 0, 2, batch);
 			SetupTerrainVertex(downRightTile, 0, 0, batch);
-		}
-	}
-
-	private void SetUpTerrainIndices(short[] indices)
-	{
-		int num = 0;
-		for (int i = 0; i < noOfVerticesVertical - 1; i++)
-		{
-			for (int j = 0; j < noOfVerticesHorizontal - 1; j++)
-			{
-				short num2 = (short)(j + i * noOfVerticesHorizontal);
-				short num3 = (short)(j + 1 + i * noOfVerticesHorizontal);
-				short num4 = (short)(j + 1 + (i + 1) * noOfVerticesHorizontal);
-				short num5 = (short)(j + (i + 1) * noOfVerticesHorizontal);
-				indices[num++] = num2;
-				indices[num++] = num4;
-				indices[num++] = num5;
-				indices[num++] = num2;
-				indices[num++] = num3;
-				indices[num++] = num4;
-			}
 		}
 	}
 
@@ -2000,10 +1944,6 @@ public class GameWorldRenderer
 		}
 	}
 
-	private void SetLightSourceDrawing()
-	{
-	}
-
 	public static void InsertionSort<T>(IList<T> list) where T : ILocatable
 	{
 		int count = list.Count;
@@ -2211,26 +2151,6 @@ public class GameWorldRenderer
 		return featureQuadIndex;
 	}
 
-	private static void DrawAccessPointMarkers(Entity objectAsEntity)
-	{
-		if (objectAsEntity.Contains != null && objectAsEntity.Contains is IExit exit)
-		{
-			The.MapUI.AddDebugMarker(exit.ComputeAccessPoint(), Color.Azure, objectAsEntity, 3f);
-		}
-		else
-		{
-			The.MapUI.AddDebugMarker(objectAsEntity.AccessPoint.Value, Color.LightYellow, objectAsEntity, 3f);
-		}
-	}
-
-	private static void DrawAgentMarker(Entity objectAsEntity)
-	{
-		if (objectAsEntity.EntityType.IntelligenceType != null)
-		{
-			The.MapUI.AddDebugMarker(objectAsEntity.PlaySiteLocation, Color.Orange, objectAsEntity);
-		}
-	}
-
 	private void PrintEditorTileInfo(bool printCoords)
 	{
 		for (int i = TileStartX; i <= TileEndX; i++)
@@ -2325,34 +2245,6 @@ public class GameWorldRenderer
 			printPos.Y += 12f;
 		}
 		return printPos;
-	}
-
-	private void DrawEntityDebugText(Entity objectAsEntity, bool drawInfo)
-	{
-		if (drawInfo && objectAsEntity != null)
-		{
-			if (objectAsEntity.Find<BodyComponent>(out var c))
-			{
-				Vector2 position = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
-				position.Y -= 32f;
-				position.X -= 14f;
-				DevText.Print(position, ((int)c.Body.GlobalHitpoints).ToString(), Color.LightGreen);
-			}
-			if (objectAsEntity.Find<Intelligence>(out var c2))
-			{
-				Vector2 position2 = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
-				position2.Y -= 22f;
-				position2.X -= 14f;
-				DevText.Print(position2, ((int)(100f * c2.Morale)).ToString(), Color.LightBlue);
-			}
-			if (objectAsEntity.Find<NonLivingEntity>(out var c3))
-			{
-				Vector2 position3 = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
-				position3.Y -= 32f;
-				position3.X -= 14f;
-				DevText.Print(position3, ((int)(100f * c3.Condition)).ToString(), Color.LightCyan);
-			}
-		}
 	}
 
 	private int DrawDepthMapForLighting(int featureQuadIndex, GraphicsDevice device)

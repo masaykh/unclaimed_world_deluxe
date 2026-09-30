@@ -35,9 +35,6 @@ public class ProcessJob : Job, IIDEventSubscriber
 	public float CumulativelyEstimatedProgress;
 
 	public ProcessType ProcessType;
-
-	private Collidable<Entity> UpgradeFootprint;
-
 	public bool AllToolsInUse;
 
 	public bool AllToolsAreBroken;
@@ -1297,23 +1294,6 @@ public class ProcessJob : Job, IIDEventSubscriber
 		AddLog("Completed");
 		LogProductionFinished(process);
 		Destroy(removeTakers: true);
-	}
-
-	private static void RepairTools(EntityGroup owner, List<EntityID> itemsToCheckForRepairs)
-	{
-		if (itemsToCheckForRepairs == null || owner == null)
-		{
-			return;
-		}
-		SharedKnowledge sharedKnowledge = owner.GetAllegiance().SharedKnowledge;
-		for (int num = itemsToCheckForRepairs.Count - 1; num >= 0; num--)
-		{
-			EntityID entityID = itemsToCheckForRepairs[num];
-			if (!GoalEvaluator.EntityDataResultCausesSkip(sharedKnowledge.GetKnownData(entityID, out var data)))
-			{
-				OtherJobManager.CreateRepairJobIfNeeded(owner, data);
-			}
-		}
 	}
 
 	public void ResolveProcess(out IKnownProcess process, out SharedKnowledge sharedKnowledge, out bool ownerIsDestroyed, out bool processIsDestroyed)

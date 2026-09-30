@@ -15,9 +15,6 @@ public class GoalTakeoff : CompositeGoal
 	private Vehicle vehicleComponent;
 
 	private Vector3 destinationPoint;
-
-	private const float atDestinationLimit = 16f;
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public GoalTakeoff(Entity owner)

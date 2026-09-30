@@ -15,10 +15,6 @@ public class GroupMoveActivity : Activity
 
 	public Vector3 Destination;
 
-	private const float fullSpeedModifier = 2.2f;
-
-	private const float minimumSpeedModifier = 0.5f;
-
 	public Matrix LeadersRotationMatrix
 	{
 		get

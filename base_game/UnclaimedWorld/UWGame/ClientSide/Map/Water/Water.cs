@@ -11,9 +11,6 @@ public class Water
 	private Texture2D waterBumpMap;
 
 	private Texture2D waterBumpMapLarge;
-
-	private Model skyDome;
-
 	private float waterHeight = 1470f;
 
 	public const float WaterDepthForDeepestBlue = 255f;
@@ -27,9 +24,6 @@ public class Water
 	private int waterQuadHeight;
 
 	private Matrix reflectionViewMatrix;
-
-	private VertexBuffer waterVertexBuffer;
-
 	private VertexWater[] waterVertices;
 
 	private int currentWaterVertex;
@@ -116,21 +110,6 @@ public class Water
 		waterVertices = new VertexWater[(renderer.noOfVerticesHorizontal + 2) * renderer.noOfVerticesVertical];
 		waterIndices = new short[(renderer.noOfVerticesHorizontal + 1) * (renderer.noOfVerticesVertical - 1) * 6];
 		SetUpWaterIndices();
-	}
-
-	private void UpdateWaterVertices()
-	{
-		Vector2 mapWindowWorldPosition = The.MapUI.MapWindowWorldPosition;
-		float num = (float)waterQuadWidth / (float)waterBumpMap.Width;
-		float num2 = (float)waterQuadHeight / (float)waterBumpMap.Height;
-		float num3 = mapWindowWorldPosition.X / (float)waterBumpMap.Width;
-		float num4 = mapWindowWorldPosition.Y / (float)waterBumpMap.Height;
-		waterVertices[0].BumpTextureCoordinate = new Vector2(num3, num4);
-		waterVertices[2].BumpTextureCoordinate = new Vector2(num3, num4 + num2);
-		waterVertices[1].BumpTextureCoordinate = new Vector2(num3 + num, num4);
-		waterVertices[3].BumpTextureCoordinate = new Vector2(num3, num4 + num2);
-		waterVertices[5].BumpTextureCoordinate = new Vector2(num3 + num, num4 + num2);
-		waterVertices[4].BumpTextureCoordinate = new Vector2(num3 + num, num4);
 	}
 
 	private void SetUpWaterIndices()

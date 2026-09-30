@@ -14,13 +14,6 @@ namespace UWGame.ClientSide.Interface.HUD_Windows;
 public class HUDOverlayPanel : HUDWindow
 {
 	private List<Grid> childGridsThatWereChanged = new List<Grid>();
-
-	private const int quantityX = 10;
-
-	private const int captionX = 25;
-
-	private const int buildX = 120;
-
 	private Grid outerGrid;
 
 	private Grid grdSingleItems;
@@ -415,11 +408,6 @@ public class HUDOverlayPanel : HUDWindow
 			item2 = AddEntityTypeRow(grdGrouping, entityType, grouping, checkboxTooltip);
 		}
 		UpdateEntityTypeRow(item2, The.InGameUI.OverlaySettings.EntityTypesToDisplay[entityType], cpGrouping);
-	}
-
-	private int GetCollapsablePanelWidth()
-	{
-		return categoryGrid.Width - 16;
 	}
 
 	private void CreateCategoryRow(ref CollapsablePanel cp, ref Grid grdChild, object key, string title, Color color, ClickHandler clickHandler)

@@ -761,34 +761,8 @@ public abstract class DataLoader
 		objectToSerialize = (T)xmlSerializer.Deserialize(textReader);
 	}
 
-	private void MoveListToDictionary(List<IGameData> list, Dictionary<string, IGameData> dictionary)
-	{
-		foreach (IGameData item in list)
-		{
-			dictionary.Add(item.KeyName, item);
-		}
-	}
-
-	private static bool DoReplaceOnType(Type t)
-	{
-		if (!(t == typeof(string)) && t.IsClass && !t.IsAbstract)
-		{
-			return !(t == typeof(CustomXmlSerializer.XmlProxyData));
-		}
-		return false;
-	}
-
 	public static void ReplaceEntityTypePlaceholdersOnObjectCollection<T>() where T : IEnumerable
 	{
-	}
-
-	private static bool IsCollection(object o)
-	{
-		if (!typeof(ICollection).IsAssignableFrom(o.GetType()))
-		{
-			return typeof(ICollection<>).IsAssignableFrom(o.GetType());
-		}
-		return true;
 	}
 
 	public static List<CustomXmlSerializer.XmlTypeMappingBase> GetListOfTypeMappings(bool useEntityTypePlaceholders = false)

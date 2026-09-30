@@ -80,15 +80,6 @@ public class WorldMap : UIComponent
 	private int canvasWidth;
 
 	private int canvasHeight;
-
-	private const int canvasMarginLeft = 3;
-
-	private const int canvasMarginRight = 7;
-
-	private const int canvasMarginTop = 11;
-
-	private const int canvasMarginBottom = 12;
-
 	private Dictionary<WorldMapLayers, UIComponent> layersToDraw = new Dictionary<WorldMapLayers, UIComponent>();
 
 	private Image imCanvas;
@@ -96,9 +87,6 @@ public class WorldMap : UIComponent
 	private RenderTarget2D renderTarget;
 
 	private PrimitiveBatch primitiveBatch;
-
-	private RoundLineManager RoundLineManager;
-
 	private Matrix viewProj;
 
 	private List<RoundLine> roundLines = new List<RoundLine>();
@@ -355,10 +343,6 @@ public class WorldMap : UIComponent
 		}
 		layersToDraw[WorldMapLayers.MissionMarkers].Add(image);
 		return image;
-	}
-
-	private void AddForegroundSprite(UIComponent component)
-	{
 	}
 
 	private void RemoveForegroundSprite(UIComponent component)
@@ -680,11 +664,6 @@ public class WorldMap : UIComponent
 		{
 			item.Value.btSite.IsChecked = false;
 		}
-	}
-
-	private void SiteWindow_MouseOut(MouseEventArgs args)
-	{
-		siteWindow.Visible = false;
 	}
 
 	private void btSite_Click(UIComponent sender, EventArgs e)

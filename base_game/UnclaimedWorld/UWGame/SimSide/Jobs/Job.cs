@@ -200,16 +200,6 @@ public abstract class Job : ISnapshot, ILookUp<Job, JobID>
 		return jobType;
 	}
 
-	private string GetAbandonedByText(Entity entity)
-	{
-		return "Abandoned by: " + entity.ToString();
-	}
-
-	private string GetTakenByText(Entity entity)
-	{
-		return "Taken by: " + entity.ToString();
-	}
-
 	public double? GetTakerScore()
 	{
 		if (TakenBy.Count > 0)

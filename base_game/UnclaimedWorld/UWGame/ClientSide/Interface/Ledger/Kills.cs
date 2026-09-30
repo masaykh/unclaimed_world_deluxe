@@ -14,16 +14,6 @@ namespace UWGame.ClientSide.Interface.Ledger;
 
 public class Kills : LedgerSheet
 {
-	private const int columnWidth = 90;
-
-	private const int nameWidth = 215;
-
-	private const int itemTypeIconColumnX = 12;
-
-	private const int nameX = 30;
-
-	private const int killedX = 245;
-
 	private int bottomPartHeight = 40;
 
 	private string nameTooltip;
@@ -112,11 +102,6 @@ public class Kills : LedgerSheet
 		sortingButtons.Fill(settings);
 	}
 
-	private void outerGrid_HeightResize(UIComponent sender)
-	{
-		ResizeHeight();
-	}
-
 	private void CreateGridHeaderButtons()
 	{
 		sortingButtons = new SortingButtons<KillsSettings.SortColumns>(base.GUIManager);
@@ -177,24 +162,6 @@ public class Kills : LedgerSheet
 		lblTotalKilled.AlignRight(245);
 	}
 
-	private void SetLabelNegativeColorAndValue(Label lbl, int value)
-	{
-		lbl.Text = value.ToString();
-		if (value > 0)
-		{
-			lbl.NormalColor = GameData.Instance.GUIConstants.NegativeColor;
-		}
-	}
-
-	private void SetLabelPositiveColorAndValue(Label lbl, int value)
-	{
-		lbl.Text = value.ToString();
-		if (value > 0)
-		{
-			lbl.NormalColor = GameData.Instance.GUIConstants.PositiveColor;
-		}
-	}
-
 	private void UpdateItemRow(UIComponent itemRow, EntityType entityType, int killed)
 	{
 		_ = (DataTypeButton)itemRow.FindChildById(DataControlID.Caption);
@@ -238,29 +205,5 @@ public class Kills : LedgerSheet
 		label.ID = DataControlID.Killed;
 		uIComponent.CenterChildVertically(label);
 		return uIComponent;
-	}
-
-	private void AddCategoryRow(ref CollapsablePanel cpCategory, ref Grid categoryGrid, object key)
-	{
-		GUIManager gUIManager = base.GUIManager;
-		EntityCategory entityCategory = key as EntityCategory;
-		cpCategory = new CollapsablePanel(gUIManager, CollapsablePanel.PanelType.DropDownBig);
-		cpCategory.HeadingYPos = 4;
-		cpCategory.CollapsedHeight = 28;
-		outerGrid.AddEntry(key, cpCategory);
-		cpCategory.OrderByTag1 = entityCategory.Name;
-		cpCategory.Init();
-		cpCategory.Title = entityCategory.Name;
-		cpCategory.Width = outerGrid.Width;
-		categoryGrid = new Grid(gUIManager, ListBoxType.LCD, Label.LabelType.LCDNormal);
-		categoryGrid.DebugTag = "categoryGrid";
-		categoryGrid.FixedItemHeights = true;
-		categoryGrid.Width = cpCategory.Width;
-		cpCategory.AddContent(categoryGrid);
-		categoryGrid.ScrollBarEnabled = false;
-		categoryGrid.ItemHeight = 26;
-		categoryGrid.CanGrowInHeight = true;
-		categoryGrid.Font = GUIManager.LCDandHUDBodyFontPath;
-		categoryGrid.IsOuterGrid = false;
 	}
 }

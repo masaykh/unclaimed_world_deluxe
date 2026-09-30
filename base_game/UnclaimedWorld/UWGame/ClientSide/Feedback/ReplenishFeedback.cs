@@ -7,8 +7,6 @@ namespace UWGame.ClientSide.Feedback;
 
 public class ReplenishFeedback : ISleepingUpdatable
 {
-	private const double timeInSecondsToRevert = 10.0;
-
 	public ExpeditionID Expedition;
 
 	public EntityType EntityType;

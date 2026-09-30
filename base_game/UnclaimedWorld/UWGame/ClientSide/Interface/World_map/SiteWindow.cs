@@ -48,8 +48,6 @@ public class SiteWindow : UIComponent
 
 	private TravelLocation? dialogSourceLocation;
 
-	private const string noCommTooltip = "No communication with this allegiance";
-
 	public event Action<TravelLocation> TerminalSelected;
 
 	public event Action ChildDialogDisplayed;
@@ -502,10 +500,6 @@ public class SiteWindow : UIComponent
 		}
 	}
 
-	private void ShowBuySellDialog(Point absolutePosition, CargoActionTypes selectedAction, Dictionary<EntityType, List<EntityID>> currentOrders, Allegiance allegiance, Expedition expedition, EntityGroup buyer)
-	{
-	}
-
 	private bool CanTrade(EntityType entityType, out TierOrAreaType tierPolicy)
 	{
 		tierPolicy = null;
@@ -562,20 +556,5 @@ public class SiteWindow : UIComponent
 	{
 		Visible = true;
 		Populate();
-	}
-
-	private static void AddTravelLocation(ComboBox cb, ref bool hasAddedSiteName, ref bool hasAddedAllegianceName, ref bool hasAddedExpeditionName, Site site, Allegiance allegiance, Expedition expedition, Entity terminal, TravelLocation? excludeLocation)
-	{
-		if (!excludeLocation.HasValue || excludeLocation.Value.AllegianceID.Value != (long)allegiance.ID || excludeLocation.Value.ExpeditionID.Value != (long)expedition.ID || ((terminal != null || excludeLocation.Value.TerminalEntityID.HasValue) && excludeLocation.Value.TerminalEntityID != (long?)terminal.ID))
-		{
-			long? terminalEntityID = null;
-			if (terminal != null)
-			{
-				terminalEntityID = (long)terminal.ID;
-			}
-			TravelLocation travelLocation = new TravelLocation(allegiance, (long)expedition.ID, terminalEntityID);
-			string text = "";
-			cb.AddEntry(travelLocation, text);
-		}
 	}
 }

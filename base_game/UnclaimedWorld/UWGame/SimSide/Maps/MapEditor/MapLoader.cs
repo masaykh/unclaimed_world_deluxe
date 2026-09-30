@@ -51,10 +51,6 @@ public class MapLoader
 		InitializeEntityData
 	}
 
-	private const float minimumHeightForTreesAndGrass = -30f;
-
-	private const float minimumHeightForMoistureFromWaterSurface = -80f;
-
 	private string mapFolderName;
 
 	private string mapFolderPath;
@@ -567,17 +563,6 @@ public class MapLoader
 				}
 			}
 		}
-		return true;
-	}
-
-	private bool GenerateMapFromTextureData()
-	{
-		LoadMoistureTexture();
-		LoadTerrainHeightsTexture();
-		LoadVegetationTexture();
-		LoadSoilTexture();
-		LoadWaterColorTexture();
-		LoadWaterBottomTintTexture();
 		return true;
 	}
 
@@ -1396,104 +1381,6 @@ public class MapLoader
 				if (tile.TileResources.TryGetValue(key, out var value))
 				{
 					value.SetTotalHarvestableBulk(0.01f * (float)resource.Modifier.Value * value.TotalHarvestableBulk);
-				}
-			}
-		}
-	}
-
-	private void LoadTreeBitmapsAndPlaceTrees(MapData mapData)
-	{
-		MapManager map = The.Map;
-		LoadBitmapsInFolder(ComposePath("Trees"), out var vegetationTextures, out var vegetationTexture2ds);
-		int num = 4;
-		_ = 256f / (float)num;
-		float num2 = 0f;
-		List<Point> list = new List<Point>
-		{
-			new Point(0, 0),
-			new Point(0, 1),
-			new Point(0, 2),
-			new Point(1, 0),
-			new Point(1, 1),
-			new Point(1, 2),
-			new Point(2, 0),
-			new Point(2, 1),
-			new Point(2, 2)
-		};
-		int num3 = 0;
-		foreach (KeyValuePair<string, Color[]> item in vegetationTextures)
-		{
-			num3 = 0;
-			if (!GameData.Instance.AllTreeTypes.TryGetValue("tree:" + item.Key, out var value))
-			{
-				continue;
-			}
-			for (int i = 0; i < map.mapTileHeight; i += 3)
-			{
-				for (int j = 0; j < map.mapTileWidth; j += 3)
-				{
-					num2 = 0f;
-					int num4 = 0;
-					for (int k = 0; k < list.Count; k++)
-					{
-						Point point = list[k];
-						point.X += j;
-						point.Y += i;
-						if (point.X >= 0 && point.X <= map.mapTileWidth - 1 && point.Y >= 0 && point.Y <= map.mapTileHeight - 1)
-						{
-							TerrainTile terrainTile = map.TileMap[point.X][point.Y];
-							if (terrainTile.TerrainSubtiles[1][1].LevelBelowWater < -30f)
-							{
-								num4++;
-							}
-						}
-					}
-					list = Common.Randomize(list, The.Sim.GameplayRandomGenerator);
-					int r = ReadColor(j, i, item.Value, vegetationTexture2ds[item.Key]).R;
-					float num5 = ((r > 200) ? 12f : ((r > 150) ? 8f : ((r <= 50) ? 0f : 4f)));
-					if (!(num5 > 0f))
-					{
-						continue;
-					}
-					for (int l = 0; l < 6; l++)
-					{
-						if (num2 > num5)
-						{
-							break;
-						}
-						for (int m = 0; m < list.Count; m++)
-						{
-							Point point = list[m];
-							point.X += j;
-							point.Y += i;
-							if (point.X < 0 || point.X > map.mapTileWidth - 1 || point.Y < 0 || point.Y > map.mapTileHeight - 1)
-							{
-								continue;
-							}
-							TerrainTile terrainTile = map.TileMap[point.X][point.Y];
-							if (terrainTile.GetCenterTerrain().LevelBelowWater < -30f)
-							{
-								Vector3 position = MapManager.TileToWorldPos(new Point(terrainTile.X, terrainTile.Y));
-								position += new Vector3(24 - The.Sim.GameplayRandomGenerator.Next(48, "MapLoader"), 24 - The.Sim.GameplayRandomGenerator.Next(48, "MapLoader"), 0f);
-								position = map.ClampWorldPosition(position);
-								The.Map.WorldLocationToDirectionWithinTile(position);
-								if (!terrainTile.ContainsTreeAtSubtile(MapManager.WorldPosToSubtile(position)))
-								{
-									Entity entity = new Entity(value);
-									entity.Initialize(The.Sim.PlaySite);
-									entity.PlaceEntityOnPlaySite(position, null, null, null);
-									entity.ComeOnline();
-									entity.Find<UWGame.SimSide.Trees.Tree>(out var _);
-									num2 += entity.EntityType.TreeType.SizeImpact;
-									num3++;
-								}
-								if (num2 > num5)
-								{
-									break;
-								}
-							}
-						}
-					}
 				}
 			}
 		}

@@ -8,9 +8,6 @@ namespace UWGame.SimSide.Maps;
 public class TileLayer : Layer
 {
 	public TileSector[][] Sectors;
-
-	private const byte defaultValue = 0;
-
 	public byte? BlockingLimit;
 
 	public HashSet<Point> AffectedSectors = new HashSet<Point>();

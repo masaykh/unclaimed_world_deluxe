@@ -104,9 +104,6 @@ public class AStarSearch : ISnapshot
 	private bool mStopped = true;
 
 	private HeuristicFormula mFormula = HeuristicFormula.Manhattan;
-
-	private const int mHEstimate = 2;
-
 	private int mSearchLimit = 10000;
 
 	private double mCompletedTime;
@@ -160,9 +157,6 @@ public class AStarSearch : ISnapshot
 	private Point destination;
 
 	private Point finalDestination;
-
-	private const int nodesPerCycle = 40;
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public List<PathFinderNode> Path => pathNodes;

@@ -28,9 +28,6 @@ internal class GoalTraverseEdgeBetweenWaypointsAtomic : Goal
 	public GroupMoveActivity GroupMoveActivity;
 
 	private float speedModifier = 1f;
-
-	private const double maxPeriodInSeconds = 0.2;
-
 	private double goalProgress;
 
 	public bool MovingOutOfHarmsWay;

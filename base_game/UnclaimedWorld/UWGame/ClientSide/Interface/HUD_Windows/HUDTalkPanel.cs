@@ -8,10 +8,6 @@ namespace UWGame.ClientSide.Interface.HUD_Windows;
 
 public class HUDTalkPanel : HUDWindow
 {
-	private const int minHeight = 26;
-
-	private const int defaultHeight = 260;
-
 	private Grid grid;
 
 	private List<TalkEvent> logdata;
@@ -26,21 +22,6 @@ public class HUDTalkPanel : HUDWindow
 		Color.MediumAquamarine,
 		Color.LightSeaGreen
 	};
-
-	private const int maxRowsToStore = 1000;
-
-	private const int noOfPageButtonsToEachSide = 2;
-
-	private const int pagerXPos = 210;
-
-	private int xPosOfCurrentPageButton;
-
-	private const int pageButtonSpacing = 4;
-
-	private const int spacingToEndButtons = 12;
-
-	private const int entriesPerMessage = 2;
-
 	private int maxEntries;
 
 	public HUDTalkPanel(int xPos, int yPos, int width, int height)
@@ -73,12 +54,6 @@ public class HUDTalkPanel : HUDWindow
 	private void SetListWidth()
 	{
 		grid.Width = DisplayWindow.Width - 2 * grid.X - 20;
-	}
-
-	private void DisplayWindow_Resize(UIComponent sender)
-	{
-		SetListHeight();
-		SetListWidth();
 	}
 
 	private void AddMessage(TalkEvent talkEvent)

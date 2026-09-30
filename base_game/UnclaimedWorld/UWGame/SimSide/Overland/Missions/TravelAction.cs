@@ -94,14 +94,6 @@ public class TravelAction : MissionAction
 		ToMissionStop.Destroy();
 	}
 
-	private void SetCoords(GeodeticCoordinate coords)
-	{
-		((MissionJob)LookUp<Job, JobID>.FindByID(parent.MissionJob)).IterateVehicles(delegate(Entity e)
-		{
-			e.Coords = coords;
-		});
-	}
-
 	private void LeaveSite()
 	{
 		Start();

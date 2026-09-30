@@ -288,32 +288,12 @@ public abstract class AttackJob : Job
 		return 0.9 * jobScore + 0.1 * totalweaponsScore.Value;
 	}
 
-	private double ScoreDistribution(AttackJob threatJob)
-	{
-		return 0.0;
-	}
-
 	private double ScoreInFieldOfView(Entity entity, IKnownEntityData targetData)
 	{
 		if (Vector3.Dot(entity.FacingNormal, targetData.PlaySiteLocation - entity.PlaySiteLocation) > 0f)
 		{
 			return 1.0;
 		}
-		return 0.0;
-	}
-
-	private double ScoreMovingOutOfRange()
-	{
-		return 0.0;
-	}
-
-	private double ScoreClosestTarget()
-	{
-		return 0.0;
-	}
-
-	private double ScoreMinimalCollateralDamage()
-	{
 		return 0.0;
 	}
 
@@ -324,11 +304,6 @@ public abstract class AttackJob : Job
 			return 0.0;
 		}
 		return 1.0;
-	}
-
-	private double ScoreTimeToKillTarget()
-	{
-		return 0.0;
 	}
 
 	private double ScoreRetaliation(Entity attacker, IKnownEntityData targetData)

@@ -16,8 +16,6 @@ namespace UWGame.ClientSide.Interface.HUD_Windows;
 
 public class TileSelectionContextMenu : HUDWindow
 {
-	private const int collapsedHeight = 16;
-
 	private int fullHeight;
 
 	private ImageButton btDelete;
@@ -39,15 +37,9 @@ public class TileSelectionContextMenu : HUDWindow
 	private TextButton tbConnect;
 
 	private ImageButton btCycle;
-
-	private ImageButton btModify;
-
 	public const string overlapsWarning = "The area overlaps with an existing stockpile";
 
 	public const string notConnectedWarning = "Unable to do this, because the zone is not continuous";
-
-	private const string stockpileTooltip = "Stockpile items in this zone";
-
 	public Window OpeningWindow;
 
 	public GatherResourcesWindow ZoneGatherResourcesWindow;
@@ -255,10 +247,6 @@ public class TileSelectionContextMenu : HUDWindow
 		}
 	}
 
-	private void bt_MouseOver(MouseEventArgs args)
-	{
-	}
-
 	public static bool CreateAndSelectZone(EntityGroup expeditionOwner)
 	{
 		if (CanCreateAndSelectZone())
@@ -411,10 +399,6 @@ public class TileSelectionContextMenu : HUDWindow
 		base.Hide();
 		OpeningWindow = null;
 		HideChildWindows();
-	}
-
-	private void btModify_Click(UIComponent sender, EventArgs e)
-	{
 	}
 
 	public static int GetXPositionOfChildWindow(Window window)

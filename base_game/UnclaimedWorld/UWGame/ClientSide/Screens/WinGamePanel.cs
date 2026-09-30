@@ -16,9 +16,6 @@ public class WinGamePanel : Panel
 	private TextArea area;
 
 	private Grid surfaceGrid;
-
-	private int controlTop = 70;
-
 	public string MapDataXmlPath;
 
 	public string Text

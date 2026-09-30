@@ -267,9 +267,6 @@ public class Sim : GameScreen, ISnapshot
 	private int geoLayoutEntityProgress;
 
 	private int placeGeoLayoutProgress;
-
-	private const int entitiesPerCycle = 100;
-
 	public const int ProgressAfterSaveLoad = 4;
 
 	private List<string> startGameActionLog = new List<string>();
@@ -780,11 +777,6 @@ public class Sim : GameScreen, ISnapshot
 
 	public Sim()
 	{
-	}
-
-	private void Entities_ListMemberRemoved(object sender, int indexOfRemovedMember)
-	{
-		ObservableList<Entity>.UpdateCounterWhenItemIsRemoved(ref entityCounter, indexOfRemovedMember);
 	}
 
 	public bool TimepointReached(long TimepointInTicks)
@@ -1470,12 +1462,6 @@ public class Sim : GameScreen, ISnapshot
 
 	public void AddWaitingAgent(Entity entity, WaitingFor waitingFor)
 	{
-	}
-
-	private void CoordsTest()
-	{
-		GeodeticCoordinate value = new GeodeticCoordinate(50.0, 0.0);
-		_ = DistanceCalculator.GetBearing(end: new GeodeticCoordinate(60.0, 0.0), start: value) / Math.PI;
 	}
 
 	private void InitEntityUpdater()

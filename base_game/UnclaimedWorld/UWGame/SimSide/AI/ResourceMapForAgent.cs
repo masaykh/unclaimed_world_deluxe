@@ -51,9 +51,6 @@ public class ResourceMapForAgent : ICyclable, ILookUp<ICyclable, CyclableID>, IS
 	private MethodID notifyWhenRegionSearchIsFinishedMethodID;
 
 	private ResourceItemID? bestResourceItemID;
-
-	private const int resourcesToDrawPerCycle = 20;
-
 	private Regulator regulator;
 
 	private bool isDirty = true;

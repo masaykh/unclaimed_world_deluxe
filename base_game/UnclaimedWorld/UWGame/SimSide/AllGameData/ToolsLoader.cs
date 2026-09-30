@@ -5,14 +5,6 @@ namespace UWGame.SimSide.AllGameData;
 
 public class ToolsLoader
 {
-	private const float HighDegrade = 0.05f;
-
-	private const float MediumDegrade = 0.02f;
-
-	private const float LowDegrade = 0.005f;
-
-	private const float NoDegrade = 0f;
-
 	public static List<ProcessToolSet> InitProcessToolSets()
 	{
 		ToolAlternatives toolAlternatives = new ToolAlternatives();

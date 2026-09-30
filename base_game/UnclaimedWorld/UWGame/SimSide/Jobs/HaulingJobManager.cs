@@ -102,13 +102,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 	private Phase phase = Phase.CreateCombos;
 
 	private int itemCounter;
-
-	private const int itemsPerCycle = 30;
-
 	private int comboCounter;
-
-	private const int combosPerCycle = 30;
-
 	private List<StorageLocation> AllStorageLocations = new List<StorageLocation>();
 
 	private List<IKnownEntityData> allItems;
@@ -328,11 +322,6 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			return 1f;
 		}
 		return 0.1f;
-	}
-
-	private static float ScoreNearnessToConsumers(IKnownEntityData item)
-	{
-		return 0f;
 	}
 
 	private static bool IsCurrentlyInThisStorage(StorageLocation storageLocation, IKnownEntityData itemData)

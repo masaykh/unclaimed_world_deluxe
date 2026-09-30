@@ -42,18 +42,9 @@ public static class Common
 	public const float floatEpsilon = 0.0001f;
 
 	public const decimal decimalEpsilon = 0.00001m;
-
-	private const char indentCharacter = ' ';
-
 	public const string indentString = "   ";
 
 	private static int indentLength = "   ".Length;
-
-	private const float locationEpsilon = 0.1f;
-
-	private const float directionEpsilon = 0.001f;
-
-	private const string thousandsPostfix = "k";
 
 	public static U GetExistingEntryOrAddNew<T, U>(Dictionary<T, U> dictionary, T key) where U : new()
 	{

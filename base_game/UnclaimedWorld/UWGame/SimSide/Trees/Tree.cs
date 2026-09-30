@@ -36,15 +36,7 @@ public class Tree : Component, IHasCrops, ILookUp<IHasCrops, HasCropsID>
 	private float? ageInYears;
 
 	private float? shapeFactor;
-
-	private const float sizeForUsingMatureSprite = 1f;
-
 	public const float sizeForUsingYoungSprite = 0.25f;
-
-	private const float maxMatureSpriteScaling = 0.1f;
-
-	private const float maxYoungSpriteScaling = 0.1f;
-
 	private static readonly float[] ageProbabilities = new float[8] { 0.2f, 0.4f, 0.6f, 0.8f, 0.88f, 0.95f, 0.98f, 0.99f };
 
 	private float? size;

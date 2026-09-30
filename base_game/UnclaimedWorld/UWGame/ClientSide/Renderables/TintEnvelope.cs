@@ -12,25 +12,12 @@ public class TintEnvelope
 		Sustain
 	}
 
-	private Vector3 m_attackRate;
-
-	private Vector3 m_decayRate;
-
 	private Color m_peakColor;
-
-	private Vector3 m_currentColor;
-
 	private uint m_sustainCounter;
 
 	private State m_envState;
 
 	private bool m_affect;
-
-	private float m_vibratoAmplitude;
-
-	private float m_vibratoFrequency;
-
-	private Vector3 m_vibratoColor;
 
 	public void update()
 	{
@@ -76,23 +63,5 @@ public class TintEnvelope
 	public void setSustain(uint x)
 	{
 		m_sustainCounter = x;
-	}
-
-	private void setAttackFrames(uint frames)
-	{
-	}
-
-	private void setDecayFrames(uint frames)
-	{
-	}
-
-	private void setPeakColor(Color peak)
-	{
-		m_peakColor = new Color(peak.R, peak.G, peak.B);
-	}
-
-	private void setPeakColor(float r, float g, float b)
-	{
-		m_peakColor = new Color(r, g, b);
 	}
 }

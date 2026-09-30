@@ -30,11 +30,6 @@ public class Replayer
 	private UnclaimedWorld game;
 
 	private Controller controller;
-
-	private int currentAIStateIndex;
-
-	private int currentRandomGetIndex;
-
 	private List<string> savedAIStates = new List<string>();
 
 	/// <summary>PORT DEVIATION 20. The recorded draw trace this replay is compared against.</summary>

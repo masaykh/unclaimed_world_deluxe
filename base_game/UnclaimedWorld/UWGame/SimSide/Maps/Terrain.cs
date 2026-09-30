@@ -26,9 +26,6 @@ public class Terrain : ILookUp<Terrain, TerrainID>, ISnapshot
 	public TerrainTile Parent;
 
 	private TerrainTileID snapshotParent;
-
-	private const float maxAmountPerSubtile = 1f / 9f;
-
 	private TerrainID id = TerrainID.Invalid;
 
 	private static TerrainID IDCounter = TerrainID.First;
@@ -194,24 +191,6 @@ public class Terrain : ILookUp<Terrain, TerrainID>, ISnapshot
 	public bool IsSubtileTerrain()
 	{
 		return Parent.Terrain != this;
-	}
-
-	private void GetSubtileCoords(out int? sx, out int? sy)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (Parent.TerrainSubtiles[i][j] == this)
-				{
-					sx = i;
-					sy = j;
-					return;
-				}
-			}
-		}
-		sx = null;
-		sy = null;
 	}
 
 	public TerrainID GetUniqueID()

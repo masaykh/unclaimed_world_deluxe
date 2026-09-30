@@ -324,15 +324,6 @@ public class SimplexNoise : ISnapshot
 		return (((num & 1) != 0) ? (0f - num2) : num2) + (((num & 2) != 0) ? (0f - num3) : num3);
 	}
 
-	private float grad(int hash, float x, float y, float z, float t)
-	{
-		int num = hash & 0x1F;
-		float num2 = ((num < 24) ? x : y);
-		float num3 = ((num < 16) ? y : z);
-		float num4 = ((num < 8) ? z : t);
-		return (((num & 1) != 0) ? (0f - num2) : num2) + (((num & 2) != 0) ? (0f - num3) : num3) + (((num & 4) != 0) ? (0f - num4) : num4);
-	}
-
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);

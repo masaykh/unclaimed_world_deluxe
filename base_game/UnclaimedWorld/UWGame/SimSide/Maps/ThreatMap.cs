@@ -29,9 +29,6 @@ public class ThreatMap : InfluenceMap
 	private AllegianceID snapshotAllegiance;
 
 	private float boldnessFactor;
-
-	private const int fallOffValueEachTile = 8;
-
 	private Phase phase;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;

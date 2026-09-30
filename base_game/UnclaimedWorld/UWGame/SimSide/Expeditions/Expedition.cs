@@ -752,12 +752,6 @@ public class Expedition : IHasEntityGroup, ILookUp<IHasEntityGroup, HasEntityGro
 	{
 	}
 
-	private bool GiveFoodToHousehold(EntityType foodType, Household household)
-	{
-		List<EntityID> items = ownerContent.Items[foodType];
-		return GiveFreeItemInList(household, items);
-	}
-
 	private static bool GiveFreeItemInList(Household household, List<EntityID> items)
 	{
 		return false;

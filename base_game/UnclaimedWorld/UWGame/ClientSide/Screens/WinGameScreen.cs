@@ -13,8 +13,6 @@ public class WinGameScreen : GameScreen
 
 	private string text;
 
-	private Controller screenManager;
-
 	public WinGameScreen(Controller screenManager, string text)
 	{
 		intf = new WinGameInterface(this, screenManager.Game);

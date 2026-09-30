@@ -87,23 +87,12 @@ public class CreateMissionPanel : RosterPanel
 	private Label lblTotalTradingCredits;
 
 	private TextButton tbTransportMore;
-
-	private int labelXPos;
-
 	private int controlXPos = 118;
 
 	private int controlWidth = 200;
 
 	private int labelWidth = 145;
-
-	private int travelPointControlWidth = 430;
-
 	private LCDInnerPanel selectionPanel;
-
-	private const Label.LabelType topLeftCaptionLabelStyle = Label.LabelType.LCDHeadingSteelGrey;
-
-	private const Label.LabelType totalCaptionLabelStyle = Label.LabelType.LCDSmallHeadingBanner;
-
 	private MissionTemplate missionTemplate;
 
 	private ExclamationMarkInACircle exclamationMarkStart;
@@ -111,11 +100,6 @@ public class CreateMissionPanel : RosterPanel
 	private ExclamationMarkInACircle exclamationMarkDestination;
 
 	private ExclamationMarkInACircle exclamationTransport;
-
-	private const int innerPanelVerticalPadding = 8;
-
-	private const int staticBottomHeight = 60;
-
 	private Point worldMapDialogPosition;
 
 	private ImageButton actionPickerSourceButton;
@@ -127,23 +111,7 @@ public class CreateMissionPanel : RosterPanel
 	public WorldMapDialogSource worldMapDialogSource;
 
 	private MissionActionTemplate dialogSourceActionTemplate;
-
-	private const int totalColumnX = 478;
-
-	private const int totalCaptionColumnX = 370;
-
-	private const int collapsedPanelContentHeight = 119;
-
 	private bool transportIsExpanded;
-
-	private const int collapsedTravelActionHeight = 30;
-
-	private const int goodsRowHeight = 26;
-
-	private const string noCommTooltip = "To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option.";
-
-	private const string separator = " | ";
-
 	private static int separatorLength = " | ".Length;
 
 	private MissionTemplate Mission
@@ -435,10 +403,6 @@ public class CreateMissionPanel : RosterPanel
 		The.InGameUI.MessageBox.OKClick -= MessageBoxDestroyedMission_OKClick;
 		DestroyMission();
 		Hide();
-	}
-
-	private void btNewAction_Click(UIComponent sender)
-	{
 	}
 
 	private void btAddAction_Click(UIComponent sender, EventArgs e)
@@ -1241,15 +1205,6 @@ public class CreateMissionPanel : RosterPanel
 		}
 	}
 
-	private TravelLocation? GetReturnDestination()
-	{
-		if (Mission.StartMissionStopTemplate != null && Mission.StartMissionStopTemplate.TravelAction != null)
-		{
-			return Mission.StartMissionStopTemplate.TravelAction.ToMissionStop.TravelAction.ToMissionStop.TravelLocation;
-		}
-		return null;
-	}
-
 	private void CreateReturnDestination()
 	{
 		if (Mission.StartMissionStopTemplate != null && Mission.StartMissionStopTemplate.TravelAction != null)
@@ -1657,16 +1612,6 @@ public class CreateMissionPanel : RosterPanel
 		return uIComponent;
 	}
 
-	private static CargoActionTypes? GetCargoActionType(ActionTypes action)
-	{
-		return action switch
-		{
-			ActionTypes.Buy => CargoActionTypes.Buy, 
-			ActionTypes.Sell => CargoActionTypes.Sell, 
-			_ => null, 
-		};
-	}
-
 	private static ImageButtonType GetActionButtonType(ActionTypes action)
 	{
 		return action switch
@@ -2050,37 +1995,6 @@ public class CreateMissionPanel : RosterPanel
 		}
 		cbTransportation.EndAddingEntries();
 		return true;
-	}
-
-	private void SetDefaultStartExpedition()
-	{
-		List<TravelLocation> allTravelLocations = GetAllTravelLocations();
-		foreach (TravelLocation item in allTravelLocations)
-		{
-			TravelLocation travelLocation = item;
-			if (!travelLocation.ResolveLocation(The.InGameUI.UIAllegiance.SharedKnowledge, out var site, out var _, out var expedition, out var _))
-			{
-				continue;
-			}
-			foreach (TravelLocation item2 in allTravelLocations)
-			{
-				if (item.Equals(item2))
-				{
-					continue;
-				}
-				TravelLocation travelLocation2 = item2;
-				if (travelLocation2.ResolveLocation(The.InGameUI.UIAllegiance.SharedKnowledge, out var site2, out var _, out var _, out var _))
-				{
-					GetVehicleTransportationOptions(site, expedition, site2, out var vehicles, out var _);
-					if (vehicles != null && vehicles.Any((KeyValuePair<EntityType, List<Entity>> k) => k.Value.Count > 0))
-					{
-						start = item;
-						destination = item2;
-						return;
-					}
-				}
-			}
-		}
 	}
 
 	private static void GetVehicleTransportationOptions(Site fromSite, Expedition fromExpedition, Site toSite, out Dictionary<EntityType, List<Entity>> vehicles, out bool hasLandRoute)

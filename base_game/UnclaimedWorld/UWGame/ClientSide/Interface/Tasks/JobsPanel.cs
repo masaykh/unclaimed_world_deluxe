@@ -39,19 +39,6 @@ public class JobsPanel : RosterPanel
 	private Grid outerGrid;
 
 	private LCDInnerPanel topPanel;
-
-	private const int collapsedItemHeight = 35;
-
-	private const int collapsedContentHeight = 31;
-
-	private const int hyperLinkWidth = 15;
-
-	private const int EntityTypeButtonEventArgsSize = 100;
-
-	private const int XMoveRightLeftBar = 150;
-
-	private const int priorityXpos = 418;
-
 	private SortingButtons<TaskSettings.SortColumns> sortingButtons;
 
 	private UIComponent sortingButtonsContainer;
@@ -63,9 +50,6 @@ public class JobsPanel : RosterPanel
 	private List<Tuple<string, Job>> allJobsToShow = new List<Tuple<string, Job>>();
 
 	private List<Job> tempJobsList = new List<Job>();
-
-	private const int titleWidth = 150;
-
 	private RadioGroup rgPriority;
 
 	private RadioButton rbJobTypeNormal;
@@ -75,17 +59,9 @@ public class JobsPanel : RosterPanel
 	private RadioButton rbJobTypeLow;
 
 	private ComboBox cbTaskType;
-
-	private const string selectTaskTypePromptKey = "SELECTTASKTYPE";
-
 	private TextArea taMessages;
 
 	private Dictionary<string, JobsMessage> messages = new Dictionary<string, JobsMessage>();
-
-	private const int orderedX = 200;
-
-	private const string messagePrefix = "- ";
-
 	private static Color notActiveColor = Color.Gray;
 
 	private static Color activeColor = "EDFAFF".ColorFromHex();
@@ -95,24 +71,6 @@ public class JobsPanel : RosterPanel
 	private string allToolsInUse = "Tools owned but currently in use";
 
 	private string allToolsBroken = "Tools are broken and unusable";
-
-	private const int paddedErrorHeight = 23;
-
-	private const int firstColumnWidth = 230;
-
-	private const int secondColumnWidth = 273;
-
-	private const int columnGap = 10;
-
-	private const int horizPadding = 6;
-
-	private const int vertPadding = 8;
-
-	private const int inputItemHeight = 18;
-
-	private const string unassignedInputsGridKey = "unassigned";
-
-	private const string assignedInputsGridKey = "assigned";
 
 	public JobsPanel()
 		: base("TASKS", 622, needBottomMarginForButtons: false)
@@ -737,47 +695,6 @@ public class JobsPanel : RosterPanel
 	private void tbSort_Click()
 	{
 		UpdateJobs(null);
-	}
-
-	private RadioGroup CreatePriorityButtons(out RadioButton btNormal, out RadioButton btHigh, out RadioButton btLow)
-	{
-		RadioGroup obj = new RadioGroup(Interface.gui)
-		{
-			Width = 100,
-			Height = 80
-		};
-		btNormal = new RadioButton(Interface.gui);
-		btLow = new RadioButton(Interface.gui);
-		btHigh = new RadioButton(Interface.gui);
-		obj.Add(btLow);
-		btLow.Init(CheckBoxType.LCDRadioBanner);
-		btLow.X = 0;
-		btLow.Y = 5;
-		btLow.Text = "LOW";
-		btLow.ToolTip = "Set to low priority";
-		btLow.Tag1 = UWGame.SimSide.Jobs.Priority.Low;
-		btLow.Width = 90;
-		btLow.ID = UIComponent.DataControlID.PriorityLow;
-		obj.Add(btNormal);
-		btNormal.Init(CheckBoxType.LCDRadioBanner);
-		btNormal.X = btLow.X;
-		btNormal.Y = btLow.Bottom + 4;
-		btNormal.Text = "NORMAL";
-		btNormal.ToolTip = "Set to normal priority";
-		btNormal.IsChecked = true;
-		btNormal.Tag1 = UWGame.SimSide.Jobs.Priority.Normal;
-		btNormal.Width = btLow.Width;
-		btNormal.ID = UIComponent.DataControlID.PriorityNormal;
-		obj.Add(btHigh);
-		btHigh.Init(CheckBoxType.LCDRadioBanner);
-		btHigh.X = btLow.X;
-		btHigh.Y = btNormal.Bottom + 4;
-		btHigh.Text = "HIGH";
-		btHigh.ToolTip = "Set to high priority";
-		btHigh.Tag1 = UWGame.SimSide.Jobs.Priority.High;
-		btHigh.Width = btLow.Width;
-		btHigh.ID = UIComponent.DataControlID.PriorityHigh;
-		return obj;
 	}
 
 	private void btnExpand_Click(UIComponent sender, EventArgs e)
@@ -1415,18 +1332,6 @@ public class JobsPanel : RosterPanel
 		toolGrid.AddEntry(tool.EntityID, uIComponent);
 	}
 
-	private void AddLabelEntry(Grid grid, string labelText, Color color, string key)
-	{
-		UIComponent uIComponent = new UIComponent(Interface.gui);
-		Label label = new Label(Interface.gui);
-		label.Init(Label.LabelType.LCDNormal);
-		label.NormalColor = color;
-		label.Text = labelText;
-		label.ID = UIComponent.DataControlID.Status;
-		uIComponent.Add(label);
-		grid.AddEntry(key, uIComponent);
-	}
-
 	private Hyperlink AddHyperLink(GUIManager guiManager, uint targetID, string text, int xOffSet)
 	{
 		Hyperlink hyperlink = new Hyperlink(guiManager, RenderType.Normal);
@@ -1580,10 +1485,6 @@ public class JobsPanel : RosterPanel
 			label3.Visible = false;
 			label3.Height = 23;
 		}
-	}
-
-	private void AddProcessJobHeader(LCDInnerPanel cPanel, int headerHeight)
-	{
 	}
 
 	private void AddRowPanel(ref LCDInnerPanel rowPanel, object key)

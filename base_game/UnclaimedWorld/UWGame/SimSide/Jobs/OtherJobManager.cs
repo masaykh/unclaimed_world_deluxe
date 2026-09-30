@@ -117,18 +117,6 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 		}
 	}
 
-	private bool LightFireJobAlreadyExists(Entity fireplace)
-	{
-		foreach (Job otherJob in owner.OtherJobs)
-		{
-			if (otherJob is LightFireJob lightFireJob && lightFireJob.FireSite == fireplace)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private Job GetReloadJobIfExists(EntityID entity)
 	{
 		foreach (Job otherJob in owner.OtherJobs)
@@ -139,57 +127,6 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 			}
 		}
 		return null;
-	}
-
-	private Job GetRepairJobIfExists(RepairPackageAction partRepairAction, IKnownEntityData entityData)
-	{
-		if (owner.RepairJobs.TryGetValue(entityData.EntityID, out var value))
-		{
-			foreach (ProcessJob item in value)
-			{
-				if (item.RepairJob.RepairActionToUse == partRepairAction.RepairAction)
-				{
-					return item;
-				}
-			}
-		}
-		return null;
-	}
-
-	private LightFireJob GetLightFireJobIfExists(Entity fireplace)
-	{
-		foreach (Job otherJob in owner.OtherJobs)
-		{
-			if (otherJob is LightFireJob lightFireJob && lightFireJob.FireSite == fireplace)
-			{
-				return lightFireJob;
-			}
-		}
-		return null;
-	}
-
-	private StokeFireJob GetStokeFireJobIfExists(IKnownEntityData fireplace)
-	{
-		foreach (Job otherJob in owner.OtherJobs)
-		{
-			if (otherJob is StokeFireJob stokeFireJob && stokeFireJob.FireSite == fireplace)
-			{
-				return stokeFireJob;
-			}
-		}
-		return null;
-	}
-
-	private bool JobTypeAlreadyExists(Type typeOfJob)
-	{
-		foreach (Job otherJob in owner.OtherJobs)
-		{
-			if (typeOfJob.IsInstanceOfType(otherJob))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public CyclableID GetUniqueID()
@@ -384,27 +321,6 @@ public class OtherJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnaps
 			return true;
 		}
 		return false;
-	}
-
-	private static double ScoreNeedForFireAsProtection(IKnownEntityData buildingEntity)
-	{
-		double result = 0.0;
-		if (buildingEntity.EntityType.StructureType.IsCamp)
-		{
-			result = 1.0;
-		}
-		return result;
-	}
-
-	private static void RecordOutdatedJob(ref List<Job> outdatedJobs, Job job)
-	{
-		if (outdatedJobs != null)
-		{
-			outdatedJobs.Add(job);
-			return;
-		}
-		outdatedJobs = new List<Job>();
-		outdatedJobs.Add(job);
 	}
 
 	public void PrintInfo(StringBuilder text)

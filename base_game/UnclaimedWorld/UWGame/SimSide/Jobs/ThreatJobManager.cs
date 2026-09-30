@@ -44,9 +44,6 @@ public class ThreatJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnap
 	public static double totalComputationAllInstancesInSeconds;
 
 	private CyclableID id = CyclableID.Invalid;
-
-	private const float aggroFalloffRegion = 0.25f;
-
 	private static Vector2[] aggroScoreFunctionPoints = new Vector2[3]
 	{
 		new Vector2(0f, 1f),
@@ -206,23 +203,6 @@ public class ThreatJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnap
 			return (ThreatJob)value;
 		}
 		return null;
-	}
-
-	private static double ScorePolicy(Entity entity, Allegiance thisAllegiance)
-	{
-		if (thisAllegiance.Policy.PolicyTowardsCreatures.TryGetValue(entity.EntityType, out var value))
-		{
-			switch (value)
-			{
-			case AllegiancePolicy.CreaturePolicy.HuntToDestroy:
-				return 1.0;
-			case AllegiancePolicy.CreaturePolicy.NeverAttack:
-				return 0.0;
-			case AllegiancePolicy.CreaturePolicy.HuntForProducts:
-				return 0.0;
-			}
-		}
-		return 0.0;
 	}
 
 	private ThreatEvaluationStatus ScoreNearness(Entity entity, bool isVermin, float? allegianceAggroRange, ref EntityID? closestMemberOfAllegiance, out double nearnessScore, out bool isInAttackZone)

@@ -12,9 +12,6 @@ public class LoseGamePanel : Panel
 	private LCDScreen lcdScreen;
 
 	private UIComponent lcdSurface;
-
-	private int controlTop = 70;
-
 	private TextArea area;
 
 	private Grid surfaceGrid;

@@ -5,16 +5,7 @@ namespace UWGame.SimSide.Entities;
 
 public class SteerableFrontWheels : Component
 {
-	private const float MaxWheelAngle = 0.8f;
-
-	private const float MaxWheelSteeringAngleChange = 2f;
-
 	public float WheelsAngle;
-
-	private const string leftWheelName = "wheel_front_left_joint";
-
-	private const string rightWheelName = "wheel_front_right_joint";
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public SteerableFrontWheels(Entity parent)

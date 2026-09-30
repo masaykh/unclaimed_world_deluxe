@@ -81,13 +81,7 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 	public static float LerpRotationFactor = 0.85f;
 
 	public static float DistanceToStopLerping = 24f;
-
-	private const float distanceFactorToReduceLerping = 8f;
-
 	private List<Pair<Entity, Vector2>> nearByEntitiesOfSameType = new List<Pair<Entity, Vector2>>();
-
-	private const long elapsedDistanceToConsiderInSync = 6000000L;
-
 	private int noOfFramesWeHaveBeenDirty;
 
 	public Matrix LocalTransform
@@ -801,55 +795,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 		return false;
 	}
 
-	private AnimModifier? GetEndStance(AnimConditionInfo info)
-	{
-		if (info.ConditionSet.Modifiers == null)
-		{
-			return null;
-		}
-		BitMask64 modifiers = info.ConditionSet.Modifiers;
-		bool flag = modifiers.Test(AnimModifier.Kneeling);
-		bool flag2 = modifiers.Test(AnimModifier.Sitting);
-		bool flag3 = modifiers.Test(AnimModifier.Lying);
-		if (modifiers.Test(AnimModifier.Reverse))
-		{
-			if (flag3)
-			{
-				return AnimModifier.Lying;
-			}
-			if (flag2)
-			{
-				return AnimModifier.Sitting;
-			}
-			if (flag)
-			{
-				return AnimModifier.Kneeling;
-			}
-			return null;
-		}
-		if (flag3)
-		{
-			if (flag2)
-			{
-				return AnimModifier.Sitting;
-			}
-			if (flag)
-			{
-				return AnimModifier.Kneeling;
-			}
-			return null;
-		}
-		if (flag2)
-		{
-			if (flag)
-			{
-				return AnimModifier.Kneeling;
-			}
-			return null;
-		}
-		return null;
-	}
-
 	private bool IsUnnecessaryStanceChange(AnimConditionInfo info)
 	{
 		if (info == null || info.ConditionSet == null || info.ConditionSet.Action != AnimAction.ChangingStance)
@@ -870,19 +815,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 			return true;
 		}
 		return false;
-	}
-
-	private bool IsStanding(AnimConditions conditionSet)
-	{
-		if (conditionSet != null && conditionSet.Modifiers != null)
-		{
-			if (!conditionSet.Modifiers.Test(AnimModifier.Sitting) && !conditionSet.Modifiers.Test(AnimModifier.Kneeling))
-			{
-				return !conditionSet.Modifiers.Test(AnimModifier.Lying);
-			}
-			return false;
-		}
-		return true;
 	}
 
 	private bool AdoptAnimInfo(AnimConditionInfo newInfo)
@@ -1093,21 +1025,6 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 	{
 		nearByEntitiesOfSameType.Clear();
 		The.AgentQuadTree.GetEntitiesInRange(base.Parent.Location.Value.ToVector2(), 300f, (Entity e) => e.EntityType == base.ParentEntity.EntityType && e != base.ParentEntity, ref nearByEntitiesOfSameType);
-	}
-
-	private bool AnimIsPlayedByNearbyAgent(string animKey, long animProgress)
-	{
-		if (base.ParentEntity != null)
-		{
-			nearByEntitiesOfSameType.Clear();
-			The.AgentQuadTree.GetEntitiesInRange(base.Parent.PlaySiteLocation.ToVector2(), 300f, (Entity e) => e.EntityType == base.ParentEntity.EntityType, ref nearByEntitiesOfSameType);
-			foreach (Pair<Entity, Vector2> item in nearByEntitiesOfSameType)
-			{
-				_ = item;
-				IsRunningAnim(animKey, animProgress, out var _);
-			}
-		}
-		return false;
 	}
 
 	private void AdoptAdditionalAnim(Looping? previousAnimIsLooping, string previousAdditionalAnimKey, string previousAdditionalBlendAnimKey, string currentAdditionalAnimKey, AnimationTrack track)

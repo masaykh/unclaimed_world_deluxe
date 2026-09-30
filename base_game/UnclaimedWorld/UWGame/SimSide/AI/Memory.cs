@@ -27,15 +27,9 @@ public class Memory : ISnapshot
 	private double? timePointThatCarcassWasCreated;
 
 	private Dictionary<EntityID, double> lastHauledItems = new Dictionary<EntityID, double>();
-
-	private const double recentlyHitByEntityMemoryDuration = 5.0;
-
 	private EntityID? attackerID;
 
 	private double? timePointThatWeWereLastHit;
-
-	private const double timePointForLastCombatAlertMemoryDuration = 10.0;
-
 	private double? timePointForLastCombatAlert;
 
 	private double? timePointForJoiningExpedition;

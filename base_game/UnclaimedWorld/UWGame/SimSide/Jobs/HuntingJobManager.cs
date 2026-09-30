@@ -284,23 +284,6 @@ public class HuntingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 		}
 	}
 
-	private void RemoveUnneededStandingOrderJobs()
-	{
-		if (owner.ProductionOrders == null)
-		{
-			return;
-		}
-		foreach (KeyValuePair<EntityType, ProductionOrder> order in owner.ProductionOrders.Orders)
-		{
-			EntityType key = order.Key;
-			ProductionOrder value = order.Value;
-			if (key.ItemType.CarcassType != null && value.AmountToKeepInStore.HasValue)
-			{
-				RemoveUnneededStandingOrderJobs(key, value);
-			}
-		}
-	}
-
 	private void RemoveUnneededStandingOrderJobs(EntityType entityType, ProductionOrder order)
 	{
 		GetAmountToProduce(entityType, order, out var amountToProduce);
@@ -316,10 +299,6 @@ public class HuntingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 		int itemsInStock = owner.CountAvailableItems(entityType);
 		int count = owner.FindPreyJobs.Count;
 		amountToProduce = JobManager.GetAmountToProduce(order, itemsInStock, count);
-	}
-
-	private void UpdateStandingOrder(EntityType entityType, ProductionOrder order, int maxJobs)
-	{
 	}
 
 	private static void DestroyJobsIntelligently(List<Job> jobs, int noOfJobsToRemove)

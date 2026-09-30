@@ -497,11 +497,6 @@ public class GoalThink : CompositeGoal
 		return 0.0;
 	}
 
-	private void SortTopScoringJobsForDebugging()
-	{
-		entityIntelligence.TopScoringJobs.Sort((GoalAndScore j1, GoalAndScore j2) => j2.Score.CompareTo(j1.Score));
-	}
-
 	private void ResetScoreAndCounter()
 	{
 		bestEvaluator = null;

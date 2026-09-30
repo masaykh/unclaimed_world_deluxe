@@ -835,38 +835,6 @@ public class NonLivingEntity : Component
 		return false;
 	}
 
-	private bool CanRecondition(Entity part, out ProcessType processType)
-	{
-		if (part.EntityType.NonLivingType.EntityRepairProfile.Condition != null)
-		{
-			processType = part.EntityType.NonLivingType.EntityRepairProfile.Condition;
-			return true;
-		}
-		processType = null;
-		return false;
-	}
-
-	private bool CanReplace(Entity part, out ProcessType processType)
-	{
-		if (Parent.EntityType.NonLivingType.EntityRepairProfile.PartsReplacement != null && Parent.EntityType.NonLivingType.EntityRepairProfile.PartsReplacement.TryGetValue(part.EntityType, out processType))
-		{
-			return true;
-		}
-		processType = null;
-		return false;
-	}
-
-	private bool CanReplaceParentPart(Entity part, ref List<Entity> parentParts)
-	{
-		Entity entity = part.PartOf as Entity;
-		while (entity != null && Parent.EntityType.NonLivingType.EntityRepairProfile.PartsReplacement.ContainsKey(entity.EntityType))
-		{
-			Common.AddToList(ref parentParts, entity);
-			entity = entity.PartOf as Entity;
-		}
-		return true;
-	}
-
 	private void GatherMissingParts(ref List<EntityOrType> partsNeedingRepair, int level)
 	{
 		foreach (KeyValuePair<EntityType, int> part in Parent.EntityType.Parts)

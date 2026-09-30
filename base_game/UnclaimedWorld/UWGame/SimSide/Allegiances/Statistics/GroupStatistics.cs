@@ -29,13 +29,6 @@ public class GroupStatistics : ISnapshot
 	public EntityType RepresentativeEntityType;
 
 	private Regulator achievementsRegulator;
-
-	private const float securityWeight = 1f;
-
-	private const float comfortWeight = 1f;
-
-	private const float foodWeight = 1f;
-
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public bool IsSnapshotted { get; set; }

@@ -61,16 +61,4 @@ public class ThreatRender : ÏnfluenceRender
 		}
 		index = num;
 	}
-
-	private new bool DrawSubtile(int x, int y, int tempIndex, Microsoft.Xna.Framework.Color color, VertexOverlayGroundSpriteQuad[] overlayVertices)
-	{
-		Vector2 vector = The.MapUI.SubtileEdgeToScreen(x, y);
-		RectangleF rectangleF = new RectangleF(vector.X, vector.Y, 16f, 16f);
-		quad.SetupQuadVertices(rectangleF.Left, rectangleF.Top, rectangleF.Right, rectangleF.Bottom, sourceRectangle, The.Client.FlatSpriteSheet.Texture, drawScanlines: true, color.ToVector4());
-		if (quad.CopyQuadToVertexBuffer(overlayVertices, tempIndex))
-		{
-			return true;
-		}
-		return false;
-	}
 }

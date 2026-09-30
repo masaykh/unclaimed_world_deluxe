@@ -260,58 +260,6 @@ public static class Command
 		return false;
 	}
 
-	private static void ProcessInput(KeyboardState keyboard)
-	{
-		Microsoft.Xna.Framework.Input.Keys[] pressedKeys = keyboard.GetPressedKeys();
-		foreach (Microsoft.Xna.Framework.Input.Keys keys in pressedKeys)
-		{
-			if (s_lastKeyboard.IsKeyDown(keys))
-			{
-				continue;
-			}
-			if (IsSpecialKey(keys))
-			{
-				switch (keys)
-				{
-				case Microsoft.Xna.Framework.Input.Keys.Escape:
-					s_currentCommandLine = "";
-					break;
-				case Microsoft.Xna.Framework.Input.Keys.Enter:
-					ProcessCurrentCommand();
-					break;
-				case Microsoft.Xna.Framework.Input.Keys.Up:
-					DoskeyDecrement();
-					break;
-				case Microsoft.Xna.Framework.Input.Keys.Down:
-					DoskeyIncrement();
-					break;
-				case Microsoft.Xna.Framework.Input.Keys.Back:
-					if (s_currentCommandLine.Length > 0)
-					{
-						s_currentCommandLine = s_currentCommandLine.Remove(s_currentCommandLine.Length - 1, 1);
-					}
-					break;
-				case Microsoft.Xna.Framework.Input.Keys.NumPad0:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad1:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad2:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad3:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad4:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad5:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad6:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad7:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad8:
-				case Microsoft.Xna.Framework.Input.Keys.NumPad9:
-					s_currentCommandLine += KeyToChar(keys, keyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift) || keyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightShift));
-					break;
-				}
-			}
-			else
-			{
-				s_currentCommandLine += KeyToChar(keys, keyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift) || keyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightShift));
-			}
-		}
-	}
-
 	private static void ProcessCurrentCommand()
 	{
 		ProcessCommand(s_currentCommandLine);

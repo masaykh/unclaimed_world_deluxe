@@ -21,27 +21,6 @@ public class PersonnelList : UIComponent
 	private Grid outerGrid;
 
 	private bool isRoster;
-
-	private const int itemHeight = 25;
-
-	private const int horizPadding = 6;
-
-	private const int vertPadding = 2;
-
-	private const int ratingColumnX = 65;
-
-	private const int professionColumnX = 106;
-
-	private const int nameColumnX = 128;
-
-	private const int missionStatusColumnX = 267;
-
-	private const int ageColumnX = 297;
-
-	private const int sexColumnX = 325;
-
-	private const int statusColumn = 425;
-
 	private List<IKnownEntityData> entities;
 
 	private Func<List<IKnownEntityData>> getEntities;
@@ -497,10 +476,6 @@ public class PersonnelList : UIComponent
 			lblEmigrateRisk.Visible = false;
 			cannotEmigrate.ToolTip = entity.Intelligence.EmigrateDecider.GetCanEmigrateToTargetTooltip(null);
 		}
-	}
-
-	private void SetCannotEmigrateIcon()
-	{
 	}
 
 	private void UpdateOtherSiteEntity(UIComponent itemRow, Entity entity, Icon imRating, Label lblRating)

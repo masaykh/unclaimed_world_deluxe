@@ -57,17 +57,7 @@ public abstract class DataSheet : HUDWindow
 	private double timePassed;
 
 	protected const int rightMargin = 15;
-
-	private const int collapsedWidth = 256;
-
-	private const int collapsedHeight = 104;
-
 	public const int ExpandedHeight = 320;
-
-	private const int collapsedContentLeft = 42;
-
-	private const int summaryDescripitonX = 34;
-
 	private int expandedContentStart;
 
 	private int maxExpandedContentHeightBeforeScrollAreasAppear = 180;
@@ -91,19 +81,6 @@ public abstract class DataSheet : HUDWindow
 	private ImageButton btScrollUp;
 
 	private TextArea taDescription;
-
-	private const float policyIndex = 5f;
-
-	private const float skillIndex = 10f;
-
-	private const float actingOnIndex = 15f;
-
-	private const float gatheredFromIndex = 18f;
-
-	private const float inputIndex = 20f;
-
-	private const float toolsIndex = 50f;
-
 	private Grid grdInputs;
 
 	private Label lblMadeFrom;
@@ -133,9 +110,6 @@ public abstract class DataSheet : HUDWindow
 	private Icon policyIcon;
 
 	private UIComponent actingOn;
-
-	private EntityTypeTooltipInstanceData instanceData;
-
 	protected EntityGroupID? owner;
 
 	protected bool useCurrentUIOwner;
@@ -145,9 +119,6 @@ public abstract class DataSheet : HUDWindow
 	public const int expandButtonY = 44;
 
 	public const int expandButtonHeight = 18;
-
-	private const int scrollAreaHeight = 15;
-
 	public Color entityToolTipHeaderColor;
 
 	protected int expandedPanelHeadingY = 110;
@@ -163,11 +134,6 @@ public abstract class DataSheet : HUDWindow
 	protected ProcessType processTypeToShowProductionFor;
 
 	protected const int extraSideMargin = 5;
-
-	private const string madeFromTooltip = "We need all of the below materials, in the given amounts";
-
-	private const string gatheredTooltip = "This item is gathered from a resource";
-
 	private static Color cyan = "0FF8FD".ColorFromHex();
 
 	private UIComponent tooltipAnchor;
@@ -323,10 +289,6 @@ public abstract class DataSheet : HUDWindow
 		{
 			The.InGameUI.UnpinnedDataTypeTooltipsOutsideStack.Add(this);
 		}
-	}
-
-	private void btEncyclopedia_Click(UIComponent sender, EventArgs e)
-	{
 	}
 
 	private void btClose_Click(UIComponent sender, EventArgs e)
@@ -1546,11 +1508,6 @@ public abstract class DataSheet : HUDWindow
 
 	protected virtual void PopulateGeneralDataContent()
 	{
-	}
-
-	private bool ProcessHasEntityTypeAsOutput(ProcessType processType, EntityType entityType)
-	{
-		return processType.Outputs.FirstOrDefault((Output o) => o.FinalEntityTypeToCreate == entityType) != null;
 	}
 
 	private void ShowOrHideToolGridScrollButtons(ToolAlternatives tools, ToolGrid toolGrid, int toolScoresCount)

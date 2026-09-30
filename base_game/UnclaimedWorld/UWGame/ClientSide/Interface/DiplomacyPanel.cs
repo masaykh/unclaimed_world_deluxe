@@ -11,22 +11,7 @@ namespace UWGame.ClientSide.Interface;
 public class DiplomacyPanel : RosterPanel
 {
 	private Grid grid;
-
-	private const int itemHeight = 36;
-
-	private const int horizPadding = 6;
-
-	private const int vertPadding = 4;
-
 	private List<AllegianceRelation> allAllegiancesToShow = new List<AllegianceRelation>();
-
-	private const int headingYPos = 30;
-
-	private const int locationColumnX = 140;
-
-	private const int immigrationColumnX = 260;
-
-	private const int communicationColumnX = 380;
 
 	public DiplomacyPanel()
 		: base("CONTACTS", 600, needBottomMarginForButtons: false)

@@ -13,28 +13,8 @@ public class MissionsPanel : RosterPanel
 	private Grid grdMissions;
 
 	private Grid outerGrid;
-
-	private const int itemHeight = 36;
-
-	private const int horizPadding = 6;
-
-	private const int vertPadding = 4;
-
 	private List<Mission> allMissionsToShow = new List<Mission>();
-
-	private const int headingYPos = 45;
-
 	private LCDInnerPanel addPanel;
-
-	private const int vehicleColumnX = 7;
-
-	private const int communicationColumnX = 140;
-
-	private const int locationColumnX = 270;
-
-	private const int etaColumnX = 390;
-
-	private const string addPanelKey = "Add Panel";
 
 	public MissionsPanel()
 		: base("MISSIONS", 600, needBottomMarginForButtons: false)
@@ -128,30 +108,6 @@ public class MissionsPanel : RosterPanel
 	public override void Show()
 	{
 		base.Show();
-	}
-
-	private void CreateColumnHeadings()
-	{
-		Label label = new Label(Interface.gui);
-		label.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label.Text = "NAME";
-		lcdSurface.Add(label);
-		label.Y = 45;
-		label.FitToText();
-		label = new Label(Interface.gui);
-		label.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label.Text = "LOCATION";
-		lcdSurface.Add(label);
-		label.Y = 45;
-		label.X = 270;
-		label.FitToText();
-		label = new Label(Interface.gui);
-		label.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label.Text = "COMMUNICATION";
-		lcdSurface.Add(label);
-		label.Y = 45;
-		label.X = 140;
-		label.FitToText();
 	}
 
 	private void GetAllMissionsToShow()

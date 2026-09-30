@@ -52,9 +52,6 @@ public class SidePanelMapArea : RosterPanel
 	private Grid grdTerrain;
 
 	public const int GridMargin = 2;
-
-	private const bool useUIOWner = true;
-
 	private Dictionary<ResourceType, MapArea.ResourcesAndJobs> data = new Dictionary<ResourceType, MapArea.ResourcesAndJobs>();
 
 	private Dictionary<EntityType, int> allItems = new Dictionary<EntityType, int>();
@@ -62,8 +59,6 @@ public class SidePanelMapArea : RosterPanel
 	private List<IKnownEntityData> entities = new List<IKnownEntityData>();
 
 	private Dictionary<EntityType, List<EntityID>> allItemByType = new Dictionary<EntityType, List<EntityID>>();
-
-	private EntityType entityType;
 
 	public SidePanelMapArea()
 		: base(The.InGameUI.sidePanelHeight, isInfoPanel: true)
@@ -102,11 +97,6 @@ public class SidePanelMapArea : RosterPanel
 		{
 			SetHeaderText("LAND");
 		}
-	}
-
-	private void ShowBackgroundImage()
-	{
-		statusContent.Insert(imStatusBackground, 1);
 	}
 
 	public override void Show()
@@ -518,18 +508,6 @@ public class SidePanelMapArea : RosterPanel
 		}
 		grdRobots.DeleteEntries((EntityID e) => entities.Exists((IKnownEntityData knownEntityData) => knownEntityData.EntityID == e));
 		grdRobots.EndAddingEntries();
-	}
-
-	private void AddEntityHyperlink(Entity entity, Grid grid)
-	{
-		if (entity.PersonEntity != null)
-		{
-			grid.AddHyperLinkEntry(null, entity.Name, (uint)entity.EntityID, 6);
-		}
-		else
-		{
-			grid.AddHyperLinkEntry(null, entity.EntityType.Name, (uint)entity.EntityID, 6);
-		}
 	}
 
 	public static void SetSummaryAsTotal(CollapsablePanel cpCategory, object o)

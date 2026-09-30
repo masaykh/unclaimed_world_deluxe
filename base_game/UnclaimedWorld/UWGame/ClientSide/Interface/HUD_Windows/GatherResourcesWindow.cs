@@ -64,14 +64,6 @@ public class GatherResourcesWindow : HUDWindow
 
 	private TextButton btCancel;
 
-	private const int orderedX = 175;
-
-	private const int regrowthX = 290;
-
-	private const int gridHeaderY = 28;
-
-	private const string gridKey = "Grid";
-
 	public GatherResourcesWindow()
 		: base(364, 275, hasSurface: true, hasCloseButton: false, isMovable: true, "HUD_window_base", hideWhenMouseExits: false, Level.Bottom)
 	{
@@ -706,12 +698,6 @@ public class GatherResourcesWindow : HUDWindow
 			int availableResources = GetAvailableResources(data[resourceType]);
 			UpdateRow(parent, availableResources, 0, ownedEntities, resourceType, null, null, maxReached: false);
 		}
-	}
-
-	private void tbItems_Click(UIComponent sender, EventArgs e)
-	{
-		EntityGroup ownedEntities = The.Sim.PlaySite.GetFirstPlayerExpedition().OwnedEntities;
-		The.InGameUI.EntityListWindow.PopulateAndShowOnPlayfield(sender, ((ItemTypeButtonEventArgs)e).Item, ownedEntities);
 	}
 
 	private void fillableBar_SliderMouseDown(object sender, EventArgs e)

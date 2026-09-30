@@ -56,19 +56,7 @@ public class RosterPanel : Panel
 	protected const int headingsY = 0;
 
 	protected int titleBottom;
-
-	private const int sidePanelInterfaceWidth = 278;
-
-	private const int sidePanelAccessPanelOverlap = 13;
-
-	private const int eventArchiveAccessPanelOverlap = 17;
-
-	private const int rosterPanelAccessPanelOverlap = 19;
-
 	public const int IrregularCornerSize = 242;
-
-	private const Level level = Level.BelowBelowMiddle;
-
 	private ModalOverlay modalOverlay;
 
 	protected Color? BackgroundTint

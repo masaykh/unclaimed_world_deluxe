@@ -26,67 +26,35 @@ public class EntityDataSheet : DataSheet
 	protected Bar coloredBar;
 
 	protected ImageButton btTrack;
-
-	private const string trackingButtonTooltip = "Toggle tracking this item";
-
-	private const float edibleIndex = 10f;
-
 	private Label lblHumanEdible;
 
 	private UIComponent humanEdibleHeader;
-
-	private const float nutritionIndex = 15f;
-
 	private Grid grdNutrition;
 
 	private Label lblNutrition;
 
 	private UIComponent nutritionHeader;
-
-	private const float comfortIndex = 20f;
-
 	private Label lblComfort;
 
 	private UIComponent comfortHeader;
-
-	private const float replenishIndex = 30f;
-
 	private UIComponent replenishHeader;
 
 	private Grid grdRequiresReplenish;
-
-	private const float upgradeForIndex = 40f;
-
 	private UIComponent upgradeForHeader;
 
 	private Grid grdUpgradeFor;
-
-	private const float upgradesIndex = 50f;
-
 	private UIComponent possibleUpgradesHeader;
 
 	private Grid grdPossibleUpgrades;
-
-	private const float effectsIndex = 60f;
-
 	private UIComponent effectsHeader;
 
 	private Grid grdEffects;
-
-	private const float storageIndex = 80f;
-
 	private UIComponent storageHeader;
 
 	private Grid grdStorage;
-
-	private const float ammoIndex = 90f;
-
 	private UIComponent ammoHeader;
 
 	private Grid grdAmmo;
-
-	private const float weaponIndex = 100f;
-
 	private Label lblWeapon;
 
 	private UIComponent weaponHeader;
@@ -96,23 +64,11 @@ public class EntityDataSheet : DataSheet
 	private Label lblWeaponNotWieldable;
 
 	private TextArea taHighlyEffective;
-
-	private const float durabilityIndex = 120f;
-
 	private UIComponent durabilityHeader;
 
 	private Label lblDegradeType;
 
 	private Grid grdDurability;
-
-	private const float ordersIndex = 0f;
-
-	private const float usedInIndex = 80f;
-
-	private const float toolUsedForIndex = 100f;
-
-	private const float toolUsedForCapMessageIndex = 105f;
-
 	private int processIndex;
 
 	private int noOfProcesses;
@@ -158,9 +114,6 @@ public class EntityDataSheet : DataSheet
 	private static Color securityColorBlue = "69C2E5".ColorFromHex();
 
 	private static Color comfortColorPink = "CC82B7".ColorFromHex();
-
-	private const int fixedGridItemHeight = 18;
-
 	private Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems = new Dictionary<EntityType, InventoryPanel.Availability>();
 
 	private readonly Color outOfStockColorForToolTip = "CCC86E".ColorFromHex();
@@ -201,11 +154,6 @@ public class EntityDataSheet : DataSheet
 		lblProcessIndex.FitToText();
 		lblProcessIndex.X = btSelectProcess.X - lblProcessIndex.Width - 6;
 		lblProcessIndex.NormalColor = DataSheet.productionColor;
-	}
-
-	private void btOpenManager_Click(UIComponent sender, EventArgs e)
-	{
-		The.InGameUI.ShowInventoryPanel();
 	}
 
 	private void btProcess_Click(UIComponent sender, EventArgs e)
@@ -749,15 +697,6 @@ public class EntityDataSheet : DataSheet
 		effectType.AppendAsString(stringBuilder, EffectType.Background.EntityTypeTooltipGreen);
 		text = stringBuilder.ToString();
 		return grid.AddEntry(effectType, text, useLineBreaks: false, null, 5);
-	}
-
-	private UIComponent AddAmmoItemRow(EntityType inputEntityType)
-	{
-		UIComponent uIComponent = new UIComponent(gui);
-		grdAmmo.AddEntry(inputEntityType, uIComponent);
-		CreateItemGridRow(inputEntityType, uIComponent, out var entityTypeButton);
-		uIComponent.CenterChildVertically(entityTypeButton);
-		return uIComponent;
 	}
 
 	private void UpdateItemRow(EntityType item, UIComponent itemRow, EntityGroup resolvedOwner, bool isToolContext = false)

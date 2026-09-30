@@ -44,11 +44,6 @@ public class OtherSiteAllegianceManager : ISnapshot
 	{
 	}
 
-	private bool IsContractFulfilledForThisInterval()
-	{
-		return true;
-	}
-
 	public void AddEmigrantToQueue(EntityID emigrantID)
 	{
 		Common.AddToList(ref waitingImmigrants, emigrantID);

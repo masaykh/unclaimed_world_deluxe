@@ -238,19 +238,6 @@ public class ChangeResourcesAction : EventActionType
 		return list;
 	}
 
-	private List<ResourceContainer> GetContainers(List<ResourceType> resourceTypes)
-	{
-		List<ResourceContainer> list = new List<ResourceContainer>();
-		foreach (ResourceType resourceType in resourceTypes)
-		{
-			if (The.Sim.PlaySite.Resources.TryGetValue(resourceType, out var value))
-			{
-				list.AddRange(value.GetAsList());
-			}
-		}
-		return list;
-	}
-
 	private void AppendResourceType(List<ResourceType> resourceTypes, string resourceKey)
 	{
 		resourceTypes.Add(GameData.Instance.AllResourceTypes[resourceKey]);

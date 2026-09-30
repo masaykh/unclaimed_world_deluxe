@@ -162,20 +162,6 @@ public class Structure : Component
 		}
 	}
 
-	private bool TestAllSubtilesClear(byte[][] subtileMap, Entity exceptForEntity = null)
-	{
-		TerrainTile[][] tileMap = The.Map.TileMap;
-		new Vector3(48 * Parent.TopLeftMapPosition.Value.X, 48 * Parent.TopLeftMapPosition.Value.Y, 0f);
-		for (int i = 0; i < Parent.EntityType.StructureType.WidthInTiles; i++)
-		{
-			for (int j = 0; j < Parent.EntityType.StructureType.HeightInTiles; j++)
-			{
-				_ = tileMap[Parent.TopLeftMapPosition.Value.X + i][Parent.TopLeftMapPosition.Value.Y + j];
-			}
-		}
-		return true;
-	}
-
 	public void ConstructionStarted(EntityID? anchorID)
 	{
 		AnchorID = anchorID;
@@ -307,40 +293,6 @@ public class Structure : Component
 		return true;
 	}
 
-	private bool CreateClearingJobs(Edge materialsAlongEdge, EntityGroup ownerOfJob)
-	{
-		TerrainTile[][] tileMap = The.Map.TileMap;
-		Point? point = null;
-		for (int i = 0; i < Parent.EntityType.StructureType.WidthInTiles; i++)
-		{
-			for (int j = 0; j < Parent.EntityType.StructureType.HeightInTiles; j++)
-			{
-				TerrainTile terrainTile = tileMap[Parent.TopLeftMapPosition.Value.X + i][Parent.TopLeftMapPosition.Value.Y + j];
-				if (terrainTile.EntitiesOnTile == null)
-				{
-					continue;
-				}
-				foreach (Entity item in terrainTile.EntitiesOnTile)
-				{
-					if (!item.Find<Item>(out var _) || !item.IsUnassigned(ownerOfJob.GetAllegiance().SharedKnowledge))
-					{
-						continue;
-					}
-					if (!point.HasValue)
-					{
-						point = FindDumpingAreaOffSite(materialsAlongEdge, new Point(terrainTile.X, terrainTile.Y));
-						if (!point.HasValue)
-						{
-							return false;
-						}
-					}
-					new HaulingJobSpecificItem(MapManager.TileToWorldPos(point.Value), null, ownerOfJob, item, null, haulToStorage: true, haulToTrade: false, ownerOfJob);
-				}
-			}
-		}
-		return true;
-	}
-
 	private bool PlaceMaterialHaulingJobs(ProcessJob buildJob, EntityGroup ownerOfBuilding, Edge edge)
 	{
 		StructureType structureType = Parent.EntityType.StructureType;
@@ -422,31 +374,6 @@ public class Structure : Component
 		default:
 			InfluenceMap.DrawGradientRectangle(subtileMap, new Point((int)((1f - num) * (float)jaggedArrayWidth), 0), new Point(jaggedArrayWidth - 1, jaggedArrayHeight - 1), addToExistingValues: false, centerValue, endValue, maxRandomToAdd, InfluenceMap.GradientDirection.TopToBottom);
 			break;
-		}
-	}
-
-	private void DrawInfluenceFromItemsOnSubtileMap(byte[][] subtileMap, Vector3 topLeftSubtilePosition, int circleRadius, int centerValue)
-	{
-		TerrainTile[][] tileMap = The.Map.TileMap;
-		Parent.GeometryLayout.GetBoundsWithPadding(out var _, out var _);
-		int jaggedArrayWidth = Common.GetJaggedArrayWidth(subtileMap);
-		int jaggedArrayHeight = Common.GetJaggedArrayHeight(subtileMap);
-		for (int i = 0; i < jaggedArrayWidth; i++)
-		{
-			for (int j = 0; j < jaggedArrayHeight; j++)
-			{
-				if (tileMap[i][j].EntitiesOnTile == null)
-				{
-					continue;
-				}
-				foreach (Entity item in tileMap[i][j].EntitiesOnTile)
-				{
-					if (item.Find<Item>(out var _))
-					{
-						InfluenceMap.DrawLinearInfluenceCircle(subtileMap, MapManager.WorldPosToRelativeSubtile(item.PlaySiteLocation, topLeftSubtilePosition), centerValue, InfluenceMap.Operation.AddToExisting, InfluenceMap.Falloff.Yes, InfluenceMap.CircleParameter.Radius, circleRadius);
-					}
-				}
-			}
 		}
 	}
 

@@ -85,14 +85,6 @@ public class AnimatedHead
 		bonePose.UseSpecialTransform = true;
 	}
 
-	private void SwitchSpineBoneToNormal(string boneName)
-	{
-		BonePose bonePose = parent.RenderAsModel.AnimatedModel.ModelAnimator.BonePoses[boneName];
-		Matrix transform = parent.RenderAsModel.AnimatedModel.ModelAnimator.Model.Bones[bonePose.Index].Transform;
-		bonePose.DefaultTransform = transform;
-		bonePose.UseSpecialTransform = false;
-	}
-
 	private void LerpSpineBoneToNormal(string boneName, bool isStillLerping)
 	{
 		BonePose bonePose = parent.RenderAsModel.AnimatedModel.ModelAnimator.BonePoses[boneName];

@@ -19,18 +19,7 @@ namespace UWGame.ClientSide.Interface;
 
 public class Minimap
 {
-	private Image jack;
-
-	private Image grungeBottomLeft;
-
-	private Image grungeTopLeft;
-
-	private Image grungeTopRight;
-
 	private Image displayDust;
-
-	private Image buttonDust;
-
 	private Box frame;
 
 	public Window DisplayWindow;
@@ -443,18 +432,6 @@ public class Minimap
 			currentMapTileRow = 0;
 			mapTexture.SetData(mapBackBuffer);
 		}
-	}
-
-	private bool IsThereAnyEntityToDisplay()
-	{
-		foreach (KeyValuePair<EntityType, bool> item in The.InGameUI.OverlaySettings.EntityTypesToDisplay)
-		{
-			if (item.Value)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private void SetMinimapLocationFrameTexture()

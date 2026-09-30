@@ -10,9 +10,6 @@ public class OverlayPanel
 	public Window DisplayWindow;
 
 	protected InGameInterface intf = The.InGameUI;
-
-	private const int height = 53;
-
 	public ImageButton btOverlay;
 
 	public ImageButton btResource;
@@ -79,11 +76,6 @@ public class OverlayPanel
 	private void resourceTypeRadioButton_click(UIComponent sender, EventArgs e)
 	{
 		The.InGameUI.OverlaySettings.ShowOverlaysOnGameArea = ((ImageButton)sender).IsChecked;
-	}
-
-	private void tbOverlay_MouseOut(MouseEventArgs args)
-	{
-		The.InGameUI.HUDOverlayPanel.DisplayWindow.CheckCoordinates(frameInput.mouseX, frameInput.mouseY);
 	}
 
 	private void tbOverlay_Click(UIComponent sender, EventArgs e)

@@ -28,17 +28,7 @@ public class EntityCRTContent
 	private float rotation;
 
 	private Vector3 modelLocation;
-
-	private Vector3 realLocation;
-
 	private Matrix perspectiveView;
-
-	private const int leftMargin = 34;
-
-	private const int captionWidth = 100;
-
-	private const int lineHeight = 18;
-
 	protected UIComponent pnHeading;
 
 	protected Label lblHeading;
@@ -120,8 +110,6 @@ public class EntityCRTContent
 	protected TextArea taVehicleDescription;
 
 	private int lineNo;
-
-	private const int emptyLine = 6;
 
 	public EntityCRTContent(GUIManager gui, EntityPanel entityPanel, FramedCRT framedCRT)
 	{

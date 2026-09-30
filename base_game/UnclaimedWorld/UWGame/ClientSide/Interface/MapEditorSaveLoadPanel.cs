@@ -168,15 +168,6 @@ public class MapEditorSaveLoadPanel : Panel
 		grid.EndAddingEntries();
 	}
 
-	private void btClose_Click(UIComponent sender, EventArgs e)
-	{
-		Window.Hide();
-		if (this.CancelClick != null)
-		{
-			this.CancelClick(sender, e);
-		}
-	}
-
 	private void btSaveLoad_Click(UIComponent sender, EventArgs e)
 	{
 		object key;

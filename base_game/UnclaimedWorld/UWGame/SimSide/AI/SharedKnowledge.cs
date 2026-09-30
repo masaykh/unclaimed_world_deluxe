@@ -654,26 +654,6 @@ public class SharedKnowledge : ISnapshot
 		AllDetectedEntities.Remove(entity.DetectableID);
 	}
 
-	private bool CanSeeEntity(EntityID entityID, out bool processIsInvalid)
-	{
-		processIsInvalid = false;
-		Entity entity = Entity.FindByID(entityID);
-		if (entity != null && entity.ContainedBy.HasValue)
-		{
-			Entity entity2 = Entity.FindByID(entity.ContainedBy.Value);
-			if (entity2 == null)
-			{
-				processIsInvalid = true;
-				return false;
-			}
-			if (!CanSeeInsideContainer(entity2))
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
 	public bool CanSeeInsideContainer(Entity containerEntity)
 	{
 		if (containerEntity.AllegianceID == Allegiance.ID)
@@ -859,11 +839,6 @@ public class SharedKnowledge : ISnapshot
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);
 		return version;
-	}
-
-	private DetectableID GetID(KeyValuePair<IDetectable, bool> kvp)
-	{
-		return kvp.Key.ID;
 	}
 
 	public ISnapshot DoSnapshot(Snapshotter sn)

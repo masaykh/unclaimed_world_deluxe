@@ -9,14 +9,9 @@ namespace UWGame.SimSide.AI.Goals;
 
 internal class GoalLeisureWalk : CompositeGoal, ITopLevelGoal
 {
-	private double timeToRest;
-
 	private GroupMoveActivity activity;
 
 	private double timeWaited;
-
-	private const double maxTimeToWait = 6.0;
-
 	public int minimumMembers = 2;
 
 	private bool hasStarted;

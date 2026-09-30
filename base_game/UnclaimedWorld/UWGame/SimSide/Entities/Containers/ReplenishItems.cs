@@ -100,12 +100,6 @@ public class ReplenishItems : ISnapshot
 		}
 	}
 
-	private void RemoveOutdatedItem(AmmoOfType ammoOfType, EntityID entityID)
-	{
-		ammoOfType.Items.Remove(entityID);
-		ammoOfType.TotalIsDirty = true;
-	}
-
 	public bool Add(EntityID entity)
 	{
 		containedItems.Add(entity);

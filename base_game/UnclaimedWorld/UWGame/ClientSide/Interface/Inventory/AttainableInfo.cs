@@ -25,8 +25,6 @@ public class AttainableInfo
 
 	public SkillType UnavailableSkill;
 
-	private const string tooltipHeader = "Missing/unattainable: \n \n";
-
 	public bool IsAttainable => DistanceToRoot > -1;
 
 	public AttainableInfo(int distanceToRoot)

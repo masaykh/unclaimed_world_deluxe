@@ -35,9 +35,6 @@ public class PlaySiteKnowledge : ISnapshot, IIDEventSubscriber
 	public Dictionary<EntityID, EntityID> AllKnownOutsideAgentsOnPlaySite = new Dictionary<EntityID, EntityID>();
 
 	public Dictionary<EntityID, EntityID> AllKnownThreatSources = new Dictionary<EntityID, EntityID>();
-
-	private const int maxKnownEntityDatasPerNode = 10;
-
 	private PointQuadTree<EntityID> knownEntityDataTree;
 
 	private List<Pair<EntityID, Vector2>> snapshotKnownEntityDataTree;
@@ -343,10 +340,6 @@ public class PlaySiteKnowledge : ISnapshot, IIDEventSubscriber
 	}
 
 	public void AssertSeenEntitiesOnPlaySiteNotInFOW()
-	{
-	}
-
-	private void ValidateSeenEntityNotInFOW(EntityID item)
 	{
 	}
 
@@ -725,11 +718,6 @@ public class PlaySiteKnowledge : ISnapshot, IIDEventSubscriber
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);
 		return version;
-	}
-
-	private DetectableID GetID(KeyValuePair<IDetectable, bool> kvp)
-	{
-		return kvp.Key.ID;
 	}
 
 	public ISnapshot DoSnapshot(Snapshotter sn)

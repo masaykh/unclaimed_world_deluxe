@@ -6,10 +6,6 @@ namespace UWGame.ClientSide.MainMenu.Credits;
 
 public class CreditsPanel : HUDWindow
 {
-	private const int minHeight = 26;
-
-	private const int defaultHeight = 260;
-
 	private TextArea text;
 
 	public CreditsPanel(CommonInterface intf)
