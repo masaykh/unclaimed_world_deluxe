@@ -193,11 +193,20 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 		// clearly declared it in this method's scope. Declared here rather than edited in
 		// decomp/, which stays the untouched reference.
 		IKnownEntityData foodData;
+		// MOD: ReserveMod - the meal's extra items must not take a food below its reserve. The first
+		// item was checked in EvaluateEat; these were not, and reserved food was eaten (Kastuk).
+		Dictionary<EntityType, int> takenOfType = new Dictionary<EntityType, int> { { firstItem.EntityType, 1 } };
 		foreach (Tuple<IKnownEntityData, float> item3 in list.OrderByDescending((Tuple<IKnownEntityData, float> s) => s.Item2))
 		{
 			foodData = item3.Item1;
+			takenOfType.TryGetValue(foodData.EntityType, out int taken);
+			if (!UWGame.Mods.ReserveMod.MayTakeFood(foodItemsGroup, foodData.EntityType, taken))
+			{
+				continue;
+			}
 			if (entity.AgentStorage.ItemStorage.HasCapacityForItemWhenEmpty(foodData.Bulk + totalFoodBulk))
 			{
+				takenOfType[foodData.EntityType] = taken + 1;
 				allFoodItems.Add(foodData);
 				additionalItemsToConsume.Add(foodData.EntityID);
 				totalFoodBulk += foodData.Bulk;

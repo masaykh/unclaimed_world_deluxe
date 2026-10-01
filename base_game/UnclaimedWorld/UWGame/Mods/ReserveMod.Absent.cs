@@ -30,6 +30,8 @@ public static class ReserveMod
 
     public static bool HoldsBackFood(EntityGroup foodOwner, EntityType type, bool starving) => false;
 
+    public static bool MayTakeFood(EntityGroup foodOwner, EntityType type, int alreadyTaken) => true;
+
     public static int StockAfterReserve(EntityGroup owner, EntityType type, int stock) => stock;
 
     public static int SliderMax(int stock, int reserve) => 20;

@@ -123,6 +123,23 @@ public static class ReserveMod
         return reserve > 0 && foodOwner.CountAvailableItems(type) <= reserve;
     }
 
+    /// <summary>
+    /// Whether one more of this food may be taken, when <paramref name="alreadyTaken"/> of it are
+    /// spoken for by the same decision. <see cref="HoldsBackFood"/> answers for the first item only;
+    /// a decision that takes several - a meal topped up with nearby food (GoalEat), a household's
+    /// pay (OwnershipMod) - went below the reserve in one go. Kastuk: reserved crystal wine and
+    /// pickled carbon tail were still eaten.
+    /// </summary>
+    public static bool MayTakeFood(EntityGroup foodOwner, EntityType type, int alreadyTaken)
+    {
+        if (!Enabled)
+        {
+            return true;
+        }
+        int reserve = Reserved(foodOwner, type);
+        return reserve <= 0 || foodOwner.CountAvailableItems(type) - alreadyTaken > reserve;
+    }
+
     /// <summary>The stock a standing order sees: the reserve is not there to be used.</summary>
     public static int StockAfterReserve(EntityGroup owner, EntityType type, int stock)
     {

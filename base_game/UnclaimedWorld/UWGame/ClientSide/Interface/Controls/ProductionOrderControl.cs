@@ -48,13 +48,26 @@ public class ProductionOrderControl : UIComponent
 
 	private bool isSliderBeingDragged;
 
-	/// <summary>ReserveMod's "R": pressed, the slider edits the item's reserve instead of its order.</summary>
+	/// <summary>ReserveMod's button: pressed, the slider edits the item's reserve instead of its order.</summary>
 	private TextButton btReserve;
 
 	private int lastNoOfAvailableItems;
 
+	/// <summary>
+	/// What the last <see cref="UpdateOrders"/> was given, so pressing the reserve button can redraw
+	/// the row at once. Rows are refreshed by the inventory panel only while the game runs, so a
+	/// press while paused changed nothing on screen - and the slider kept the reserve's value and
+	/// range in order mode, which looked like the reserve moving the order (Kastuk).
+	/// </summary>
+	private EntityGroup lastOwner;
+
+	private Dictionary<EntityType, InventoryPanel.Availability> lastAllAvailableItems;
+
 	/// <summary>The reserve slider's tint, so it cannot be mistaken for an order or a standing order.</summary>
 	private static readonly Color ReserveTint = new Color(110, 190, 255);
+
+	/// <summary>The reserve button with no reserve set.</summary>
+	private static readonly Color NoReserveTint = new Color(120, 120, 120);
 
 	public ProductionOrderControl(EntityType entityType, ProductionTargetEventArgs eventArgs, GUIManager gui, UILayout uiLayout, int productionColumnX, Action<UIComponent, EventArgs> tbItems_Click, Action<UIComponent, EventArgs> btPadlock_Click)
 		: base(gui)
@@ -108,11 +121,14 @@ public class ProductionOrderControl : UIComponent
 				Add(btReserve);
 				btReserve.Init((uiLayout == UILayout.LCD) ? TextButton.TextButtonType.LCDToolTipBlack : TextButton.TextButtonType.HUDToolTipWhite);
 				btReserve.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
-				btReserve.Text = "R";
-				btReserve.TextAlignment = TextButton.TextAlign.Center;
-				btReserve.Width = 18;
-				btReserve.X = fillableBar.Right + 3;
+				// A coloured button, not a letter: Kastuk could not read the "R" against the frame.
+				// Grey with no reserve, blue with one (UpdateReserveButton).
+				btReserve.Text = "";
+				btReserve.Width = 14;
+				btReserve.NormalColor = NoReserveTint;
+				btReserve.X = fillableBar.Right + 5;
 				btReserve.ToolTip = "Reserve: click, then use the slider to set an amount colonists will not eat and workshops will not use.";
+				btReserve.Click += btReserve_Click;
 				CenterChildVertically(btReserve);
 			}
 		}
@@ -249,6 +265,8 @@ public class ProductionOrderControl : UIComponent
 
 	public void UpdateOrders(EntityGroup owner, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems, out int noOfAvailableItems)
 	{
+		lastOwner = owner;
+		lastAllAvailableItems = allAvailableItems;
 		noOfAvailableItems = InventoryPanel.GetNoOfAvailableEntities(owner.AllEntities, owner, entityType, out var noOfIncompleteEntities, out var noOfEntitiesUsedAsParts, out var noOfItemsOnOtherSite, out var noOfItemsOwnedByOthers, out var _, out var _, out var listOfAvailableEntities, out var listOfUnavailableEntities, allAvailableItems);
 		UpdateItemRowAvailableStockButton(listOfAvailableEntities, noOfAvailableItems);
 		UpdateItemRowUnavailableStockButton(listOfUnavailableEntities, noOfIncompleteEntities, noOfEntitiesUsedAsParts, noOfItemsOwnedByOthers, noOfItemsOnOtherSite);
@@ -332,13 +350,23 @@ public class ProductionOrderControl : UIComponent
 
 	private bool IsEditingReserve => btReserve != null && btReserve.IsChecked && fillableBar != null;
 
-	/// <summary>ReserveMod: the R stays lit while a reserve is set, and says how much.</summary>
+	/// <summary>ReserveMod: the button is blue while a reserve is set or being edited, grey otherwise, and its tooltip says how much.</summary>
 	private void UpdateReserveButton(EntityGroup owner)
 	{
 		int reserve = UWGame.Mods.ReserveMod.Reserved(owner, entityType);
-		btReserve.LabelColor = ((reserve > 0 || btReserve.IsChecked) ? ReserveTint : UIComponent.LCDTint);
+		btReserve.NormalColor = ((reserve > 0 || btReserve.IsChecked) ? ReserveTint : NoReserveTint);
 		string text = ((reserve > 0) ? ("Reserved: " + reserve + ". Colonists will not eat these and workshops will not use them, unless someone is starving. ") : "No reserve. ");
-		btReserve.ToolTip = text + (btReserve.IsChecked ? "The slider sets the reserve. Click R again to go back to ordering." : "Click, then use the slider to set the reserve.");
+		btReserve.ToolTip = text + (btReserve.IsChecked ? "The slider sets the reserve. Click the button again to go back to ordering." : "Click, then use the slider to set the reserve.");
+	}
+
+	/// <summary>Redraws the row as soon as the reserve button is pressed, paused or not.</summary>
+	private void btReserve_Click(UIComponent sender, EventArgs e)
+	{
+		isSliderBeingDragged = false;
+		if (lastOwner != null)
+		{
+			UpdateOrders(lastOwner, lastAllAvailableItems, out var _);
+		}
 	}
 
 	/// <summary>ReserveMod: the slider shows and sets the reserve, whether or not the item can be made right now.</summary>

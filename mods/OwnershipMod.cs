@@ -199,7 +199,9 @@ public static class OwnershipMod
             foreach (EntityID id in byType.Value.OrderBy(i => (ulong)i))
             {
                 Entity item = Entity.FindByID(id);
-                if (IsFreeFood(item, knowledge))
+                // Never below the reserve: HoldsBackFood above only asks whether ANY may go (Kastuk:
+                // reserved pickled carbon tail was still consumed).
+                if (IsFreeFood(item, knowledge) && ReserveMod.MayTakeFood(colony, byType.Key, free.Count))
                 {
                     free.Enqueue(item);
                 }
