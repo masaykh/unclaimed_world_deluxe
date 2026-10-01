@@ -191,6 +191,11 @@ internal class MapResourceRenderer
 						}
 					}
 				}
+				// MOD: HudMod's item layers outline an item whose layer is switched on.
+				if (!flag && UWGame.Mods.HudMod.OutlinesItem(renderAsBillboard.Parent.Entity))
+				{
+					flag = true;
+				}
 				if (flag)
 				{
 					renderer.OverlayBillboards.Add(renderAsBillboard);

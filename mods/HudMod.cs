@@ -1,5 +1,7 @@
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using UWGame.ClientSide.Interface;
+using UWGame.ClientSide.Interface.Overlays;
 using UWGame.SimSide.Entities;
 
 namespace UWGame.Mods;
@@ -131,6 +133,7 @@ public static class HudMod
         _ = MarkersOnAltSetting;
         _ = RevealKey;
         _ = TalkPanel;
+        _ = ItemLayers;
         for (int i = 0; i < MarkerRowCount; i++)
         {
             _ = HideMarker(i);
@@ -139,6 +142,82 @@ public static class HudMod
 
     /// <summary>Whether the click sites should leave the markers switch alone.</summary>
     public static bool MarkersOnAlt => MarkersOnAltSetting.On;
+
+    // ------------------------------------------------------------------ item layers
+
+    private static ModSetting itemLayers;
+
+    /// <summary>
+    /// Kastuk: "add layer switchers to markers menu to mark Items, to drawn their outlines and mark on
+    /// minimap, just like current list of Raw materials. Full list of items may be too big, so add
+    /// switchers just for categories, like Tools, Weapons, Prepared food, Materials and Ingredients."
+    ///
+    /// The studio's overlay menu already does this for entities by GROUPING (OverlaySettings.GetGrouping:
+    /// structures, animals, colony members, places of interest): a category row with a switch, the types
+    /// inside it folded away, a colour on the minimap. With this on, items get five groupings of their
+    /// own (<see cref="ItemGrouping"/>), and the same rows, switches and minimap colours follow; an item
+    /// drawn as a billboard is also outlined on the map while its layer is on, as trees bearing a chosen
+    /// crop are (MapResourceRenderer). Interface only.
+    /// </summary>
+    public static ModSetting ItemLayers =>
+        itemLayers ?? (itemLayers = ModSettings.Toggle(
+            ModId, "itemLayers", "ITEM LAYERS IN THE MARKERS MENU", defaultValue: true,
+            toolTip: "Adds TOOLS, WEAPONS, PREPARED FOOD, INGREDIENTS and MATERIALS to the markers menu " +
+                     "above the minimap. Switch one on to mark those items on the minimap and outline them " +
+                     "on the map."));
+
+    /// <summary>Which item layer a type belongs to, or null (not an item, or the layers are off).</summary>
+    public static EntityGrouping? ItemGrouping(EntityType type)
+    {
+        if (!ItemLayers.On || type?.ItemType == null || type.StructureType != null || type.BiologicalType != null || type.IsIntrinsic())
+        {
+            return null;
+        }
+        if (type.ItemType.WeaponType != null)
+        {
+            return EntityGrouping.Weapons;
+        }
+        if (type.ToolType != null)
+        {
+            return EntityGrouping.Tools;
+        }
+        if (type.ItemType.FoodType != null)
+        {
+            return type.ItemType.FoodType.IsMeal ? EntityGrouping.PreparedFood : EntityGrouping.Ingredients;
+        }
+        return EntityGrouping.Materials;
+    }
+
+    /// <summary>The menu's name for an item layer, or null for the studio's groupings.</summary>
+    public static string ItemGroupingName(EntityGrouping grouping) => grouping switch
+    {
+        EntityGrouping.Tools => "TOOLS",
+        EntityGrouping.Weapons => "WEAPONS",
+        EntityGrouping.PreparedFood => "PREPARED FOOD",
+        EntityGrouping.Ingredients => "INGREDIENTS",
+        EntityGrouping.Materials => "MATERIALS",
+        _ => null,
+    };
+
+    /// <summary>An item layer's colour on the minimap and in the menu, or null for the studio's groupings.</summary>
+    public static Color? ItemGroupingColor(EntityGrouping grouping, bool faded)
+    {
+        Color? c = grouping switch
+        {
+            EntityGrouping.Tools => new Color(120, 200, 255),
+            EntityGrouping.Weapons => new Color(255, 90, 90),
+            EntityGrouping.PreparedFood => new Color(255, 200, 80),
+            EntityGrouping.Ingredients => new Color(150, 230, 110),
+            EntityGrouping.Materials => new Color(200, 170, 140),
+            _ => null,
+        };
+        return c.HasValue && faded ? c.Value * 0.55f : c;
+    }
+
+    /// <summary>Called from MapResourceRenderer: whether this item is outlined because its layer is on.</summary>
+    public static bool OutlinesItem(Entity entity) =>
+        entity != null && ItemGrouping(entity.EntityType) != null
+        && The.InGameUI?.OverlaySettings != null && The.InGameUI.OverlaySettings.DisplayEntityType(entity.EntityType);
 
     /// <summary>Two presses of the key within this long latch the markers on, or off again.</summary>
     public const long DoublePressMilliseconds = 1000;

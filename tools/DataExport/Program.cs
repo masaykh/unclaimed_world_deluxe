@@ -620,6 +620,8 @@ internal static class Program
     /// </summary>
     private static int HudSelfTest()
     {
+        int loaded = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (loaded != 0) return loaded;
         Console.WriteLine("==> hud self-test");
         UWGame.Mods.HudMod.RegisterSettings();
         if (UWGame.Mods.ModSettings.Find("hud.revealKey") == null)
@@ -647,6 +649,26 @@ internal static class Program
               && Step(true, 31100) && Step(false, 31200),
               "a third quick press starts a new pair rather than releasing");
         UWGame.Mods.HudMod.ResetMarkerGesture();
+        // Item layers (HudMod.ItemGrouping): every layer gets real items, nothing alive or built is an
+        // item, each layer has a name and a colour, and the studio's own groupings are untouched.
+        var types = GameData.Instance.AllEntityTypes.Values.ToList();
+        var layers = new[] { UWGame.ClientSide.Interface.Overlays.EntityGrouping.Tools, UWGame.ClientSide.Interface.Overlays.EntityGrouping.Weapons,
+            UWGame.ClientSide.Interface.Overlays.EntityGrouping.PreparedFood, UWGame.ClientSide.Interface.Overlays.EntityGrouping.Ingredients,
+            UWGame.ClientSide.Interface.Overlays.EntityGrouping.Materials };
+        foreach (var layer in layers)
+        {
+            int n = types.Count(t => UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetGrouping(t) == layer);
+            Check(n > 0 && UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetName(layer) != null
+                  && UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetGroupingColor(layer, faded: false).HasValue,
+                  $"item layer {UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetName(layer)}: {n} item types, with a name and a colour");
+        }
+        Check(!types.Any(t => (t.StructureType != null || t.BiologicalType != null) && UWGame.Mods.HudMod.ItemGrouping(t) != null),
+              "no structure or creature is put in an item layer");
+        Check(types.Where(t => t.StructureType != null).All(t => UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetGrouping(t) == UWGame.ClientSide.Interface.Overlays.EntityGrouping.Structures),
+              "structures keep the studio's STRUCTURES grouping");
+        Check(GameData.Instance.AllEntityTypes.TryGetValue("item:gunpowderRifle", out var rifleType)
+              && UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetGrouping(rifleType) == UWGame.ClientSide.Interface.Overlays.EntityGrouping.Weapons,
+              "a gunpowder rifle is in WEAPONS");
         Console.WriteLine(failures == 0 ? "hud self-test OK" : $"hud self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }

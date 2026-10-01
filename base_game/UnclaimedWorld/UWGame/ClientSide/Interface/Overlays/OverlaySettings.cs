@@ -241,7 +241,7 @@ public class OverlaySettings : ISnapshot
 			EntityGrouping.ColonyMembers => "COLONY MEMBERS", 
 			EntityGrouping.Animals => "ANIMALS", 
 			EntityGrouping.Structures => "STRUCTURES", 
-			_ => null, 
+			_ => UWGame.Mods.HudMod.ItemGroupingName(grouping), 
 		};
 	}
 
@@ -360,7 +360,8 @@ public class OverlaySettings : ISnapshot
 		{
 			return EntityGrouping.Interest;
 		}
-		return null;
+		// MOD: HudMod's item layers (tools, weapons, prepared food, ingredients, materials); null without it.
+		return UWGame.Mods.HudMod.ItemGrouping(entityType);
 	}
 
 	public static Color? GetGroupingColorFromEntity(IKnownEntityData entityData, bool faded)
@@ -388,7 +389,10 @@ public class OverlaySettings : ISnapshot
 			}
 			return interestColor;
 		default:
-			return null;
+		{
+			EntityGrouping? grouping = GetGrouping(entityData);
+			return grouping.HasValue ? UWGame.Mods.HudMod.ItemGroupingColor(grouping.Value, faded) : null;
+		}
 		}
 	}
 
@@ -399,6 +403,7 @@ public class OverlaySettings : ISnapshot
 			EntityGrouping.Animals => animalsColor, 
 			EntityGrouping.Structures => structuresColor, 
 			EntityGrouping.Interest => interestColor, 
+			EntityGrouping g => UWGame.Mods.HudMod.ItemGroupingColor(g, faded: false), 
 			_ => null, 
 		};
 	}
@@ -428,7 +433,7 @@ public class OverlaySettings : ISnapshot
 			}
 			return interestColor;
 		default:
-			return null;
+			return UWGame.Mods.HudMod.ItemGroupingColor(entityGrouping, faded);
 		}
 	}
 
@@ -465,5 +470,15 @@ public class OverlaySettings : ISnapshot
 	{
 		sn.RegisterLoadPostProcessCall(this);
 		InitEditorOverlaySettings();
+		// MOD: a save written before HudMod's item layers has no entries for them, and the overlay
+		// menu reads these dictionaries with the indexer - fill in what is missing, switched off.
+		foreach (EntityGrouping grouping in Enum.GetValues(typeof(EntityGrouping)))
+		{
+			EntityTypeGroupingsToDisplay.TryAdd(grouping, false);
+		}
+		foreach (KeyValuePair<string, EntityType> type in GameData.Instance.AllEntityTypes)
+		{
+			EntityTypesToDisplay.TryAdd(type.Value, false);
+		}
 	}
 }

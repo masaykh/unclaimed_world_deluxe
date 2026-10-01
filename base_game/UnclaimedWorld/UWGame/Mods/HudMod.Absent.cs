@@ -48,6 +48,15 @@ public static class HudMod
     {
     }
 
+    /// <summary>No item layers: the studio's four groupings only.</summary>
+    public static UWGame.ClientSide.Interface.Overlays.EntityGrouping? ItemGrouping(UWGame.SimSide.Entities.EntityType type) => null;
+
+    public static string ItemGroupingName(UWGame.ClientSide.Interface.Overlays.EntityGrouping grouping) => null;
+
+    public static Microsoft.Xna.Framework.Color? ItemGroupingColor(UWGame.ClientSide.Interface.Overlays.EntityGrouping grouping, bool faded) => null;
+
+    public static bool OutlinesItem(UWGame.SimSide.Entities.Entity entity) => false;
+
     /// <summary>No gesture: shown while held, as far as anything asks.</summary>
     public static bool MarkersShown(bool keyDown, long nowMilliseconds) => keyDown;
 
