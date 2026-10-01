@@ -151,8 +151,9 @@ public class MapEditorSaveLoadPanel : Panel
 
 	private static string GetDefaultPath()
 	{
-		string path = ((!Debugger.IsAttached) ? Config.GetDataFolderPath(Config.DataType.RGMap) : "..//..//..//data/Maps");
-		return Path.GetFullPath(path);
+		////string path = ((!Debugger.IsAttached) ? Config.GetDataFolderPath(Config.DataType.RGMap) : "..//..//..//data/Maps");
+        string path = Config.GetDataFolderPath(Config.DataType.RGMap);
+        return Path.GetFullPath(path);
 	}
 
 	private void PopulateFileList()
