@@ -932,6 +932,26 @@ internal static class Program
         }
         Check(rising, "never goes down as more is left");
 
+        // The Gather window's Regrowth column: the studio's "+x" with the switch off, "current/max"
+        // with it on, "max." left alone, and short enough for a column 50 pixels wide.
+        var overharvest = UWGame.Mods.RegrowthMod.WoodOverharvest;
+        string was = overharvest.Value;
+        overharvest.Value = "false";
+        Check(UWGame.Mods.RegrowthMod.RegrowthLabel(12f, 20f, false) == null
+              && UWGame.Mods.RegrowthMod.RegrowthToolTipNote(GameData.Instance.AllResourceTypes[keys[0]]) == null,
+              "switch off: the studio's regrowth text and tooltip");
+        Check(UWGame.Mods.RegrowthMod.ForecastRegrowth(null, 7f) == 7f, "switch off: the forecast is the studio's figure");
+        overharvest.Value = "true";
+        string label = UWGame.Mods.RegrowthMod.RegrowthLabel(12.4f, 20f, false);
+        Check(label == "12/20", $"switch on: 12.4 of 20 reads \"{label}\"");
+        label = UWGame.Mods.RegrowthMod.RegrowthLabel(4.25f, 8f, false);
+        Check(label == 4.3f.ToString("0.#") + "/8", $"switch on: 4.25 of 8 reads \"{label}\", one decimal below 10");
+        Check(UWGame.Mods.RegrowthMod.RegrowthLabel(0f, 20f, true) == null, "switch on: a full zone keeps the studio's \"max.\"");
+        Check(UWGame.Mods.RegrowthMod.RegrowthToolTipNote(GameData.Instance.AllResourceTypes[keys[0]])?.Contains("current/max") == true,
+              "switch on: the tooltip explains current/max");
+        Check(UWGame.Mods.RegrowthMod.ForecastRegrowth(null, 7f) == 7f, "switch on: no tile, nothing to slow");
+        overharvest.Value = was;
+
         // BirdHopMod, the other nature mod: its premise is that each hopper is a real creature the
         // studio made immobile but gave legs. If a data change made one mobile, the mod's branch
         // would silently stop mattering; if one lost its legs, the step would go nowhere.

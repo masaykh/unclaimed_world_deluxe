@@ -26,6 +26,11 @@ namespace UWGame.Mods;
 /// that does not make a whole item is rolled for, on the game's own seeded generator, so a tile
 /// that respawns one item has exactly that chance of doing it and a replay stays deterministic.
 ///
+/// THE FORECAST. With the switch on, the Gather window's Regrowth column reads "current/max" a
+/// year: max with every place at full rate (the studio's figure), current with the slowdown each
+/// place would get today (<see cref="ForecastRegrowth"/>), so a cut-down wood shows what it costs
+/// before a replenish day comes round.
+///
 /// Off by default: it changes the wood economy of a running game. Nothing new is saved - the
 /// zone is measured each time from what the tiles hold.
 /// </summary>
@@ -54,60 +59,56 @@ public static class RegrowthMod
     /// <summary>The zone's radius in tiles.</summary>
     public const int ZoneRadius = 5;
 
-    private static Sim.DayPhases? lastPhase;
+    /// <summary>
+    /// Called by MapArea.AddToResourceSum, once per tile, with the studio's yearly regrowth for it
+    /// (ResourceContainer.GetCurrentRegrowth); returns what that tile is expected to regrow with
+    /// its zone as cut down as it is now - the same x0.5..x1 that AdjustReplenish applies on the
+    /// day it replenishes. The Gather window's Regrowth column (GatherResourcesWindow.UpdateRow) and
+    /// the zone side panel add these up. Kastuk: "calculate forecast regrowth right at zone window
+    /// near resources in Gathering (max regrowth/current regrowth). Current regrowth will show
+    /// expected regrowth value with current status of harvested tiles." Reads only; draws no random
+    /// number, so replays are unaffected.
+    /// </summary>
+    public static float ForecastRegrowth(ResourceContainer tile, float yearlyRegrowth)
+    {
+        if (!WoodOverharvest.On || yearlyRegrowth <= 0f || tile?.ResourceType == null
+            || Array.IndexOf(WoodKeys, tile.ResourceType.KeyName) < 0)
+        {
+            return yearlyRegrowth;
+        }
+        return yearlyRegrowth * Curve(ZoneFraction(tile));
+    }
 
     /// <summary>
-    /// Called from Sim.Update every tick; each morning (sleep turning to work) it writes the forecast to
-    /// the log: for each wood, how many of its tiles would regrow at full rate today, slowed, or at
-    /// half speed - the same measure AdjustReplenish applies on the day a tile replenishes. Kastuk:
-    /// "Waiting for week or an game year is quite long, let's evaluate future (forecast) of Regrowth
-    /// values at every morning." Reads only; draws no random number, so replays are unaffected.
+    /// The Regrowth column's text with the mod on: "current/max" a year, e.g. "12/20" - current from
+    /// <see cref="ForecastRegrowth"/>, max with every tile at full rate. Null leaves the studio's
+    /// "+current" (mod off) or "max." (the zone has all it can hold). One decimal below 10, whole
+    /// numbers above, because the column is narrow: it starts at 290 in a 364-wide window.
     /// </summary>
-    public static void OnSimTick(Sim sim)
+    public static string RegrowthLabel(float current, float maximum, bool maximumReached)
     {
-        if (!WoodOverharvest.On || sim?.PlaySite?.Resources == null || sim.Mode != Sim.EngineMode.Game || sim.DateAndTime == null || The.Client == null)
+        if (!WoodOverharvest.On || maximumReached)
         {
-            lastPhase = null;
-            return;
+            return null;
         }
-        Sim.DayPhases phase = sim.DateAndTime.CurrentPhase;
-        Sim.DayPhases? previous = lastPhase;
-        lastPhase = phase;
-        if (previous != Sim.DayPhases.Sleep || phase != Sim.DayPhases.Work)
+        return Amount(current) + "/" + Amount(maximum);
+    }
+
+    /// <summary>The line the Regrowth tooltip gains with the mod on; null with it off.</summary>
+    public static string RegrowthToolTipNote(ResourceType type)
+    {
+        if (!WoodOverharvest.On || type == null)
         {
-            return;
+            return null;
         }
-        foreach (string key in WoodKeys)
-        {
-            var type = GameData.Instance.AllResourceTypes.TryGetValue(key, out var t) ? t : null;
-            if (type == null || !sim.PlaySite.Resources.TryGetValue(type, out var tiles) || tiles.Count == 0)
-            {
-                continue;
-            }
-            int full = 0, slowed = 0, half = 0;
-            double sum = 0;
-            for (int i = 0; i < tiles.Count; i++)
-            {
-                ResourceContainer tile = tiles[i];
-                if (tile == null)
-                {
-                    continue;
-                }
-                float rate = Curve(ZoneFraction(tile));
-                sum += rate;
-                if (rate >= 0.99f) full++;
-                else if (rate > 0.6f) slowed++;
-                else half++;
-            }
-            int counted = full + slowed + half;
-            if (counted == 0)
-            {
-                continue;
-            }
-            string name = (type.Name ?? key).ToLowerInvariant();
-            The.Client.AddLogEvent(The.Client.Log.GeneralEvent, null,
-                $"Regrowth forecast, {name}: {full} of {counted} places regrow at full rate, {slowed} slowed, {half} near half speed (average x{sum / counted:0.00}).");
-        }
+        return Array.IndexOf(WoodKeys, type.KeyName) >= 0
+            ? "Shown as current/max. Current counts the woods within 5 tiles of each place: where they are cut down, it regrows down to half as fast (CUT-DOWN WOODS REGROW SLOWLY)."
+            : "Shown as current/max. This resource is not slowed by cutting it down.";
+    }
+
+    private static string Amount(float value)
+    {
+        return value < 10f ? value.ToString("0.#") : value.ToString("0");
     }
 
     /// <summary>

@@ -24,7 +24,9 @@ public static class RegrowthMod
 
     public static float Curve(float fractionLeft) => 1f;
 
-    public static void OnSimTick(UWGame.SimSide.Sim sim)
-    {
-    }
+    public static float ForecastRegrowth(ResourceContainer tile, float yearlyRegrowth) => yearlyRegrowth;
+
+    public static string RegrowthLabel(float current, float maximum, bool maximumReached) => null;
+
+    public static string RegrowthToolTipNote(ResourceType type) => null;
 }
