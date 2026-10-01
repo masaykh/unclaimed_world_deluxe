@@ -668,6 +668,12 @@ public class GoalThink : CompositeGoal
 				RemoveAllSubgoals();
 				OwnerID? ownerOfCarcass = (OwnerID?)message.OtherInfo;
 				Entity sender = message.Sender;
+				// PORT FIX: the blow carries its attacker's ownerOfCarcass, which only a goal that
+				// respects ownership sets (GoalThink for people, GoalHunt). A dog, a HOUND or a sentry
+				// gun sends none, and the carcass lay unclaimed (Kastuk, after 261272c fixed only
+				// the other path, Entity.UpdateBiological). Same fallback as there: the dying
+				// creature's own owner, else the killer's side.
+				ownerOfCarcass = ownerOfCarcass ?? base.entity.OwnedBy ?? Entity.CarcassOwnerAfterWounds(sender?.EntityID);
 				AddSubgoal(new GoalCollapse(base.entity, ownerOfCarcass, sender.EntityID));
 				AddSubgoal(new GoalIsDying(base.entity, ownerOfCarcass, takeBleedDamage: true));
 				return true;

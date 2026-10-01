@@ -3949,7 +3949,7 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	/// expedition, if its allegiance respects ownership - GoalThink's own rule for ownerOfCarcass -
 	/// and otherwise the killer's owner, which is how a sentry gun's kill reaches its expedition.
 	/// </summary>
-	private static OwnerID? CarcassOwnerAfterWounds(EntityID? killerID)
+	internal static OwnerID? CarcassOwnerAfterWounds(EntityID? killerID)
 	{
 		Entity killer = killerID.HasValue ? FindByID(killerID.Value) : null;
 		if (killer == null)
