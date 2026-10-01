@@ -1451,8 +1451,6 @@ public class Sim : GameScreen, ISnapshot
 			The.Client.MarkPerformanceTime("HaulingJobManager.Update", Color.Purple);
 			// MOD: OwnershipMod pays households and plans their cooking when work turns to leisure.
 			UWGame.Mods.OwnershipMod.OnSimTick(this);
-			// MOD: RegrowthMod logs each morning's regrowth forecast.
-			UWGame.Mods.RegrowthMod.OnSimTick(this);
 			CycleManager.Update();
 			if (IsGameOver)
 			{

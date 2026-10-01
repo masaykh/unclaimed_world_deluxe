@@ -559,7 +559,9 @@ public class MapArea : ISnapshot
 		{
 			value.NumberOfResources += container.ResourceItems.Count;
 			value.MaximumRegrowth += container.GetMaximumRegrowth();
-			value.CurrentRegrowth += container.GetCurrentRegrowth(out maximumReached);
+			// MOD: RegrowthMod forecasts what a cut-down wood will really regrow (the Gather window's
+			// Regrowth column). Returns the studio's figure untouched unless switched on.
+			value.CurrentRegrowth += UWGame.Mods.RegrowthMod.ForecastRegrowth(container, container.GetCurrentRegrowth(out maximumReached));
 			if (value.MaximumReached && !maximumReached)
 			{
 				value.MaximumReached = false;
@@ -576,7 +578,7 @@ public class MapArea : ISnapshot
 				MaximumRegrowth = container.GetMaximumRegrowth(),
 				UserChangedData = false
 			};
-			value2.CurrentRegrowth = container.GetCurrentRegrowth(out maximumReached);
+			value2.CurrentRegrowth = UWGame.Mods.RegrowthMod.ForecastRegrowth(container, container.GetCurrentRegrowth(out maximumReached));
 			value2.MaximumReached = maximumReached;
 			sum.Add(container.ResourceType, value2);
 		}
