@@ -18,6 +18,9 @@ public class GoalReplenish : CompositeGoal
 		Recharge
 	}
 
+	/// <summary>ToolCareMod: making room comes first, before any pickup, so a tool may be put back where it came from.</summary>
+	protected override bool MayCarryBackFirst => true;
+
 	private List<EntityID> replenishItems;
 
 	private EntityAndRoot entityToReplenish;

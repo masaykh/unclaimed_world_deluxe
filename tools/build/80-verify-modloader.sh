@@ -695,9 +695,10 @@ else
   fail "the save type-name self-test reported failures"
 fi
 
-# ToolCareMod decides what a colonist carries home from the tier tables: an item's own tier, else
+# ToolCareMod decides what a colonist looks after from the tier tables: an item's own tier, else
 # the lowest tier of whatever makes it. A broken link there would protect nothing, or everything.
-say "==> 23. tool care protects weapons and items above the survival tier, and not cheap tools"
+# And when it drops one where it stands instead of putting it back: a fight, wounds, hunger.
+say "==> 23. tool care looks after weapons and good tools, and drops them in place only when it should"
 out=$( cd "$(new_install case23)" && "$EXPORT" . --toolcare-selftest 2>&1 ) || true
 if echo "$out" | grep -q "tool care self-test OK"; then
   pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
