@@ -106,11 +106,16 @@ fi
 #
 # Content/ cannot be left out: the data loader resolves content paths against the installation,
 # and without it the tables do not load and there is nothing to assert about.
+#
+# It is hard-linked, not copied, where the filesystem allows: 45 installs of a 317 MB Content/
+# are ~19 GB, and a full copy filled the disk at case 11. Nothing here writes into Content/, and
+# removing a link never touches the game's file. Across volumes it falls back to a copy.
 new_install() {
   d="$WORK/$1"; rm -rf "$d"; mkdir -p "$d/user/Mods" "$d/data/Maps" "$d/data/BaseData/Strings"
   cp -rp scenarios/. "$d/data/Maps/"
   cp -p  translations/*.xml "$d/data/BaseData/Strings/"
-  cp -rp "$UW_STEAM/Content" "$d/Content"
+  cp -rpl "$UW_STEAM/Content" "$d/Content" 2>/dev/null \
+    || { rm -rf "$d/Content"; cp -rp "$UW_STEAM/Content" "$d/Content"; }
   printf '%s' "$d"
 }
 
