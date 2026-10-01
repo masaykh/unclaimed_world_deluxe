@@ -78,4 +78,13 @@ public static class GatherOnDemandMod
 
     /// <summary>Whether an order at 0 still has work: jobs are waiting for its item.</summary>
     public static bool HasDemand(EntityGroup owner, EntityType type) => Demand(owner, type) > 0;
+
+    /// <summary>
+    /// Whether a padlocked slider at this value lets the zone gather the resource
+    /// (GatherResourcesWindow.btOk_Click). The studio reads 0 as "no order" and takes the resource
+    /// out of Zone.AllowStandingOrderHarvest, and a zone left with no orders destroys itself
+    /// (Zone.RemoveZoneOrFireOrdersChangedEvent). With the mod on, 0 is the "only on demand" order,
+    /// so it has to stay. Kastuk: "No way to set Gathering zone at standing order with value 0".
+    /// </summary>
+    public static bool ZoneGathersAt(int sliderValue) => sliderValue > 0 || Enabled;
 }

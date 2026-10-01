@@ -21,4 +21,7 @@ public static class GatherOnDemandMod
     public static int StockAfterDemand(EntityGroup owner, EntityType type, int stock) => stock;
 
     public static bool HasDemand(EntityGroup owner, EntityType type) => false;
+
+    /// <summary>The studio's rule: a padlocked slider at 0 is no order.</summary>
+    public static bool ZoneGathersAt(int sliderValue) => sliderValue > 0;
 }
