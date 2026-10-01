@@ -344,6 +344,8 @@ internal class GoalPickup : CompositeGoal
 				if (!base.entity.AgentStorage.GetCompartment(placeInCompartment).StoredItems.Contains(itemToPickUp))
 				{
 					IOwner newOwner = LookUpOwners.FindByID(NewOwner);
+					// MOD: ToolCareMod - remember where a weapon or good tool was taken from, to put it back there.
+					UWGame.Mods.ToolCareMod.NoteTakenFrom(base.entity, entity);
 					if (!entity.Item.Pickup(base.entity, newOwner, placeInCompartment))
 					{
 						base.Status = Status.Failed;

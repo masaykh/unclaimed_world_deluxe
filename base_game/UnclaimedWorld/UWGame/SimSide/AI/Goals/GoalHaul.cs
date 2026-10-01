@@ -63,6 +63,9 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 
 	public bool IsOuterGoal = true;
 
+	/// <summary>ToolCareMod: only the outer goal makes room (DropItemsOverCapacity), before anything is picked up.</summary>
+	protected override bool MayCarryBackFirst => IsOuterGoal;
+
 	public bool IsStandingBentOverItem;
 
 	private bool isCancelled;
@@ -443,23 +446,35 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 		{
 			return;
 		}
+		// MOD: ToolCareMod - a colonist's weapons, good tools and ammunition go last (a second pass),
+		// and are put back where they came from (SetDownLookedAfterItem). One pass, as the studio made
+		// it, for everyone else.
+		bool careful = UWGame.Mods.ToolCareMod.IsCarefulCarrier(base.entity);
 		List<Entity> list = new List<Entity>();
-		for (int num3 = base.entity.AgentStorage.ItemStorage.StoredItems.Count - 1; num3 >= 0; num3--)
+		List<Entity> lookedAfter = null;
+		for (int pass = 0; pass < (careful ? 2 : 1); pass++)
 		{
-			EntityID entityID = base.entity.AgentStorage.ItemStorage.StoredItems[num3];
-			if (EntityIsNotSeenDirectly(entityID, out var entity))
+			for (int num3 = base.entity.AgentStorage.ItemStorage.StoredItems.Count - 1; num3 >= 0; num3--)
 			{
-				base.entity.AgentStorage.ItemStorage.StoredItems.RemoveAt(num3);
-			}
-			else
-			{
-				if (!ItemIsCurrentlyHauledByUs(entity))
+				if (!Common.IsGreaterThan(num2, base.entity.AgentStorage.ItemStorage.TotalCapacity))
+				{
+					break;
+				}
+				EntityID entityID = base.entity.AgentStorage.ItemStorage.StoredItems[num3];
+				if (EntityIsNotSeenDirectly(entityID, out var entity))
+				{
+					base.entity.AgentStorage.ItemStorage.StoredItems.RemoveAt(num3);
+				}
+				else if (!ItemIsCurrentlyHauledByUs(entity) && (!careful || UWGame.Mods.ToolCareMod.IsLookedAfter(base.entity, entity.EntityType) == (pass == 1)))
 				{
 					num2 -= entity.Bulk;
-					list.Add(entity);
-					if (Common.IsLessThanOrEqual(num2, base.entity.AgentStorage.ItemStorage.TotalCapacity))
+					if (pass == 1)
 					{
-						break;
+						Common.AddToList(ref lookedAfter, entity);
+					}
+					else
+					{
+						list.Add(entity);
 					}
 				}
 			}
@@ -467,6 +482,14 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 		foreach (Entity item2 in list)
 		{
 			AddSubgoal(new GoalDropItem(base.entity, item2.EntityID));
+		}
+		if (lookedAfter != null)
+		{
+			float setDown = 0f;
+			foreach (Entity item3 in lookedAfter)
+			{
+				SetDownLookedAfterItem(item3, null, ref setDown);
+			}
 		}
 	}
 

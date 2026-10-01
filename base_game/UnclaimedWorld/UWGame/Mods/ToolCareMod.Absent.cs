@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Entities.Containers;
 
 namespace UWGame.Mods;
 
@@ -22,15 +23,23 @@ public static class ToolCareMod
 
     public static bool IsCarefulCarrier(Entity carrier) => false;
 
-    public static bool IsProtected(EntityType type) => false;
+    public static bool IsLookedAfter(Entity carrier, EntityType type) => false;
 
-    public static bool KeptWhenMakingRoom(Entity carrier, EntityType type) => false;
+    public static bool DropsWhereItStands(Entity carrier) => true;
 
-    public static bool IsOutOfCamp(Entity carrier) => false;
+    public static void NoteTakenFrom(Entity carrier, Entity item)
+    {
+    }
 
-    public static Vector3? DropSpotInCamp(Entity carrier) => null;
+    public static bool PlaceToTakeItTo(Entity carrier, Entity item, out Vector3? location, out StorageTarget? storage, out string where)
+    {
+        location = null;
+        storage = null;
+        where = null;
+        return false;
+    }
 
-    public static void LogCarriedHome(Entity carrier, Entity item)
+    public static void LogTakenBack(Entity carrier, Entity item, string where)
     {
     }
 }

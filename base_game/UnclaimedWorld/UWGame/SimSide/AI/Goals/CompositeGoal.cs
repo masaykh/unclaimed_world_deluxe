@@ -579,7 +579,8 @@ public abstract class CompositeGoal : Goal
 
 	private bool IsGadgetForTask(EntityID entityID, List<ItemType.TaskType> taskTypes, bool taskIsBeyondNormalRange)
 	{
-		if (!GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.TaskAppropriateLevels != null && data.EntityType.ItemType.FinalEffectsWhenEquipped != null && (data.EntityType.ItemType.UseGearAtAnyDistanceFromExpedition || taskIsBeyondNormalRange) && entity.IsOwnedByUs(data) && GoalEvaluator.IsValidPlaysiteItem(entity, data, mustCarryItem: true))
+		// MOD: ToolCareMod - not what this goal has just set down to make room.
+		if (!WasSetDownToMakeRoom(entityID) && !GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.TaskAppropriateLevels != null && data.EntityType.ItemType.FinalEffectsWhenEquipped != null && (data.EntityType.ItemType.UseGearAtAnyDistanceFromExpedition || taskIsBeyondNormalRange) && entity.IsOwnedByUs(data) && GoalEvaluator.IsValidPlaysiteItem(entity, data, mustCarryItem: true))
 		{
 			return true;
 		}
@@ -588,7 +589,8 @@ public abstract class CompositeGoal : Goal
 
 	private bool IsWeaponForEquipment(EntityID entityID)
 	{
-		if (!GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.WeaponType != null && entity.IsOwnedByUs(data) && EvaluateAttackJobs.IsValidPlaysiteWeapon(entity, data, null, null, null, doNotCheckAmmunitionAndBulk: true))
+		// MOD: ToolCareMod - not the weapon this goal has just set down to make room (the coil-rifle shuffle).
+		if (!WasSetDownToMakeRoom(entityID) && !GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.WeaponType != null && entity.IsOwnedByUs(data) && EvaluateAttackJobs.IsValidPlaysiteWeapon(entity, data, null, null, null, doNotCheckAmmunitionAndBulk: true))
 		{
 			return true;
 		}
@@ -1185,16 +1187,15 @@ public abstract class CompositeGoal : Goal
 	private void DropUnneededItems(Predicate<Entity> okToDrop, out float totalDropped, StorageCompartment compartment, float? bulkNeededToDrop = null)
 	{
 		float totalDroppedParam = 0f;
-		// MOD: ToolCareMod - a colonist drops weapons and above-survival items last, and carries one
-		// back to camp first when it must go out in the field. Weapons, and ammunition for a carried
-		// weapon, are not dropped to make room at all (KeptWhenMakingRoom). Everyone else, as the
-		// studio made it.
+		// MOD: ToolCareMod - a colonist drops weapons, good tools and the ammunition it carries last,
+		// and one that must go is put back where it came from (SetDownLookedAfterItem). Everyone else,
+		// as the studio made it.
 		if (UWGame.Mods.ToolCareMod.IsCarefulCarrier(entity))
 		{
-			entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => !UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && !UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(entity, itemEntity.EntityType) && DropUnneededItem(itemEntity, entity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
+			entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => !UWGame.Mods.ToolCareMod.IsLookedAfter(entity, itemEntity.EntityType) && DropUnneededItem(itemEntity, entity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
 			if (!bulkNeededToDrop.HasValue || !Common.IsLessThanOrEqual(bulkNeededToDrop.Value, totalDroppedParam))
 			{
-				entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && !UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(entity, itemEntity.EntityType) && DropProtectedItem(itemEntity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
+				entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => UWGame.Mods.ToolCareMod.IsLookedAfter(entity, itemEntity.EntityType) && okToDrop(itemEntity) && SetDownLookedAfterItem(itemEntity, bulkNeededToDrop, ref totalDroppedParam));
 			}
 			totalDropped = totalDroppedParam;
 			return;
@@ -1204,29 +1205,36 @@ public abstract class CompositeGoal : Goal
 	}
 
 	/// <summary>
-	/// ToolCareMod: whether this goal may send its colonist back to camp with a protected item before
-	/// going on. Only goals that work outdoors say yes (GoalHarvest, GoalEat): one that has already
-	/// queued entering a building (GoalProduce) would walk home from inside it.
+	/// ToolCareMod: whether this goal may walk its colonist somewhere to put a tool back before going
+	/// on. Goals that work outdoors or haul say yes (GoalHarvest, GoalEat, GoalHaul, GoalReplenish):
+	/// one that has already queued entering a building (GoalProduce) would walk away from inside it.
 	/// </summary>
-	protected virtual bool MayCarryHomeFirst => false;
+	protected virtual bool MayCarryBackFirst => false;
 
-	/// <summary>ToolCareMod: drop a protected item - at camp, walking there first, when out in the field.</summary>
-	private bool DropProtectedItem(Entity itemEntity, Predicate<Entity> okToDrop, float? bulkNeededToDrop, ref float bulkAlreadyDropped)
+	/// <summary>ToolCareMod: what this goal set down to make room - not to be taken along again as optional equipment.</summary>
+	private List<EntityID> setDownToMakeRoom;
+
+	/// <summary>
+	/// ToolCareMod: set down a looked-after item that must go - put back where it came from, walking
+	/// there first, unless a fight, wounds or hunger say to drop it here (ToolCareMod.DropsWhereItStands).
+	/// </summary>
+	protected bool SetDownLookedAfterItem(Entity itemEntity, float? bulkNeededToDrop, ref float bulkAlreadyDropped)
 	{
-		if (!okToDrop(itemEntity))
+		if (MayCarryBackFirst && !UWGame.Mods.ToolCareMod.DropsWhereItStands(entity) && UWGame.Mods.ToolCareMod.PlaceToTakeItTo(entity, itemEntity, out var location, out var storage, out string where))
 		{
-			return false;
+			AddSubgoal(new GoalDropItem(entity, itemEntity.EntityID, null, location, storage));
+			UWGame.Mods.ToolCareMod.LogTakenBack(entity, itemEntity, where);
 		}
-		Vector3? spot = (MayCarryHomeFirst && UWGame.Mods.ToolCareMod.IsOutOfCamp(entity)) ? UWGame.Mods.ToolCareMod.DropSpotInCamp(entity) : null;
-		if (spot.HasValue)
+		else
 		{
-			AddSubgoal(new GoalMoveToPosition(entity, spot.Value, null));
-			UWGame.Mods.ToolCareMod.LogCarriedHome(entity, itemEntity);
+			AddSubgoal(new GoalDropItem(entity, itemEntity.EntityID));
 		}
-		AddSubgoal(new GoalDropItem(entity, itemEntity.EntityID));
+		Common.AddToList(ref setDownToMakeRoom, itemEntity.EntityID);
 		bulkAlreadyDropped += itemEntity.Bulk;
 		return bulkNeededToDrop.HasValue && Common.IsLessThanOrEqual(bulkNeededToDrop.Value, bulkAlreadyDropped);
 	}
+
+	private bool WasSetDownToMakeRoom(EntityID item) => setDownToMakeRoom != null && setDownToMakeRoom.Contains(item);
 
 	public bool DropUnneededItem(Entity itemEntity, Entity carrierEntity, Predicate<Entity> okToDrop, float? bulkNeededToDrop, ref float bulkAlreadyDropped)
 	{

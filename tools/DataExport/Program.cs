@@ -743,8 +743,36 @@ internal static class Program
         int byTier = items.Count(t => t.ItemType.WeaponType == null && UWGame.Mods.ToolCareMod.IsProtected(t));
         Check(items.Count(t => !UWGame.Mods.ToolCareMod.IsProtected(t)) > 0, "most things are not protected - cheap tools still drop freely");
         Check(byTier > 0, $"the tier rule protects something besides weapons ({byTier} item types)");
-        Check(rifle != null && UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(null, rifle), "a weapon is never dropped to make room (Kastuk: the hunter's coil rifle)");
-        Check(items.Where(i => i.ItemType?.WeaponType == null).Take(50).All(i => !UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(null, i)), "an item that is not a weapon, with no weapon carried, may still be dropped");
+        Check(rifle != null && UWGame.Mods.ToolCareMod.IsLookedAfter(null, rifle), "a weapon is looked after - dropped last, put back");
+        var cheapTool = items.Where(t => t.ToolType != null && !UWGame.SimSide.Entities.ToolType.IsImmovable(t) && !UWGame.Mods.ToolCareMod.IsProtected(t)).OrderBy(t => t.KeyName.Contains("Knife") ? 0 : 1).FirstOrDefault();
+        var lookAfter = UWGame.Mods.ToolCareMod.LookAfter;
+        string keptLookAfter = lookAfter.Value;
+        lookAfter.Value = "WEAPONS AND GOOD TOOLS";
+        Check(cheapTool != null && !UWGame.Mods.ToolCareMod.IsLookedAfter(null, cheapTool), $"LOOK AFTER WEAPONS AND GOOD TOOLS leaves a cheap tool alone ({cheapTool?.KeyName})");
+        lookAfter.Value = "ALL TOOLS AND WEAPONS";
+        Check(cheapTool != null && UWGame.Mods.ToolCareMod.IsLookedAfter(null, cheapTool), "LOOK AFTER ALL TOOLS AND WEAPONS includes it");
+        lookAfter.Value = keptLookAfter;
+
+        // When to drop where they stand (Jerrybi): a fight, wounds or hunger; otherwise put it back.
+        var placement = UWGame.Mods.ToolCareMod.Placement;
+        var forFights = UWGame.Mods.ToolCareMod.ForFights;
+        var whenHurt = UWGame.Mods.ToolCareMod.WhenHurt;
+        var whenHungry = UWGame.Mods.ToolCareMod.WhenHungry;
+        string[] kept = { placement.Value, forFights.Value, whenHurt.Value, whenHungry.Value };
+        bool Drops(bool fight, float? health, float? food) => UWGame.Mods.ToolCareMod.DropsWhereItStands(fight, health, food);
+        placement.Value = "BACK WHERE IT CAME FROM"; forFights.Value = "true"; whenHurt.Value = "50% HEALTH"; whenHungry.Value = "WHEN HUNGRY";
+        Check(!Drops(false, 1f, 1f), "healthy, fed and not fighting: the tool is put back, not dropped");
+        Check(Drops(true, 1f, 1f), "setting off to a fight: dropped where they stand");
+        Check(Drops(false, 0.4f, 1f) && !Drops(false, 0.6f, 1f), "HURT below 50% HEALTH: dropped at 40%, put back at 60%");
+        Check(Drops(false, 1f, 0.7f) && !Drops(false, 1f, 0.8f), "WHEN HUNGRY: the game's 'has not eaten' level (70%) drops it");
+        Check(!Drops(false, null, null), "no body and no needs: nothing says drop");
+        whenHungry.Value = "WHEN STARVING";
+        Check(!Drops(false, 1f, 0.3f) && Drops(false, 1f, 0f), "WHEN STARVING: only a food need run out drops it");
+        forFights.Value = "false"; whenHurt.Value = "OFF"; whenHungry.Value = "OFF";
+        Check(!Drops(true, 0.1f, 0f), "every condition OFF: put back even when fighting, hurt and starving");
+        placement.Value = "NOWHERE - DROP IT";
+        Check(Drops(false, 1f, 1f), "A TOOL THAT MUST GO IS TAKEN NOWHERE: always dropped where they stand, as the studio made it");
+        placement.Value = kept[0]; forFights.Value = kept[1]; whenHurt.Value = kept[2]; whenHungry.Value = kept[3];
         Console.WriteLine($"  info  {items.Count} item types: {weapons} weapons, {byTier} more above the survival tier");
         Console.WriteLine(failures == 0 ? "tool care self-test OK" : $"tool care self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
