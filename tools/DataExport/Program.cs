@@ -252,6 +252,11 @@ internal static class Program
             return HudSelfTest();
         }
 
+        if (args.Contains("--freshfood-selftest"))
+        {
+            return FreshFoodSelfTest();
+        }
+
         // Procedural maps (MapGenMod). Learns from --maps-from=DIR, default this game's data/Maps.
         string mapsFrom = args.FirstOrDefault(a => a.StartsWith("--maps-from=", StringComparison.Ordinal))
             ?.Substring("--maps-from=".Length) ?? Path.Combine("data", "Maps");
@@ -565,6 +570,45 @@ internal static class Program
         Check(UWGame.Mods.PestMod.ExtraFor(10f, threshold) == 1 && UWGame.Mods.PestMod.ExtraFor(20f, threshold) == 3, "one at 10 bulk, three at 20");
         Check(UWGame.Mods.PestMod.ExtraFor(1000f, threshold) == UWGame.Mods.PestMod.MaxExtra, $"capped at {UWGame.Mods.PestMod.MaxExtra}");
         Console.WriteLine(failures == 0 ? "pest self-test OK" : $"pest self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// FreshFoodMod's urgency and weights, on Kastuk's case: clamwich soup with 3 days left, a little
+    /// further away, against pickled fish with 60 days left, the same nutrients. With the studio's
+    /// weights the fish wins (its 6-day squared freshness gives the soup 0.025); with the mod's the
+    /// soup must. No tables needed.
+    /// </summary>
+    private static int FreshFoodSelfTest()
+    {
+        Console.WriteLine("==> freshfood self-test");
+        UWGame.Mods.FreshFoodMod.RegisterSettings();
+        if (UWGame.Mods.ModSettings.Find("freshfood.enabled") == null)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        Check(UWGame.Mods.FreshFoodMod.Urgency(null) == 0.0, "food that never spoils has no urgency");
+        Check(UWGame.Mods.FreshFoodMod.Urgency(0) == 1.0 && UWGame.Mods.FreshFoodMod.Urgency(-2) == 1.0, "spoiling now: full urgency");
+        Check(Math.Abs(UWGame.Mods.FreshFoodMod.Urgency(10) - 0.5) < 1e-9, "half-way to the 20-day horizon: 0.5");
+        Check(UWGame.Mods.FreshFoodMod.Urgency(60) == 0.0, "beyond the horizon: none");
+        // The studio's own numbers, copied from EvaluateEat.ComputePeopleEatScore / ScoreCondition.
+        static double StudioFreshness(double days) => Math.Pow((6.0 - Math.Min(days, 6.0)) / 6.0, 2.0);
+        static double StudioScore(double travel, double nutrients, double condition) => 0.45 * travel + 0.4 * nutrients + 0.1 * condition;
+        double soupStudio = StudioScore(0.6, 0.7, StudioFreshness(3)), fishStudio = StudioScore(0.8, 0.7, StudioFreshness(60));
+        double soupMod = UWGame.Mods.FreshFoodMod.EatScore(0.6, 0.7, UWGame.Mods.FreshFoodMod.Urgency(3), 0);
+        double fishMod = UWGame.Mods.FreshFoodMod.EatScore(0.8, 0.7, UWGame.Mods.FreshFoodMod.Urgency(60), 0);
+        Check(fishStudio > soupStudio, $"studio: the nearer pickled fish wins ({fishStudio:0.000} vs soup {soupStudio:0.000}) - the complaint");
+        Check(soupMod > fishMod, $"mod: the soup that spoils in 3 days wins ({soupMod:0.000} vs fish {fishMod:0.000})");
+        double soupFar = UWGame.Mods.FreshFoodMod.EatScore(0.2, 0.7, UWGame.Mods.FreshFoodMod.Urgency(3), 0);
+        Check(soupFar < fishMod, $"but not at any distance: soup much further away loses ({soupFar:0.000})");
+        Console.WriteLine(failures == 0 ? "freshfood self-test OK" : $"freshfood self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 

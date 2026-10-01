@@ -181,10 +181,12 @@
     <Compile Remove="UWGame\Mods\MapEdgeMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\SelfPreservationMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\MapGenMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\FreshFoodMod.Absent.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MapGenMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\FreshFoodMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MapGenPng.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MapGenNoise.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\BalancedDietMod.cs" />

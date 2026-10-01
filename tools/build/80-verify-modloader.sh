@@ -742,6 +742,18 @@ else
   fail "the mapgen self-test reported failures"
 fi
 
+# FreshFoodMod (EAT PERISHABLES FIRST): urgency over a 20-day horizon and the eat weights, on
+# Kastuk's case - soup that spoils in 3 days beats nearer pickled fish, but not at any distance -
+# with the studio's own weights shown to pick the fish, which was the complaint.
+say "==> 27. perishable food is preferred over food that keeps, within reason"
+out=$( cd "$(new_install case27)" && "$EXPORT" . --freshfood-selftest 2>&1 ) || true
+if echo "$out" | grep -q "freshfood self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the freshfood self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -756,7 +768,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 26/26 cases passed."
+  say "mod loader OK - 27/27 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

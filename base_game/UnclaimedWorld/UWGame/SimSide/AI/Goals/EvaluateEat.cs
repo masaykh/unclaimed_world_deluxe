@@ -386,6 +386,11 @@ public class EvaluateEat : GoalEvaluator
 
 	public static double ScoreCondition(IKnownEntityData food, double? minimumDaysLeftUntilSpoiling)
 	{
+		// MOD: FreshFoodMod (EAT PERISHABLES FIRST) - a 20-day linear urgency, none for food that keeps.
+		if (UWGame.Mods.FreshFoodMod.Enabled)
+		{
+			return UWGame.Mods.FreshFoodMod.ScoreCondition(food, minimumDaysLeftUntilSpoiling);
+		}
 		if (food.Condition.HasValue)
 		{
 			if (food.ConditionChangeSpeed.HasValue && !Common.IsZero(food.ConditionChangeSpeed.Value))
@@ -476,6 +481,11 @@ public class EvaluateEat : GoalEvaluator
 
 	private static double ComputePeopleEatScore(double travelTimeScore, double nutrientsScore, double conditionScore, double consumeDirectlyScore)
 	{
+		// MOD: FreshFoodMod - urgency weighs 0.25 instead of 0.1. The starving score below is unchanged.
+		if (UWGame.Mods.FreshFoodMod.Enabled)
+		{
+			return UWGame.Mods.FreshFoodMod.EatScore(travelTimeScore, nutrientsScore, conditionScore, consumeDirectlyScore);
+		}
 		return 0.45 * travelTimeScore + 0.4 * nutrientsScore + 0.1 * conditionScore + 0.05 * consumeDirectlyScore;
 	}
 
