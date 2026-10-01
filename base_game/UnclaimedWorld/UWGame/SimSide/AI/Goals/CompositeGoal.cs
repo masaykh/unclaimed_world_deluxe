@@ -319,7 +319,9 @@ public abstract class CompositeGoal : Goal
 		if (entity.Locomotor.LeggedLocomotor != null)
 		{
 			entityIntelligence.Brain.RemoveAllSubgoals();
-			List<PathFinderNode> list = FindPathToSafety(dMap, entity);
+			// MOD: PreyFearMod - cornered prey (a dog on one side, water on the other) heads for less
+			// danger instead of standing still where it is (Kastuk).
+			List<PathFinderNode> list = FindPathToSafety(dMap, entity) ?? UWGame.Mods.PreyFearMod.PathWhenCornered(dMap, entity);
 			if (list != null)
 			{
 				GoalFollowPath goalFollowPath = new GoalFollowPath(entity, list, null, null, null, null);

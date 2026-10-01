@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using UWGame.SimSide.AI.Pathfinding;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Maps;
 
 namespace UWGame.Mods;
 
@@ -28,4 +31,7 @@ public static class PreyFearMod
     public static bool IsWatchful(Entity idler) => false;
 
     public const bool CloseCountsAsInReach = false;
+
+    /// <summary>No escape route: the studio's two-second pause and look again.</summary>
+    public static List<PathFinderNode> PathWhenCornered(DiscomfortMap dMap, Entity entity) => null;
 }

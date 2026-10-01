@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using UWGame.SimSide.AI.Goals;
+using UWGame.SimSide.AI.Pathfinding;
+using UWGame.SimSide.Maps;
 using UWGame.SimSide.Entities;
 
 namespace UWGame.Mods;
@@ -99,4 +103,40 @@ public static class PreyFearMod
 
     /// <summary>Called from AttackJob's melee test: whether being closer than the ideal distance still counts.</summary>
     public static bool CloseCountsAsInReach => CloseInReachSetting.On;
+
+    /// <summary>
+    /// Called from CompositeGoal.PerformPanicFleeing when FindPathToSafety found nothing: a way out for
+    /// cornered timid prey, or null for the studio's behaviour (stand still two seconds, look again).
+    ///
+    /// Kastuk: a quadite chased by dogs to the shore of a lake was "trapped there, never trying to find
+    /// other way". Safety is a tile with no discomfort at all; with a dog on one side and water on the
+    /// other, none is reachable, so the studio stood the animal still and tried again - in the same
+    /// place. Instead it now heads for anywhere LESS uncomfortable than where it stands (the studio's
+    /// own FindPathToComfort), which runs it along the shore and round the dog; and if even that is
+    /// blocked by the threat itself, the same search through threatened ground (the Exposed movement
+    /// map), as a cornered animal would bolt past.
+    /// </summary>
+    public static List<PathFinderNode> PathWhenCornered(DiscomfortMap dMap, Entity entity)
+    {
+        if (!PreyFleesSetting.On || entity?.MapPosition == null || !IsTimidPrey(entity.EntityType))
+        {
+            return null;
+        }
+        byte here = dMap.Map.GetValue(entity.MapPosition.Value);
+        if (here == 0)
+        {
+            return null;
+        }
+        List<PathFinderNode> path = CompositeGoal.FindPathToComfort(dMap, entity, here);
+        if (path != null && path.Count > 1)
+        {
+            return path;
+        }
+        var predicate = (AStarSearch.DijkstraTestNodeDelegate)Delegate.CreateDelegate(typeof(AStarSearch.DijkstraTestNodeDelegate),
+            new InfluenceMap.DiscomfortTileIsBelowValueParameters(dMap, here), The.Map.InfluenceMapTileIsComfortableInfo);
+        SubtileLayers exposed = entity.Intelligence.Allegiance.SharedKnowledge
+            .GetMovementMap(ProtectionLevel.Exposed, entity.EntityType, ThreatStance.Bold).Layers[entity.GetTransportType()];
+        path = entity.Intelligence.PathPlanner.FindItemAndGetPath(exposed, predicate, 6000, entity.PlaySiteLocation);
+        return path != null && path.Count > 1 ? path : null;
+    }
 }
