@@ -36,6 +36,12 @@ namespace UWGame.Mods;
 ///   its ingredients - what the JobManager does for the colony. A member takes it after work; the meal
 ///   belongs to the household.
 ///
+/// THROUGH COMMANDS. "All planners use Commands - the Commands create Jobs" (the studio,
+/// PhysicalNeedsPlanner), and tripleacoder asked that this planner keep to it, so planner and player
+/// share one code path. Paying is a GiveToHousehold command and cooking a SetHouseholdProduction - the
+/// household counterpart of SetProduction, which can only address an expedition. Both are executed
+/// directly with no client feedback, as the studio's GoapFindPreyAction executes HuntArea.
+///
 /// THREE THINGS THE STUDIO'S CODE NEEDED, as core hooks:
 /// - a person searched only the EXPEDITION's food (EvaluateEat.GetFoodEntityGroup), so household food
 ///   would never be eaten: EvaluateEat.GetAllFoodItems now adds the household's (<see cref="AddHouseholdFood"/>).
@@ -211,17 +217,24 @@ public static class OwnershipMod
                 byTypeFree.Add(free);
             }
         }
-        int paid = 0;
-        while (paid < deficit && byTypeFree.Count > 0)
+        var pay = new List<EntityID>();
+        while (pay.Count < deficit && byTypeFree.Count > 0)
         {
-            for (int t = 0; t < byTypeFree.Count && paid < deficit; t++)
+            for (int t = 0; t < byTypeFree.Count && pay.Count < deficit; t++)
             {
-                byTypeFree[t].Dequeue().ChangeOwnership(household);
-                paid++;
+                pay.Add(byTypeFree[t].Dequeue().EntityID);
             }
             byTypeFree.RemoveAll(q => q.Count == 0);
         }
-        return paid;
+        if (pay.Count == 0)
+        {
+            return 0;
+        }
+        // Through a command, as planners must (the studio's PhysicalNeedsPlanner; tripleacoder),
+        // executed directly with no client feedback, as GoapFindPreyAction does HuntArea.
+        var give = new UWGame.SimSide.Commands.GiveToHousehold(household.ID, pay);
+        give.Execute(giveClientFeedback: false);
+        return give.Given;
     }
 
     private static bool IsFreeFood(Entity item, SimSide.AI.SharedKnowledge knowledge)
@@ -291,14 +304,11 @@ public static class OwnershipMod
         {
             int day = (int)(The.Sim?.DateAndTime?.CurrentTimeDateYear.TotalDays ?? 0.0);
             ProcessType process = cookable[Math.Abs(day) % cookable.Count];
-            EntityType meal = MealOutput(process);
-            JobManager.FindProductionLocation(process, household, out var location);
-            ProcessJob job = JobManager.CreateProcessJob(meal, group, process, null, location);
-            if (job != null && location.HasValue)
-            {
-                job.CreateHaulingJobsForProcessInputs(group, location.Value);
-            }
-            return job;
+            // The order goes through SetHouseholdProduction, the household's SetProduction: planners
+            // act through commands, and the command creates the job and its hauling.
+            var order = new UWGame.SimSide.Commands.SetHouseholdProduction(household.ID, process.KeyName, MealOutput(process).KeyName);
+            order.Execute(giveClientFeedback: false);
+            return order.CreatedJob;
         }
         return null;
     }

@@ -677,6 +677,21 @@ internal static class Program
         Check(meals.Select(p => p.KeyName).SequenceEqual(meals.Select(p => p.KeyName).OrderBy(k => k, StringComparer.Ordinal)),
               "in a fixed order (by key), so every run and replay picks the same one");
         Console.WriteLine("  info  first few: " + string.Join(", ", meals.Take(5).Select(p => p.KeyName)));
+        // The planner acts through commands (tripleacoder); a command must survive the replay serializer.
+        var commandSerializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UWGame.Control.Commands.Command>));
+        var commandWriter = new System.IO.StringWriter();
+        commandSerializer.Serialize(commandWriter, new List<UWGame.Control.Commands.Command>
+        {
+            new UWGame.SimSide.Commands.SetHouseholdProduction((UWGame.SimSide.Entities.HouseholdID)9UL, "cookStew", "item:stew"),
+            new UWGame.SimSide.Commands.GiveToHousehold((UWGame.SimSide.Entities.HouseholdID)9UL, new[] { (UWGame.SimSide.Entities.EntityID)11L, (UWGame.SimSide.Entities.EntityID)12L }),
+        });
+        var commandsBack = commandSerializer.Deserialize(new System.IO.StringReader(commandWriter.ToString())) as List<UWGame.Control.Commands.Command>;
+        var orderBack = commandsBack?.ElementAtOrDefault(0) as UWGame.SimSide.Commands.SetHouseholdProduction;
+        var giveBack = commandsBack?.ElementAtOrDefault(1) as UWGame.SimSide.Commands.GiveToHousehold;
+        Check(orderBack != null && orderBack.HouseholdID == 9UL && orderBack.ProcessTypeKey == "cookStew" && orderBack.EntityTypeKey == "item:stew",
+              "SetHouseholdProduction round-trips through the replay serializer");
+        Check(giveBack != null && giveBack.HouseholdID == 9UL && giveBack.EntityIDs.SequenceEqual(new[] { 11L, 12L }),
+              "GiveToHousehold round-trips through the replay serializer");
         Console.WriteLine(failures == 0 ? "ownership self-test OK" : $"ownership self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
