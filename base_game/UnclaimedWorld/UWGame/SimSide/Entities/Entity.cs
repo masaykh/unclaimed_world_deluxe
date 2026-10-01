@@ -3391,9 +3391,16 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		}
 		else
 		{
-			entity.PlaceEntityOnPlaySite(location.Value, AddRandomOffset.No, null, null, new SetOwnerInfo(owner, GiveNewOwnerKnowledge.No));
+			// HuntingMod: an animal that dies in camp with nobody to own its carcass goes to the
+			// expedition whose policy claims such kills, as the Claim button would give it - known
+			// to that expedition, hauled below like any claimed carcass, and not logged as
+			// production, which a claim is not. The Absent stub returns null: the studio's carcass
+			// stays unowned.
+			IOwner claimant = (owner == null) ? UWGame.Mods.HuntingMod.CampKillClaimant(this, location.Value) : null;
+			entity.PlaceEntityOnPlaySite(location.Value, AddRandomOffset.No, null, null, (claimant != null) ? new SetOwnerInfo(claimant, GiveNewOwnerKnowledge.Yes) : new SetOwnerInfo(owner, GiveNewOwnerKnowledge.No));
 			entity.Renderable.SetToParentLocation();
 			owner?.Allegiance.LogProductionStatistics(entity, null);
+			owner = owner ?? claimant;
 		}
 		Destroy();
 		if (owner != null)
