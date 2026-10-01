@@ -847,6 +847,23 @@ internal static class Program
               "the swarmer's carcass (" + swarmer?.BiologicalType?.Carcass + ") is an item type, so ProductionOrders has an order for it");
         Check(UWGame.Mods.HuntingMod.ParseFactor("x1") == 1f && UWGame.Mods.HuntingMod.ParseFactor("x1.5") == 1.5f
               && UWGame.Mods.HuntingMod.ParseFactor("nonsense") == 1f, "the chase range choices parse, and a bad value is x1");
+        // Autoclaim in camp: which carcasses the policy may take, and that its switch survives the replay serializer.
+        foreach (string key in new[] { "entity:binalRat", "entity:fieldQuadite", "entity:twinkler", "entity:swarmer" })
+        {
+            Check(types.TryGetValue(key, out var animal) && UWGame.Mods.HuntingMod.IsClaimableAnimal(animal), key + "'s carcass may be autoclaimed");
+        }
+        Check(human != null && !UWGame.Mods.HuntingMod.IsClaimableAnimal(human), "a person's body is never autoclaimed");
+        Check(!UWGame.Mods.HuntingMod.AutoclaimsCampKills(null) && UWGame.Mods.HuntingMod.CampKillClaimant(null, default) == null,
+              "with no expedition the policy is off, and nothing is claimed");
+        var commandSerializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UWGame.Control.Commands.Command>));
+        var commandWriter = new System.IO.StringWriter();
+        commandSerializer.Serialize(commandWriter, new List<UWGame.Control.Commands.Command>
+        {
+            new UWGame.SimSide.Commands.SetAutoclaimCampKills((UWGame.SimSide.Expeditions.ExpeditionID)7L, true),
+        });
+        var autoclaimBack = (commandSerializer.Deserialize(new System.IO.StringReader(commandWriter.ToString())) as List<UWGame.Control.Commands.Command>)
+            ?.FirstOrDefault() as UWGame.SimSide.Commands.SetAutoclaimCampKills;
+        Check(autoclaimBack != null && autoclaimBack.ExpeditionID == 7L && autoclaimBack.Claim, "SetAutoclaimCampKills round-trips through the replay serializer");
         Console.WriteLine(failures == 0 ? "hunting self-test OK" : $"hunting self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }

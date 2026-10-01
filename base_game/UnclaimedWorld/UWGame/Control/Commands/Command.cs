@@ -38,6 +38,7 @@ namespace UWGame.Control.Commands;
 [XmlInclude(typeof(SetReserve))]
 [XmlInclude(typeof(SetHouseholdProduction))]
 [XmlInclude(typeof(GiveToHousehold))]
+[XmlInclude(typeof(SetAutoclaimCampKills))]
 public abstract class Command
 {
 	public int frameCalled;

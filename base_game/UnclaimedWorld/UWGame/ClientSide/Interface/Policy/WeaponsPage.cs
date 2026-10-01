@@ -19,6 +19,11 @@ public class WeaponsPage : TabPagePanel
 	private Expedition expedition;
 	private int gridHeaderY = 40;
 
+	/// <summary>HuntingMod's policy switch; null when the mod does not offer it.</summary>
+	private CheckBox cbAutoclaim;
+
+	private string autoclaimTooltip = "Animals that die within the camp's hunting radius with nobody to claim them - killed by wildlife, starved, or by a killer nobody saw - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.";
+
 	private string availableTooltip = "The amount of ammunition available";
 
 	private string useVerminTooltip = "Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.";
@@ -36,6 +41,20 @@ public class WeaponsPage : TabPagePanel
 		label.Text = "AMMO USAGE";
 		label.ToolTip = "Specify what the ammunition may be used for";
 		label.Width = Width;
+		if (UWGame.Mods.HuntingMod.OffersAutoclaim)
+		{
+			cbAutoclaim = new CheckBox(gUIManager);
+			Add(cbAutoclaim);
+			cbAutoclaim.Text = "CLAIM ANIMALS THAT DIE IN CAMP";
+			cbAutoclaim.Init(CheckBoxType.LCD);
+			cbAutoclaim.SwitchStateOnClick = true;
+			cbAutoclaim.X = 22;
+			cbAutoclaim.Y = gridHeaderY;
+			cbAutoclaim.FitToText();
+			cbAutoclaim.ToolTip = autoclaimTooltip;
+			cbAutoclaim.Click += cbAutoclaim_Click;
+			gridHeaderY += 30;
+		}
 		grid = new Grid(gUIManager, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
 		grid.IsOuterGrid = true;
 		grid.X = 0;
@@ -138,9 +157,21 @@ public class WeaponsPage : TabPagePanel
 		SetUseAgainstVermin(expedition, checkBox.IsChecked, entityType);
 	}
 
+	private void cbAutoclaim_Click(UIComponent sender, EventArgs e)
+	{
+		if (expedition != null && UWGame.Mods.HuntingMod.AutoclaimsCampKills(expedition) != cbAutoclaim.IsChecked)
+		{
+			The.Client.Controller.StoreAndExecuteCommand(new SetAutoclaimCampKills(expedition.ID, cbAutoclaim.IsChecked));
+		}
+	}
+
 	public override void Refresh()
 	{
 		expedition = The.InGameUI.GetExpedition();
+		if (cbAutoclaim != null)
+		{
+			cbAutoclaim.IsChecked = UWGame.Mods.HuntingMod.AutoclaimsCampKills(expedition);
+		}
 		Populate();
 	}
 
