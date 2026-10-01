@@ -82,6 +82,45 @@ public static class ToolCareMod
         return result;
     }
 
+    /// <summary>
+    /// What a colonist never drops just to make room: a weapon, and ammunition for a weapon it is
+    /// carrying. Kastuk, "Dropping tools": a hunter switched to hauling, dropped its coil rifle at the
+    /// camp's edge, walked back for it, dropped it again at the centre with its ammunition and tools,
+    /// picked it up a third time and ran to a fight with no ammunition. The rifle was dropped LAST, as
+    /// a protected item, but still dropped - and the studio's weapon logic then sent the colonist back
+    /// for it. A haul that cannot fit everything makes more trips (GoalReplenish), so keeping these
+    /// costs walking, not the job.
+    /// </summary>
+    public static bool KeptWhenMakingRoom(Entity carrier, EntityType type)
+    {
+        if (type?.ItemType == null)
+        {
+            return false;
+        }
+        if (type.ItemType.WeaponType != null)
+        {
+            return true;
+        }
+        bool isAmmoForCarriedWeapon = false;
+        carrier?.AgentStorage?.ItemStorage?.IterateContainedBreakOnTrue(delegate(Entity carried)
+        {
+            UWGame.SimSide.Items.WeaponType weapon = carried.EntityType?.ItemType?.WeaponType;
+            if (weapon?.AttackTypes != null)
+            {
+                foreach (var attack in weapon.AttackTypes)
+                {
+                    if (attack?.UsesAmmoType == type)
+                    {
+                        isAmmoForCarriedWeapon = true;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+        return isAmmoForCarriedWeapon;
+    }
+
     private static int SurvivalIndex() =>
         GameData.Instance.AllTierTypes.TryGetValue("survival", out var survival) ? survival.Index : 0;
 

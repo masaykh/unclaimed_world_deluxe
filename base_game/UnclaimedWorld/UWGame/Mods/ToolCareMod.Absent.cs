@@ -24,6 +24,8 @@ public static class ToolCareMod
 
     public static bool IsProtected(EntityType type) => false;
 
+    public static bool KeptWhenMakingRoom(Entity carrier, EntityType type) => false;
+
     public static bool IsOutOfCamp(Entity carrier) => false;
 
     public static Vector3? DropSpotInCamp(Entity carrier) => null;

@@ -1184,13 +1184,15 @@ public abstract class CompositeGoal : Goal
 	{
 		float totalDroppedParam = 0f;
 		// MOD: ToolCareMod - a colonist drops weapons and above-survival items last, and carries one
-		// back to camp first when it must go out in the field. Everyone else, as the studio made it.
+		// back to camp first when it must go out in the field. Weapons, and ammunition for a carried
+		// weapon, are not dropped to make room at all (KeptWhenMakingRoom). Everyone else, as the
+		// studio made it.
 		if (UWGame.Mods.ToolCareMod.IsCarefulCarrier(entity))
 		{
-			entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => !UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && DropUnneededItem(itemEntity, entity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
+			entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => !UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && !UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(entity, itemEntity.EntityType) && DropUnneededItem(itemEntity, entity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
 			if (!bulkNeededToDrop.HasValue || !Common.IsLessThanOrEqual(bulkNeededToDrop.Value, totalDroppedParam))
 			{
-				entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && DropProtectedItem(itemEntity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
+				entity.AgentStorage.ItemStorage.IterateContainedBreakOnTrue((Entity itemEntity) => UWGame.Mods.ToolCareMod.IsProtected(itemEntity.EntityType) && !UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(entity, itemEntity.EntityType) && DropProtectedItem(itemEntity, okToDrop, bulkNeededToDrop, ref totalDroppedParam));
 			}
 			totalDropped = totalDroppedParam;
 			return;

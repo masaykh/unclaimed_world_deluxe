@@ -706,6 +706,8 @@ internal static class Program
         int byTier = items.Count(t => t.ItemType.WeaponType == null && UWGame.Mods.ToolCareMod.IsProtected(t));
         Check(items.Count(t => !UWGame.Mods.ToolCareMod.IsProtected(t)) > 0, "most things are not protected - cheap tools still drop freely");
         Check(byTier > 0, $"the tier rule protects something besides weapons ({byTier} item types)");
+        Check(rifle != null && UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(null, rifle), "a weapon is never dropped to make room (Kastuk: the hunter's coil rifle)");
+        Check(items.Where(i => i.ItemType?.WeaponType == null).Take(50).All(i => !UWGame.Mods.ToolCareMod.KeptWhenMakingRoom(null, i)), "an item that is not a weapon, with no weapon carried, may still be dropped");
         Console.WriteLine($"  info  {items.Count} item types: {weapons} weapons, {byTier} more above the survival tier");
         Console.WriteLine(failures == 0 ? "tool care self-test OK" : $"tool care self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
