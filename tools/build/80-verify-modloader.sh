@@ -754,6 +754,18 @@ else
   fail "the freshfood self-test reported failures"
 fi
 
+# GatherOnDemandMod's padlock at 0. The Gather Resources window used to send "disable" for a
+# padlocked slider at 0, so the zone dropped the resource and, with no orders left, destroyed
+# itself - the mod's "only on demand" setting could not be made. Off, the studio's rule must hold.
+say "==> 28. a padlocked gather order at 0 is kept with gather-on-demand on, and dropped with it off"
+out=$( cd "$(new_install case28)" && "$EXPORT" . --gatherondemand-selftest 2>&1 ) || true
+if echo "$out" | grep -q "gatherondemand self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the gatherondemand self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a

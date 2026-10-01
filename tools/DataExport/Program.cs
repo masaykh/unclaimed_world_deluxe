@@ -257,6 +257,11 @@ internal static class Program
             return FreshFoodSelfTest();
         }
 
+        if (args.Contains("--gatherondemand-selftest"))
+        {
+            return GatherOnDemandSelfTest();
+        }
+
         // Procedural maps (MapGenMod). Learns from --maps-from=DIR, default this game's data/Maps.
         string mapsFrom = args.FirstOrDefault(a => a.StartsWith("--maps-from=", StringComparison.Ordinal))
             ?.Substring("--maps-from=".Length) ?? Path.Combine("data", "Maps");
@@ -579,6 +584,38 @@ internal static class Program
     /// weights the fish wins (its 6-day squared freshness gives the soup 0.025); with the mod's the
     /// soup must. No tables needed.
     /// </summary>
+    /// <summary>
+    /// GatherOnDemandMod's padlock at 0 (GatherOnDemandMod.ZoneGathersAt, read by
+    /// GatherResourcesWindow.btOk_Click): with the mod off the studio's rule holds - 0 is no order -
+    /// and with it on 0 keeps the zone gathering, which is the whole "only on demand" setting.
+    /// </summary>
+    private static int GatherOnDemandSelfTest()
+    {
+        Console.WriteLine("==> gatherondemand self-test");
+        UWGame.Mods.GatherOnDemandMod.RegisterSettings();
+        var setting = UWGame.Mods.ModSettings.Find("gatherondemand.enabled");
+        if (setting == null)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        setting.Value = "false";
+        Check(!UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(0), "mod off: a padlock at 0 is no order, as the studio made it");
+        Check(UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(5), "mod off: a padlock at 5 gathers");
+        setting.Value = "true";
+        Check(UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(0), "mod on: a padlock at 0 stays in the zone (Kastuk: the order was not kept)");
+        Check(UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(5), "mod on: a padlock at 5 gathers");
+        setting.Value = setting.DefaultValue;
+        Console.WriteLine(failures == 0 ? "gatherondemand self-test OK" : $"gatherondemand self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
     private static int FreshFoodSelfTest()
     {
         Console.WriteLine("==> freshfood self-test");

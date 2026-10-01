@@ -214,7 +214,8 @@ public class GatherResourcesWindow : HUDWindow
 					}
 					if (mapArea.Zone == null || !mapArea.Zone.AllowStandingOrderHarvest.Contains(resourceType))
 					{
-						if (fillableBar.Value > 0)
+						// GatherOnDemandMod: a padlock at 0 is an order ("only what jobs need"), not a removal.
+						if (UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(fillableBar.Value))
 						{
 							SetStandingOrderGatherInZone command2 = ((zone == null) ? new SetStandingOrderGatherInZone(mapArea, giveClientFeedback: true, resourceType.KeyName, enable: true, iD) : new SetStandingOrderGatherInZone(zone.ID, giveClientFeedback: true, resourceType.KeyName, enable: true, iD));
 							The.Client.Controller.StoreAndExecuteCommand(command2);
