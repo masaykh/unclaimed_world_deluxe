@@ -54,6 +54,62 @@ public static class RegrowthMod
     /// <summary>The zone's radius in tiles.</summary>
     public const int ZoneRadius = 5;
 
+    private static Sim.DayPhases? lastPhase;
+
+    /// <summary>
+    /// Called from Sim.Update every tick; each morning (sleep turning to work) it writes the forecast to
+    /// the log: for each wood, how many of its tiles would regrow at full rate today, slowed, or at
+    /// half speed - the same measure AdjustReplenish applies on the day a tile replenishes. Kastuk:
+    /// "Waiting for week or an game year is quite long, let's evaluate future (forecast) of Regrowth
+    /// values at every morning." Reads only; draws no random number, so replays are unaffected.
+    /// </summary>
+    public static void OnSimTick(Sim sim)
+    {
+        if (!WoodOverharvest.On || sim?.PlaySite?.Resources == null || sim.Mode != Sim.EngineMode.Game || sim.DateAndTime == null || The.Client == null)
+        {
+            lastPhase = null;
+            return;
+        }
+        Sim.DayPhases phase = sim.DateAndTime.CurrentPhase;
+        Sim.DayPhases? previous = lastPhase;
+        lastPhase = phase;
+        if (previous != Sim.DayPhases.Sleep || phase != Sim.DayPhases.Work)
+        {
+            return;
+        }
+        foreach (string key in WoodKeys)
+        {
+            var type = GameData.Instance.AllResourceTypes.TryGetValue(key, out var t) ? t : null;
+            if (type == null || !sim.PlaySite.Resources.TryGetValue(type, out var tiles) || tiles.Count == 0)
+            {
+                continue;
+            }
+            int full = 0, slowed = 0, half = 0;
+            double sum = 0;
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                ResourceContainer tile = tiles[i];
+                if (tile == null)
+                {
+                    continue;
+                }
+                float rate = Curve(ZoneFraction(tile));
+                sum += rate;
+                if (rate >= 0.99f) full++;
+                else if (rate > 0.6f) slowed++;
+                else half++;
+            }
+            int counted = full + slowed + half;
+            if (counted == 0)
+            {
+                continue;
+            }
+            string name = (type.Name ?? key).ToLowerInvariant();
+            The.Client.AddLogEvent(The.Client.Log.GeneralEvent, null,
+                $"Regrowth forecast, {name}: {full} of {counted} places regrow at full rate, {slowed} slowed, {half} near half speed (average x{sum / counted:0.00}).");
+        }
+    }
+
     /// <summary>
     /// Called by ResourceReplenish.ReplenishResourceItems with the number of items the tile is
     /// about to gain; returns the number it gains instead.

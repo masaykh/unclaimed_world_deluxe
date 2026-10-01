@@ -23,4 +23,8 @@ public static class RegrowthMod
     public static int AdjustReplenish(ResourceContainer tile, int amount) => amount;
 
     public static float Curve(float fractionLeft) => 1f;
+
+    public static void OnSimTick(UWGame.SimSide.Sim sim)
+    {
+    }
 }

@@ -72,8 +72,9 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		{
 			return;
 		}
-		// A startled hopper (someone of another group close by) hops for certain, and away.
-		bool startled = hop && UWGame.Mods.BirdHopMod.Startler(entity) != null;
+		// A startled hopper (a person or big creature close by) hops for certain, and away.
+		Entity startler = hop ? UWGame.Mods.BirdHopMod.Startler(entity) : null;
+		bool startled = startler != null;
 		float? chanceToIdleWalkShortDistanceAway = startled ? new float?(1f) : (entity.GetChanceToIdleWalkShortDistanceAway() ?? (hop ? new float?(UWGame.Mods.BirdHopMod.HopChance) : null));
 		float moveAbility = entity.Locomotor.MoveAbility;
 		if (!chanceToIdleWalkShortDistanceAway.HasValue || !(moveAbility > 0.15f))
@@ -97,8 +98,14 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		subtileInfluence.DrawRadius(entity.PlaySiteLocation, innerRadius, num2, 4);
 		if (!startled)
 		{
-			// The pull home - left out for a startled bird, which it sent straight back to whoever scared it.
 			subtileInfluence.DrawDistanceGradientOnInfluenceMap(entityIntelligence.CurrentExpedition.Center.Value, 1f, 4f);
+		}
+		else
+		{
+			// A startled bird keeps a gentle pull home (without it, Kastuk: "roaming freely without leash")
+			// and may not land near whoever scared it (with the full pull it went straight back to them).
+			subtileInfluence.DrawDistanceGradientOnInfluenceMap(entityIntelligence.CurrentExpedition.Center.Value, 1f, 2f);
+			subtileInfluence.DrawNegativeInfluenceFromEntities(UWGame.Mods.BirdHopMod.FrightCircle(startler), subtileInfluence.TopLeftSubtilePositionOfMap);
 		}
 		subtileInfluence.DrawNegativeInfluenceFromEntities(entity, drawStationaryAgents: true, drawItems: true);
 		subtileInfluence.BlockOutBlockedSubtiles(movementMap.Layers[SurfaceType.TransportType.Foot], blockReserved: true);
@@ -109,6 +116,11 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		{
 			SubtilePos subtilePos = item.Item2 + new SubtilePos(subtileInfluence.TopLeftSubtilePositionOfMap);
 			if (!(MapManager.WorldPosToSubtilePos(entity.PlaySiteLocation) != subtilePos))
+			{
+				continue;
+			}
+			// MOD: BirdHopMod - a bird on the water stays on the water, one on land on land.
+			if (hop && !UWGame.Mods.BirdHopMod.SameGround(entity, subtilePos.ToPoint()))
 			{
 				continue;
 			}

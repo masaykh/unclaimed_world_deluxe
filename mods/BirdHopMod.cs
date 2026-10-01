@@ -65,41 +65,92 @@ public static class BirdHopMod
     /// <summary>A startled hop goes at least this far: two tiles, well clear of whoever came.</summary>
     public const float StartledMinDistance = 96f;
 
-    /// <summary>How close another group's creature or person comes before a bird takes fright: 3 tiles.</summary>
-    public const float StartleRange = 144f;
+    /// <summary>
+    /// How close a person or a big creature comes before a bird takes fright: 6 tiles. Kastuk: "Let's
+    /// double the range to detect big creatures (ignore the vermins) to fly away from them" - it was 3.
+    /// </summary>
+    public const float StartleRange = 288f;
 
     /// <summary>How often a resting bird looks round, in game seconds.</summary>
     public const double WatchEverySeconds = 0.5;
 
     /// <summary>
-    /// The nearest creature or person of another group within <see cref="StartleRange"/> that this
-    /// bird's side knows of, or null. Read from PlaySiteKnowledge.AllKnownOutsideAgentsOnPlaySite, the
-    /// list the threat maps are drawn from.
+    /// The nearest person or big creature within <see cref="StartleRange"/>, or null: anything with a
+    /// mind of its own that is not vermin and not another bird.
+    ///
+    /// Read off the map (the tiles' EntitiesOnTile), not off what the bird's side knows. The first
+    /// version asked PlaySiteKnowledge.AllKnownOutsideAgentsOnPlaySite, and Kastuk found birds "not
+    /// scared by humans anyhow": an immobile wild bird's side keeps that list poorly, if at all.
     /// </summary>
     public static Entity Startler(Entity bird)
     {
-        var known = bird?.Intelligence?.Allegiance?.SharedKnowledge?.PlaySiteKnowledge?.AllKnownOutsideAgentsOnPlaySite;
-        if (known == null || !bird.Location.HasValue)
+        if (bird?.Location == null || The.Map?.TileMap == null)
         {
             return null;
         }
+        Microsoft.Xna.Framework.Vector3 at = bird.PlaySiteLocation;
+        int reach = (int)Math.Ceiling(StartleRange / 48f);
+        int cx = (int)(at.X / 48f), cy = (int)(at.Y / 48f);
         Entity nearest = null;
         float best = StartleRange;
-        foreach (EntityID id in known.Keys)
+        for (int tx = Math.Max(0, cx - reach); tx <= Math.Min(The.Map.mapTileWidth - 1, cx + reach); tx++)
         {
-            Entity other = Entity.FindByID(id);
-            if (other == null || other == bird || other.EntityType == bird.EntityType || !other.Location.HasValue || other.ContainedBy.HasValue)
+            for (int ty = Math.Max(0, cy - reach); ty <= Math.Min(The.Map.mapTileHeight - 1, cy + reach); ty++)
             {
-                continue;
-            }
-            float d = Microsoft.Xna.Framework.Vector3.Distance(bird.PlaySiteLocation, other.PlaySiteLocation);
-            if (d <= best)
-            {
-                nearest = other;
-                best = d;
+                var onTile = The.Map.TileMap[tx][ty].EntitiesOnTile;
+                if (onTile == null)
+                {
+                    continue;
+                }
+                foreach (Entity other in onTile)
+                {
+                    if (other == bird || other.EntityType == bird.EntityType || other.EntityType?.IntelligenceType == null
+                        || other.EntityType.BiologicalType?.IsVermin == true || !other.Location.HasValue || other.ContainedBy.HasValue)
+                    {
+                        continue;
+                    }
+                    float d = Microsoft.Xna.Framework.Vector3.Distance(at, other.PlaySiteLocation);
+                    if (d <= best)
+                    {
+                        nearest = other;
+                        best = d;
+                    }
+                }
             }
         }
         return nearest;
+    }
+
+    /// <summary>
+    /// The circle a startled hop must land outside: round whoever startled it, 4 tiles. With it the
+    /// hop can keep a gentle pull home (GoalTakeFive) - Kastuk found startled birds "roaming freely
+    /// without leash" once that pull was dropped - without the pull taking it back to the startler.
+    /// Radius in subtiles, as SubtileInfluence draws it.
+    /// </summary>
+    public static System.Collections.Generic.List<Tuple<Microsoft.Xna.Framework.Vector3, float>> FrightCircle(Entity startler) =>
+        new System.Collections.Generic.List<Tuple<Microsoft.Xna.Framework.Vector3, float>>
+        {
+            Tuple.Create(startler.PlaySiteLocation, 12f),
+        };
+
+    /// <summary>
+    /// Whether a hop may land on this subtile: water if the bird stands in water, land if on land.
+    /// Kastuk: birds that start out on the water "still can move from there and fall into coast to
+    /// roam freely too".
+    /// </summary>
+    public static bool SameGround(Entity bird, Microsoft.Xna.Framework.Point subtile)
+    {
+        if (bird?.Location == null || The.Map == null)
+        {
+            return true;
+        }
+        var here = The.Map.GetTerrain(UWGame.SimSide.Maps.MapManager.WorldPosToSubtile(bird.PlaySiteLocation));
+        var there = The.Map.GetTerrain(subtile);
+        if (here == null || there == null)
+        {
+            return true;
+        }
+        return (here.SurfaceType is UWGame.SimSide.Maps.WaterType) == (there.SurfaceType is UWGame.SimSide.Maps.WaterType);
     }
 
     /// <summary>

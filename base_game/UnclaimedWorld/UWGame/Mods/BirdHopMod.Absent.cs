@@ -33,4 +33,8 @@ public static class BirdHopMod
     public static Entity Startler(Entity bird) => null;
 
     public static bool IsStartled(Entity bird, ref double secondsSinceWatch, double elapsedSeconds) => false;
+
+    public static System.Collections.Generic.List<System.Tuple<Microsoft.Xna.Framework.Vector3, float>> FrightCircle(Entity startler) => null;
+
+    public static bool SameGround(Entity bird, Microsoft.Xna.Framework.Point subtile) => true;
 }
