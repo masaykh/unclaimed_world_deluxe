@@ -513,8 +513,9 @@ public class GatherResourcesWindow : HUDWindow
 					text = $"+{currentRegrowth.Value:N1}";
 					t = $"{currentRegrowth.Value:N1}";
 				}
-				// MOD: RegrowthMod shows "current/max" instead. Null (the default) keeps the studio's text.
-				label.Text = UWGame.Mods.RegrowthMod.RegrowthLabel(currentRegrowth.Value, maxRegrowth.Value, maxReached) ?? text;
+				// MOD: RegrowthMod shows "+current" as a whole number (the max stays in the tooltip).
+				// Null (the default) keeps the studio's text.
+				label.Text = UWGame.Mods.RegrowthMod.RegrowthLabel(currentRegrowth.Value, maxReached) ?? text;
 				label.FitToText();
 				StringBuilder stringBuilder = new StringBuilder();
 				Common.AppendHeaderOnLightBG(stringBuilder, "Regrowth rate");

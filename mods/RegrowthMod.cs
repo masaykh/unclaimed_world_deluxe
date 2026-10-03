@@ -26,10 +26,10 @@ namespace UWGame.Mods;
 /// that does not make a whole item is rolled for, on the game's own seeded generator, so a tile
 /// that respawns one item has exactly that chance of doing it and a replay stays deterministic.
 ///
-/// THE FORECAST. With the switch on, the Gather window's Regrowth column reads "current/max" a
-/// year: max with every place at full rate (the studio's figure), current with the slowdown each
-/// place would get today (<see cref="ForecastRegrowth"/>), so a cut-down wood shows what it costs
-/// before a replenish day comes round.
+/// THE FORECAST. With the switch on, the Gather window's Regrowth column reads the current regrowth
+/// a year as a whole number, "+12": the slowdown each place would get today
+/// (<see cref="ForecastRegrowth"/>), so a cut-down wood shows what it costs before a replenish day
+/// comes round. The maximum - every place at full rate, the studio's figure - stays in the tooltip.
 ///
 /// Off by default: it changes the wood economy of a running game. Nothing new is saved - the
 /// zone is measured each time from what the tiles hold.
@@ -80,18 +80,20 @@ public static class RegrowthMod
     }
 
     /// <summary>
-    /// The Regrowth column's text with the mod on: "current/max" a year, e.g. "12/20" - current from
-    /// <see cref="ForecastRegrowth"/>, max with every tile at full rate. Null leaves the studio's
-    /// "+current" (mod off) or "max." (the zone has all it can hold). One decimal below 10, whole
-    /// numbers above, because the column is narrow: it starts at 290 in a 364-wide window.
+    /// The Regrowth column's text with the mod on: the studio's "+current" a year rounded down to a
+    /// whole number, e.g. "+12" - current from <see cref="ForecastRegrowth"/>. Kastuk: "decimals do
+    /// not fit, may just floor value of the current regrowth ... (as there can be bigger numbers up
+    /// to 100 in big enough zones), and max will be shown only in tooltip, like before". The column
+    /// is narrow: it starts at 290 in a 364-wide window. The tooltip keeps both figures to one
+    /// decimal. Null leaves the studio's "+x.x" (mod off) or "max." (the zone has all it can hold).
     /// </summary>
-    public static string RegrowthLabel(float current, float maximum, bool maximumReached)
+    public static string RegrowthLabel(float current, bool maximumReached)
     {
         if (!WoodOverharvest.On || maximumReached)
         {
             return null;
         }
-        return Amount(current) + "/" + Amount(maximum);
+        return "+" + ((int)Math.Floor(current)).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     /// <summary>The line the Regrowth tooltip gains with the mod on; null with it off.</summary>
@@ -102,13 +104,8 @@ public static class RegrowthMod
             return null;
         }
         return Array.IndexOf(WoodKeys, type.KeyName) >= 0
-            ? "Shown as current/max. Current counts the woods within 5 tiles of each place: where they are cut down, it regrows down to half as fast (CUT-DOWN WOODS REGROW SLOWLY)."
-            : "Shown as current/max. This resource is not slowed by cutting it down.";
-    }
-
-    private static string Amount(float value)
-    {
-        return value < 10f ? value.ToString("0.#") : value.ToString("0");
+            ? "The column shows current regrowth, rounded down. Current counts the woods within 5 tiles of each place: where they are cut down, it regrows down to half as fast (CUT-DOWN WOODS REGROW SLOWLY)."
+            : "The column shows current regrowth, rounded down. This resource is not slowed by cutting it down.";
     }
 
     /// <summary>
