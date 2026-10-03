@@ -28,7 +28,13 @@ public class Contract : ISnapshot
 		{
 			return;
 		}
-		EntityGroup.MakeTradeCreditsTransaction(owner, owner2, PaidAmount);
+		// PORT: the refund goes back to the buyer. The studio wrote
+		// MakeTradeCreditsTransaction(buyer, seller, PaidAmount) - the direction of the original
+		// sale - so reverting a contract charged the buyer a second time while also handing the
+		// goods back to the seller. Mission.Abort's own notes say what was meant: "// refund -
+		// penalty", "//move back the money", and RefundOrders: "we are transporting goods that have
+		// been paid for, but now we are unable to deliver them".
+		EntityGroup.MakeTradeCreditsTransaction(owner2, owner, PaidAmount);
 		if (TransferredEntities == null)
 		{
 			return;
