@@ -22,7 +22,7 @@ public class WeaponsPage : TabPagePanel
 	/// <summary>HuntingMod's policy switch; null when the mod does not offer it.</summary>
 	private CheckBox cbAutoclaim;
 
-	private string autoclaimTooltip = "Animals that die within the camp's hunting radius with nobody to claim them - killed by wildlife, starved, or by a killer nobody saw - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.";
+	private string autoclaimTooltip = "Animals that die within the camp's hunting radius with nobody to claim them - killed by our people, dogs or sentries outside a hunt, by wildlife, or starved - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.";
 
 	private string availableTooltip = "The amount of ammunition available";
 
