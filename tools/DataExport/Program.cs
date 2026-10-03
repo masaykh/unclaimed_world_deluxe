@@ -932,8 +932,9 @@ internal static class Program
     /// <summary>
     /// Checks ReserveMod: a reserve set through the mod is read back from the expedition's custom
     /// fields and clears at 0, the SetReserve command survives the replay serializer (a command left
-    /// out of Command's XmlInclude list breaks every replay that holds one), and the slider's top is
-    /// what it says. Needs reserve.enabled on - the gate writes it.
+    /// out of Command's XmlInclude list breaks every replay that holds one), the slider's top is
+    /// what it says, and colonists eating at the same time do not each count the same spare fish.
+    /// Needs reserve.enabled on - the gate writes it.
     /// </summary>
     private static int ReserveSelfTest()
     {
@@ -972,6 +973,45 @@ internal static class Program
               "SetReserve round-trips through the replay serializer");
         Check(UWGame.Mods.ReserveMod.SliderMax(0, 0) == 20 && UWGame.Mods.ReserveMod.SliderMax(35, 0) == 40
               && UWGame.Mods.ReserveMod.SliderMax(5, 50) == 60, "the slider tops out at 20, or the next ten above stock or reserve");
+
+        // Mealtime (Kastuk, 2 October: reserved smoked fish eaten from the storage beside the
+        // kitchen, where fresh glassy porridge was). Twelve fish, ten reserved; four colonists, none
+        // starving, each starts on a bowl of porridge and tops it up with fish the way
+        // GoalEat.GetAdditionalItemsToConsume does: MayTakeFood for each candidate, counting its own
+        // picks. A meal's fish are claimed (SetInUseBy) until they are eaten, and stay in the count
+        // until then - so the count each colonist goes by is ReserveMod.CountForMeal's.
+        var shelf = Enumerable.Range(1, 12).Select(i => (UWGame.SimSide.Entities.EntityID)i).ToList();
+        var claims = new Dictionary<UWGame.SimSide.Entities.EntityID, UWGame.SimSide.Entities.EntityID>();
+        var eating = new HashSet<UWGame.SimSide.Entities.EntityID>();
+        UWGame.SimSide.Entities.EntityID? ClaimOf(UWGame.SimSide.Entities.EntityID id) => claims.TryGetValue(id, out var by) ? by : null;
+        int TopUp(UWGame.SimSide.Entities.EntityID colonist, int wanted)
+        {
+            int taken = 0;
+            foreach (var id in shelf.Where(id => !claims.ContainsKey(id)).ToList())
+            {
+                if (taken == wanted || !UWGame.Mods.ReserveMod.MayTake(UWGame.Mods.ReserveMod.CountForMeal(shelf, ClaimOf, eating.Contains, colonist), 10, taken))
+                {
+                    continue;
+                }
+                claims[id] = colonist;
+                taken++;
+            }
+            eating.Add(colonist);
+            return taken;
+        }
+        int first = TopUp((UWGame.SimSide.Entities.EntityID)101, 3);
+        Check(first == 2, $"one colonist alone takes the two above the reserve ({first})");
+        for (int c = 102; c <= 104; c++)
+        {
+            TopUp((UWGame.SimSide.Entities.EntityID)c, 3);
+        }
+        int left = shelf.Count - claims.Count;
+        Check(left == 10, $"four colonists eating at once leave the ten reserved ({left} left; counting the fish on other plates as stock left 4)");
+        Check(UWGame.Mods.ReserveMod.CountForMeal(shelf, ClaimOf, eating.Contains, (UWGame.SimSide.Entities.EntityID)101) == 12,
+              "a colonist's own claimed fish still count for it - its alreadyTaken subtracts them once");
+        eating.Clear();
+        Check(UWGame.Mods.ReserveMod.CountForMeal(shelf, ClaimOf, eating.Contains, null) == 12,
+              "a claim by someone not eating (a haul) is still stock");
         Console.WriteLine(failures == 0 ? "reserve self-test OK" : $"reserve self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }

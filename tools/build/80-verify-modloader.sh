@@ -26,7 +26,7 @@
 #  16. preserved food and alcohol get the balanced diet mod's profiles, and still validate
 #  17. every wood the regrowth mod slows is a real resource, and its curve is smooth
 #  18. exposed food is classified for the pest mod as meant, and its bonus is bounded
-#  19. a reserve is kept in the expedition's saved fields, and its command survives a replay
+#  19. a reserve is kept in the expedition's saved fields, its command survives a replay, and a mealtime keeps it
 #  20. the safe sleep mod counts swarmer and whipjaw nests as dangerous, and quadite nests not
 #  21. the swarmer becomes human prey only with the hunting mod's switch on
 #  22. a save's type names resolve whatever assembly version they carry
@@ -644,8 +644,9 @@ fi
 
 # The reserve mod keeps its amounts in the expedition's custom fields rather than a new saved field,
 # and changes them through a SetReserve command - which the replay serializer can only write if
-# Command's XmlInclude list names it. Both are checked; the mod is switched on for it.
-say "==> 19. a reserve is kept in the expedition's saved fields, and its command survives a replay"
+# Command's XmlInclude list names it. Both are checked, and a mealtime is played through the count
+# colonists eat by (four eating at once each counted the same spare fish). The mod is on for it.
+say "==> 19. a reserve is kept in the expedition's saved fields, its command survives a replay, and a mealtime keeps it"
 d=$(new_install case19); write_setting "$d" reserve.enabled true
 out=$( cd "$d" && "$EXPORT" . --reserve-selftest 2>&1 ) || true
 if echo "$out" | grep -q "reserve self-test OK" && echo "$out" | grep -q "^  ok    "; then

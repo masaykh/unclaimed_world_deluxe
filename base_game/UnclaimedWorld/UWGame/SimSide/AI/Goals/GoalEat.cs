@@ -200,7 +200,7 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 		{
 			foodData = item3.Item1;
 			takenOfType.TryGetValue(foodData.EntityType, out int taken);
-			if (!UWGame.Mods.ReserveMod.MayTakeFood(foodItemsGroup, foodData.EntityType, taken))
+			if (!UWGame.Mods.ReserveMod.MayTakeFood(foodItemsGroup, foodData.EntityType, taken, entity))
 			{
 				continue;
 			}

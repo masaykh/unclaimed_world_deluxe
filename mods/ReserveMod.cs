@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UWGame.ClientSide.PropertyPresentation;
+using UWGame.SimSide.AI;
+using UWGame.SimSide.AI.Goals;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Expeditions;
 
@@ -29,6 +31,8 @@ namespace UWGame.Mods;
 ///   reserve does not count as stock. "Keep 10" with 20 reserved means 30 on the shelf - ten to use
 ///   and twenty to sell.
 /// • Trade is untouched: selling the reserve is what it is for.
+/// Food another colonist has already taken for a meal does not count (StockForMeal): it stays in
+/// the stock count until it is eaten, and at mealtime that let every colonist take the same spare.
 /// Two colonists deciding in the same tick can still dip the stock one under - the price of a
 /// count over instance bookkeeping, and the same imprecision the studio's own orders accept.
 ///
@@ -110,17 +114,17 @@ public static class ReserveMod
     }
 
     /// <summary>
-    /// Whether this food type is held back from a colonist choosing a meal: its stock is at or
-    /// below its reserve and the colonist is not starving.
+    /// Whether this food type is held back from a colonist choosing a meal: the stock it may count
+    /// on (<see cref="StockForMeal"/>) is at or below its reserve and the colonist is not starving.
     /// </summary>
-    public static bool HoldsBackFood(EntityGroup foodOwner, EntityType type, bool starving)
+    public static bool HoldsBackFood(EntityGroup foodOwner, EntityType type, bool starving, Entity eater)
     {
         if (starving)
         {
             return false;
         }
         int reserve = Reserved(foodOwner, type);
-        return reserve > 0 && foodOwner.CountAvailableItems(type) <= reserve;
+        return reserve > 0 && !MayTake(StockForMeal(foodOwner, type, eater), reserve, 0);
     }
 
     /// <summary>
@@ -130,14 +134,84 @@ public static class ReserveMod
     /// pay (OwnershipMod) - went below the reserve in one go. Kastuk: reserved crystal wine and
     /// pickled carbon tail were still eaten.
     /// </summary>
-    public static bool MayTakeFood(EntityGroup foodOwner, EntityType type, int alreadyTaken)
+    public static bool MayTakeFood(EntityGroup foodOwner, EntityType type, int alreadyTaken, Entity eater)
     {
         if (!Enabled)
         {
             return true;
         }
         int reserve = Reserved(foodOwner, type);
-        return reserve <= 0 || foodOwner.CountAvailableItems(type) - alreadyTaken > reserve;
+        return reserve <= 0 || MayTake(StockForMeal(foodOwner, type, eater), reserve, alreadyTaken);
+    }
+
+    /// <summary>One more may go while what is left after this decision's own picks is above the reserve.</summary>
+    public static bool MayTake(int stock, int reserve, int alreadyTaken) => reserve <= 0 || stock - alreadyTaken > reserve;
+
+    /// <summary>
+    /// The stock a colonist deciding on a meal may count on: what EntityGroup.CountAvailableItems
+    /// counts, less what another colonist has already taken for a meal of their own.
+    ///
+    /// Kastuk, 2 October: "Reserved smoked fish still got consumed by not starving colonist, from
+    /// storage right near kitchen where is fresh cooked glass porridge been placed." A meal's items
+    /// are claimed when the meal starts (GoalEat.Activate, SharedKnowledge.SetInUseBy) and destroyed
+    /// only when it ends (GoalEat.ConsumeStomachContents) - and all that time they still counted: an
+    /// item in a colonist's hands or stomach has its carrier's location, so CountAvailableItems sees
+    /// it as stock. At mealtime every colonist with a bowl of porridge tops it up with fish
+    /// (GoalEat.GetAdditionalItemsToConsume), and each counted the same twelve: with a reserve of ten
+    /// each could take two, and four colonists left four. Items another eater holds no longer count;
+    /// the eater's own still do, because <c>alreadyTaken</c> already subtracts them.
+    /// </summary>
+    public static int StockForMeal(EntityGroup foodOwner, EntityType type, Entity eater)
+    {
+        if (!foodOwner.AllEntities.TryGetValue(type, out List<EntityID> ids))
+        {
+            return 0;
+        }
+        List<EntityID> available = new List<EntityID>();
+        List<EntityID> unavailable = null;
+        int incomplete = 0, parts = 0, elsewhere = 0, others = 0, count = 0, countWithIntrinsic = 0;
+        OwnerID? owner = foodOwner.GetOwnerID();
+        foreach (EntityID id in ids)
+        {
+            Entity item = Entity.FindByID(id);
+            if (item != null)
+            {
+                EntityGroup.CountEntity(owner, item, ref incomplete, ref parts, ref elsewhere, ref others, ref count, ref countWithIntrinsic, ref available, ref unavailable);
+            }
+        }
+        SharedKnowledge knowledge = foodOwner.GetAllegiance()?.SharedKnowledge;
+        if (knowledge == null)
+        {
+            return available.Count;
+        }
+        return CountForMeal(available, knowledge.GetInUseBy, IsEating, eater?.ID);
+    }
+
+    /// <summary>
+    /// The counting rule of <see cref="StockForMeal"/> on its own, so the self-test can play a
+    /// mealtime through it: an available item counts unless a colonist other than
+    /// <paramref name="eater"/> holds it for a meal. A haul's claim (GoalHaul) still counts - that
+    /// item is moving, not being eaten.
+    /// </summary>
+    public static int CountForMeal(List<EntityID> available, Func<EntityID, EntityID?> inUseBy, Func<EntityID, bool> isEating, EntityID? eater)
+    {
+        int stock = 0;
+        foreach (EntityID id in available)
+        {
+            EntityID? user = inUseBy(id);
+            if (!user.HasValue || user == eater || !isEating(user.Value))
+            {
+                stock++;
+            }
+        }
+        return stock;
+    }
+
+    /// <summary>Whether this colonist is in the middle of a meal: GoalEat is its top-level goal.</summary>
+    private static bool IsEating(EntityID colonist)
+    {
+        GoalThink brain = Entity.FindByID(colonist)?.Intelligence?.Brain;
+        return brain != null && brain.IsSame(typeof(GoalEat));
     }
 
     /// <summary>The stock a standing order sees: the reserve is not there to be used.</summary>
