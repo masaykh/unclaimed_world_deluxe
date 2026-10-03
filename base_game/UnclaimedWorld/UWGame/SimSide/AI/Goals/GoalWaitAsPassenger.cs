@@ -55,8 +55,40 @@ internal class GoalWaitAsPassenger : Goal, ITopLevelGoal
 		return false;
 	}
 
+	/// <summary>
+	/// PORT FIX. Whether <paramref name="passenger"/> is still in something it could get off -
+	/// a container (a transport's hold) or a vehicle seat. Out of both, there is nothing left to
+	/// wait for, and <see cref="ProcessWhileActive"/> ends the wait.
+	///
+	/// The studio's wait ends only on a GetOff message ("// do nothing... just wait..."), and
+	/// cargo never gets one. TravelAction.TransferToPlaySite gives everything in an arriving
+	/// transport this goal, at a ScoreGoal of 1.0 that nothing outbids and with nothing calling
+	/// ArbitrateWhileBusy; UnloadAction - which unloads dogs and robots as trade goods on purpose,
+	/// the studio's "// dogs + robots" and "// NEW: dogs also" - then takes them out of the
+	/// transport in one step, onto the ground at the dock. Colonists leave through
+	/// DisembarkAction instead, whose Disembark message makes GoalThink drop this goal; cargo
+	/// gets no message at all. So a dog or GOPHER bought at a Port arrived the player's property
+	/// and a member of the colony, standing on the ground, and waited as a passenger forever.
+	/// Kastuk: "buy dog, it's appear at dock and still stand mindlessly." His save has exactly one
+	/// GoalWaitAsPassenger in it, the top-level goal of the dog standing at the dock, which is
+	/// contained by nothing.
+	///
+	/// Decided here, from the state, rather than at the unload, so that a creature already stuck
+	/// in a save gets up as soon as the save loads - no repair pass, nothing to run on load. A
+	/// real passenger is always in one or the other, so this never cuts a ride short.
+	/// </summary>
+	private static bool IsAboard(Entity passenger)
+	{
+		return passenger.ContainedBy.HasValue || passenger.PassengerInVehicle.HasValue;
+	}
+
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
+		if (!IsAboard(entity))
+		{
+			base.Status = Status.Completed;
+			return;
+		}
 		if (maxPeriodInSeconds.HasValue)
 		{
 			waitProgress += elapsed.ElapsedGameTime.TotalSeconds;

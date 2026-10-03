@@ -3507,13 +3507,16 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	/// anything that does not think.
 	///
 	/// A creature for sale is spawned as a MEMBER of the trader's expedition
-	/// (TradeManager.ProduceItems passes the trader's keys as memberOf). EntityGroup.Buy changes
-	/// its OWNER and nothing else - ChangeOwnership never touches allegiance - and the delivery,
-	/// UnloadAction, unloads dogs and robots as cargo into the Port's storage. So the dog you paid
-	/// for stayed the trader's, and stayed in the port: Kastuk's "cannot move any way and stay at
-	/// Port. Can discard them like an item, and cannot Claim them back." It could not have walked
-	/// out even once it was ours: GoalExit treats its container as IExit / IGarrison, and a
-	/// TerminalContainer is neither.
+	/// (TradeManager.ProduceItems passes the trader's keys as memberOf), and EntityGroup.Buy
+	/// changes its OWNER and nothing else - ChangeOwnership never touches allegiance. A creature
+	/// left in a terminal could not walk out even once it was ours: GoalExit treats its container
+	/// as IExit / IGarrison, and a TerminalContainer is neither.
+	///
+	/// This was written as the fix for bought dogs that "stay at Port", and it was not one. On a
+	/// delivery TravelAction.TransferToPlaySite has already joined the dog to the colony, and
+	/// UnloadAction puts it on the ground, not in storage; what held it was the passenger wait
+	/// TravelAction gives all cargo (GoalWaitAsPassenger.IsAboard). It stays as a backstop for the
+	/// cases that path does not cover, and as what Claim does to a claimed robot.
 	///
 	/// So both halves, in this order: out of the terminal onto the ground at its access point,
 	/// then ChangeExpedition - the studio's own complete operation (allegiance, their

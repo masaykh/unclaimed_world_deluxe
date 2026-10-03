@@ -58,16 +58,18 @@ public class UnloadAction : MissionAction
 					{
 						e.AssignedToJob = null;
 					}
-					// PORT FIX. The studio unloads dogs and robots as cargo on purpose ("// dogs +
-					// robots", "// NEW: dogs also" in LoadAsTradeGood), so a bought one lands in
-					// the Port's storage like a crate. What was never added is the other half:
-					// EntityGroup.Buy made it the buyer's PROPERTY while it stayed a MEMBER of the
-					// trader's expedition (TradeManager.ProduceItems spawns it as one), and nothing
-					// on this path changes that. Kastuk: "Dogs which appear by Port (by Trade),
-					// cannot move any way and stay at Port." Joining the owner happens here, on
-					// arrival, where the studio's TODO in Buy says ownership changes should really
-					// take effect. Items and colonists are untouched: JoinOwningExpedition does
-					// nothing to what does not think, and passengers leave through DisembarkAction.
+					// PORT FIX, a backstop. The studio unloads dogs and robots as cargo on purpose
+					// ("// dogs + robots", "// NEW: dogs also" in LoadAsTradeGood). EntityGroup.Buy
+					// makes a bought creature the buyer's PROPERTY while it is still a MEMBER of the
+					// trader's expedition (TradeManager.ProduceItems spawns it as one). Normally the
+					// arrival has already fixed that - TravelAction.TransferToPlaySite joins
+					// everything aboard to the destination expedition. This covers an arrival that
+					// named no expedition, and a creature ejected into a terminal rather than onto
+					// the ground. The dog standing at Kastuk's dock was the colony's member, owner
+					// and all; what actually kept it there was the passenger
+					// wait TravelAction gives cargo; GoalWaitAsPassenger.IsAboard ends it. Items and
+					// colonists are untouched: JoinOwningExpedition does nothing to what does not
+					// think, and passengers leave through DisembarkAction.
 					if (e.EntityType.IntelligenceType != null && LookUpOwners.FindByID(e.OwnedBy) is Expedition owningExpedition)
 					{
 						e.JoinOwningExpedition(owningExpedition);

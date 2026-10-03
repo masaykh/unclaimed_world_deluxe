@@ -772,6 +772,24 @@ else
   fail "the gatherondemand self-test reported failures"
 fi
 
+# A save, read with no window. Bought dogs stood at the dock "mindlessly" through two fixes that
+# each built clean; the save the tester sent showed why in one read - the dog was the colony's,
+# and its only goal was a passenger wait with nothing to ride. That save is a player's file, not
+# this repository's, so point UW_DOG_SAVE at it (or any save with a dog or robot on the map).
+say "==> 29. a save with a delivered dog loads headlessly, and nothing waits as a passenger aboard nothing"
+if [ -n "$UW_DOG_SAVE" ] && [ -f "$UW_DOG_SAVE" ]; then
+  out=$( cd "$(new_install case29)" && "$EXPORT" . "--save-selftest=$UW_DOG_SAVE" 2>&1 ) || true
+  if echo "$out" | grep -q "save self-test OK" && echo "$out" | grep -q "^  ok    "; then
+    pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception' | head -4
+    fail "the save self-test reported failures"
+  fi
+else
+  say "  SKIP  UW_DOG_SAVE is not set to a save file - this case did not run"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a

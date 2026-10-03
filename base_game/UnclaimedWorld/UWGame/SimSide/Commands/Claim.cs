@@ -72,8 +72,15 @@ public class Claim : Command
 			// not leave, because GoalExit needs an IExit and a TerminalContainer is not one.
 			// Entity.JoinOwningExpedition takes it out of the terminal first, and is the same call
 			// UnloadAction now makes when a bought one is delivered - so buying and claiming
-			// cannot drift apart. It is also how a creature bought before that fix is recovered:
-			// discard it, then claim it.
+			// cannot drift apart.
+			//
+			// This was also offered as the way to recover a dog bought before that fix - discard
+			// it, then claim it - and it cannot be: EntityListWindow.CanBeClaimed offers Claim
+			// only for NonLivingEntity ("perhaps there are plans for claiming animals in the
+			// future"), so a robot can be claimed and a dog never could. Kastuk: "Discard not let
+			// claim it, no option for it." Nor was it needed: a stuck dog was already the
+			// colony's, held by its passenger wait, which GoalWaitAsPassenger.IsAboard now ends
+			// on its own - in an old save too.
 			if (newOwner is Expedition expedition)
 			{
 				entity.JoinOwningExpedition(expedition);
