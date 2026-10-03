@@ -31,6 +31,15 @@ public static class SelfPreservationMod
     }
 
     /// <summary>
+    /// False - an attacker keeps its vermin. The studio's GoalAttack.ArePreconditionsOK asked
+    /// nothing about other threats, so "keep going" is their answer.
+    /// </summary>
+    public static bool AbandonsVerminChase(Entity entity, AttackJob job)
+    {
+        return false;
+    }
+
+    /// <summary>
     /// The score unchanged. The studio's line was <c>result = bestScore</c> with nothing in
     /// between, so the identity is their behaviour - and it is the trap this file exists to
     /// avoid: returning 0 here would stop the colony defending itself in a build with no mod.

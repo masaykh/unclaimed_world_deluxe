@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UWGame.SimSide.AI.Goals;
 using UWGame.SimSide.Allegiances;
 using UWGame.SimSide.Entities;
@@ -53,6 +54,32 @@ namespace UWGame.Mods;
 /// NOT DONE, from the rest of the request: traits and professions as an input (a guard should
 /// answer a threat a cook should not - the game has no combat profession to read), and restricting
 /// which weapons get spent on which enemy, which is the material-policy work rather than this.
+///
+/// DOGS DROP VERMIN FOR REAL THREATS. Kastuk, "Dangerous fauna", after PreyFearMod made cornered
+/// prey run: "a dog can be so focused on vermin and not even see a coming Whipjaw in threatening
+/// status, until some of colonists shoot that threat. Dog still chasing vermin around."
+///
+/// What the studio built (original_src): a ThreatJob for vermin goes on the allegiance's
+/// AssetThreatJobs list and is scored by an EvaluateAttackJobs with PriorityOfAssetThreatJobs 4.9;
+/// a ThreatJob for something that threatens people goes on ThreatJobs and is scored with
+/// PriorityOfThreatJobs 100. So a threat outranks vermin by design. But a dog already IN a vermin
+/// chase only reconsiders through GoalThink.ArbitrateWhileBusy - 0.3 times a second, from
+/// GoalTraverseEdgeBetweenWaypoints, and only once a whole evaluator pass finishes; an
+/// EvaluateAttackJobs pass that has to wait for a region-map distance pauses until the NEXT busy
+/// arbitration, about 3 s later, every time it waits. The full 2-a-second arbitration happens only
+/// when the GoalAttack ends. In the studio's game it ended quickly - vermin did not run. With prey
+/// that runs, a chase can last as long as the vermin keeps running, and the slow path is all the
+/// dog has. Even when it does finish, the threat job may already have its takers, and the dog
+/// goes straight back to the vermin it was offered next.
+///
+/// With the switch on, a colony animal that is attacking vermin (<see cref="AbandonsVerminChase"/>,
+/// from GoalAttack.ArePreconditionsOK - the goal's own 2-a-second check, so no new per-frame work)
+/// lets it go as soon as its colony knows of a real threat, and while one is about the vermin is not
+/// offered to it again (<see cref="DeclinesThreat"/>). The threat evaluator - priority 100 - then
+/// has the dog to itself: it joins the fight if there is room on the job, and if there is not it
+/// stays out of the vermin chase, at home, until the danger is gone. "A real threat" is the
+/// colony's own judgement: a ThreatJob that is not IsVermin, which ThreatJobManager only creates
+/// when the creature's threat rating against PEOPLE is over MinimumThreatRatingToBeAThreatToAgents.
 /// </summary>
 public static class SelfPreservationMod
 {
@@ -74,6 +101,8 @@ public static class SelfPreservationMod
     private static ModSetting unarmedStayOut;
 
     private static ModSetting animalsNeedCompany;
+
+    private static ModSetting animalsDropVermin;
 
     /// <summary>How much a colonist dislikes a fight nobody ordered.</summary>
     public static ModSetting UnorderedThreats =>
@@ -108,6 +137,16 @@ public static class SelfPreservationMod
             toolTip: "A colony animal joins a fight only once one of your people is already on " +
                      "it, instead of charging anything it sees on its own."));
 
+    /// <summary>Whether a colony animal leaves vermin alone while something threatens the colony's people.</summary>
+    public static ModSetting AnimalsDropVermin =>
+        animalsDropVermin ?? (animalsDropVermin = ModSettings.Toggle(
+            ModId, "animalsDropVermin", "DOGS DROP VERMIN FOR REAL THREATS", defaultValue: false,
+            toolTip: "A colony animal chasing a rat, quadite or other vermin lets it go as soon as " +
+                     "the colony knows of something that threatens your people, and leaves vermin " +
+                     "alone until that is dealt with - so it can answer the threat instead. With " +
+                     "DOGS FIGHT ONLY ALONGSIDE PEOPLE also on, it joins once one of your people does.",
+            affectsSimulation: true));
+
     public static void RegisterSettings()
     {
         ModSettings.SetCategoryLabel(ModId, "SELF-PRESERVATION");
@@ -115,12 +154,13 @@ public static class SelfPreservationMod
         _ = InjuredStayOut;
         _ = UnarmedStayOut;
         _ = AnimalsNeedCompany;
+        _ = AnimalsDropVermin;
     }
 
     /// <summary>Whether anything here is switched on.</summary>
     public static bool Enabled =>
         UnorderedThreats.Value != Normal || InjuredStayOut.On || UnarmedStayOut.On
-        || AnimalsNeedCompany.On;
+        || AnimalsNeedCompany.On || AnimalsDropVermin.On;
 
     /// <summary>
     /// Whether <paramref name="entity"/> should refuse to consider this unordered threat job
@@ -131,14 +171,91 @@ public static class SelfPreservationMod
     /// that is a yes/no about the job rather than a matter of degree. People go through
     /// <see cref="AdjustThreatDesirability"/> instead - see the class comment for why a filter was
     /// the wrong shape for them.
+    ///
+    /// Vermin (<paramref name="isAssetThreat"/>) are declined only by a colony animal with
+    /// <see cref="AnimalsDropVermin"/> on, while its colony knows of a real threat.
     /// </summary>
     public static bool DeclinesThreat(Entity entity, AttackJob job, bool isAssetThreat)
     {
-        if (entity == null || job == null || isAssetThreat)
+        if (entity == null || job == null)
         {
             return false;
         }
-        if (!AnimalsNeedCompany.On || entity.Intelligence == null)
+        if (isAssetThreat)
+        {
+            return AnimalsDropVermin.On && LeavesVermin(IsColonyAnimal(entity), jobIsVermin: true, RealThreat(entity) != null);
+        }
+        return AnimalsNeedCompany.On && IsColonyAnimal(entity) && !HasHumanTaker(job);
+    }
+
+    /// <summary>
+    /// Called from GoalAttack.ArePreconditionsOK, at that goal's own two-a-second check: whether a
+    /// colony animal attacking vermin should let it go because its colony knows of a real threat.
+    /// False whenever the switch is off, which is the studio's game.
+    /// </summary>
+    public static bool AbandonsVerminChase(Entity entity, AttackJob job)
+    {
+        if (!AnimalsDropVermin.On)
+        {
+            return false;
+        }
+        ThreatJob threat = RealThreat(entity);
+        if (!LeavesVermin(IsColonyAnimal(entity), job is ThreatJob verminJob && verminJob.IsVermin, threat != null))
+        {
+            return false;
+        }
+        // The player's combat log, the way the studio reports "has given up chasing" from the
+        // same method - so a tester can see the decision being made.
+        entity.Intelligence.GetKnownData(threat.Target.Value, out var danger);
+        if (The.Client?.Log != null && danger != null)
+        {
+            The.Client.Log.AddLogEvent(The.Client.Log.CombatEvent, entity, $"stops chasing vermin: {danger} threatens the colony.");
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// The decision <see cref="AbandonsVerminChase"/> and <see cref="DeclinesThreat"/> make, with
+    /// the game state already read - for the self-test in tools/DataExport, which has no colony.
+    /// </summary>
+    public static bool LeavesVermin(bool isColonyAnimal, bool jobIsVermin, bool colonyKnowsOfRealThreat) =>
+        AnimalsDropVermin.On && isColonyAnimal && jobIsVermin && colonyKnowsOfRealThreat;
+
+    /// <summary>
+    /// The first threat the colony knows of that endangers PEOPLE: a ThreatJob that is not vermin,
+    /// whose target is still known. ThreatJobManager only puts a job on this list when the
+    /// creature's threat rating to agents passes MinimumThreatRatingToBeAThreatToAgents, so the
+    /// list is the colony's own judgement and nothing is re-rated here. Usually empty or one long.
+    /// </summary>
+    private static ThreatJob RealThreat(Entity entity)
+    {
+        if (entity?.Intelligence == null)
+        {
+            return null;
+        }
+        List<Job> threats = entity.Intelligence.Allegiance?.SharedKnowledge?.AllKnownEntities?.ThreatJobs;
+        if (threats == null)
+        {
+            return null;
+        }
+        for (int i = 0; i < threats.Count; i++)
+        {
+            if (threats[i] is ThreatJob threat && !threat.IsVermin && threat.Target.HasValue
+                && !GoalEvaluator.EntityDataResultCausesSkip(entity.Intelligence.GetKnownData(threat.Target.Value, out _)))
+            {
+                return threat;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Whether this is one of the colony's animals - a dog or a HOUND, never a person and never
+    /// wildlife.
+    /// </summary>
+    private static bool IsColonyAnimal(Entity entity)
+    {
+        if (entity?.Intelligence == null)
         {
             return false;
         }
@@ -164,11 +281,7 @@ public static class SelfPreservationMod
         // intelligent", "any entity with attacking job will need a caretaker then?" - and
         // tripleacoder's suggestion was to select the dog specifically. AllegianceType is the
         // game's own version of that distinction and does not need a list of entity keys.
-        if (entity.Intelligence.Allegiance?.AllegianceType != AllegianceType.Player)
-        {
-            return false;
-        }
-        return !HasHumanTaker(job);
+        return entity.Intelligence.Allegiance?.AllegianceType == AllegianceType.Player;
     }
 
     /// <summary>

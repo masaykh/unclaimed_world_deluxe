@@ -232,6 +232,11 @@ internal static class Program
             return HuntingSelfTest();
         }
 
+        if (args.Contains("--selfpreservation-selftest"))
+        {
+            return SelfPreservationSelfTest();
+        }
+
         if (args.Contains("--savetype-selftest"))
         {
             return SaveTypeSelfTest();
@@ -893,6 +898,55 @@ internal static class Program
             ?.FirstOrDefault() as UWGame.SimSide.Commands.SetAutoclaimCampKills;
         Check(autoclaimBack != null && autoclaimBack.ExpeditionID == 7L && autoclaimBack.Claim, "SetAutoclaimCampKills round-trips through the replay serializer");
         Console.WriteLine(failures == 0 ? "hunting self-test OK" : $"hunting self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks SelfPreservationMod's "dogs drop vermin for real threats" against the real creatures.
+    /// The decision needs three things: a colony animal, a vermin job, and a threat the colony
+    /// knows of. The last two come from ThreatJobManager, which files a creature as vermin by
+    /// BiologicalType.IsVermin - so the rat and the field quadite must be vermin and the whipjaw
+    /// must not, or the whipjaw would be on the 4.9-priority vermin list beside the rat and there
+    /// would be no "real threat" to leave the rat for. Then the decision itself, both ways: with the
+    /// switch off a dog keeps its vermin whatever comes (the studio's game, and the report); with it
+    /// on it leaves it - and nothing else does. The live part (GoalAttack giving the job up) needs a
+    /// colony and is not reached here.
+    /// </summary>
+    private static int SelfPreservationSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> self-preservation self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        bool Vermin(string key) => types.TryGetValue(key, out var t) && t.BiologicalType?.IsVermin == true;
+        foreach (string key in new[] { "entity:binalRat", "entity:fieldQuadite" })
+        {
+            Check(types.ContainsKey(key) && Vermin(key), key + " is vermin, so its threat job is an asset threat");
+        }
+        foreach (string key in new[] { "entity:whipjaw", "entity:swarmer", "entity:patrician" })
+        {
+            Check(types.ContainsKey(key) && !Vermin(key), key + " is not vermin, so its threat job is a real threat");
+        }
+        Check(types.TryGetValue("entity:dog", out var dog) && dog.Person == null && dog.IntelligenceType?.CanAttack != false,
+              "entity:dog is an animal that attacks - a colony animal when it is the player's");
+
+        bool on = UWGame.Mods.SelfPreservationMod.AnimalsDropVermin.On;
+        bool dogLeaves = UWGame.Mods.SelfPreservationMod.LeavesVermin(isColonyAnimal: true, jobIsVermin: true, colonyKnowsOfRealThreat: true);
+        Check(dogLeaves == on, on ? "switch on: a dog chasing vermin leaves it when the colony knows of a real threat"
+                                  : "switch off: a dog chasing vermin keeps it whatever comes (the studio's game)");
+        Check(!UWGame.Mods.SelfPreservationMod.LeavesVermin(isColonyAnimal: true, jobIsVermin: true, colonyKnowsOfRealThreat: false),
+              "with no real threat about, a dog keeps its vermin");
+        Check(!UWGame.Mods.SelfPreservationMod.LeavesVermin(isColonyAnimal: true, jobIsVermin: false, colonyKnowsOfRealThreat: true),
+              "a dog already on a real threat is not pulled off it");
+        Check(!UWGame.Mods.SelfPreservationMod.LeavesVermin(isColonyAnimal: false, jobIsVermin: true, colonyKnowsOfRealThreat: true),
+              "a person or a wild animal is never affected");
+        Console.WriteLine(failures == 0 ? "self-preservation self-test OK" : $"self-preservation self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 
