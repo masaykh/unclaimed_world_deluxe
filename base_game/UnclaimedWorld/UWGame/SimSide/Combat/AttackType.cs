@@ -304,8 +304,10 @@ public class AttackType : IGameData, IXmlSerializable
 			// PORT FIX: remember who struck the blow NOW. It is otherwise only remembered when the
 			// target's brain handles a Hit message (GoalThink -> Memory.RememberAttacker), and a
 			// lethal blow sends HitAndCollapse instead - so Entity.UpdateBiological, which may start
-			// the collapse before that message is read, had no killer to give the carcass to. See
-			// Entity.CarcassOwnerAfterWounds.
+			// the collapse before that message is read, did not know the killer of a one-shot kill,
+			// and the kill went uncounted (Entity.Kill -> Statistics.AddKillEvent; the studio's
+			// "otherwise the player might get cheated from some kills"). It does not decide who owns
+			// the carcass: see Entity.CarcassOwnerOnLethalBlow.
 			if (entity != null)
 			{
 				targetAsEntity.Intelligence?.Memory?.RememberAttacker(entity.EntityID);

@@ -686,6 +686,20 @@ else
   echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
   fail "the hunting self-test reported failures with the switch off"
 fi
+# The autoclaim policy: a kill outside a hunt is claimed only with the AUTOCLAIM SWITCH setting on,
+# the expedition's box ticked AND the carcass inside the camp's hunting radius. Kastuk's report
+# after c2db39e was every kill by the colony claimed, anywhere, box or no box - the core gave
+# such carcasses to the killer's side before the policy was ever asked. Runs 21 and 21b above
+# check the same with the setting off.
+say "==> 21c. the autoclaim box claims a kill only in camp, and only when ticked"
+d=$(new_install case21c); write_setting "$d" hunting.autoclaimSwitch true
+out=$( cd "$d" && "$EXPORT" . --hunting-selftest 2>&1 ) || true
+if echo "$out" | grep -q "hunting self-test OK" && echo "$out" | grep -q "AUTOCLAIM SWITCH on: a kill in camp, box ticked, is claimed"; then
+  pass "autoclaim on: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the hunting self-test reported failures with the autoclaim switch on"
+fi
 
 # Why vanilla saves did not load in Deluxe 1.0 to 1.3: a save names generic types with their
 # arguments assembly-qualified, version included, and .NET will not bind a newer version than the
