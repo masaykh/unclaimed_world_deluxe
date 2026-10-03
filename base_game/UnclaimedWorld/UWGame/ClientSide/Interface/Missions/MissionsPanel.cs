@@ -16,6 +16,8 @@ public class MissionsPanel : RosterPanel
 	private List<Mission> allMissionsToShow = new List<Mission>();
 	private LCDInnerPanel addPanel;
 
+	private Label lblNewRun;
+
 	public MissionsPanel()
 		: base("MISSIONS", 600, needBottomMarginForButtons: false)
 	{
@@ -67,12 +69,12 @@ public class MissionsPanel : RosterPanel
 		imageButton.DebugTag = "newRun";
 		uIComponent.Width = imageButton.Width;
 		uIComponent.Height = imageButton.Height;
-		Label label = new Label(Interface.gui);
-		uIComponent.Add(label);
-		label.Init(Label.LabelType.LCDNormal);
-		label.Text = "NEW RUN";
-		label.X = 16;
-		label.Y = 14;
+		lblNewRun = new Label(Interface.gui);
+		uIComponent.Add(lblNewRun);
+		lblNewRun.Init(Label.LabelType.LCDNormal);
+		lblNewRun.Text = "NEW RUN";
+		lblNewRun.X = 16;
+		lblNewRun.Y = 14;
 		return uIComponent;
 	}
 
@@ -83,6 +85,10 @@ public class MissionsPanel : RosterPanel
 
 	private void Populate()
 	{
+		// PORT: the run being planned now survives the planning panel being hidden (see
+		// CreateMissionPanel.Hide), so the button that leads back to it says so.
+		lblNewRun.Text = The.InGameUI.CreateMissionPanel.HasDraft ? "CONTINUE RUN" : "NEW RUN";
+		lblNewRun.FitToText();
 		GetAllMissionsToShow();
 		outerGrid.BeginAddingEntries();
 		grdMissions.BeginAddingEntries();
