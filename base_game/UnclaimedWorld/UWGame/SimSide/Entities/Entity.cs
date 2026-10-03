@@ -4368,6 +4368,13 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 		{
 			return true;
 		}
+		// MOD: HomeRaidMod - a raider species keeps the buildings it has seen in its memory, the
+		// way the rule above does for a critter that can use containers, so a raid can only target
+		// a building it knows of. False unless the mod is switched on.
+		if (UWGame.Mods.HomeRaidMod.TakesInterestIn(representativeEntityType, EntityType))
+		{
+			return true;
+		}
 		return false;
 	}
 

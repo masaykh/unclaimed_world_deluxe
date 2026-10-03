@@ -36,6 +36,16 @@ namespace UWGame.Mods;
 /// visible targets, and food is on the ground. A broken building is not raided again. The raid is
 /// part of the predator's saved brain, so it carries on after a load.
 ///
+/// ONLY WHAT IT KNOWS. tripleacoder: "RaidableBuildings should probably scan known entities,
+/// otherwise the predators become omniscient." A predator raids only a building its kind has seen
+/// and not yet forgotten - the game's own perception and memory, the same SharedKnowledge.
+/// AllKnownEntities a creature's EvaluateEat scans for food (<see cref="Knows"/>). Its sensor sees
+/// the building when it comes into view (Sensor.RollToDetect -> SharedKnowledge.SeeDetectable),
+/// remembers it out of sight, and forgets it after its species' MemoryInDays. The studio's memory
+/// only tracks what a critter has an interest in (Entity.HasInterestInEntity), and only the
+/// whipjaw's container tag makes it interested in buildings, so the mod adds that interest for the
+/// raider species while it is on (<see cref="TakesInterestIn"/>).
+///
 /// This file keeps the rules: who raids, what is worth raiding, how fast a building gives way.
 /// Off by default.
 /// </summary>
@@ -155,13 +165,39 @@ public static class HomeRaidMod
     }
 
     /// <summary>
-    /// The building this predator would raid: the nearest within its aggro range with colonists
-    /// asleep inside at night, or - if it is hungry - food in store it eats. Null when there is none,
-    /// or it raided today. Called from EvaluateBreakIn.
+    /// Called by Entity.HasInterestInEntity: whether <paramref name="watcher"/>'s kind keeps
+    /// <paramref name="seen"/> in its memory because of this mod - a building with room inside, seen
+    /// by a raider species, while raids are on. Without it the studio's memory leaves buildings out
+    /// for the patrician and the megapod, and <see cref="Knows"/> would never be true for them.
+    /// </summary>
+    public static bool TakesInterestIn(EntityType watcher, EntityType seen)
+    {
+        return seen?.StructureType != null && seen.ContainerType != null && Enabled && IsRaider(watcher);
+    }
+
+    /// <summary>
+    /// Whether a predator whose kind knows <paramref name="known"/> (its allegiance's
+    /// SharedKnowledge.AllKnownEntities - seen now, or remembered) knows this building.
+    /// </summary>
+    public static bool Knows(EntityGroup known, Entity building)
+    {
+        return building != null && known != null && known.Contains(building);
+    }
+
+    /// <summary>
+    /// The building this predator would raid: the nearest within its aggro range that its kind
+    /// knows of (<see cref="Knows"/>), with colonists asleep inside at night, or - if it is hungry -
+    /// food in store it eats. Null when there is none, or it raided today. Called from
+    /// EvaluateBreakIn.
     /// </summary>
     public static Entity FindTarget(Entity predator)
     {
         if (!Enabled || predator?.Location == null || OnCooldown(predator))
+        {
+            return null;
+        }
+        EntityGroup known = predator.Intelligence?.Allegiance?.SharedKnowledge?.AllKnownEntities;
+        if (known == null)
         {
             return null;
         }
@@ -171,6 +207,11 @@ public static class HomeRaidMod
         foreach (Raidable r in RaidableBuildings())
         {
             Entity building = r.Building;
+            if (!Knows(known, building))
+            {
+                // Never seen, or forgotten: it does not know the building is there.
+                continue;
+            }
             if (building.AccessPoint == null || Entity.FindByID(building.EntityID) == null
                 || (building.NonLivingEntity?.Integrity is float integrity && integrity <= 0f))
             {

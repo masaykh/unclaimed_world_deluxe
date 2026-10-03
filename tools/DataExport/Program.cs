@@ -212,6 +212,11 @@ internal static class Program
             return RegrowthSelfTest();
         }
 
+        if (args.Contains("--homeraid-selftest"))
+        {
+            return HomeRaidSelfTest();
+        }
+
         if (args.Contains("--pest-selftest"))
         {
             return PestSelfTest();
@@ -1060,6 +1065,103 @@ internal static class Program
                   key + " is a mobile creature that attacks, with an aggro range (HomeRaidMod)");
         }
         Console.WriteLine(failures == 0 ? "regrowth self-test OK" : $"regrowth self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks that HomeRaidMod's predators raid only what they know. tripleacoder: "RaidableBuildings
+    /// should probably scan known entities, otherwise the predators become omniscient." A building
+    /// is known when it is in the predator's allegiance's SharedKnowledge.AllKnownEntities - put
+    /// there by the game's own seeing step (SharedKnowledge.AddToCollectionsOfKnownEntities, called
+    /// by SeeDetectable when a sensor sees it) and taken out by its own forgetting
+    /// (DeleteMemoryOfEntity). That memory only holds what Entity.HasInterestInEntity lets it hold,
+    /// so the raiders must take an interest in homes and stores with the mod on - and only then.
+    /// </summary>
+    private static int HomeRaidSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> home raid self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        if (UWGame.Mods.HomeRaidMod.RaiderKeys.Length == 0)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        var types = GameData.Instance.AllEntityTypes;
+        var home = types.Values.FirstOrDefault(t => t.StructureType != null && t.ContainerType is UWGame.SimSide.Entities.Containers.Components.HomeContainerType);
+        var store = types.Values.FirstOrDefault(t => t.StructureType != null && t.ContainerType is UWGame.SimSide.Entities.Containers.Components.StorageContainerType);
+        Check(home != null && store != null, $"a home ({home?.KeyName}) and a store ({store?.KeyName}) are in the tables");
+        if (home == null || store == null)
+        {
+            Console.WriteLine($"home raid self-test FAILED - {failures} check(s)");
+            return 1;
+        }
+        var raiders = UWGame.Mods.HomeRaidMod.RaiderKeys.Select(k => types.TryGetValue(k, out var t) ? t : null).ToList();
+        Check(raiders.All(t => t != null), "every raider is in the tables");
+        raiders.RemoveAll(t => t == null);
+
+        var enabled = UWGame.Mods.HomeRaidMod.EnabledSetting;
+        string was = enabled.Value;
+        enabled.Value = "false";
+        foreach (var raider in raiders)
+        {
+            Check(!UWGame.Mods.HomeRaidMod.TakesInterestIn(raider, home) && !UWGame.Mods.HomeRaidMod.TakesInterestIn(raider, store),
+                  "switch off: " + raider.KeyName + " keeps the studio's memory, no added interest in buildings");
+        }
+        enabled.Value = "true";
+        foreach (var raider in raiders)
+        {
+            Check(raider.SensorType != null, raider.KeyName + " has a sensor to see buildings with");
+            Check(UWGame.Mods.HomeRaidMod.TakesInterestIn(raider, home) && UWGame.Mods.HomeRaidMod.TakesInterestIn(raider, store),
+                  "switch on: " + raider.KeyName + " remembers the homes and stores it sees");
+        }
+        if (types.TryGetValue("entity:bushDragon", out var dragon))
+        {
+            Check(!UWGame.Mods.HomeRaidMod.TakesInterestIn(dragon, store), "...and the bush dragon, which does not raid, does not");
+        }
+        types.TryGetValue("entity:swarmer", out var swarmer);
+        Check(raiders.Count > 0 && swarmer != null && !UWGame.Mods.HomeRaidMod.TakesInterestIn(raiders[0], swarmer),
+              "...and only in buildings, not in creatures (entity:swarmer)");
+
+        // The predator's kind's memory, as the game keeps it. The buildings are made the way a save
+        // loads one - the bare Entity() with an ID and a type - because the full constructor wants a
+        // running client, which this tool does not start.
+        UWGame.SimSide.Entities.Entity.CreateLookupCollection();
+        UWGame.SimSide.Entities.Entity Building(UWGame.SimSide.Entities.EntityType type)
+        {
+            var building = new UWGame.SimSide.Entities.Entity();
+            building.AddToLookup();
+            typeof(UWGame.SimSide.Entities.Entity).GetProperty(nameof(building.EntityType)).SetValue(building, type);
+            return building;
+        }
+        var knowledge = new UWGame.SimSide.AI.SharedKnowledge
+        {
+            AllKnownEntities = new UWGame.SimSide.Entities.EntityGroup(),
+            EntityLocks = new Dictionary<UWGame.SimSide.Entities.EntityID, UWGame.SimSide.AI.EntityLock>(),
+            SpecialActionLocks = new Dictionary<UWGame.SimSide.Entities.EntityID, List<UWGame.SimSide.Processes.ProcessType>>(),
+        };
+        var seen = Building(store);
+        var unseen = Building(home);
+        Check(!UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, seen) && !UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, unseen),
+              "a building the predator's kind has never perceived is not a raid target");
+        knowledge.AddToCollectionsOfKnownEntities(seen);
+        Check(UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, seen),
+              "one it has perceived is (SharedKnowledge.AddToCollectionsOfKnownEntities, the step SeeDetectable takes)");
+        Check(!UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, unseen), "...and perceiving one building reveals no other");
+        knowledge.DeleteMemoryOfEntity(seen.ID, null, removeAllKnowledge: true);
+        Check(!UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, seen),
+              "once forgotten (SharedKnowledge.DeleteMemoryOfEntity) it is not a target again");
+        Check(!UWGame.Mods.HomeRaidMod.Knows(null, seen) && !UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, null),
+              "no knowledge or no building: no target");
+        enabled.Value = was;
+
+        Console.WriteLine(failures == 0 ? "home raid self-test OK" : $"home raid self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 
