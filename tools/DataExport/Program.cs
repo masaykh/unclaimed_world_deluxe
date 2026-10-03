@@ -653,12 +653,15 @@ internal static class Program
     /// Plays key presses through HudMod.MarkersShown, the LeftAlt gesture: held shows the markers
     /// only while down; two presses within a second latch them on until the next such pair; a
     /// press alone does not change the latch, and two presses too far apart are not a pair.
-    /// No tables needed.
+    /// Then the item layers against the loaded and validated tables (HudMod.ItemGrouping).
     /// </summary>
     private static int HudSelfTest()
     {
         int loaded = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (loaded != 0) return loaded;
+        // Tool.ToolEntityTypes - which items each process takes as a tool - is filled in the
+        // validation pass, and the TOOLS checks below read it.
+        if (!ValidateDataComplete()) return 1;
         Console.WriteLine("==> hud self-test");
         UWGame.Mods.HudMod.RegisterSettings();
         if (UWGame.Mods.ModSettings.Find("hud.revealKey") == null)
@@ -706,6 +709,40 @@ internal static class Program
         Check(GameData.Instance.AllEntityTypes.TryGetValue("item:gunpowderRifle", out var rifleType)
               && UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetGrouping(rifleType) == UWGame.ClientSide.Interface.Overlays.EntityGrouping.Weapons,
               "a gunpowder rifle is in WEAPONS");
+        // TOOLS holds every item a process takes as a tool (ProcessType.ProcessToolSet -> Tool.ToolEntityTypes,
+        // the studio's own definition). Kastuk found the spade missing: tools that can also be swung
+        // carry a WeaponType, and that was asked first. The only ones kept out are those the studio's
+        // category files under "weapons" (the spears), which go to WEAPONS, as in the stockpile.
+        var toolsLayer = UWGame.ClientSide.Interface.Overlays.EntityGrouping.Tools;
+        var weaponsLayer = UWGame.ClientSide.Interface.Overlays.EntityGrouping.Weapons;
+        UWGame.ClientSide.Interface.Overlays.EntityGrouping? Layer(UWGame.SimSide.Entities.EntityType t) => UWGame.ClientSide.Interface.Overlays.OverlaySettings.GetGrouping(t);
+        var processTools = GameData.Instance.AllProcessTypes.Values
+            .Where(p => p.ProcessToolSet?.Tools != null)
+            .SelectMany(p => p.ProcessToolSet.Tools).Where(a => a.Tools != null)
+            .SelectMany(a => a.Tools).SelectMany(tool => tool.ToolEntityTypes)
+            .Where(t => t.ItemType != null && t.StructureType == null && t.BiologicalType == null && !t.IsIntrinsic())
+            .Distinct().OrderBy(t => t.KeyName, StringComparer.Ordinal).ToList();
+        var outOfTools = processTools.Where(t => t.CategoryKey != "weapons" && Layer(t) != toolsLayer).ToList();
+        Check(processTools.Count > 0 && outOfTools.Count == 0,
+              $"every item a process uses as a tool is in TOOLS ({processTools.Count - processTools.Count(t => t.CategoryKey == "weapons")})"
+              + (outOfTools.Count == 0 ? "" : " - missing: " + string.Join(", ", outOfTools.Select(t => t.KeyName))));
+        var spears = processTools.Where(t => t.CategoryKey == "weapons").ToList();
+        Check(spears.All(t => Layer(t) == weaponsLayer),
+              $"the process tools the studio files under weapons stay in WEAPONS: {string.Join(", ", spears.Select(t => t.Name))}");
+        foreach (string spade in new[] { "item:steelSpade", "item:improvisedSpade" })
+        {
+            Check(GameData.Instance.AllEntityTypes.TryGetValue(spade, out var spadeType) && Layer(spadeType) == toolsLayer,
+                  $"{spade} is in TOOLS");
+        }
+        var items = types.Where(t => t.ItemType != null && UWGame.Mods.HudMod.ItemGrouping(t) != null).ToList();
+        var toolsElsewhere = items.Where(t => t.CategoryKey == "tools" && Layer(t) != toolsLayer).ToList();
+        Check(toolsElsewhere.Count == 0, "every item in the studio's \"tools\" category is in TOOLS"
+              + (toolsElsewhere.Count == 0 ? "" : " - missing: " + string.Join(", ", toolsElsewhere.Select(t => t.KeyName))));
+        var weaponsElsewhere = items.Where(t => t.CategoryKey == "weapons" && Layer(t) != weaponsLayer).ToList();
+        Check(weaponsElsewhere.Count == 0, "every item in the studio's \"weapons\" category is in WEAPONS"
+              + (weaponsElsewhere.Count == 0 ? "" : " - not there: " + string.Join(", ", weaponsElsewhere.Select(t => t.KeyName))));
+        Console.WriteLine("  info  TOOLS: " + string.Join(", ", items.Where(t => Layer(t) == toolsLayer).Select(t => t.Name).OrderBy(n => n, StringComparer.Ordinal)));
+        Console.WriteLine("  info  WEAPONS: " + string.Join(", ", items.Where(t => Layer(t) == weaponsLayer).Select(t => t.Name).OrderBy(n => n, StringComparer.Ordinal)));
         Console.WriteLine(failures == 0 ? "hud self-test OK" : $"hud self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }

@@ -45,16 +45,18 @@ public static class HudMod
     /// <summary>
     /// The talk panel on the left - the frame, the CRT portrait and the lines (TalkPanel). Kastuk:
     /// "hide it fully / show only when dialogues is triggered / show it always, like now", and for
-    /// the middle one, hidden again 10 seconds after the last line; lines are not copied into the
-    /// bottom log in any mode. They are still recorded in Client.Log.TalkEvents.
+    /// the middle one, hidden again 10 seconds after the last speaker's portrait has gone (Kastuk,
+    /// after the first cut counted from the line itself: "may be too fast"); lines are not copied
+    /// into the bottom log in any mode. They are still recorded in Client.Log.TalkEvents.
     /// </summary>
     public static ModSetting TalkPanel =>
         talkPanel ?? (talkPanel = ModSettings.Choice(
             ModId, "talkPanel", "TALK PANEL", new[] { TalkAlways, TalkWhenSpoken, TalkHidden }, TalkAlways,
             toolTip: "The panel on the left where colonists talk: always shown (the studio's way), " +
-                     "shown when someone speaks and hidden 10 seconds after the last line, or hidden."));
+                     "shown when someone speaks and hidden 10 seconds after the last speaker's portrait " +
+                     "has gone, or hidden."));
 
-    /// <summary>How long the talk panel stays after the last line, in the middle mode.</summary>
+    /// <summary>How long the talk panel stays after the last speaker's portrait has gone, in the middle mode.</summary>
     public const double TalkPanelLingerSeconds = 10.0;
 
     /// <summary>The talk panel mode; read by TalkPanel.Update every frame.</summary>
@@ -164,22 +166,40 @@ public static class HudMod
             ModId, "itemLayers", "ITEM LAYERS IN THE MARKERS MENU", defaultValue: true,
             toolTip: "Adds TOOLS, WEAPONS, PREPARED FOOD, INGREDIENTS and MATERIALS to the markers menu " +
                      "above the minimap. Switch one on to mark those items on the minimap and outline them " +
-                     "on the map."));
+                     "on the map. The lists in the markers menu are sorted by name."));
 
-    /// <summary>Which item layer a type belongs to, or null (not an item, or the layers are off).</summary>
+    /// <summary>
+    /// Which item layer a type belongs to, or null (not an item, or the layers are off).
+    ///
+    /// Tools before weapons. Kastuk: "tools like Spade is not shown in markers Tools list". Every
+    /// hand tool that can also be swung in a fight carries a WeaponType - spades, hoes, pickaxes,
+    /// hand axes, knives, machetes, the hammer: 15 types - and asking WeaponType first put them all
+    /// in WEAPONS. What makes an item a tool in the studio's data is a ToolType: a process can only
+    /// name an item as its tool if it has one (Tool.PostInitValidate refuses anything else).
+    ///
+    /// The one exception is the studio's own category. Spears are ToolTypes too (gathering from
+    /// an ursinix takes one), but EntityCategory "weapons" files them with the guns, and the
+    /// stockpile and trade windows list them there; the markers menu agrees with those windows.
+    /// The same category puts the sentry items, which have no WeaponType, in WEAPONS rather than
+    /// MATERIALS, and "tools" puts the fire extinguisher, which has no ToolType, in TOOLS.
+    /// </summary>
     public static EntityGrouping? ItemGrouping(EntityType type)
     {
         if (!ItemLayers.On || type?.ItemType == null || type.StructureType != null || type.BiologicalType != null || type.IsIntrinsic())
         {
             return null;
         }
-        if (type.ItemType.WeaponType != null)
+        if (type.CategoryKey == WeaponsCategory)
         {
             return EntityGrouping.Weapons;
         }
-        if (type.ToolType != null)
+        if (type.ToolType != null || type.CategoryKey == ToolsCategory)
         {
             return EntityGrouping.Tools;
+        }
+        if (type.ItemType.WeaponType != null)
+        {
+            return EntityGrouping.Weapons;
         }
         if (type.ItemType.FoodType != null)
         {
@@ -187,6 +207,18 @@ public static class HudMod
         }
         return EntityGrouping.Materials;
     }
+
+    /// <summary>The studio's EntityCategory keys for the two item categories the layers follow outright.</summary>
+    private const string WeaponsCategory = "weapons";
+
+    private const string ToolsCategory = "tools";
+
+    /// <summary>
+    /// Called from HUDOverlayPanel.Populate: whether the rows inside each category of the markers
+    /// menu are put in alphabetical order. Kastuk: "Need alphabet sort for the list, just like in
+    /// stockpiles and trade." It goes with the item layers, whose lists are the long ones.
+    /// </summary>
+    public static bool SortsMarkerLists => ItemLayers.On;
 
     /// <summary>The menu's name for an item layer, or null for the studio's groupings.</summary>
     public static string ItemGroupingName(EntityGrouping grouping) => grouping switch

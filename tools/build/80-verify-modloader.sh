@@ -725,8 +725,10 @@ fi
 
 # The HUD mod's LeftAlt gesture: held shows the markers, a quick double press latches them so a
 # Steam overlay screenshot can be taken with them on. Key presses are played through
-# HudMod.MarkersShown with made-up times; no tables, no keyboard.
-say "==> 25. LeftAlt shows markers while held, and a quick double press latches them"
+# HudMod.MarkersShown with made-up times; no keyboard. Then the item layers against the validated
+# tables: every item a process uses as a tool is in TOOLS (the spade was not - Kastuk), every item
+# the studio files under "weapons" in WEAPONS.
+say "==> 25. LeftAlt shows markers while held, a quick double press latches them; item layers"
 out=$( cd "$(new_install case25)" && "$EXPORT" . --hud-selftest 2>&1 ) || true
 if echo "$out" | grep -q "hud self-test OK" && echo "$out" | grep -q "^  ok    "; then
   pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"

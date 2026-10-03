@@ -57,6 +57,9 @@ public static class HudMod
 
     public static bool OutlinesItem(UWGame.SimSide.Entities.Entity entity) => false;
 
+    /// <summary>The studio's order: rows stay in the order they were first added.</summary>
+    public static bool SortsMarkerLists => false;
+
     /// <summary>No gesture: shown while held, as far as anything asks.</summary>
     public static bool MarkersShown(bool keyDown, long nowMilliseconds) => keyDown;
 
