@@ -138,6 +138,7 @@ internal static class Program
         UWGame.Mods.BirdHopMod.RegisterSettings();
         UWGame.Mods.HomeRaidMod.RegisterSettings();
         UWGame.Mods.ReserveMod.RegisterSettings();
+        UWGame.Mods.TradeMod.RegisterSettings();
         UWGame.Mods.SafeSleepMod.RegisterSettings();
         UWGame.Mods.GatherOnDemandMod.RegisterSettings();
         UWGame.Mods.HuntingMod.RegisterSettings();
@@ -220,6 +221,11 @@ internal static class Program
         if (args.Contains("--reserve-selftest"))
         {
             return ReserveSelfTest();
+        }
+
+        if (args.Contains("--trade-selftest"))
+        {
+            return TradeSelfTest();
         }
 
         if (args.Contains("--safesleep-selftest"))
@@ -973,6 +979,77 @@ internal static class Program
         Check(UWGame.Mods.ReserveMod.SliderMax(0, 0) == 20 && UWGame.Mods.ReserveMod.SliderMax(35, 0) == 40
               && UWGame.Mods.ReserveMod.SliderMax(5, 50) == 60, "the slider tops out at 20, or the next ten above stock or reserve");
         Console.WriteLine(failures == 0 ? "reserve self-test OK" : $"reserve self-test FAILED - {failures} check(s)");
+        return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks TradeMod's accounting: the switch is read from the settings file, the agreed prices
+    /// of an unpaid sale survive the expedition's saved custom fields exactly (decimal, in any
+    /// culture) and clear, and loading pays the agreed price of what is aboard and nothing for what
+    /// is left behind. Reports which way the switch is, so the gate can run it both ways.
+    /// </summary>
+    private static int TradeSelfTest()
+    {
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        Console.WriteLine("==> trade self-test");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+        Console.WriteLine(UWGame.Mods.TradeMod.PayOnPickupSetting.On
+            ? "  switch on: sales are paid when the barge loads"
+            : "  switch off: sales are paid when the run starts");
+        Check(UWGame.Mods.TradeMod.PayOnPickupSetting.DefaultValue == "false"
+              && UWGame.Mods.TradeMod.PayOnPickupSetting.AffectsSimulation,
+              "trade.payOnPickup is off by default and is in the save signature");
+
+        const string fish = "item:smokedStreakFin", wine = "item:crystalWine", nails = "item:nails";
+        var agreed = new Dictionary<string, decimal> { [fish] = 12.5m, [wine] = 0.1m, [nails] = 3m };
+        System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CurrentCulture;
+        string encoded;
+        try
+        {
+            // A culture with a decimal comma: the entry must not depend on the player's locale.
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("de-DE");
+            encoded = UWGame.Mods.TradeMod.EncodePrices(agreed);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+        }
+        Check(encoded == "item:crystalWine=0.1;item:nails=3;item:smokedStreakFin=12.5",
+              "agreed prices are written in a fixed order, invariant, exact: " + encoded);
+        var decoded = UWGame.Mods.TradeMod.DecodePrices(encoded);
+        Check(decoded.Count == 3 && decoded[fish] == 12.5m && decoded[wine] == 0.1m && decoded[nails] == 3m,
+              "and read back as the same decimals");
+
+        var expedition = new UWGame.SimSide.Expeditions.Expedition();
+        var contract = (UWGame.SimSide.Overland.Missions.Templates.ContractTemplateID)42L;
+        Check(UWGame.Mods.TradeMod.GetAgreedPrices(expedition, contract) == null, "a new expedition has no unpaid sale");
+        UWGame.Mods.TradeMod.SetAgreedPrices(expedition, contract, agreed);
+        Check(expedition.GetPropertyValue("trade:due:42", null, null)?.StringResult == encoded,
+              "an unpaid sale is kept in the expedition's saved custom fields, under trade:due:<contract id>");
+        var back = UWGame.Mods.TradeMod.GetAgreedPrices(expedition, contract);
+        Check(back != null && back.Count == 3 && back[fish] == 12.5m, "and read back from there");
+        UWGame.Mods.TradeMod.SetAgreedPrices(expedition, contract, null);
+        Check(UWGame.Mods.TradeMod.GetAgreedPrices(expedition, contract) == null
+              && expedition.GetPropertyValue("trade:due:42", null, null) == null, "paying it removes the field");
+
+        var taken = UWGame.Mods.TradeMod.Pickup.Taken;
+        var left = UWGame.Mods.TradeMod.Pickup.LeftBehind;
+        Check(UWGame.Mods.TradeMod.AmountDue(agreed, new[] { (fish, taken), (fish, taken), (wine, taken), (nails, taken) }) == 28.1m,
+              "everything aboard: the agreed total, 2 x 12.5 + 0.1 + 3 = 28.1");
+        Check(UWGame.Mods.TradeMod.AmountDue(agreed, new[] { (fish, taken), (fish, left), (wine, taken), (nails, left) }) == 12.6m,
+              "half aboard: only what is aboard is paid, 12.5 + 0.1 = 12.6");
+        Check(UWGame.Mods.TradeMod.AmountDue(agreed, new[] { (fish, left), (nails, left) }) == 0m,
+              "nothing aboard: nothing is paid");
+        Check(UWGame.Mods.TradeMod.AmountDue(agreed, new[] { ("item:notSold", taken) }) == 0m,
+              "an item the sale never priced is not paid for");
+
+        Console.WriteLine(failures == 0 ? "trade self-test OK" : $"trade self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
 
