@@ -4,6 +4,9 @@ using System.Diagnostics;
 namespace UWGame.SimSide.Entities.Containers;
 
 [DebuggerDisplay("{KeyName}")]
+/// <summary>
+/// An upgrade slot.
+/// </summary>
 public class UpgradeCategory : IGameData
 {
 	public string Description;

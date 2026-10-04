@@ -5,6 +5,10 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Holds the items currently replenishing an entity, such as firewood, batteries, or bait.
+/// This remains separate because some entities, especially vehicles, can have multiple containment roles.
+/// </summary>
 internal class ReplenishContainer : Container, IReplenishes, IHasReplenishItems
 {
 	private ReplenishItems replenishItems;

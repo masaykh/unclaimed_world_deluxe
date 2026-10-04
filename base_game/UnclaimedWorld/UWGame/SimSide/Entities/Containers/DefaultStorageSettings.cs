@@ -4,14 +4,30 @@ using UWGame.SimSide.XmlCollections;
 
 namespace UWGame.SimSide.Entities.Containers;
 
+/// <summary>
+/// Defines which items a structure may store by default.
+/// Positive values allow storage and make this structure the preferred destination for that item.
+/// If a setting is omitted, storage is allowed by default. When settings overlap, entity-type entries override tag entries.
+/// </summary>
 public class DefaultStorageSettings : IGameData
 {
 	public string Comments;
 
+	/// <summary>
+	/// Item tags are shorthand for naming groups such as food, ammo, or fuel.
+	/// Settings here can be overridden by <see cref="MayStockpileEntityType"/>.
+	/// </summary>
 	public SerializableDictionary<string, int> MayStockpileItemTag;
 
+	/// <summary>
+	/// Category-specific settings override broader category groupings.
+	/// </summary>
 	public SerializableDictionary<string, bool> MayStockpileCategory;
 
+	/// <summary>
+	/// Entity-type settings override tag-based settings.
+	/// Using tags is usually safer long term than listing many specific entity types.
+	/// </summary>
 	public SerializableDictionary<string, int> MayStockpileEntityType;
 
 	public string KeyName { get; set; }

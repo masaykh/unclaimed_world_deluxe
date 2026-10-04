@@ -5,6 +5,9 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Simple dedicated storage container, such as the storage hole.
+/// </summary>
 internal class StorageContainer : Container, IStorage
 {
 	private ItemStorage storage;

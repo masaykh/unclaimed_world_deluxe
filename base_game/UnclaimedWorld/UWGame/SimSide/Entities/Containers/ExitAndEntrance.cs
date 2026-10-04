@@ -4,6 +4,9 @@ using UWGame.SimSide.Entities.Containers.Components;
 
 namespace UWGame.SimSide.Entities.Containers;
 
+/// <summary>
+/// Uses <see cref="Container"/> parameters so non-container exit implementations cannot call this logic.
+/// </summary>
 public class ExitAndEntrance
 {
 	public static Vector3 GetRallyPoint(Container container, ExitDoor door = ExitDoor.NextAvailable)

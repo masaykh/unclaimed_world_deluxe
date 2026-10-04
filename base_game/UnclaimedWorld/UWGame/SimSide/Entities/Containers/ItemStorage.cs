@@ -7,20 +7,43 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Entities.Containers;
 
+/// <summary>
+/// Organizes stored items into storage compartments with different storage conditions.
+/// </summary>
 public class ItemStorage : ISnapshot
 {
 	private bool capacityIsFixed;
 
+	/// <summary>
+	/// This should usually remain constant for agents' item storage.
+	/// The hauling systems work best when each person has a predictable capacity.
+	/// For stomach storage, this is updated from the entity's bulk whenever that changes.
+	/// </summary>
 	public float TotalCapacity;
 
+	/// <summary>
+	/// Not used by stomach storage.
+	/// </summary>
 	private float? storageTypeFixedCapacity;
 
+	/// <summary>
+	/// Global because each entity can own multiple <see cref="ItemStorage"/> instances.
+	/// </summary>
 	public static StorageID IDCounter;
 
+	/// <summary>
+	/// Cached list of stored items for fast checks and iteration.
+	/// </summary>
 	public List<EntityID> StoredItems = new List<EntityID>();
 
+	/// <summary>
+	/// Keyed by <see cref="StorageCondition"/>.
+	/// </summary>
 	public Dictionary<StorageCondition, Storage> StorageSpaces;
 
+	/// <summary>
+	/// Quick lookup for the current storage holding a given entity.
+	/// </summary>
 	private Dictionary<EntityID, Storage> StorageLookup = new Dictionary<EntityID, Storage>();
 
 	private Dictionary<EntityID, StorageID> snapshotStorageLookup = new Dictionary<EntityID, StorageID>();
@@ -35,6 +58,9 @@ public class ItemStorage : ISnapshot
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
+	/// <summary>
+	/// Cached total amount stored across all storage spaces.
+	/// </summary>
 	public float TotalStored
 	{
 		get

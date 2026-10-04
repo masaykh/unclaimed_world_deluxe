@@ -9,14 +9,23 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Container implementation for vehicles, combining cargo storage, passengers or crew, and optional replenishment items.
+/// </summary>
 internal class VehicleContainer : Container, ICrew, ITransport, IGarrison, IStorage, IExit, IHasReplenishItems
 {
 	private ItemStorage storage;
 
 	private Residence residence;
 
+	/// <summary>
+	/// Holds agents inside the vehicle, including crew and passengers.
+	/// </summary>
 	private Garrison garrison;
 
+	/// <summary>
+	/// Holds fuel, power items, and similar replenishment contents.
+	/// </summary>
 	private ReplenishItems replenishItems;
 
 	private bool preventRecursion;

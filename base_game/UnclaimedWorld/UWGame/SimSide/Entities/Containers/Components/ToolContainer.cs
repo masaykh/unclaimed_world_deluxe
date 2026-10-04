@@ -5,8 +5,14 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Can contain replenish items and production output.
+/// </summary>
 public class ToolContainer : Container, IReplenishes, IHasReplenishItems, IHoldsProductionOutput
 {
+	/// <summary>
+	/// Holds process output and is not meant for general-purpose storage.
+	/// </summary>
 	private ItemStorage productionOutput;
 
 	private ReplenishItems replenishItems;

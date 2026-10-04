@@ -11,6 +11,9 @@ public struct StorageTarget
 
 	public EntityID StorageEntity => storageEntity;
 
+	/// <summary>
+	/// Used together with the container entity to resolve the target compartment and storage conditions.
+	/// </summary>
 	public StorageID StorageID => storageID;
 
 	public StorageTarget(EntityID storageEntity, StorageID storageID)

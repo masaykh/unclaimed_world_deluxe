@@ -7,14 +7,26 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Used for structures where entities can sleep and make a home.
+/// </summary>
 internal class HomeContainer : Container, IGarrison, IStorage, IResidence, IExit, IUpgrades
 {
+	/// <summary>
+	/// Contains stored items.
+	/// </summary>
 	private ItemStorage storage;
 
+	/// <summary>
+	/// Contains agents.
+	/// </summary>
 	private Garrison garrison;
 
 	private Residence residence;
 
+	/// <summary>
+	/// Can be null.
+	/// </summary>
 	private UpgradeItems upgradeItems;
 
 	private ExitDoor simplifiedDoorToUseIndex;

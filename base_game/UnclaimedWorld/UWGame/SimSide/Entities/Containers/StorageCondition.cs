@@ -10,12 +10,24 @@ public class StorageCondition : IGameData
 
 	public bool RequiresPower;
 
+	/// <summary>
+	/// Maintains a constant moisture level.
+	/// </summary>
 	public float? FixedMoisture;
 
+	/// <summary>
+	/// Maintains a constant temperature.
+	/// </summary>
 	public float? FixedTemperature;
 
+	/// <summary>
+	/// Maintains a fixed light level where 0 is darkness and 1 is maximum light.
+	/// </summary>
 	public float? FixedLightLevel;
 
+	/// <summary>
+	/// If true, follows the ambient temperature but skews it toward room temperature.
+	/// </summary>
 	public bool IsolatedTemperature;
 
 	public string Name { get; set; }
@@ -37,6 +49,9 @@ public class StorageCondition : IGameData
 		return FixedTemperature ?? ambientTemperature;
 	}
 
+	/// <summary>
+	/// Skews the temperature toward room temperature.
+	/// </summary>
 	public static float ComputeIsolatedTemperature(float ambientTemperature)
 	{
 		float num = 293f;

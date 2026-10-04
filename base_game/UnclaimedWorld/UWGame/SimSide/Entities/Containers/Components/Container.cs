@@ -11,6 +11,10 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Base containment component for the systems that hold, move, and release contained entities.
+/// Different container implementations combine storage, garrison, transport, and related behaviors.
+/// </summary>
 public abstract class Container : ISnapshot
 {
 	public delegate void IterateMethod(Entity thisEntity);
@@ -56,10 +60,18 @@ public abstract class Container : ISnapshot
 	{
 	}
 
+	/// <summary>
+	/// Reset all play-site regulators when leaving the play site.
+	/// Otherwise elapsed time can keep accruing while the entity is away and cause a large time delta when it returns.
+	/// </summary>
 	public virtual void ResetPlaySiteRegulators()
 	{
 	}
 
+	/// <summary>
+	/// Adds an entity to this container.
+	/// This overload is the superset used by subclasses that need storage, replenish, production-output, or upgrade-specific placement.
+	/// </summary>
 	public bool AddToContain(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, bool ignoreCapacity = false, bool replenish = false, bool isProductionOutput = false, bool assertContainment = true, UpgradeCategory upgradeCategory = null)
 	{
 		ValidateContainStatus(entity);
@@ -82,6 +94,9 @@ public abstract class Container : ISnapshot
 		return num;
 	}
 
+	/// <summary>
+	/// Specialized overload used by magazine-style containers that may produce a surplus entity.
+	/// </summary>
 	public bool AddToContain(Entity entity, out Entity surplusEntity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null)
 	{
 		bool num = AddToContainList(entity, out surplusEntity, compartment, placeInStorage);
@@ -145,6 +160,9 @@ public abstract class Container : ISnapshot
 		Parent.DebugLog.Add($"Containment: {entity.ID} was {action} container");
 	}
 
+	/// <summary>
+	/// Subclass-specific containment logic used by <see cref="AddToContain(Entity, StorageCompartment?, StorageCondition, bool, bool, bool, bool, UpgradeCategory)"/>.
+	/// </summary>
 	protected abstract bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, bool ignoreCapacity = false, bool replenish = false, bool isProductionOutput = false, UpgradeCategory upgradeCategory = null);
 
 	protected virtual bool AddToContainList(Entity entity, out Entity surplusEntity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null)

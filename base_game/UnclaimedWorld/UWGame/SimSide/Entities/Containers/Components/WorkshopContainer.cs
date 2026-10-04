@@ -5,10 +5,20 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Can contain replenish items, stored items, and production output.
+/// </summary>
 public class WorkshopContainer : Container, IStorage, IReplenishes, IHasReplenishItems, IHoldsProductionOutput
 {
+	/// <summary>
+	/// Contains stored items and is always present.
+	/// </summary>
 	private ItemStorage storage;
 
+	/// <summary>
+	/// Optional process output storage.
+	/// Not meant for general-purpose storage.
+	/// </summary>
 	private ItemStorage productionOutput;
 
 	private ReplenishItems replenishItems;

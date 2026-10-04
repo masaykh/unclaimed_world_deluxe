@@ -8,6 +8,9 @@ public class AgentStorageType : ContainerType
 
 	public ItemStorageType EquipmentStorageType;
 
+	/// <summary>
+	/// Stomach storage is treated differently from normal carried items.
+	/// </summary>
 	public ItemStorageType StomachStorageType;
 
 	public override Container CreateContainer(Entity parent)

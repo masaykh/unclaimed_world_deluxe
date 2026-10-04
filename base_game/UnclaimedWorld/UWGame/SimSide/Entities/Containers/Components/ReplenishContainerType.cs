@@ -5,6 +5,10 @@ namespace UWGame.SimSide.Entities.Containers.Components;
 
 public class ReplenishContainerType : ContainerType
 {
+	/// <summary>
+	/// Describes items currently replenishing the entity.
+	/// This shared type is used by replenish containers, vehicles, and agent storage.
+	/// </summary>
 	public RequiresReplenishType RequiresReplenishType;
 
 	public override Container CreateContainer(Entity parent)

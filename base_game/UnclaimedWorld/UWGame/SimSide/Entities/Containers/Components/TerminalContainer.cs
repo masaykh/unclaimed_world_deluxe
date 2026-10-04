@@ -5,10 +5,19 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Contains stored items plus items offered for trade.
+/// </summary>
 public class TerminalContainer : Container, IStorage
 {
+	/// <summary>
+	/// Contains stored items.
+	/// </summary>
 	private ItemStorage storage;
 
+	/// <summary>
+	/// Contains items offered for sale.
+	/// </summary>
 	private ItemStorage offeredItems;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;

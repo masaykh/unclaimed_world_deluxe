@@ -2,8 +2,15 @@ using System.Collections.Generic;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/// <summary>
+/// Not meant for dedicated storage.
+/// Used for cases such as holding output from fish traps.
+/// </summary>
 public class OtherContainerType : ContainerType
 {
+	/// <summary>
+	/// Holds production output and is not meant for other storage.
+	/// </summary>
 	public ItemStorageType StorageType;
 
 	public override float? FullStatePercentage => StorageType.FullStatePercentage;

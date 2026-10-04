@@ -5,8 +5,14 @@ using System.Xml.Serialization;
 namespace UWGame.SimSide.Entities.Containers;
 
 [DebuggerDisplay("{KeyName}")]
+/// <summary>
+/// Defines the upgrade categories supported by a container type such as a home or workshop container.
+/// </summary>
 public class UpgradeProfile : IGameData
 {
+	/// <summary>
+	/// Upgrade category keys available to this profile.
+	/// </summary>
 	public string[] UpgradeCategories;
 
 	[XmlIgnore]

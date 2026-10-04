@@ -38,6 +38,9 @@ public class VehicleContainerType : ContainerType
 
 	public float UnladenWeight;
 
+	/// <summary>
+	/// The most the vehicle can speed up or slow down in one second.
+	/// </summary>
 	public float MaxAcceleration;
 
 	public float Deceleration;
@@ -46,10 +49,16 @@ public class VehicleContainerType : ContainerType
 
 	public AircraftType Aircraft;
 
+	/// <summary>
+	/// Measured in km/day.
+	/// </summary>
 	public float AverageOverlandTravelSpeed;
 
 	public TerminalType.TypesOfTerminal? CanUseTerminal;
 
+	/// <summary>
+	/// Slot offsets are defined for the unrotated vehicle, meaning it is facing right.
+	/// </summary>
 	public PassengerOrCargoSlotType[] PassengerOrCargoSlotTypes;
 
 	public Function MainFunction;
