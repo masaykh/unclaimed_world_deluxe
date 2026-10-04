@@ -11,6 +11,9 @@ public class Rotator : ISnapshot
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
+	/// <summary>
+	/// Tracks the rotation of part of an entity without using a bone rotation in the simulation.
+	/// </summary>
 	public float RelativeRotation
 	{
 		get

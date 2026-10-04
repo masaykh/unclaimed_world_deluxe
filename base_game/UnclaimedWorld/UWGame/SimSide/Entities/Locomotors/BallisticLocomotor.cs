@@ -7,16 +7,28 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Entities.Locomotors;
 
+/// <summary>
+/// Gives an entity the ability to travel through the air on a ballistic trajectory.
+/// </summary>
 public class BallisticLocomotor : ISnapshot
 {
 	private Vector3 direction;
 
 	public Locomotor Parent;
 
+	/// <summary>
+	/// Primarily used to log hit results.
+	/// </summary>
 	public EntityID? LaunchedByEntity;
 
+	/// <summary>
+	/// Identifies the launching allegiance to prevent friendly fire.
+	/// </summary>
 	public Allegiance LaunchedByAllegiance;
 
+	/// <summary>
+	/// Contains the attack's damage information.
+	/// </summary>
 	public AttackType AttackType;
 
 	public OwnerID? OwnerOfCarcass;

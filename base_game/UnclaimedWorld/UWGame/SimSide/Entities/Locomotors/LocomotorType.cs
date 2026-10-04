@@ -49,8 +49,14 @@ public class LocomotorType
 
 	public bool CanRun;
 
+	/// <summary>
+	/// Do not use directly; this value may be overridden by <c>BiologicalEntityType</c>.
+	/// </summary>
 	public bool FourSidedSymmetry;
 
+	/// <summary>
+	/// Can differ from the bounding radius. It is the circular tabletop-game base that must touch another unit's base for melee.
+	/// </summary>
 	public float MeleeRadius;
 
 	public LeggedLocomotorType LeggedLocomotorType;
@@ -61,6 +67,9 @@ public class LocomotorType
 
 	public float MaxAngularSpeed = 4.712389f;
 
+	/// <summary>
+	/// When present, allows part of the entity to rotate during <c>GoalTurnToFace</c> instead of rotating the whole body.
+	/// </summary>
 	public RotatorType RotatorType;
 
 	public string Stances;

@@ -3,6 +3,9 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Entities.Locomotors;
 
+/// <summary>
+/// Enables legged movement while this locomotor is active.
+/// </summary>
 public class LeggedLocomotor : ISnapshot
 {
 	public float Strength;
@@ -17,6 +20,9 @@ public class LeggedLocomotor : ISnapshot
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
+	/// <summary>
+	/// The speed requested by the AI before terrain, disability, and other modifiers are applied.
+	/// </summary>
 	public Goal.MovementSpeeds TargetSpeed
 	{
 		get

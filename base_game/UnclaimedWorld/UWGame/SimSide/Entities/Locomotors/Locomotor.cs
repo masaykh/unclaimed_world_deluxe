@@ -28,10 +28,16 @@ public class Locomotor : Component
 		Arrived
 	}
 
+	/// <summary>
+	/// Used for parking, obstacle avoidance, and related spatial behavior.
+	/// </summary>
 	public float BoundingRadius;
 
 	private Mode currentMoveMode;
 
+	/// <summary>
+	/// Only one of these locomotors should be active at a time; each has a corresponding <see cref="Mode"/> value.
+	/// </summary>
 	public LeggedLocomotor LeggedLocomotor;
 
 	public BallisticLocomotor BallisticLocomotor;
@@ -44,20 +50,35 @@ public class Locomotor : Component
 
 	private float? previousRotation;
 
+	/// <summary>
+	/// The realized movement speed.
+	/// </summary>
 	private float moveSpeed;
 
+	/// <summary>
+	/// One additional frame is needed beyond the previous frame to detect motion.
+	/// </summary>
 	private Vector3? previousLocation;
 
 	public const float CommonLowestHaulingSpeed = 8f;
 
 	public const float CommonCarryLimit = 1f;
 
+	/// <summary>
+	/// Used to stop position interpolation and movement animation when the entity is close to stopping.
+	/// </summary>
 	public Vector3 CurrentMoveTarget;
 
 	private float moveAbility = 1f;
 
+	/// <summary>
+	/// Stores the real rotation after flipping, for cases where left and right body parts matter.
+	/// </summary>
 	public float SymmetricCreatureRealRotation;
 
+	/// <summary>
+	/// Used for debugging only.
+	/// </summary>
 	public bool RotateSlowly;
 
 	public EntityID targetEntity;

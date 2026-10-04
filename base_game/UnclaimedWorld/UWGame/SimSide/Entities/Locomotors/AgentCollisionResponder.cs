@@ -13,6 +13,9 @@ public class AgentCollisionResponder : ICollisionResponder, ISnapshot
 
 	private Vector2 pushDirection = Vector2.Zero;
 
+	/// <summary>
+	/// Collision-resolution information shared with other agents.
+	/// </summary>
 	public List<EntityID> LatestResolvedMovingCollisions = new List<EntityID>();
 
 	private Dictionary<EntityID, int> dislodgeCounters = new Dictionary<EntityID, int>();
@@ -42,7 +45,79 @@ public class AgentCollisionResponder : ICollisionResponder, ISnapshot
 		otherEntity = null;
 	}
 
-	public void HandleSingleCollision(Collidable<Entity> collidee)
+	
+	// Copied from original_src. This version is a lot easier to understand.
+    public void HandleSingleCollision(Collidable<Entity> collidee)
+    {
+        otherEntity = collidee.Parent;
+
+        if (otherEntity.EntityType.IntelligenceType == null
+             || (otherEntity.EntityType.IntelligenceType != null
+                            && otherEntity.Intelligence.Allegiance != parentEntity.Intelligence.Allegiance))
+        {
+            // don't make room for critters/ other allegiances
+            return; // skips all reaction behaviours below...        
+        }
+
+        // RESOLVE LOCKS/TRAFFIC JAMS:
+        /*
+         CASE 1:
+         * I am sitting/standing, and another entity wants to walk past me
+         */
+        if (WeAreStaticAndNotReadyToDislodge(otherEntity)) // collidee))//See if someone is colliding with us and we are standing still, 
+        {                                    // returns true if that is happening and if he has only done that for a short ammount of time or if we are waiting for something
+
+            return; // prevents the other cases from being considered, and prevents a push vector from being applied.                
+        }
+
+        /*
+         CASE 2:
+         * If something has collided with us we should get pushed out from the center of that object.
+         * if we are standing still, this means we will get out of the way of the object
+         * if we are moving, it means we won't move right through the object
+         */
+
+        pushDirection += GetCollisionOffset(Parent.Parent.Parent.Collidable.Center - otherEntity.Collidable.Center);//Add a direction to the pushvector
+
+
+
+        /*
+         CASE 3:
+         * I am either walking walking to or standing on a spot someone else wants aswell
+         */
+        if (otherEntity.Locomotor != null && otherEntity.Intelligence != null)//Is the collision with a movable objcet
+        {
+            ShouldSomeoneWait(otherEntity);//Checks if we should start a queue
+        }
+
+        /*
+         CASE 4:
+         * I am moving into or getting moved into by movable objects that wants to get past.
+         */
+        if (otherEntity.Locomotor != null && otherEntity.Locomotor.CollisionResponder != null)//Is the collision with a movable object
+        {
+            if (CheckIfCollisionAlreadySolved(otherEntity) == false)//Did the other guy already resolve the avoidance
+            {
+                if (Parent.Parent.IsMoving() == true)//I am moving right now, else the moving object will handle this
+                {
+                    pushDirection += SidestepOtherMovingEntity(otherEntity);//Check if we are colliding with a moving object and if we have to avoid it
+                }
+            }
+        }
+
+        /*
+        CASE 5:
+        * <Add Next Case Here>
+        */
+
+
+        /**/
+
+
+    }
+
+    /* Decompiled version. Not as readable as the above version.
+    public void HandleSingleCollision(Collidable<Entity> collidee)
 	{
 		otherEntity = collidee.Parent;
 		if (otherEntity.EntityType.IntelligenceType != null && (otherEntity.EntityType.IntelligenceType == null || otherEntity.Intelligence.Allegiance == parentEntity.Intelligence.Allegiance) && !WeAreStaticAndNotReadyToDislodge(otherEntity))
@@ -58,8 +133,9 @@ public class AgentCollisionResponder : ICollisionResponder, ISnapshot
 			}
 		}
 	}
+	*/
 
-	private bool CheckIfCollisionAlreadySolved(Entity other)
+    private bool CheckIfCollisionAlreadySolved(Entity other)
 	{
 		for (int i = 0; i < other.Locomotor.CollisionResponder.AgentCollisionResponder.LatestResolvedMovingCollisions.Count; i++)
 		{

@@ -5,6 +5,9 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Entities.Locomotors;
 
+/// <summary>
+/// Performs an entity's reactions to collisions separately from its movement. The active behavior can vary by locomotion mode.
+/// </summary>
 public class CollisionResponder : ISnapshot
 {
 	private enum ActiveResponder
@@ -15,10 +18,19 @@ public class CollisionResponder : ISnapshot
 
 	public Locomotor Parent;
 
+	/// <summary>
+	/// Only one collision responder is active at a time.
+	/// </summary>
 	private ICollisionResponder activeResponder;
 
+	/// <summary>
+	/// Simulates a walking agent.
+	/// </summary>
 	public AgentCollisionResponder AgentCollisionResponder;
 
+	/// <summary>
+	/// Simulates an object in flight.
+	/// </summary>
 	private BallisticCollisionResponder BallisticCollisionResponder;
 
 	private List<Collidable<Entity>> collidees = new List<Collidable<Entity>>();

@@ -47,11 +47,17 @@ public class StancesType : IGameData
 
 	public ChanceToTakeStance[] SearchStancesBriefWait;
 
+	/// <summary>
+	/// Used when no more-specific stance is defined. The default stance should specify any modifiers.
+	/// </summary>
 	public string DefaultStance;
 
 	[XmlIgnore]
 	public StanceType DefaultStanceType;
 
+	/// <summary>
+	/// Used when the process type does not define any stances.
+	/// </summary>
 	public string DefaultStanceWhenWorking;
 
 	[XmlIgnore]
@@ -67,6 +73,9 @@ public class StancesType : IGameData
 	[XmlIgnore]
 	public StanceType IncapacitatedStanceType;
 
+	/// <summary>
+	/// Defines source stance, destination stance, and duration. Without these definitions, normal animation blending is used instead of a stance-change animation.
+	/// </summary>
 	public StanceChangeDuration[] StanceChangeDurations;
 
 	[XmlIgnore]
