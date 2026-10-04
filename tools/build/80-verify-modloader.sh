@@ -765,7 +765,11 @@ fi
 # GatherOnDemandMod's padlock at 0. The Gather Resources window used to send "disable" for a
 # padlocked slider at 0, so the zone dropped the resource and, with no orders left, destroyed
 # itself - the mod's "only on demand" setting could not be made. Off, the studio's rule must hold.
-say "==> 28. a padlocked gather order at 0 is kept with gather-on-demand on, and dropped with it off"
+# Then the demand itself (Kastuk, 2026-10-02): a production order the studio makes no job for,
+# because its input is not in stock, must move the input's gather order at 0 - clams for clamwich
+# soup, spoak branches for trimmed branches, by direct order too, and through a chain (bed frame ->
+# trimmed branches -> spoak branches). Before the fix those four checks read 0.
+say "==> 28. a padlocked gather order at 0 is kept, and gathers what production orders are waiting for"
 out=$( cd "$(new_install case28)" && "$EXPORT" . --gatherondemand-selftest 2>&1 ) || true
 if echo "$out" | grep -q "gatherondemand self-test OK" && echo "$out" | grep -q "^  ok    "; then
   pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"

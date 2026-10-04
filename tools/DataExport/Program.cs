@@ -588,6 +588,14 @@ internal static class Program
     /// GatherOnDemandMod's padlock at 0 (GatherOnDemandMod.ZoneGathersAt, read by
     /// GatherResourcesWindow.btOk_Click): with the mod off the studio's rule holds - 0 is no order -
     /// and with it on 0 keeps the zone gathering, which is the whole "only on demand" setting.
+    ///
+    /// Then the demand a production order makes (Kastuk, "auto harvesting": a clamwich soup order and
+    /// a clam gather order at 0 - "no one is going to collect needful clams"). The studio creates no
+    /// production job while an input is missing (JobManager.GetJobManagerProductionProcessesThatCanProduce),
+    /// so no hauling job asks for the input either, and the gather order at 0 saw nothing to gather.
+    /// Checked on a bare expedition with the real tables: the gather order's amount to produce, by
+    /// the studio's own JobManager.GetAmountToProduce over GatherOnDemandMod.StockAfterDemand - the
+    /// number JobManager.CreateProcessJobsToMatchOutput turns into gather jobs in the order's zones.
     /// </summary>
     private static int GatherOnDemandSelfTest()
     {
@@ -611,6 +619,86 @@ internal static class Program
         setting.Value = "true";
         Check(UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(0), "mod on: a padlock at 0 stays in the zone (Kastuk: the order was not kept)");
         Check(UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(5), "mod on: a padlock at 5 gathers");
+
+        // Production orders as demand. Needs the tables, and the production graph the validation pass builds.
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+        if (!ValidateDataComplete()) return 1;
+        // The recipe index the job manager reads (ProcessYieldsThisOutput, ProcessesUsingThisInput)
+        // is built by GameData.Initialize on the loading screen, which this tool never reaches. Build
+        // it with the studio's own method rather than a copy of it.
+        if (GameData.Instance.ProcessYieldsThisOutput.Count == 0)
+        {
+            typeof(GameData).GetMethod("CreateProcessGraph", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(GameData.Instance, null);
+        }
+        Console.WriteLine($"  info  recipe index: {GameData.Instance.ProcessYieldsThisOutput.Count} items made, {GameData.Instance.ProcessesUsingThisInput.Count} used");
+        var types = GameData.Instance.AllEntityTypes;
+        var processes = GameData.Instance.AllProcessTypes;
+        bool tablesOk = types.TryGetValue("item:clamwich", out var clams) & types.TryGetValue("item:clamwichSoup", out var soup)
+            & types.TryGetValue("item:spoakBranches", out var branches) & types.TryGetValue("item:spoakBranchesTrimmed", out var trimmed)
+            & types.TryGetValue("item:bedFrame", out var bedFrame)
+            & processes.TryGetValue("makeClamwichSoup", out var cookSoup) & processes.TryGetValue("trimSpoakBranches", out var trim)
+            & processes.TryGetValue("makeBedFrame", out var makeBed);
+        Check(tablesOk, "clams, clamwich soup, spoak branches, trimmed branches, bed frame and their recipes are in the tables");
+        if (!tablesOk)
+        {
+            setting.Value = setting.DefaultValue;
+            Console.WriteLine($"gatherondemand self-test FAILED - {failures} check(s)");
+            return 1;
+        }
+        // Units of 'input' that 'amount' of 'output' takes by this recipe: whole batches, as jobs are made.
+        static int Needs(UWGame.SimSide.Processes.ProcessType p, UWGame.SimSide.Entities.EntityType output, UWGame.SimSide.Entities.EntityType input, int amount)
+        {
+            int perBatch = p.GetOutputAmount(output) ?? 1;
+            return (amount + perBatch - 1) / perBatch * p.InputsByType[input].Amount.NoOfItems.Value;
+        }
+        // A bare expedition: nothing in stock, no jobs, no zones. Only the orders differ per case.
+        static UWGame.SimSide.Entities.EntityGroup NewOwner() => new UWGame.SimSide.Entities.EntityGroup
+        {
+            Parent = new UWGame.SimSide.Expeditions.Expedition(),
+            ProductionOrders = new UWGame.SimSide.Expeditions.ProductionOrders(),
+        };
+        // What the gather order for 'type' asks JobManager to make, with nothing in stock or under way.
+        static int ToGather(UWGame.SimSide.Entities.EntityGroup owner, UWGame.SimSide.Entities.EntityType type) =>
+            UWGame.SimSide.Jobs.JobManager.GetAmountToProduce(owner.ProductionOrders.Orders[type],
+                UWGame.Mods.GatherOnDemandMod.StockAfterDemand(owner, type, 0), 0);
+
+        var soupOwner = NewOwner();
+        soupOwner.ProductionOrders.SetStandingOrder(soup, 6);
+        soupOwner.ProductionOrders.SetStandingOrder(clams, 0);
+        int soupClams = Needs(cookSoup, soup, clams, 6);
+        var branchOwner = NewOwner();
+        branchOwner.ProductionOrders.SetStandingOrder(trimmed, 4);
+        branchOwner.ProductionOrders.SetStandingOrder(branches, 0);
+        int trimBranches = Needs(trim, trimmed, branches, 4);
+        var directOwner = NewOwner();
+        directOwner.ProductionOrders.SetDirectOrder(soup, 2);
+        directOwner.ProductionOrders.SetStandingOrder(clams, 0);
+        int directClams = 2 * cookSoup.InputsByType[clams].Amount.NoOfItems.Value;
+        var idleOwner = NewOwner();
+        idleOwner.ProductionOrders.SetStandingOrder(soup, 0);
+        idleOwner.ProductionOrders.SetStandingOrder(clams, 0);
+        var chainOwner = NewOwner();
+        chainOwner.ProductionOrders.SetStandingOrder(bedFrame, 1);
+        chainOwner.ProductionOrders.SetStandingOrder(trimmed, 0);
+        chainOwner.ProductionOrders.SetStandingOrder(branches, 0);
+        int bedBranches = Needs(trim, trimmed, branches, Needs(makeBed, bedFrame, trimmed, 1));
+
+        setting.Value = "false";
+        Check(ToGather(soupOwner, clams) == 0 && !UWGame.Mods.GatherOnDemandMod.HasDemand(soupOwner, clams),
+              "mod off: a soup order does not move a clam order at 0, as the studio made it");
+        Check(ToGather(branchOwner, branches) == 0, "mod off: a trimmed-branches order does not move a branch order at 0");
+        setting.Value = "true";
+        Check(ToGather(soupOwner, clams) == soupClams && UWGame.Mods.GatherOnDemandMod.HasDemand(soupOwner, clams),
+              $"mod on: soup kept at 6 with no clams - the clam order at 0 gathers {soupClams} (got {ToGather(soupOwner, clams)}; Kastuk's clamwich soup)");
+        Check(ToGather(branchOwner, branches) == trimBranches && UWGame.Mods.GatherOnDemandMod.HasDemand(branchOwner, branches),
+              $"mod on: trimmed branches kept at 4 - the branch order at 0 gathers {trimBranches} (got {ToGather(branchOwner, branches)}; Kastuk's trimmed branches)");
+        Check(ToGather(directOwner, clams) == directClams,
+              $"mod on: a direct order for 2 soup jobs gathers the clams for 2 batches, {directClams} (got {ToGather(directOwner, clams)})");
+        Check(ToGather(idleOwner, clams) == 0 && !UWGame.Mods.GatherOnDemandMod.HasDemand(idleOwner, clams),
+              "mod on: a soup order at 0 that nothing asks for gathers no clams");
+        Check(ToGather(chainOwner, branches) == bedBranches,
+              $"mod on: a bed frame order pulls trimmed branches at 0, which pull {bedBranches} branches at 0 (got {ToGather(chainOwner, branches)})");
         setting.Value = setting.DefaultValue;
         Console.WriteLine(failures == 0 ? "gatherondemand self-test OK" : $"gatherondemand self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;

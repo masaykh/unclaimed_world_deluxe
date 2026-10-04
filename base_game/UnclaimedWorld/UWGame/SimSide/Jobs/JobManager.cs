@@ -378,7 +378,8 @@ public class JobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapshot
 		}
 	}
 
-	private static void GetAmountToProduce(EntityGroup owner, EntityType entityType, ProductionOrder order, out int currentJobs, out int amountToProduce)
+	// internal, not private: GatherOnDemandMod asks the same question of the order that is waiting for an input.
+	internal static void GetAmountToProduce(EntityGroup owner, EntityType entityType, ProductionOrder order, out int currentJobs, out int amountToProduce)
 	{
 		// ReserveMod: a standing order keeps its amount on top of the reserve.
 		int itemsInStock = UWGame.Mods.ReserveMod.StockAfterReserve(owner, entityType, owner.CountAvailableItems(entityType));
