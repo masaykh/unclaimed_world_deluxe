@@ -11,6 +11,29 @@ using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Containers.Components;
 
+/* Design idea - don't delete!
+IGarrison and IStorage interfaces, which the rest of the game classes use to relate to a Container component in different ways.
+[02:29:41] Mark Lorenzen: Container as IGarrison
+[02:29:52] Mark Lorenzen: Container as IEquipment
+[02:30:05] Mark Lorenzen: Container as IStorage
+[02:31:26] Mark Lorenzen: each of these interfaces would allow other classes to enter, exit, store, remember, inhabit, transport, crew... the container, if the interface is present.
+[02:31:50] Mark Lorenzen: in the case of an encampment building...
+[02:32:01] Mark Lorenzen: it would need to do at least two things:
+[02:32:12] Mark Lorenzen: 1) be a place to leave your stuff
+[02:32:34] Mark Lorenzen: 2) be a place to go into and do homey stuff like sleep
+[02:32:59] Mark Lorenzen: so write a class ContainerHome
+[02:33:19] Mark Lorenzen: inherit IStorage and IGarrison
+[02:33:57] Mark Lorenzen: IStorage exposes the CombinedStorage style functions.
+[02:34:19] Mark Lorenzen: IGarrison would be new, exposing the functions for people entering and Exiting
+[02:34:42] Mark Lorenzen: also inherit IExit, which handles the physical transitioning into and out of the building.     
+
+other buildings might be IGarrison but not IStorage... like a watchtower
+[02:35:45] Mark Lorenzen: or the other way around... a pup tent is a home but not a storage
+[02:36:16] Mark Lorenzen: a vehicle would inherit ITransport and ICrew
+[02:36:27] Mark Lorenzen: the crew is the driver
+[02:36:40] Mark Lorenzen: passengers and items are contained via ITransport
+*/
+
 /// <summary>
 /// Base containment component for the systems that hold, move, and release contained entities.
 /// Different container implementations combine storage, garrison, transport, and related behaviors.
@@ -38,11 +61,18 @@ public abstract class Container : ISnapshot
 		Parent = parent;
 	}
 
+	/// <summary>
+	/// Some containers hide their contents, while others keep them visible.
+	/// Open containers allow contained entities to keep their visible presence.
+	/// </summary>
 	public virtual bool IsOpenContainer()
 	{
 		return false;
 	}
 
+	/// <summary>
+	/// Returns whether a specific contained entity should remain visible.
+	/// </summary>
 	public virtual bool IsVisible(Entity entity)
 	{
 		return false;
@@ -154,6 +184,9 @@ public abstract class Container : ISnapshot
 		}
 	}
 
+	/// <summary>
+	/// Central place for containment instrumentation and debug tracking.
+	/// </summary>
 	private void DoContainmentMonitoring(Entity entity, string action)
 	{
 		entity.DebugLog.Add(string.Format("Containment: Was {1} container {0}", Parent.ID, action));
@@ -165,14 +198,24 @@ public abstract class Container : ISnapshot
 	/// </summary>
 	protected abstract bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, bool ignoreCapacity = false, bool replenish = false, bool isProductionOutput = false, UpgradeCategory upgradeCategory = null);
 
+	/// <summary>
+	/// Specialized containment hook used by magazine-style containers.
+	/// </summary>
 	protected virtual bool AddToContainList(Entity entity, out Entity surplusEntity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null)
 	{
 		surplusEntity = null;
 		return false;
 	}
 
+	/// <summary>
+	/// Subclass-specific portion of <see cref="Remove(Entity, List{PassengerOrCargoSlot})"/>.
+	/// </summary>
 	protected abstract bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slotsToUse = null);
 
+	/// <summary>
+	/// Clears <see cref="Entity.ContainedBy"/> and lets subclasses remove the entity from their own collections.
+	/// Warning: after this call the entity is in an in-between state until it is destroyed or placed elsewhere.
+	/// </summary>
 	public bool Remove(Entity entity, List<PassengerOrCargoSlot> slotsToUse = null)
 	{
 		ValidateContainStatus(entity);
@@ -199,12 +242,22 @@ public abstract class Container : ISnapshot
 		return false;
 	}
 
+	/// <summary>
+	/// Debug-only assertion helper for containment state.
+	/// </summary>
 	protected void ValidateContainStatus(Entity entity)
 	{
 	}
 
+	/// <summary>
+	/// Returns whether this container currently contains the given entity.
+	/// </summary>
 	public abstract bool Contains(EntityID entityID);
 
+	/// <summary>
+	/// Replaces one contained entity with another, for example when an item degrades into junk or an entity becomes a corpse.
+	/// Implementations are responsible for placing the replacement in the correct compartment, even if capacity rules must be bypassed.
+	/// </summary>
 	public abstract void SwitchEntities(Entity entityToRemove, Entity exchangeWithEntity, bool ignoreCapacity = false);
 
 	public virtual void NotifyBrokenContainedEntity(Entity entity)
@@ -219,6 +272,10 @@ public abstract class Container : ISnapshot
 
 	public abstract void IterateContained(Action<Entity> iterateMethod);
 
+	/// <summary>
+	/// Atomically removes a contained entity and either destroys it or places it in another container or in the open.
+	/// Exit and queue handling can be layered on top of this later.
+	/// </summary>
 	public bool Uncontain(Entity entity, bool destroy = false, bool shouldQueue = false, StorageTarget? storageTarget = null, Entity placeInStorageEntity = null, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, Vector3? placeOnGround = null)
 	{
 		ValidateContainStatus(entity);
@@ -240,11 +297,17 @@ public abstract class Container : ISnapshot
 		return false;
 	}
 
+	/// <summary>
+	/// Call <see cref="Remove(Entity, List{PassengerOrCargoSlot})"/> first, then use this to place the entity in the world or directly into the specified storage without using exits or queuing.
+	/// </summary>
 	public bool EjectEntity(Entity entityToEject, StorageTarget? storageTarget = null, Entity placeInStorageEntity = null, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, Vector3? placeOnGround = null, bool isOfferedForSale = false)
 	{
 		return EjectEntity(entityToEject, Parent, storageTarget, placeInStorageEntity, compartment, placeInStorage, placeOnGround, isOfferedForSale);
 	}
 
+	/// <summary>
+	/// Handles ejection for both normal contained entities and ejected parts.
+	/// </summary>
 	public static bool EjectEntity(Entity entityToEject, Entity parentOrPartOfEntity, StorageTarget? storageTarget = null, Entity placeInStorageEntity = null, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, Vector3? placeOnGround = null, bool isOfferedForSale = false)
 	{
 		Entity container = placeInStorageEntity;
@@ -280,6 +343,10 @@ public abstract class Container : ISnapshot
 		return true;
 	}
 
+	/// <summary>
+	/// Makes other allegiances forget entities that have moved out of communication range.
+	/// If the entity is placed into a terminal container, it can be discovered again there.
+	/// </summary>
 	private void HandleAllegiancesInCommRangeRemoveEntity(Entity entityToEject)
 	{
 		if (Parent.EntityType.CommunicatorType == null)
@@ -301,6 +368,9 @@ public abstract class Container : ISnapshot
 		}
 	}
 
+	/// <summary>
+	/// Places an ejected entity onto the parent entity's site and, when applicable, onto the play site at the chosen ground location.
+	/// </summary>
 	private static void PlaceOnGround(Entity entityToBePlaced, Entity parentOrPartOfEntity, Vector3? placeOnGround)
 	{
 		entityToBePlaced.Site = parentOrPartOfEntity.Site;
