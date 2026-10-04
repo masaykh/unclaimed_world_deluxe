@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Interface.LCD;
+using UWGame.SimSide;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Overland.Missions;
 using WindowSystem;
@@ -15,6 +16,8 @@ public class MissionsPanel : RosterPanel
 	private Grid outerGrid;
 	private List<Mission> allMissionsToShow = new List<Mission>();
 	private LCDInnerPanel addPanel;
+
+	private Label lblNewRun;
 
 	public MissionsPanel()
 		: base("MISSIONS", 600, needBottomMarginForButtons: false)
@@ -67,12 +70,12 @@ public class MissionsPanel : RosterPanel
 		imageButton.DebugTag = "newRun";
 		uIComponent.Width = imageButton.Width;
 		uIComponent.Height = imageButton.Height;
-		Label label = new Label(Interface.gui);
-		uIComponent.Add(label);
-		label.Init(Label.LabelType.LCDNormal);
-		label.Text = "NEW RUN";
-		label.X = 16;
-		label.Y = 14;
+		lblNewRun = new Label(Interface.gui);
+		uIComponent.Add(lblNewRun);
+		lblNewRun.Init(Label.LabelType.LCDNormal);
+		lblNewRun.Text = "NEW RUN";
+		lblNewRun.X = 16;
+		lblNewRun.Y = 14;
 		return uIComponent;
 	}
 
@@ -83,6 +86,10 @@ public class MissionsPanel : RosterPanel
 
 	private void Populate()
 	{
+		// PORT: the run being planned now survives the planning panel being hidden (see
+		// CreateMissionPanel.Hide), so the button that leads back to it says so.
+		lblNewRun.Text = The.InGameUI.CreateMissionPanel.HasDraft ? "CONTINUE RUN" : "NEW RUN";
+		lblNewRun.FitToText();
 		GetAllMissionsToShow();
 		outerGrid.BeginAddingEntries();
 		grdMissions.BeginAddingEntries();
@@ -172,34 +179,40 @@ public class MissionsPanel : RosterPanel
 		DiplomacyPanel.DisplayCommunication(The.InGameUI.UIAllegiance, mission, lblCommunication, "The mission can be reached with the communication equipment ({0}) that is currently deployed", "We currently have no way to communicate with the mission. ETA and location are not up to date.", out var inCommRange);
 		Label label2 = itemRow.FindChildById(UIComponent.DataControlID.NextStop) as Label;
 		Label label3 = itemRow.FindChildById(UIComponent.DataControlID.ETA) as Label;
-		if (inCommRange)
+		// PORT: the next stop and its ETA are filled in whether or not the mission can be reached.
+		//
+		// The studio filled them only in communication range. Out of range it coloured the ETA as an
+		// error and said "the information is out of date" - of a label it had never written to,
+		// unless this row had once been drawn while in range. A barge between sites has no radio,
+		// so a run that had already left showed an empty ETA, and Kastuk ("Trading") asked for
+		// "approximate time of their coming". The arrival is now worked out from the run's own
+		// schedule (TravelAction.GetETA: the leg's remaining distance at the transport's speed)
+		// in both cases, and out of range it is still coloured and labelled as an estimate.
+		//
+		// The column shows the time left, in the studio's own interval form
+		// (TimeDateYear.ToIntervalString, "1.25 days" - its commented-out first GetETA returned
+		// exactly that), and the tooltip the arrival date as the clock at the top shows dates,
+		// which is what the studio's later choice of a date was for.
+		label3.NormalColor = inCommRange ? label3.GetNormalColorForType() : Label.LCDErrorColor;
+		label2.Text = "";
+		label3.Text = "";
+		label3.ToolTip = inCommRange ? null : "We are not in communication with the mission.";
+		if (mission.GetNextStopAndETA(out var nextStop, out var eta))
 		{
-			label3.NormalColor = label3.GetNormalColorForType();
-			if (mission.GetNextStopAndETA(out var nextStop, out var eta))
+			nextStop.Value.ResolveLocation(The.InGameUI.UIAllegiance.SharedKnowledge, out var site, out var _, out var _, out var _);
+			double daysLeft = eta.Value.TotalDays - The.Sim.DateAndTime.CurrentTimeDateYear.TotalDays;
+			// GetETA divides by the transport's speed, so a transport that cannot move has no
+			// arrival: the date it produces is not a date.
+			if (site != null && daysLeft >= 0.0 && daysLeft < MaxDaysToShow)
 			{
-				nextStop.Value.ResolveLocation(The.InGameUI.UIAllegiance.SharedKnowledge, out var site, out var _, out var _, out var _);
-				if (site != null)
-				{
-					label2.Text = site.Name;
-					label3.Text = eta.ToString();
-					label3.ToolTip = "The estimated time of arrival";
-				}
-				else
-				{
-					label2.Text = "";
-					label3.Text = "";
-				}
+				label2.Text = site.Name;
+				label3.Text = new DateAndTime.TimeDateYear(daysLeft).ToIntervalString();
+				label3.ToolTip = (inCommRange ? "Estimated time of arrival at " : "We are not in communication with the mission. Estimated from its route and speed: arrival at ")
+					+ site.Name + " on " + eta.Value.ToString() + ", " + DateAndTime.GetTimeOfDayAsString(eta.Value.TimeOfDay) + ".";
 			}
-			else
-			{
-				label2.Text = "";
-				label3.Text = "";
-			}
-		}
-		else
-		{
-			label3.NormalColor = Label.LCDErrorColor;
-			label3.ToolTip = "We are not in communication with the mission and the information is out of date.";
 		}
 	}
+
+	/// <summary>Further off than this, an ETA is the result of a transport that is not moving.</summary>
+	private const double MaxDaysToShow = 10000.0;
 }

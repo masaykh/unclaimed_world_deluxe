@@ -32,6 +32,7 @@
 #  22. a save's type names resolve whatever assembly version they carry
 #  23. tool care protects weapons and items above the survival tier, and not cheap tools
 #  24. the household cooking planner finds real meal recipes, in a fixed order
+#  29. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -831,6 +832,27 @@ if echo "$out" | grep -q "switch on: a dog chasing vermin leaves it"; then
   fail "with the switch off the self-test still claims the dog leaves its vermin - the check cannot go red"
 else
   pass "with the switch off, the switch-on expectation is not met (the studio's behaviour, as reported)"
+fi
+
+# The trade mod defers a sale's credits to the moment the barge loads, keeping the agreed prices in
+# the selling expedition's custom fields. Checked: the switch is read from the settings file both
+# ways, the prices survive the field exactly whatever the locale, and loading pays for what is
+# aboard and nothing for what is left behind.
+say "==> 31. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on"
+d=$(new_install case31); write_setting "$d" trade.payOnPickup true
+out=$( cd "$d" && "$EXPORT" . --trade-selftest 2>&1 ) || true
+if echo "$out" | grep -q "trade self-test OK" && echo "$out" | grep -q "switch on: sales are paid when the barge loads"; then
+  pass "switch on: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the trade self-test reported failures with the switch on"
+fi
+out=$( cd "$(new_install case31b)" && "$EXPORT" . --trade-selftest 2>&1 ) || true
+if echo "$out" | grep -q "trade self-test OK" && echo "$out" | grep -q "switch off: sales are paid when the run starts"; then
+  pass "switch off: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the trade self-test reported failures with the switch off"
 fi
 
 # ------------------------------------------------- 8. the settings file round-trips

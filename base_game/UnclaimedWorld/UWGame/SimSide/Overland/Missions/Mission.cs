@@ -226,6 +226,8 @@ public class Mission : ISnapshot, ILookUp<Mission, MissionID>, ICommunicates
 
 	public void Abort()
 	{
+		// TradeMod: sales still waiting for the barge give their goods back before the studio's refunds.
+		UWGame.Mods.TradeMod.ReturnUnpaidGoods(this);
 		RefundOrders();
 		FireAbortEvents();
 		RemoveAllStopsAndActionsBeforeReturnAction();

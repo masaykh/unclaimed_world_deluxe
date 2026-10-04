@@ -67,10 +67,12 @@ public class BuySellAction : MissionAction
 			isOK = false;
 			return;
 		}
+		// TradeMod: with its switch on, a sale by the colony is paid when the barge loads the goods
+		// (TradeMod.CollectPayment, from LoadItems) - the credits Buy just moved are handed back here.
 		Contract item = new Contract
 		{
 			ContractTemplate = BuyActionType.ContractTemplate,
-			PaidAmount = spentAmount,
+			PaidAmount = UWGame.Mods.TradeMod.DeferSalePayment(parent, BuyActionType.ContractTemplate, owner, expedition, boughtItems, spentAmount),
 			TransferredEntities = boughtItems.Select((Entity e) => e.ID).ToList()
 		};
 		parent.Contracts.Add(item);
@@ -93,7 +95,8 @@ public class BuySellAction : MissionAction
 	{
 		Entity vehicleToLoad = parent.GetVehicleToLoad();
 		MissionJob missionJob = (MissionJob)LookUp<Job, JobID>.FindByID(parent.MissionJob);
-		foreach (EntityID transferredEntity in parent.Contracts.FirstOrDefault((Contract c) => c.ContractTemplate == BuyActionType.ContractTemplate).TransferredEntities)
+		Contract contract = parent.Contracts.FirstOrDefault((Contract c) => c.ContractTemplate == BuyActionType.ContractTemplate);
+		foreach (EntityID transferredEntity in contract.TransferredEntities)
 		{
 			Entity entity = Entity.FindByID(transferredEntity);
 			if (entity != null)
@@ -109,6 +112,8 @@ public class BuySellAction : MissionAction
 				entity.AssignedToJob = missionJob.ID;
 			}
 		}
+		// TradeMod: a sale left unpaid by DeferSalePayment is paid now, for what is aboard.
+		UWGame.Mods.TradeMod.CollectPayment(contract, vehicleToLoad, missionJob.ID);
 	}
 
 	public override ISnapshot DoSnapshot(Snapshotter sn)

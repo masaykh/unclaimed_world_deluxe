@@ -159,7 +159,7 @@ public class CreateMissionPanel : RosterPanel
 	private void btCancelRun_Click(UIComponent sender, EventArgs e)
 	{
 		OnCancel();
-		surfaceGrid.Clear();
+		DiscardDraft();
 		Hide();
 		The.InGameUI.ChangeRosterPanel(The.InGameUI.MissionsPanel);
 	}
@@ -345,6 +345,8 @@ public class CreateMissionPanel : RosterPanel
 			The.Client.Controller.StoreAndExecuteCommand(command);
 			Command command2 = new CreateMission(missionTemplate.ID, expedition.OwnedEntities.ID, vehicles);
 			The.Client.Controller.StoreAndExecuteCommand(command2);
+			// The template now belongs to the simulation, so it is let go of, not destroyed.
+			DiscardDraft();
 			Hide();
 			The.InGameUI.RosterAccessPanel.ShowMissions();
 		}
@@ -396,6 +398,7 @@ public class CreateMissionPanel : RosterPanel
 	{
 		The.InGameUI.MessageBox.OKClick -= MessageBoxDestroyedMission_OKClick;
 		DestroyMission();
+		DiscardDraft();
 		Hide();
 	}
 
@@ -1850,16 +1853,46 @@ public class CreateMissionPanel : RosterPanel
 	{
 		base.Show();
 		Populate();
+		// A draft kept from before the panel was last hidden: the credits, the stock and the
+		// locations may all have changed in the meantime.
+		UpdateTotalCost();
+		Revalidate();
 	}
 
 	private void Populate()
 	{
 	}
 
+	/// <summary>
+	/// Whether a run is being planned: kept while the panel is hidden, until CANCEL RUN, START RUN,
+	/// or the game it belongs to ends.
+	/// </summary>
+	public bool HasDraft => start.HasValue || destination.HasValue;
+
+	// PORT: hiding the panel no longer throws the run being planned away.
+	//
+	// The studio's Hide cleared the whole form - "// clear the dynamic parts:" - so closing the
+	// panel, opening any other roster panel or selecting something on the map (each of which hides
+	// it) lost the run. That made the panel's own CANCEL RUN button ("Click to cancel this run")
+	// indistinguishable from every other way out, and it made the run impossible to plan around the
+	// colony: Kastuk, "Trading": "loses progress of 'Create new run' ... which is quite troublesome
+	// when I just need to rearrange the Trade stockpile of the port to sell more resources. Let it
+	// cancel the run only when the 'Cancel run' button is pressed, or at game save/load/exit."
+	//
+	// The draft is client-side only - nothing reaches the simulation, a save or a replay until
+	// START RUN issues its commands - so it needs no clearing on save. It lives on this panel, which
+	// the session's InGameInterface owns, so loading, starting a new game or leaving to the menu
+	// (Client.Destroy) discards it with everything else. Open dialogs are still closed: they are
+	// modal over this panel and cannot outlive it.
 	public override void Hide()
 	{
 		base.Hide();
 		HideOpenDialogs();
+	}
+
+	/// <summary>Forgets the run being planned and empties the form.</summary>
+	private void DiscardDraft()
+	{
 		start = null;
 		destination = null;
 		ClearForm();
