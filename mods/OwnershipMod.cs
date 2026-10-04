@@ -197,7 +197,7 @@ public static class OwnershipMod
         var byTypeFree = new List<Queue<Entity>>();
         foreach (var byType in colony.Food.OrderBy(f => f.Key.KeyName, StringComparer.Ordinal))
         {
-            if (ReserveMod.HoldsBackFood(colony, byType.Key, starving: false))
+            if (ReserveMod.HoldsBackFood(colony, byType.Key, starving: false, eater: null))
             {
                 continue;
             }
@@ -207,7 +207,7 @@ public static class OwnershipMod
                 Entity item = Entity.FindByID(id);
                 // Never below the reserve: HoldsBackFood above only asks whether ANY may go (Kastuk:
                 // reserved pickled carbon tail was still consumed).
-                if (IsFreeFood(item, knowledge) && ReserveMod.MayTakeFood(colony, byType.Key, free.Count))
+                if (IsFreeFood(item, knowledge) && ReserveMod.MayTakeFood(colony, byType.Key, free.Count, eater: null))
                 {
                     free.Enqueue(item);
                 }

@@ -28,9 +28,9 @@ public static class ReserveMod
     {
     }
 
-    public static bool HoldsBackFood(EntityGroup foodOwner, EntityType type, bool starving) => false;
+    public static bool HoldsBackFood(EntityGroup foodOwner, EntityType type, bool starving, Entity eater) => false;
 
-    public static bool MayTakeFood(EntityGroup foodOwner, EntityType type, int alreadyTaken) => true;
+    public static bool MayTakeFood(EntityGroup foodOwner, EntityType type, int alreadyTaken, Entity eater) => true;
 
     public static int StockAfterReserve(EntityGroup owner, EntityType type, int stock) => stock;
 

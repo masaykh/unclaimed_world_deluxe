@@ -187,7 +187,7 @@ public class EvaluateEat : GoalEvaluator
 		bool starving = UWGame.Mods.ReserveMod.Enabled && GetLowestFoodLevel() == FoodLevels.Starving;
 		foreach (KeyValuePair<EntityType, List<EntityID>> item in foodItemsGroup.Food)
 		{
-			if (UWGame.Mods.ReserveMod.Enabled && UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, item.Key, starving))
+			if (UWGame.Mods.ReserveMod.Enabled && UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, item.Key, starving, entity))
 			{
 				continue;
 			}
@@ -508,6 +508,14 @@ public class EvaluateEat : GoalEvaluator
 			IKnownEntityData data = null;
 			if (!GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.Allegiance.SharedKnowledge.GetKnownData(bestFoodItem.Value, out data)))
 			{
+				// MOD: ReserveMod - the menu was read when this evaluation began (GetAllFoodItems) and
+				// scoring can take several ticks; another colonist's meal may since have brought the
+				// food down to its reserve. Household food (OwnershipMod) was never on that check.
+				if (UWGame.Mods.ReserveMod.Enabled && data.OwnedBy == foodItemsGroup.GetOwnerID()
+					&& UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, data.EntityType, GetLowestFoodLevel() == FoodLevels.Starving, entity))
+				{
+					return false;
+				}
 				if (entity.IsOwnedByUs(data))
 				{
 					GetItemUsersToCancel(data, ref needsToBeCancelled, ref itemsToBeDropped, clearLists: true);
