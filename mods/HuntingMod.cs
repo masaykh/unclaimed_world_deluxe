@@ -33,10 +33,10 @@ namespace UWGame.Mods;
 /// AUTOCLAIM IN CAMP. Kastuk, same thread: "May also add switcher to Policy window to autoclaim
 /// animals killed in camp area." The carcass's owner is decided in Entity.Kill, from the killing
 /// blow's ownerOfCarcass or the dying creature's own owner (GoalThink, Entity.UpdateBiological,
-/// Entity.CarcassOwnerAfterWounds). Those already give the colony what its people, dogs, HOUNDs and
-/// sentries kill. What is left with no owner is the rest: an animal killed by wildlife, one that
-/// starved or bled out with no known killer, a kill by another group that does not respect
-/// ownership. With the policy on, such a carcass goes to the expedition when it lies within the
+/// Entity.CarcassOwnerOnLethalBlow). Only a hunt's blow carries an owner - the studio's "don't claim
+/// the carcass when not hunting" (EvaluateAttackJobs.SetGoal) - so what the colony's people, dogs,
+/// HOUNDs and sentries kill outside a hunt is left with no owner, like an animal killed by wildlife
+/// or one that starved. With the policy on, such a carcass goes to the expedition when it lies within the
 /// camp's forage and hunting radius (Allegiance.GetForageAndHuntingRadius - the circle the scouting
 /// overlay draws, MapClient.DrawExpeditionScoutingRadius) - as the Claim button would give it
 /// (Commands.Claim: ChangeOwnership, with the new owner told of it), and haulers are sent at once
@@ -144,8 +144,7 @@ public static class HuntingMod
             float radius = allegiance.GetForageAndHuntingRadius();
             foreach (Expedition expedition in allegiance.Expeditions)
             {
-                if (expedition.Location.HasValue && AutoclaimsCampKills(expedition)
-                    && Vector2.DistanceSquared(expedition.Location.Value.ToVector2(), at) <= radius * radius)
+                if (expedition.Location.HasValue && ClaimsKillAt(expedition, expedition.Location.Value.ToVector2(), radius, at))
                 {
                     return expedition;
                 }
@@ -153,6 +152,15 @@ public static class HuntingMod
         }
         return null;
     }
+
+    /// <summary>
+    /// The policy's whole rule for one expedition, apart from where the camp is: the mod's switch
+    /// is on, this expedition's box is ticked, and the carcass lies within radius (world units, as
+    /// Allegiance.GetForageAndHuntingRadius gives it) of the camp centre. --hunting-selftest checks
+    /// it without a play site.
+    /// </summary>
+    public static bool ClaimsKillAt(Expedition expedition, Vector2 campCentre, float radius, Vector2 at) =>
+        OffersAutoclaim && AutoclaimsCampKills(expedition) && Vector2.DistanceSquared(campCentre, at) <= radius * radius;
 
     /// <summary>The chase distance's multiplier: 1 unless changed.</summary>
     public static float ChaseRangeFactor() => ParseFactor(ChaseRange.Value);

@@ -1008,6 +1008,7 @@ internal static class Program
         Check(human != null && !UWGame.Mods.HuntingMod.IsClaimableAnimal(human), "a person's body is never autoclaimed");
         Check(!UWGame.Mods.HuntingMod.AutoclaimsCampKills(null) && UWGame.Mods.HuntingMod.CampKillClaimant(null, default) == null,
               "with no expedition the policy is off, and nothing is claimed");
+        CheckWhoOwnsTheCarcass(Check, human);
         var commandSerializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UWGame.Control.Commands.Command>));
         var commandWriter = new System.IO.StringWriter();
         commandSerializer.Serialize(commandWriter, new List<UWGame.Control.Commands.Command>
@@ -1019,6 +1020,60 @@ internal static class Program
         Check(autoclaimBack != null && autoclaimBack.ExpeditionID == 7L && autoclaimBack.Claim, "SetAutoclaimCampKills round-trips through the replay serializer");
         Console.WriteLine(failures == 0 ? "hunting self-test OK" : $"hunting self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Kastuk, "Autoclaim of bodies", after c2db39e: "Now all killed animals become claimed, at far
+    /// distance from camp too ... Switch in Policy is not changing anything, they become claimed
+    /// with or without it."
+    ///
+    /// Who ends up owning a wild animal's carcass is two decisions, both checked here without a play
+    /// site: the core's when the lethal blow lands (Entity.CarcassOwnerOnLethalBlow - what GoalThink
+    /// gives GoalCollapse), then, for a carcass still unowned, the policy's in Entity.Kill
+    /// (HuntingMod.ClaimsKillAt, the rule CampKillClaimant applies to each player expedition). The
+    /// report was the first decision handing every kill by the colony's people, dogs, HOUNDs and
+    /// sentries to the colony, anywhere, so the second was never asked.
+    /// </summary>
+    private static void CheckWhoOwnsTheCarcass(Action<bool, string> Check, UWGame.SimSide.Entities.EntityType human)
+    {
+        var colony = (UWGame.SimSide.Entities.OwnerID)41L;
+        // The studio's own camp radius for people, in world units, around an arbitrary camp centre.
+        float radius = human?.IntelligenceType?.ForageAndHuntingRadius ?? 0;
+        Check(radius > 0, $"people have a forage and hunting radius ({radius})");
+        var camp = new Microsoft.Xna.Framework.Vector2(4000f, 4000f);
+        var inCamp = camp + new Microsoft.Xna.Framework.Vector2(radius * 0.5f, 0f);
+        var farAway = camp + new Microsoft.Xna.Framework.Vector2(radius * 3f, radius);
+        var ticked = new UWGame.SimSide.Expeditions.Expedition();
+        UWGame.Mods.HuntingMod.SetAutoclaimCampKills(ticked, true);
+        var unticked = new UWGame.SimSide.Expeditions.Expedition();
+        UWGame.Mods.HuntingMod.SetAutoclaimCampKills(unticked, false);
+        Check(UWGame.Mods.HuntingMod.AutoclaimsCampKills(ticked) && !UWGame.Mods.HuntingMod.AutoclaimsCampKills(unticked),
+              "the policy box reads back ticked and unticked");
+
+        // A wild animal killed outside a hunt - by a colonist in a fight, a dog, a HOUND or a sentry
+        // gun: the blow carries no owner (EvaluateAttackJobs.SetGoal, "don't claim the carcass when
+        // not hunting") and the animal had none. Whether it ends up claimed, and by whom.
+        bool Claimed(UWGame.SimSide.Expeditions.Expedition expedition, Microsoft.Xna.Framework.Vector2 at) =>
+            UWGame.SimSide.Entities.Entity.CarcassOwnerOnLethalBlow(null, null) != null
+            || UWGame.Mods.HuntingMod.ClaimsKillAt(expedition, camp, radius, at);
+        Check(UWGame.SimSide.Entities.Entity.CarcassOwnerOnLethalBlow(null, null) == null,
+              "a kill outside a hunt is not given to the killer's side when the blow lands");
+        Check(!Claimed(unticked, farAway), "the report: a kill far from camp, box unticked, stays unclaimed");
+        Check(!Claimed(ticked, farAway), "the report: a kill far from camp, box ticked, stays unclaimed");
+        Check(!Claimed(unticked, inCamp), "the report: a kill in camp, box unticked, stays unclaimed");
+        bool on = UWGame.Mods.HuntingMod.OffersAutoclaim;
+        Check(Claimed(ticked, inCamp) == on, on
+            ? "AUTOCLAIM SWITCH on: a kill in camp, box ticked, is claimed"
+            : "AUTOCLAIM SWITCH off: a kill in camp is not claimed even with the box ticked");
+        Check(UWGame.Mods.HuntingMod.ClaimsKillAt(ticked, camp, radius, camp + new Microsoft.Xna.Framework.Vector2(radius * 1.01f, 0f)) == false,
+              "just outside the radius is outside");
+
+        // What the core still gives, policy or not: a hunt's prey to the hunters' expedition, wherever
+        // it falls (GoalHunt passes the owner with the blow), and your own animal's carcass to you.
+        Check(UWGame.SimSide.Entities.Entity.CarcassOwnerOnLethalBlow(colony, null) == colony,
+              "a hunt's kill is the hunting expedition's, however far from camp");
+        Check(UWGame.SimSide.Entities.Entity.CarcassOwnerOnLethalBlow(null, colony) == colony,
+              "your own dog or livestock killed by a predator stays yours");
     }
 
     /// <summary>
