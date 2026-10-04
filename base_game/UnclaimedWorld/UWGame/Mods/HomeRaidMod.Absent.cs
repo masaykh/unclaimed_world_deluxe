@@ -30,6 +30,8 @@ public static class HomeRaidMod
 
     public static Entity FindTarget(Entity predator) => null;
 
+    public static bool TakesInterestIn(EntityType watcher, EntityType seen) => false;
+
     public static float DamagePerSecond() => 0f;
 
     public static void RaidStarted(Entity predator)

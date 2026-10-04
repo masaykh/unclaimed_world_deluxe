@@ -26,7 +26,7 @@ public static class RegrowthMod
 
     public static float ForecastRegrowth(ResourceContainer tile, float yearlyRegrowth) => yearlyRegrowth;
 
-    public static string RegrowthLabel(float current, float maximum, bool maximumReached) => null;
+    public static string RegrowthLabel(float current, bool maximumReached) => null;
 
     public static string RegrowthToolTipNote(ResourceType type) => null;
 }

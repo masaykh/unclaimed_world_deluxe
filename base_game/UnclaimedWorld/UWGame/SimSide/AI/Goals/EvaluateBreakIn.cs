@@ -8,7 +8,8 @@ namespace UWGame.SimSide.AI.Goals;
 ///
 /// Given only to the raider species (GoalThink, HomeRaidMod.IsRaider), and 0 while the mod is off.
 /// Which building is the mod's rule (HomeRaidMod.FindTarget): the nearest of the player's buildings
-/// within the predator's aggro range that has colonists asleep inside at night, or food in store.
+/// within the predator's aggro range that its kind has seen and not forgotten, and that has
+/// colonists asleep inside at night, or food in store.
 ///
 /// The score is the one EvaluateReturnHome gives a colonist with nothing better to do: just enough
 /// to beat idling (IdleGoalDesirability) plus the brain's inertia towards what it is already doing.

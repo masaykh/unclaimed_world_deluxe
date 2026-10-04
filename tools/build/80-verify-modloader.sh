@@ -793,6 +793,19 @@ else
   fail "the gatherondemand self-test reported failures"
 fi
 
+# HomeRaidMod raids only what the predator knows. tripleacoder: "RaidableBuildings should probably
+# scan known entities, otherwise the predators become omniscient." A building is a target only once
+# it is in the predator kind's SharedKnowledge.AllKnownEntities - put there by the game's own seeing
+# step, taken out by its own forgetting - and the raiders remember buildings only with the mod on.
+say "==> 29. a raiding predator targets only buildings it has seen and not forgotten"
+out=$( cd "$(new_install case29)" && "$EXPORT" . --homeraid-selftest 2>&1 ) || true
+if echo "$out" | grep -q "home raid self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the home raid self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -807,7 +820,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 27/27 cases passed."
+  say "mod loader OK - 28/28 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1
