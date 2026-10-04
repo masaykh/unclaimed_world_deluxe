@@ -13,8 +13,14 @@ using UWGame.SimSide.Processes;
 
 namespace UWGame.SimSide.Entities.Biological;
 
+/// <summary>
+/// One instance of this class for each species.
+/// </summary>
 public class BiologicalType : IXmlSerializable
 {
+	/// <summary>
+	/// Default model texture when age, race, and caste do not specify one.
+	/// </summary>
 	public string ModelBasicTextureName;
 
 	public Vector3? PrimaryColor;
@@ -52,8 +58,16 @@ public class BiologicalType : IXmlSerializable
 
 	public List<CasteType> Castes;
 
+	/// <summary>
+	/// Can be null.
+	/// Races can breed.
+	/// If a race is different enough to yield its own products, it should be its own entity type instead.
+	/// </summary>
 	public RaceType[] RaceTypes;
 
+	/// <summary>
+	/// Hitpoints modifier. Multiplied with bulk to determine max hitpoints.
+	/// </summary>
 	public float ResilienceMean = 1f;
 
 	public float ResilienceStandardDeviation;
@@ -62,14 +76,29 @@ public class BiologicalType : IXmlSerializable
 
 	public double TimeOfDayToGoToSleep;
 
+	/// <summary>
+	/// If true, will attack non-allegiance entities in range even if they are not predators.
+	/// </summary>
 	public bool IsTerritorial;
 
+	/// <summary>
+	/// How stealthy the creature is when actively trying not to be seen.
+	/// </summary>
 	public float? ActiveStealthRating;
 
+	/// <summary>
+	/// How stealthy the creature is when it is not trying to avoid being seen.
+	/// </summary>
 	public float? PassiveStealthRating;
 
+	/// <summary>
+	/// Rate, as a percentage per day, at which oxygen and muscle energy are replenished.
+	/// </summary>
 	public float? OxygenAndMuscleEnergyIncreaseRatePerDay;
 
+	/// <summary>
+	/// True if the creature should pick up its food before eating it; false if it should eat from the ground.
+	/// </summary>
 	public bool HoldsFoodWhenEating;
 
 	public ChanceToTakeStance[] EatingStances;
@@ -77,22 +106,44 @@ public class BiologicalType : IXmlSerializable
 	[XmlIgnore]
 	public List<ChanceToTakeStance> EatingStanceTypes;
 
+	/// <summary>
+	/// How much room the stomach has.
+	/// Humans are around 1/70; snakes can be around 2/3.
+	/// </summary>
 	public float? StomachSizeFractionOfEntityBulk;
 
+	/// <summary>
+	/// Rate, as a percentage per day, at which stomach contents are emptied.
+	/// </summary>
 	public float? StomachContentsDecreaseRatePerDay;
 
+	/// <summary>
+	/// How long it takes the entity to eat its food.
+	/// </summary>
 	public float? TimeToConsumeFullMealInDays;
 
+	/// <summary>
+	/// 1 allows full regeneration, 0.5 allows at most half of total wounds to be regained, and 0 allows none.
+	/// </summary>
 	public float? MaxRegainLimit;
 
 	public float? FractionOfMaxHitpointsGainedPerDay;
 
 	public bool IsVermin;
 
+	/// <summary>
+	/// Extraction process types.
+	/// </summary>
 	public string[] ExtractionProcessTypes;
 
+	/// <summary>
+	/// Consume process types. Anything the entity can consume can also be extracted into smaller items if it is too large to eat whole.
+	/// </summary>
 	public string[] ConsumeProcessTypes;
 
+	/// <summary>
+	/// Food items with one of these tags can be consumed by the entity.
+	/// </summary>
 	public string[] FoodItemTagsThatCanBeConsumed;
 
 	[XmlIgnore]
@@ -111,9 +162,16 @@ public class BiologicalType : IXmlSerializable
 	[XmlIgnore]
 	public EntityType CarcassType;
 
+	/// <summary>
+	/// Defines properties that may be overridden or interpolated in caste, age, and race subtypes.
+	/// Stored as an array to avoid duplicating the key name string in game data.
+	/// </summary>
 	public BioPropertyType[] BioPropertyTypes;
 
 	[XmlIgnore]
+	/// <summary>
+	/// Lookup form of <see cref="BioPropertyTypes"/>.
+	/// </summary>
 	public Dictionary<string, BioPropertyType> bioPropertyTypes;
 
 	[XmlIgnore]
@@ -234,6 +292,9 @@ public class BiologicalType : IXmlSerializable
 		ComputeExtractionResultsInConsumables(ExtractionProcesses, ConsumeProcesses, ref ExtractionResultsInConsumable);
 	}
 
+	/// <summary>
+	/// For the given extraction and consume process collections, computes whether extracting from a product can result in something consumable.
+	/// </summary>
 	public static void ComputeExtractionResultsInConsumables(Dictionary<EntityType, HashSet<ProcessType>> extractionProcesses, Dictionary<EntityType, ProcessType> consumeProcesses, ref Dictionary<EntityType, HashSet<ProcessType>> extractionResultsInConsumable)
 	{
 		if (extractionResultsInConsumable == null)

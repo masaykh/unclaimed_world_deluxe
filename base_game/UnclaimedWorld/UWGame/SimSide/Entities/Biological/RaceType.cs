@@ -7,22 +7,34 @@ using UWGame.SimSide.XmlCollections;
 
 namespace UWGame.SimSide.Entities.Biological;
 
+/// <summary>
+/// Runs parallel to caste types.
+/// </summary>
 public class RaceType : IXmlSerializable, IEdge
 {
 	public string KeyName;
 
+	/// <summary>
+	/// Displayed name.
+	/// </summary>
 	public string Name;
 
 	public string ModelName;
 
 	public string ModelBasicTextureName;
 
+	/// <summary>
+	/// Additional model textures to select from.
+	/// </summary>
 	public string[] ModelBasicTextureNames;
 
 	public float? ModelScale;
 
 	public string Description;
 
+	/// <summary>
+	/// Currently unused.
+	/// </summary>
 	public string PortraitSkinType;
 
 	public Vector3? PrimaryColor;

@@ -22,30 +22,65 @@ public class BiologicalEntity : Component
 
 	public List<Entity> BiologicalChildren = new List<Entity>();
 
+	/// <summary>
+	/// is transferred from EntityData for use as fixed uniform...
+	/// will override race, age and caste textures, if specified
+	/// </summary>
 	public string ModelTextureName;
 
+	/// <summary>
+	/// Never null.
+	/// </summary>
 	public CasteType CasteType;
 
 	private string casteKey;
+	// for snapshot
 
+	/// <summary>
+	/// can be null!
+	/// </summary>
 	public RaceType RaceType;
 
 	private string raceKey;
+	// for snapshot
 
 	public AgeGroup AgeGroup;
 
+	/// <summary>
+	/// physical attractiveness
+	/// </summary>
 	public float Appearance;
 
+	/// <summary>
+	/// physical endurance
+	/// </summary>
 	public float Endurance;
 
+	/// <summary>
+	/// hitpoints modifier. gets multiplied with Bulk to determine max hitpoints.
+	/// </summary>
 	public float Resilience = 1f;
 
+	/// <summary>
+	/// the stealth or detection factor when the creature is trying to be stealthy
+	/// </summary>
 	public float ActiveStealthRating;
 
+	/// <summary>
+	/// the stealth or detection factor when the creature is not trying to be stealthy
+	/// </summary>
 	public float PassiveStealthRating;
 
+	/// <summary>
+	/// the rate as percentage per day we replenish the oxygen/muscle energy
+	/// </summary>
 	public float OxygenAndMuscleEnergyIncreaseRatePerDay;
 
+	/// <summary>
+	/// how much room does the stomach have
+	/// humans: 1/70
+	/// snakes: 2/3
+	/// </summary>
 	public float StomachSizeFractionOfEntityBulk;
 
 	public float TimeToConsumeFullMealInDays;
@@ -54,12 +89,31 @@ public class BiologicalEntity : Component
 
 	public float MaxRegainLimit;
 
+	/// <summary>
+	/// will trigger attacks by entities that hunt vermin...
+	/// </summary>
 	public bool IsVermin;
 
+	/// <summary>
+	/// what can be consumed by the entity? - depends on its caste, age etc.
+	/// Any item that can be consumed, can also be converted to a smaller bulk if needed to fit in the stomach
+	/// </summary>
 	public Dictionary<EntityType, ProcessType> ConsumeProcesses;
 
+	/// <summary>
+	/// extraction processes for the individual - depends on its caste, age etc.
+	/// keyed by input entity: a carcass will have separate processes for extracting the organs, meat, etc...
+	/// 
+	/// Note: This collection of processes may not result in a consumable item for the entity!
+	/// For instance, a worker may extract food with these processes that it would then give to the infants, but could not consume on its own.
+	/// </summary>
 	public Dictionary<EntityType, HashSet<ProcessType>> FoodExtractionProcesses;
 
+	/// <summary>
+	/// indicates if we can consume the product that comes from extracting from the key type
+	/// 
+	/// compute this by running extraction processes on the chain of products, and testing each if it is consumable
+	/// </summary>
 	public Dictionary<EntityType, HashSet<ProcessType>> ExtractionResultsInConsumable;
 
 	public float Height;
@@ -72,8 +126,14 @@ public class BiologicalEntity : Component
 
 	public Vector3? DwellingSpot;
 
+	/// <summary>
+	/// non-physical needs only?
+	/// </summary>
 	public Needs Needs;
 
+	/// <summary>
+	/// TODO: blood left in the body
+	/// </summary>
 	public float Blood;
 
 	private float oxygenAndMuscleEnergy = 1f;
@@ -84,6 +144,11 @@ public class BiologicalEntity : Component
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
+	/// <summary>
+	/// 0 - 1
+	/// oxygen + sugar? Represents oxygen and energy for muscles, as well as acid buildup. 
+	/// Will fairly quickly grow back to 1.       
+	/// </summary>
 	public float OxygenAndMuscleEnergy
 	{
 		get
@@ -107,8 +172,16 @@ public class BiologicalEntity : Component
 		}
 	}
 
+	/// <summary>
+	/// 0 - 1
+	/// a factor that simulates slowly digesting the stomach contents, even though the food items in it have already been destroyed
+	/// </summary>
 	public float StomachContents { get; private set; }
 
+	/// <summary>
+	/// the energy level is a weighted function of all needs that determine work efficiency (concentration, physical ability) and many other things
+	/// if a need is below the specified limit, it will reduce energy level by a specified weight.
+	/// </summary>
 	public float EnergyLevel
 	{
 		get
@@ -181,6 +254,9 @@ public class BiologicalEntity : Component
 		return false;
 	}
 
+	/// <summary>
+	/// returns the types and amounts of consumable items that extracting from this food source would result in
+	/// </summary>
 	public bool GetConsumableFoodExtractionResults(IKnownEntityData foodSource, bool returnListOfFoodTypes, ref List<Tuple<ProcessType, EntityType, float>> listOfFoodTypes)
 	{
 		foreach (ProcessType item in ExtractionResultsInConsumable[foodSource.EntityType])
@@ -217,6 +293,10 @@ public class BiologicalEntity : Component
 		return GetBioProperty(propertyKey, Parent.EntityType, CasteType, RaceType, AgeGroup.Age, Parent.EntityType.BiologicalType.OrderType, defaultValue).NumberValue.Value;
 	}
 
+	/// <summary>
+	/// we can either cache this value if it will never change over the lifetime of an entity,
+	/// or we can look it up each time (when Age changes?)
+	/// </summary>
 	public BioProperty GetBioProperty(string propertyKey, float? defaultValue = null)
 	{
 		return GetBioProperty(propertyKey, Parent.EntityType, CasteType, RaceType, AgeGroup.Age, Parent.EntityType.BiologicalType.OrderType, defaultValue);
@@ -266,6 +346,9 @@ public class BiologicalEntity : Component
 		return bioProperties?.TryGetValue(propertyKey.KeyName, out property) ?? false;
 	}
 
+	/// <summary>
+	/// random age is weighted by the age spans
+	/// </summary>
 	public void SetAgePreInit(float? age = null, AIAgeGroup? ageGroup = null)
 	{
 		if (age.HasValue)
@@ -299,6 +382,10 @@ public class BiologicalEntity : Component
 		RaceType = Parent.EntityType.BiologicalType.RaceTypes.FirstOrDefault((RaceType r) => r.KeyName == key);
 	}
 
+	/// <summary>
+	/// sets random caste and race if not already set.
+	/// computes weight and height and bulk from age if not already set (if bulk is zero!)
+	/// </summary>
 	public void Initialize()
 	{
 		if (CasteType == null)
@@ -326,6 +413,11 @@ public class BiologicalEntity : Component
 		Needs.Initialize();
 	}
 
+	/// <summary>
+	/// here we compute and cache all bio properties - properties that can be overridden and perhaps interpolated in the caste/age/race/order system
+	/// 
+	/// this could be triggered when age changes??
+	/// </summary>
 	private void InitializeBioProperties()
 	{
 		Resilience = GetNormalDistributedBioProperty("ResilienceMean", "ResilienceStandardDeviation", Parent.EntityType.BiologicalType.ResilienceMean, Parent.EntityType.BiologicalType.ResilienceStandardDeviation);
@@ -339,6 +431,7 @@ public class BiologicalEntity : Component
 		IsVermin = GetBioPropertyBoolean("IsVermin", Parent.EntityType.BiologicalType.IsVermin);
 		if (Parent.AgentStorage != null)
 		{
+			// added to ensure that stomach capacity is set correctly in case bulk already has a value - otherwise this happens in bulk change event
 			Parent.AgentStorage.NotifyStomachFractionChanged();
 		}
 		InitializeConsumeAndExtractionProcesses();
@@ -416,6 +509,9 @@ public class BiologicalEntity : Component
 		energyLevelIsDirty = true;
 	}
 
+	/// <summary>
+	/// 0 - 1
+	/// </summary>
 	private float ComputeEnergyLevel()
 	{
 		if (Needs.NeedsList.Count > 0)
@@ -543,6 +639,9 @@ public class BiologicalEntity : Component
 		return this;
 	}
 
+	/// <summary>
+	/// When the snapshotted fields change, increase this version number and add repair logic for older snapshots.
+	/// </summary>
 	public override Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		base.DoVersion(sn);

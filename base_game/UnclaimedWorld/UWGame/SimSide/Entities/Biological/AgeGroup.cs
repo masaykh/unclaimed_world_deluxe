@@ -79,6 +79,9 @@ public class AgeGroup : ISnapshot
 		}
 	}
 
+	/// <summary>
+	/// When the snapshotted fields change, increase this version number and add repair logic for older snapshots.
+	/// </summary>
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		version = sn.DoVersion(Snapshotter.Version.Original);

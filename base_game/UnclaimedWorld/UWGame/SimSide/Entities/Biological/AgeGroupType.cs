@@ -8,6 +8,9 @@ using UWGame.SimSide.XmlCollections;
 
 namespace UWGame.SimSide.Entities.Biological;
 
+/// <summary>
+/// Sits below caste types. Model scale and other properties can override or factor into the final value.
+/// </summary>
 public class AgeGroupType : IXmlSerializable, IEdge
 {
 	public string Name;
@@ -34,6 +37,9 @@ public class AgeGroupType : IXmlSerializable, IEdge
 
 	public bool CanReproduce;
 
+	/// <summary>
+	/// Multiply the target height and weight by these modifiers to get the age-group target values.
+	/// </summary>
 	public float HeightTargetModifier;
 
 	public float WeightTargetModifier;
@@ -52,6 +58,9 @@ public class AgeGroupType : IXmlSerializable, IEdge
 		}
 	};
 
+	/// <summary>
+	/// Upper end of the age range.
+	/// </summary>
 	[XmlElement("AgeUpperEnd")]
 	public float Edge { get; set; }
 

@@ -16,6 +16,9 @@ public class CasteType : IXmlSerializable, IEdge
 
 	public List<AgeGroupType> AgeGroupTypes;
 
+	/// <summary>
+	/// Computed maximum age across this caste's age groups.
+	/// </summary>
 	[XmlIgnore]
 	public float MaxAge;
 
@@ -37,10 +40,16 @@ public class CasteType : IXmlSerializable, IEdge
 
 	public Reproduction Reproduction;
 
+	/// <summary>
+	/// Adult target weight in kilos.
+	/// </summary>
 	public float WeightMean;
 
 	public float WeightStandardDeviation;
 
+	/// <summary>
+	/// Adult target height in meters.
+	/// </summary>
 	public float HeightMean;
 
 	public float HeightStandardDeviation;
