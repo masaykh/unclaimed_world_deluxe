@@ -9,7 +9,7 @@ using UWGame.SimSide.AllGameData;
 
 namespace UW.Tools.DataExport;
 
-internal static class Program
+internal static partial class Program
 {
     /// <summary>--traces: print a stack trace for each table that fails, not only its name.</summary>
     private static bool printTraces;
@@ -26,6 +26,10 @@ internal static class Program
             ?.Substring("--user-scenario=".Length);
         bool faunaSelfTest = args.Contains("--fauna-selftest");
         string fishSelfTest = args.Contains("--fish-selftest") ? "on" : args.Contains("--fish-selftest=off") ? "off" : null;
+        // Resolved now, before the working directory becomes the installation.
+        string saveSelfTest = args.FirstOrDefault(a => a.StartsWith("--save-selftest=", StringComparison.Ordinal))
+            ?.Substring("--save-selftest=".Length);
+        if (saveSelfTest != null) saveSelfTest = Path.GetFullPath(saveSelfTest);
         printTraces = args.Contains("--traces");
 
         // The bundled Unhidden Mod is on by default and its content hooks run inside the data
@@ -86,6 +90,12 @@ internal static class Program
             Console.Error.WriteLine("  --random-selftest");
             Console.Error.WriteLine("               check that a seeded random stream can be resumed by replaying");
             Console.Error.WriteLine("               draws, which is what loading a save now does. Loads nothing.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("  --save-selftest=<file.sav>");
+            Console.Error.WriteLine("               read a saved game with no window - its mod switches, its scenario's");
+            Console.Error.WriteLine("               tables, then the whole simulation - and check the creatures a Port");
+            Console.Error.WriteLine("               delivered: none waits as a passenger with nothing to ride, each");
+            Console.Error.WriteLine("               belongs to the expedition that owns it, none is in a Port's stock.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --traces     print a stack trace for every table that fails to load or export.");
             return 2;
@@ -276,6 +286,11 @@ internal static class Program
         if (args.Contains("--gatherondemand-selftest"))
         {
             return GatherOnDemandSelfTest();
+        }
+
+        if (saveSelfTest != null)
+        {
+            return SaveSelfTest(saveSelfTest);
         }
 
         // Procedural maps (MapGenMod). Learns from --maps-from=DIR, default this game's data/Maps.

@@ -32,7 +32,10 @@
 #  22. a save's type names resolve whatever assembly version they carry
 #  23. tool care protects weapons and items above the survival tier, and not cheap tools
 #  24. the household cooking planner finds real meal recipes, in a fixed order
-#  29. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
+#  29. a raiding predator targets only buildings it has seen and not forgotten
+#  30. a dog drops vermin for a real threat only with the self-preservation switch on
+#  31. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
+#  32. a save with a delivered dog loads headlessly (only when UW_DOG_SAVE names one)
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -855,6 +858,24 @@ else
   fail "the trade self-test reported failures with the switch off"
 fi
 
+# A save, read with no window. Bought dogs stood at the dock "mindlessly" through two fixes that
+# each built clean; the save the tester sent showed why in one read - the dog was the colony's,
+# and its only goal was a passenger wait with nothing to ride. That save is a player's file, not
+# this repository's, so point UW_DOG_SAVE at it (or any save with a dog or robot on the map).
+say "==> 32. a save with a delivered dog loads headlessly, and nothing waits as a passenger aboard nothing"
+if [ -n "$UW_DOG_SAVE" ] && [ -f "$UW_DOG_SAVE" ]; then
+  out=$( cd "$(new_install case32)" && "$EXPORT" . "--save-selftest=$UW_DOG_SAVE" 2>&1 ) || true
+  if echo "$out" | grep -q "save self-test OK" && echo "$out" | grep -q "^  ok    "; then
+    pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception' | head -4
+    fail "the save self-test reported failures"
+  fi
+else
+  say "  SKIP  UW_DOG_SAVE is not set to a save file - this case did not run"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -869,7 +890,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 28/28 cases passed."
+  say "mod loader OK - 32/32 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1
