@@ -22,7 +22,13 @@ public class TalkPanel
 	private UIComponent crtContent;
 	private double timeLeftToShowFace;
 
-	/// <summary>Seconds since the last line was spoken (HudMod's TALK PANEL, "when someone speaks").</summary>
+	/// <summary>
+	/// HudMod's TALK PANEL, "when someone speaks": seconds since the last line was spoken AND its
+	/// speaker's portrait went off the screen. The clock stands still while a portrait shows
+	/// (timeLeftToShowFace, about 6 s from ShowSpeaker) - Kastuk: "let the timer start after
+	/// portrait of the last talker is disappeared" - so the panel lingers a full
+	/// HudMod.TalkPanelLingerSeconds after the face has gone, not after the line arrived.
+	/// </summary>
 	private double secondsSinceLastLine = double.MaxValue;
 
 	private bool isShown = true;
@@ -83,7 +89,7 @@ public class TalkPanel
 	{
 		// MOD: HudMod's TALK PANEL - always (the studio's), when someone speaks, or hidden.
 		string mode = UWGame.Mods.HudMod.TalkPanelMode();
-		if (secondsSinceLastLine < double.MaxValue)
+		if (secondsSinceLastLine < double.MaxValue && timeLeftToShowFace <= 0.0)
 		{
 			secondsSinceLastLine += gameTime.ElapsedGameTime.TotalSeconds;
 		}

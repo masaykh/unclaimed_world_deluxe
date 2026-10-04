@@ -90,7 +90,49 @@ public class HUDOverlayPanel : HUDWindow
 		{
 			item.EndAddingEntries();
 		}
+		SortRowsByName();
 		categoryGrid.EndAddingEntries();
+	}
+
+	/// <summary>
+	/// HUD MOD: the rows inside each category in alphabetical order, as the stockpile and trade
+	/// windows list items (Kastuk). Rows are added in the order the shared knowledge meets the types,
+	/// and a type met later is appended to its category's end, so every category grid is checked on
+	/// each refresh and only one out of order is sorted. The sort is the studio's own
+	/// InventoryPanel.DoCategorySorting, by OrderByTag1 - the name on the row, set in
+	/// CreateEntityTypeRow. The category headers carry no OrderByTag1, and OrderBy is stable, so
+	/// the categories keep their order.
+	/// </summary>
+	private void SortRowsByName()
+	{
+		if (!UWGame.Mods.HudMod.SortsMarkerLists)
+		{
+			return;
+		}
+		List<Grid> unsorted = new List<Grid>();
+		foreach (UIComponent entry in categoryGrid.Entries)
+		{
+			if (entry is CollapsablePanel cp && cp.ExpandedPanel.Controls.Count > 0 && cp.ExpandedPanel.Controls[0] is Grid grid && !IsSortedByName(grid))
+			{
+				unsorted.Add(grid);
+			}
+		}
+		if (unsorted.Count > 0)
+		{
+			UWGame.ClientSide.Interface.Inventory.InventoryPanel.DoCategorySorting(categoryGrid, unsorted, Grid.Sorting.Ascending);
+		}
+	}
+
+	private static bool IsSortedByName(Grid grid)
+	{
+		for (int i = 1; i < grid.Entries.Count; i++)
+		{
+			if (Comparer<object>.Default.Compare(grid.Entries[i - 1].OrderByTag1, grid.Entries[i].OrderByTag1) > 0)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void PopulateSingleItemGrid()
@@ -574,6 +616,9 @@ public class HUDOverlayPanel : HUDWindow
 	{
 		UIComponent uIComponent = new UIComponent(gui);
 		EntityType entityType2 = entityType ?? resourceType.ResourceItemType;
+		// HUD MOD: the sort key SortRowsByName orders by - the name the row shows, as the stockpile
+		// window's AddItemRow does with PluralName. Unread without the mod.
+		uIComponent.OrderByTag1 = entityType2.Name;
 		IconInfo iconInfo;
 		Rectangle iconSprite = entityType2.GetIconSprite(out iconInfo);
 		Image image = new Image(gui);
