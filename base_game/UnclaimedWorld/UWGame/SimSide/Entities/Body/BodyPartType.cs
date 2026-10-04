@@ -7,12 +7,19 @@ namespace UWGame.SimSide.Entities.Body;
 [XmlInclude(typeof(BiologicalBodyPartType))]
 public abstract class BodyPartType
 {
+	/// <summary>
+	/// The model part to hide when this body part is destroyed.
+	/// </summary>
 	public string ModelMesh;
 
+	// Entity functions affected by this body part.
 	public BodyPartFunction[] Functions;
 
 	public string Name;
 
+	/// <summary>
+	/// Used by the attack-type serializer to reference the correct object.
+	/// </summary>
 	public string BodyKeyName;
 
 	public string ArmorLayer;
@@ -20,6 +27,7 @@ public abstract class BodyPartType
 	[XmlIgnore]
 	public BodyLayerType ArmorLayerType;
 
+	// Child body parts.
 	public BodyPartType[] BodyPartTypes;
 
 	public float HitpointsFraction;

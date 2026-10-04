@@ -6,8 +6,14 @@ public class BodyType : IGameData
 {
 	public BodyPartType[] BodyPartTypes;
 
+	/// <summary>
+	/// When defined, overrides hitpoints normally computed from bulk.
+	/// </summary>
 	public float? Hitpoints;
 
+	/// <summary>
+	/// Supports bodies such as robots with an explicit bulk.
+	/// </summary>
 	public float? Bulk;
 
 	public string KeyName { get; set; }

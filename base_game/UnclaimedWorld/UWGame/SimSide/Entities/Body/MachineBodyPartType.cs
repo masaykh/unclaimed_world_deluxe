@@ -7,6 +7,9 @@ namespace UWGame.SimSide.Entities.Body;
 
 public class MachineBodyPartType : BodyPartType, IXmlSerializable
 {
+	/// <summary>
+	/// The time needed to assemble this body part with the others.
+	/// </summary>
 	public float ManSecondsOfWorkNeeded;
 
 	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(MachineBodyPartType))

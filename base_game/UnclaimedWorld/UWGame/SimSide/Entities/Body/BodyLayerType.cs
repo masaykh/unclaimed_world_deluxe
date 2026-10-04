@@ -8,13 +8,22 @@ namespace UWGame.SimSide.Entities.Body;
 [DebuggerDisplay("{KeyName}")]
 public class BodyLayerType : IGameData
 {
+	/// <summary>
+	/// The relative thickness of this layer compared with other layers.
+	/// </summary>
 	public float Thickness;
 
+	/// <summary>
+	/// Resistance to damage types per unit of thickness. Higher values model resistance to non-penetrating attacks.
+	/// </summary>
 	public Dictionary<string, float> DamageReductionFactor;
 
 	[XmlIgnore]
 	public Dictionary<DamageType, float> DamageReductionFactorFinal;
 
+	/// <summary>
+	/// Damage always deducted from an attack. It can nullify attacks below this value; higher values model resistance to penetrating attacks.
+	/// </summary>
 	public Dictionary<string, float> DamageReductionConstant;
 
 	[XmlIgnore]

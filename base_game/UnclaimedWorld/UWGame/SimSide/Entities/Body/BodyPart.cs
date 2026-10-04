@@ -21,18 +21,27 @@ public abstract class BodyPart : ISnapshot, IHasBodyParts, IHasExposedProperties
 
 	private string snapshotBodyPartName;
 
+	/// <summary>
+	/// The body can belong to either an entity or a memory fact.
+	/// </summary>
 	public Body Body;
 
 	private EntityID? snapshotParentEntity;
 
 	private MemoryFactID? snapshotParentMemoryFact;
 
+	/// <summary>
+	/// False when this body part is missing.
+	/// </summary>
 	public bool Exists = true;
 
 	public float Hitpoints;
 
 	public float MaxHitpoints;
 
+	/// <summary>
+	/// Not for global lookup; use <see cref="Body.FindBodyPart(BodyPartID)"/> instead.
+	/// </summary>
 	public BodyPartID BodyPartID;
 
 	private static BodyPartID idCounter;
@@ -58,6 +67,9 @@ public abstract class BodyPart : ISnapshot, IHasBodyParts, IHasExposedProperties
 		KeyName = Body.Parent.EntityType.KeyName + ":" + BodyPartType.Name;
 	}
 
+	/// <summary>
+	/// Copies a body part for storage in a memory fact.
+	/// </summary>
 	protected BodyPart(BodyPart original)
 	{
 		BodyPartID = original.BodyPartID;
@@ -217,6 +229,9 @@ public abstract class BodyPart : ISnapshot, IHasBodyParts, IHasExposedProperties
 		}
 	}
 
+	/// <summary>
+	/// Gets a size-based hit modifier from 0.5 to 3.
+	/// </summary>
 	public float GetToHitModifier(float attackerSize, AttackDirection direction)
 	{
 		float num = 1f;
@@ -322,6 +337,9 @@ public abstract class BodyPart : ISnapshot, IHasBodyParts, IHasExposedProperties
 		}
 	}
 
+	/// <summary>
+	/// Applies a hitpoint scaling factor when this body part is vital.
+	/// </summary>
 	public void GetModifiedHitpointsForPresentation(ref float totalHitpoints, ref float totalMaxHitpoints)
 	{
 		totalMaxHitpoints += MaxHitpoints;

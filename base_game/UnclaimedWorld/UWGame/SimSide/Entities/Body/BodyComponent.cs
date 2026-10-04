@@ -3,6 +3,9 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Entities.Body;
 
+/// <summary>
+/// Wraps a <see cref="Body"/> for use as an entity component. Bodies can be copied and referenced by memory facts; body components cannot.
+/// </summary>
 public class BodyComponent : Component
 {
 	public Body Body;

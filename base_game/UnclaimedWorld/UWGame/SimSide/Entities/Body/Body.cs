@@ -7,6 +7,9 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Entities.Body;
 
+/// <summary>
+/// Represents a body; <see cref="BodyComponent"/> provides its entity-component wrapper.
+/// </summary>
 public class Body : IHasBodyParts, ISnapshot
 {
 	public struct BodyPartChance : IScore, IEdge
@@ -18,20 +21,35 @@ public class Body : IHasBodyParts, ISnapshot
 		public float Edge { get; set; }
 	}
 
+	/// <summary>
+	/// The parent when this body belongs to a memory fact; otherwise <see langword="null"/>.
+	/// </summary>
 	public MemoryFact ParentMemoryFact;
 
 	private MemoryFactID? snapshotParentMemoryFact;
 
+	/// <summary>
+	/// The parent entity; <see langword="null"/> when this body belongs to a memory fact.
+	/// </summary>
 	public Entity Parent;
 
 	private EntityID? snapshotParentEntity;
 
+	/// <summary>
+	/// Should be lower than the sum of the body parts' hitpoints.
+	/// </summary>
 	public float MaxHitpoints;
 
+	/// <summary>
+	/// Cached state of the body's parts for use by evaluators.
+	/// </summary>
 	public double FunctionalScore = 1.0;
 
 	private float globalHitpoints;
 
+	/// <summary>
+	/// Tracks the lowest hitpoint fraction this body has had.
+	/// </summary>
 	private float lowestHitpointsFraction;
 
 	private List<BodyPart> bodyParts = new List<BodyPart>();
@@ -85,6 +103,9 @@ public class Body : IHasBodyParts, ISnapshot
 	{
 	}
 
+	/// <summary>
+	/// Clones a body for a memory fact.
+	/// </summary>
 	public Body(Body original)
 	{
 		MaxHitpoints = original.MaxHitpoints;
@@ -108,6 +129,9 @@ public class Body : IHasBodyParts, ISnapshot
 		}
 	}
 
+	/// <summary>
+	/// Returns a factor from 0 (bad) to 1 (good) for hurt vital body parts.
+	/// </summary>
 	public float GetHurtVitalBodyPartFactorForMorale()
 	{
 		float currentFactor = 1f;
@@ -118,6 +142,9 @@ public class Body : IHasBodyParts, ISnapshot
 		return currentFactor;
 	}
 
+	/// <summary>
+	/// Gets presentation hitpoints, whose maximum is greater than <see cref="MaxHitpoints"/>.
+	/// </summary>
 	public float GetModifiedHitpointsForPresentation()
 	{
 		float totalHitpoints = 0f;

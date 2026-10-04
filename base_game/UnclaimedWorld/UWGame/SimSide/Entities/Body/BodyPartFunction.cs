@@ -16,5 +16,8 @@ public class BodyPartFunction
 
 	public FunctionType Function;
 
+	/// <summary>
+	/// A value from 0 to 1.
+	/// </summary>
 	public float Weight;
 }
