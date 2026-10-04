@@ -327,6 +327,12 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 		AttackJob attackJob = (AttackJob)LookUp<Job, JobID>.FindByID(jobID);
 		if (attackJob != null)
 		{
+			// MOD: a colony animal chasing vermin lets it go when its colony knows of a real threat,
+			// so the next arbitration - a full one, twice a second - can send it there instead.
+			if (UWGame.Mods.SelfPreservationMod.AbandonsVerminChase(entity, attackJob))
+			{
+				return false;
+			}
 			if (weaponData != null && Common.IsZero(attackJob.GetWeaponPolicyScore(entity, weaponData, attackType)))
 			{
 				return false;

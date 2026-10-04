@@ -350,7 +350,7 @@ echo "$out" | grep -q "hud.markersOnAlt = true"   && pass "hud.markersOnAlt is r
 
 # The nature mods default to off as well - checked ON.
 # So is self-preservation: it changes the studio's AI rather than fixing it, so it is opt-in.
-for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones preyfear.preyFlees preyfear.closeInReach toolcare.enabled ownership.enabled selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany; do
+for id in birdhop.enabled pests.enabled regrowth.woodOverharvest fishstock.enabled homeraid.enabled reserve.enabled safesleep.avoidNests gatherondemand.enabled hunting.swarmersInZones preyfear.preyFlees preyfear.closeInReach toolcare.enabled ownership.enabled selfpreservation.injuredStayOut selfpreservation.unarmedStayOut selfpreservation.animalsNeedCompany selfpreservation.animalsDropVermin; do
   d=$(new_install "case11-$id"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   echo "$out" | grep -q "$id = true"   && pass "$id is registered and reads from the file"   || fail "$id did not reach the registry"
@@ -804,6 +804,33 @@ if echo "$out" | grep -q "home raid self-test OK" && echo "$out" | grep -q "^  o
 else
   echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
   fail "the home raid self-test reported failures"
+fi
+
+# Kastuk: a dog "so focused on vermin" it did not see a whipjaw coming. With the switch on, a colony
+# animal leaves vermin while the colony knows of a real threat; off, it keeps it (the studio's
+# game). Checked both ways, and the creatures it relies on are checked as vermin / not vermin. The
+# last check is the gate testing itself: the switch-on expectation against a switch that is off
+# must not be met, or the first run proves nothing.
+say "==> 30. a dog drops vermin for a real threat only with the self-preservation switch on"
+d=$(new_install case30); write_setting "$d" selfpreservation.animalsDropVermin true
+out=$( cd "$d" && "$EXPORT" . --selfpreservation-selftest 2>&1 ) || true
+if echo "$out" | grep -q "self-preservation self-test OK" && echo "$out" | grep -q "switch on: a dog chasing vermin leaves it"; then
+  pass "switch on: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the self-preservation self-test reported failures with the switch on"
+fi
+out=$( cd "$(new_install case30b)" && "$EXPORT" . --selfpreservation-selftest 2>&1 ) || true
+if echo "$out" | grep -q "self-preservation self-test OK" && echo "$out" | grep -q "switch off: a dog chasing vermin keeps it"; then
+  pass "switch off: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  fail "the self-preservation self-test reported failures with the switch off"
+fi
+if echo "$out" | grep -q "switch on: a dog chasing vermin leaves it"; then
+  fail "with the switch off the self-test still claims the dog leaves its vermin - the check cannot go red"
+else
+  pass "with the switch off, the switch-on expectation is not met (the studio's behaviour, as reported)"
 fi
 
 # ------------------------------------------------- 8. the settings file round-trips
