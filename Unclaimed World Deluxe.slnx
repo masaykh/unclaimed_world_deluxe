@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="base_game/UnclaimedWorld/UnclaimedWorld.csproj" />
+  <Project Path="test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj" Id="cdb80c66-33b6-4a18-bfa4-81142d34b126" />
+</Solution>

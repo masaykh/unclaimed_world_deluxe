@@ -35,7 +35,8 @@
     <PackageVersion Include="MonoGame.Content.Builder.Task" Version="$(MonoGameVersion)" />
     <PackageVersion Include="Steamworks.NET" Version="2024.8.0" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.6" />
-
+	<PackageVersion Include="MSTest" Version="4.0.2" />
+	  
     <!--
       HarmonyLib - the runtime patching framework the mod loader is built on.
 
