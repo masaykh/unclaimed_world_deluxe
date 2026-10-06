@@ -990,6 +990,15 @@ public class Label : UIComponent, IHasText
 		}
 	}
 
+	/// <summary>The hover was given up without a MouseOut (UIComponent.ReleaseHover): take the tint off too.</summary>
+	protected override void OnHoverReleased()
+	{
+		if (hoverEnabled && normalColor.HasValue)
+		{
+			ResetHover(this, null);
+		}
+	}
+
 	protected void ResetHover(UIComponent sender, MouseEventArgs args)
 	{
 		color = normalColor.Value;
@@ -1095,6 +1104,21 @@ public class Label : UIComponent, IHasText
 
 	protected override void DrawControl(SpriteBatch spriteBatch, Rectangle parentScissor, float alpha)
 	{
+		// PORT: a hover tint is only kept while the pointer is really on the label. Kastuk
+		// ("Trading"): the ETA in MISSIONS turned yellow under the cursor and stayed yellow after
+		// it left, until it was hovered again - the MouseOut that ResetHover waits for never came.
+		// Checked only while the tint is showing, so an untinted label costs nothing.
+		if (hoverEnabled && normalColor.HasValue && color == labelHoverColor && color != normalColor.Value)
+		{
+			if (base.IsMouseOver)
+			{
+				ReleaseHoverIfPointerLeft();
+			}
+			else
+			{
+				ResetHover(this, null);
+			}
+		}
 		if ((background == null && hoverBackground == null && base.Controls.Count != 0) || font == null)
 		{
 			return;

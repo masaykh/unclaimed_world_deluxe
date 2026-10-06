@@ -1327,7 +1327,7 @@ public class UIComponent
 	/// Only on an actual move or resize of a component that currently holds the hover, so a
 	/// per-frame position check - which the report specifically asked to avoid - is not needed.
 	/// </summary>
-	private void ReleaseHoverIfPointerLeft()
+	protected void ReleaseHoverIfPointerLeft()
 	{
 		if (!isMouseOver || guiManager == null || guiManager.InputData == null)
 		{
@@ -1392,8 +1392,8 @@ public class UIComponent
 	/// moved, resized or removed out from under it.
 	///
 	/// Empty here on purpose: the point of the silent release is that arbitrary handlers do NOT
-	/// run. Override it only to undo something the component did to the world outside itself, of
-	/// which the mouse cursor is the whole list.
+	/// run. Override it only to undo something the component did on MouseOver: the mouse cursor
+	/// (ResizableArea) and a label's hover tint (Label).
 	/// </summary>
 	protected virtual void OnHoverReleased()
 	{
