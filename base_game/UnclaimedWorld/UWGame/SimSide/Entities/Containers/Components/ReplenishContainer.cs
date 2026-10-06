@@ -59,15 +59,6 @@ namespace UWGame.SimSide.Entities.Containers.Components
             return Contains(entityID);
         }
        
-
-        private void RemoveOutdatedItem(AmmoOfType ammoOfType, EntityID entityID)
-        {
-            ammoOfType.Items.Remove(entityID);
-
-            ammoOfType.TotalIsDirty = true;
-
-        }
-
         public override void IterateContained(Action<Entity> iterateMethod) //Container.IterateMethod iterateMethod)
         {
             replenishItems.IterateContained(iterateMethod);

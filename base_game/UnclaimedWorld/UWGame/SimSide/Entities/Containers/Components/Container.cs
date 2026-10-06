@@ -699,18 +699,6 @@ other buildings might be IGarrison but not IStorage... like a watchtower
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entityToBePlaced"></param>
-        /// <param name="placeOnGround"></param>
-        private void PlaceOnGround(Entity entityToBePlaced, Vector3? placeOnGround)
-        {
-            PlaceOnGround(entityToBePlaced, Parent, placeOnGround);
-                      
-        }
-
-
         private static void PlaceOnGround(Entity entityToBePlaced, Entity parentOrPartOfEntity, Vector3? placeOnGround)
         {
             // NEW: set Site to the container's Site when uncontained:
