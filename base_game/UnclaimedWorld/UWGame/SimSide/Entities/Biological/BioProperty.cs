@@ -1,11 +1,20 @@
-namespace UWGame.SimSide.Entities.Biological;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-/// <summary>
-/// Holds the values for a biological property.
-/// </summary>
-public class BioProperty
+namespace UWGame.SimSide.Entities.Biological
 {
-	public float? NumberValue;
+    /// <summary>
+    /// has the values for a bioproperty
+    /// </summary>
+    public class BioProperty
+    {
 
-	public bool? BoolValue;
+        //  public string KeyName;
+
+        public float? NumberValue;
+        public bool? BoolValue;
+
+    }
 }

@@ -1,25 +1,26 @@
-namespace UWGame.SimSide.Entities.Biological;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-/// <summary>
-/// Defines how biological property values should be combined into one result.
-/// </summary>
-public class BioPropertyType
+namespace UWGame.SimSide.Entities.Biological
 {
-	/// <summary>
-	/// DefaultPriority means age overrides race, which overrides caste.
-	/// </summary>
-	public enum Interpolate
-	{
-		DefaultPriority,
-		Average,
-		Max,
-		Min
-	}
+    /// <summary>
+    /// defines how different bioproperty values should be combined into one result.
+    /// </summary>
+    public class BioPropertyType
+    {
+        public string KeyName;
 
-	public string KeyName;
+        /// <summary>
+        /// DefaultPriority means age overrides race, which again overrides caste
+        /// </summary>
+        public enum Interpolate { DefaultPriority, Average, Max, Min }
 
-	/// <summary>
-	/// DefaultPriority means age overrides race, which overrides caste.
-	/// </summary>
-	public Interpolate InterpolateSetting;
+        /// <summary>
+        /// DefaultPriority means age overrides race, which again overrides caste
+        /// </summary>
+        public Interpolate InterpolateSetting = Interpolate.DefaultPriority;
+
+    }
 }

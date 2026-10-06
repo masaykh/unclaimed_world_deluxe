@@ -1,139 +1,262 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
+using System.Xml.Serialization;
 using UWGame.SimSide.XmlCollections;
 
-namespace UWGame.SimSide.Entities.Biological;
-
-public class CasteType : IXmlSerializable, IEdge
+namespace UWGame.SimSide.Entities.Biological
 {
-	public string KeyName;
+    public enum Reproduction { Male, Female, None, Self }
+    public class CasteType : IXmlSerializable, IEdge
+    {
+        public string KeyName;
 
-	public string Name;
+        public string Name;
 
-	public List<AgeGroupType> AgeGroupTypes;
+        public List<AgeGroupType> AgeGroupTypes;
 
-	/// <summary>
-	/// Computed maximum age across this caste's age groups.
-	/// </summary>
-	[XmlIgnore]
-	public float MaxAge;
+        /// <summary>
+        /// let's compute the max age...
+        /// </summary>
+        [XmlIgnore]
+        public float MaxAge;
 
-	public string ModelName;
+        public string ModelName;
+        public float? ModelScale;
 
-	public float? ModelScale;
+        public string ModelBasicTextureName;
 
-	public string ModelBasicTextureName;
+        public Vector3? PrimaryColor;
+        public Vector3? SecondaryColor;
+        public Vector3? TertiaryColor;
+        public Vector3? QuaternaryColor;
 
-	public Vector3? PrimaryColor;
+       // [XmlElement(IsNullable = false)] 
+        public float? Size;
+        public Reproduction Reproduction;
+                
+        /// <summary>
+        /// gives adult target weight
+        /// in kilos
+        /// </summary>
+        public float WeightMean;
+        public float WeightStandardDeviation;
 
-	public Vector3? SecondaryColor;
+        /// <summary>
+        /// gives adult target height
+        /// in meters
+        /// </summary>
+        public float HeightMean;
+        public float HeightStandardDeviation;
+                                        /*HeightMean = 1.8f, HeightStandardDeviation = 0.08f, 
+                                        WeightMean = */
 
-	public Vector3? TertiaryColor;
+      //  public float? ResilienceMean;
+      //  public float? ResilienceStandardDeviation;
 
-	public Vector3? QuaternaryColor;
+        public SerializableDictionary<string, BioProperty> BioProperties;
 
-	public float? Size;
+        public void Initialize(int casteNo)
+        {
+            MaxAge = 0f;
+            foreach (AgeGroupType ageGroupType in AgeGroupTypes)
+            {
+                ageGroupType.Initialize();
 
-	public Reproduction Reproduction;
+                // compute the max age, it can be useful:
+                if (ageGroupType.Edge > MaxAge)
+                {
+                    MaxAge = ageGroupType.Edge;
+                }
+            }
 
-	/// <summary>
-	/// Adult target weight in kilos.
-	/// </summary>
-	public float WeightMean;
+            if (string.IsNullOrEmpty(Name))
+            {
+                Name = "Caste #" + casteNo;
+            }
 
-	public float WeightStandardDeviation;
+        }
 
-	/// <summary>
-	/// Adult target height in meters.
-	/// </summary>
-	public float HeightMean;
+        public void PostDataCompleteInitialize()
+        {
+            foreach (AgeGroupType ageGroupType in AgeGroupTypes)
+            {
+                ageGroupType.PostDataCompleteInitialize();
+            }
+        }
 
-	public float HeightStandardDeviation;
+        public bool GetBioPropertyValue(BioPropertyType propertyKey, out BioProperty property)
+        {
+            return BiologicalEntity.GetBioPropertyValue(propertyKey, BioProperties, out property);
+        }
 
-	public SerializableDictionary<string, BioProperty> BioProperties;
+        static int noOfAgeGroupTypes = Enum.GetValues(typeof(AIAgeGroup)).Length;
 
-	private static int noOfAgeGroupTypes = Enum.GetValues(typeof(AIAgeGroup)).Length;
+        public void Validate(ref List<string> errors)
+        {
+            EntityType.ValidateRequiredValue(ref errors, "Caste KeyName", KeyName != null);
 
-	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(CasteType))
-	{
-		TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>
-		{
-			new CustomXmlSerializer.XmlTypeMapping<Vector3?, string>
-			{
-				GetterMethod = (Vector3? t) => t.HasValue ? PersonType.Vector3ToHexString(t.Value) : null,
-				SetterMethod = (string s) => (s != null) ? new Vector3?(PersonType.HexStringToVector3(s)) : ((Vector3?)null)
-			}
-		}
-	};
+            if (AgeGroupTypes.Count != noOfAgeGroupTypes)
+            {
+                EntityType.CreateValidationError(ref errors, KeyName + ": All age group types must be defined.");              
+            }
 
-	[XmlElement("ProbabilityEdge")]
-	public float Edge { get; set; }
+            int lastAgeGroupAI = -1;
+            foreach (AgeGroupType ageGroup in AgeGroupTypes)
+            {
+                if ((int)ageGroup.AIAgeGroup <= lastAgeGroupAI)
+                {
+                    EntityType.CreateValidationError(ref errors, KeyName + ": The age group AI types are not in the correct sequence.");
+                }
 
-	public void Initialize(int casteNo)
-	{
-		MaxAge = 0f;
-		foreach (AgeGroupType ageGroupType in AgeGroupTypes)
-		{
-			ageGroupType.Initialize();
-			if (ageGroupType.Edge > MaxAge)
-			{
-				MaxAge = ageGroupType.Edge;
-			}
-		}
-		if (string.IsNullOrEmpty(Name))
-		{
-			Name = "Caste #" + casteNo;
-		}
-	}
+                lastAgeGroupAI = (int)ageGroup.AIAgeGroup;
 
-	public void PostDataCompleteInitialize()
-	{
-		foreach (AgeGroupType ageGroupType in AgeGroupTypes)
-		{
-			ageGroupType.PostDataCompleteInitialize();
-		}
-	}
+                ageGroup.Validate(ref errors);
+            }
 
-	public bool GetBioPropertyValue(BioPropertyType propertyKey, out BioProperty property)
-	{
-		return BiologicalEntity.GetBioPropertyValue(propertyKey, BioProperties, out property);
-	}
+           
+        }
 
-	public void Validate(ref List<string> errors)
-	{
-		EntityType.ValidateRequiredValue(ref errors, "Caste KeyName", KeyName != null);
-		if (AgeGroupTypes.Count != noOfAgeGroupTypes)
-		{
-			EntityType.CreateValidationError(ref errors, KeyName + ": All age group types must be defined.");
-		}
-		int num = -1;
-		foreach (AgeGroupType ageGroupType in AgeGroupTypes)
-		{
-			if ((int)ageGroupType.AIAgeGroup <= num)
-			{
-				EntityType.CreateValidationError(ref errors, KeyName + ": The age group AI types are not in the correct sequence.");
-			}
-			num = (int)ageGroupType.AIAgeGroup;
-			ageGroupType.Validate(ref errors);
-		}
-	}
+        [XmlElement("ProbabilityEdge")]
+        public float Edge { get; set; }
 
-	public XmlSchema GetSchema()
-	{
-		return null;
-	}
+        #region IXmlSerializable Members
 
-	public void ReadXml(XmlReader reader)
-	{
-		CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
-	}
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
 
-	public void WriteXml(XmlWriter writer)
-	{
-		CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
-	}
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(CasteType))
+        {
+            TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>() 
+                {
+                    new CustomXmlSerializer.XmlTypeMapping<Vector3?, string> ()
+                    {
+                        GetterMethod = t => t == null ? null : PersonType.Vector3ToHexString(t.Value),
+                        SetterMethod = s => s == null ? null : new Vector3?(PersonType.HexStringToVector3(s))
+                    }/*,  
+                    new CustomXmlSerializer.XmlTypeMapping<float?, string> () // don't print nulls
+                    {
+                        GetterMethod = t => t == null ? null : t.Value.ToString(),
+                        SetterMethod = s => string.IsNullOrEmpty(s) ? null : new float?(float.Parse(s))
+                        //SetterMethod = s => s == null ? null : new float?(float.Parse(s))
+                    } */         
+                }
+        };
+
+        #endregion
+    }
+
+    
+
+    public interface IEdge
+    {
+        float Edge { get; set; }
+    }
+    public class ColorProbability: IXmlSerializable, IEdge
+    {
+        public float Edge { get; set; }
+        public Vector3 Color { get; set; }
+
+       // public Pair() { }
+        public ColorProbability(float key, Vector3 value)
+        {
+            Edge = key;
+            Color = value;
+        }
+        public ColorProbability(){ }
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(ColorProbability))
+        {
+            TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>() 
+                {
+                    new CustomXmlSerializer.XmlTypeMapping<Vector3, string> ()
+                    {
+                        GetterMethod = t => t == null ? null : PersonType.Vector3ToHexString(t),
+                        SetterMethod = s => PersonType.HexStringToVector3(s)
+                    }       
+                }
+        };
+
+        #endregion
+    }
+
+  /*  public class Pair<K, V> : IXmlSerializable
+    {
+        public K Key { get; set; }
+        public V Value { get; set; }
+
+        public Pair() { }
+
+        public Pair(K key, V value)
+        {
+            Key = key;
+            Value = value;
+        }
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(Pair<float, Vector3>))
+        {
+            TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>() 
+                {
+                    new CustomXmlSerializer.XmlTypeMapping<Vector3, string> ()
+                    {
+                        GetterMethod = t => t == null ? null : PersonType.Vector3ToHexString(t),
+                        SetterMethod = s => PersonType.HexStringToVector3(s)
+                    }       
+                }
+        };
+
+        #endregion
+    }
+    */
+
+
+    
 }

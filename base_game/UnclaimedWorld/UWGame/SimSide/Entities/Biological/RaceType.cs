@@ -1,94 +1,116 @@
+﻿using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
+using System.Xml.Serialization;
 using UWGame.SimSide.XmlCollections;
 
-namespace UWGame.SimSide.Entities.Biological;
-
-/// <summary>
-/// Runs parallel to caste types.
-/// </summary>
-public class RaceType : IXmlSerializable, IEdge
+namespace UWGame.SimSide.Entities.Biological
 {
-	public string KeyName;
+   /// <summary>
+   /// is parallel to caste types.
+   /// model scale should probably be a factor along with other properties...
+   /// </summary>
+    public class RaceType : IXmlSerializable, IEdge
+    {
+        public string KeyName;
+        
+        /// <summary>
+        /// displayed name
+        /// </summary>
+        public string Name;
 
-	/// <summary>
-	/// Displayed name.
-	/// </summary>
-	public string Name;
+        public string ModelName;
 
-	public string ModelName;
+        public string ModelBasicTextureName;
 
-	public string ModelBasicTextureName;
+        /// <summary>
+        /// additional model textures to select from
+        /// </summary>
+        public string[] ModelBasicTextureNames;
 
-	/// <summary>
-	/// Additional model textures to select from.
-	/// </summary>
-	public string[] ModelBasicTextureNames;
+        public float? ModelScale;
 
-	public float? ModelScale;
+        public string Description;
 
-	public string Description;
+        /// <summary>
+        /// not used?
+        /// </summary>
+        public string PortraitSkinType;
 
-	/// <summary>
-	/// Currently unused.
-	/// </summary>
-	public string PortraitSkinType;
+        public Vector3? PrimaryColor;      
+        public List<ColorProbability> SecondaryColorProbabilityEdges;
+        public Vector3? TertiaryColor;
+        public Vector3? QuaternaryColor;
+        public float? Size;
 
-	public Vector3? PrimaryColor;
+       // public float? ResilienceMean;
+    //    public float? ResilienceStandardDeviation;
 
-	public List<ColorProbability> SecondaryColorProbabilityEdges;
+       
 
-	public Vector3? TertiaryColor;
+        [XmlElement("ProbabilityEdge")]
+        public float Edge { get; set; }
 
-	public Vector3? QuaternaryColor;
+        public SerializableDictionary<string, BioProperty> BioProperties;
 
-	public float? Size;
+    //    [XmlIgnore]
+      //  private Dictionary<BioPropertyType, BioProperty> bioProperties;
+        //private SerializableDictionary<BioPropertyType, BioProperty> BioProperties;
 
-	public SerializableDictionary<string, BioProperty> BioProperties;
+        public void Initialize(int raceNo)
+        {            
 
-	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(RaceType))
-	{
-		TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>
-		{
-			new CustomXmlSerializer.XmlTypeMapping<Vector3?, string>
-			{
-				GetterMethod = (Vector3? t) => t.HasValue ? PersonType.Vector3ToHexString(t.Value) : null,
-				SetterMethod = (string s) => (s != null) ? new Vector3?(PersonType.HexStringToVector3(s)) : ((Vector3?)null)
-			}
-		}
-	};
+            if (string.IsNullOrEmpty(Name))
+            {
+                Name = "Race #" + raceNo;
+            }
 
-	[XmlElement("ProbabilityEdge")]
-	public float Edge { get; set; }
+           
+        }
 
-	public void Initialize(int raceNo)
-	{
-		if (string.IsNullOrEmpty(Name))
-		{
-			Name = "Race #" + raceNo;
-		}
-	}
+        public bool GetBioPropertyValue(BioPropertyType propertyKey, out BioProperty property)
+        {
+            return BiologicalEntity.GetBioPropertyValue(propertyKey, BioProperties, out property);
+        }
 
-	public bool GetBioPropertyValue(BioPropertyType propertyKey, out BioProperty property)
-	{
-		return BiologicalEntity.GetBioPropertyValue(propertyKey, BioProperties, out property);
-	}
+        #region IXmlSerializable Members
 
-	public XmlSchema GetSchema()
-	{
-		return null;
-	}
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
 
-	public void ReadXml(XmlReader reader)
-	{
-		CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
-	}
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
 
-	public void WriteXml(XmlWriter writer)
-	{
-		CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
-	}
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(RaceType))
+        {
+            TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>() 
+                {
+                    new CustomXmlSerializer.XmlTypeMapping<Vector3?, string> ()
+                    {
+                        GetterMethod = t => !t.HasValue ? null : PersonType.Vector3ToHexString(t.Value),
+                        SetterMethod = s => s == null ? null : new Vector3?(PersonType.HexStringToVector3(s))
+                    }/*,                     
+                    new CustomXmlSerializer.XmlTypeMapping<float?, string> ()
+                    {
+                        GetterMethod = t => t == null ? null : t.Value.ToString(),
+                        SetterMethod = s => string.IsNullOrEmpty(s) ? null : new float?(float.Parse(s))
+                    }  */
+               
+                }
+        };
+
+        #endregion
+
+    }
 }
