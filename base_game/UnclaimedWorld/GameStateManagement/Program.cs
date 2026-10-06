@@ -50,9 +50,10 @@ internal static class Program
 					Console.WriteLine("                    then load from them. Run this once to get editable copies.");
 					Console.WriteLine("  --data-from-xml   Load data tables from data/ only, ignoring the built-in");
 					Console.WriteLine("                    defaults. Use after editing the exported XML.");
-					Console.WriteLine("  -nomods           Run the stock game: the bundled Unhidden Mod off AND no");
-					Console.WriteLine("                    mods loaded from user/Mods. Saves made with mods on may");
-					Console.WriteLine("                    not load without them.");
+					Console.WriteLine("  -nomods           Run the stock game: the bundled Unhidden Mod off, every");
+					Console.WriteLine("                    mod setting at its stock value for this session (the file");
+					Console.WriteLine("                    keeps yours), and no mods loaded from user/Mods. Saves made");
+					Console.WriteLine("                    with mods on may not load without them.");
 					Console.WriteLine();
 					Console.WriteLine("Data loading with no flags is exactly as retail: the built-in tables are");
 					Console.WriteLine("used and nothing under data/ is written or read.");
@@ -84,6 +85,9 @@ internal static class Program
 			{
 				UWGame.Mods.UnhiddenMod.Disable();
 				UWGame.Mods.ModLoader.Disable();
+				// And every other mod's switches at their stock values, for this session only:
+				// user/ModSettings.xml keeps the player's own (ModSettings.StockOnly).
+				UWGame.Mods.ModSettings.UseStockValues();
 			}
 		}
 		// Mod configuration, from user/ModSettings.xml. Read BEFORE anything registers a setting

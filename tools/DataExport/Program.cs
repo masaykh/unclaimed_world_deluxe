@@ -41,6 +41,7 @@ internal static partial class Program
         {
             UWGame.Mods.UnhiddenMod.Disable();
             UWGame.Mods.ModLoader.Disable();
+            UWGame.Mods.ModSettings.UseStockValues();
         }
         Console.WriteLine("==> Unhidden Mod: " + (UWGame.Mods.UnhiddenMod.Enabled ? "ON" : "off"));
 
@@ -505,6 +506,45 @@ internal static partial class Program
             Check(!UWGame.Mods.KeybindMod.Bindable.Contains(Microsoft.Xna.Framework.Input.Keys.Escape),
                   "Escape cancels a rebinding, so it is not offered as a key");
         }
+
+        // -nomods (ModSettings.StockOnly). It used to switch off only the Unhidden Mod and the
+        // loader, and every other mod kept running from the file (Kastuk, 2026-10-05). Now each
+        // mod's setting reads as stock for the session and the file keeps the player's own values.
+        File.WriteAllText(path,
+            "<ModSettings>" + Environment.NewLine +
+            "  <Setting id=\"selftest.wanted\" value=\"true\" />" + Environment.NewLine +
+            "  <Setting id=\"selftest.pick\" value=\"b\" />" + Environment.NewLine +
+            "  <Setting id=\"port.selftestFormat\" value=\"dd\" />" + Environment.NewLine +
+            "</ModSettings>" + Environment.NewLine);
+        UWGame.Mods.ModSettings.Reset();
+        UWGame.Mods.ModSettings.UseStockValues();
+        UWGame.Mods.ModSettings.Load((m, t) => Console.WriteLine("    " + t + ": " + m));
+        // A port setting of its own: PortSettings caches the instances registered before the Reset.
+        UWGame.Mods.ModSetting portFormat = UWGame.Mods.ModSettings.Choice(UWGame.Mods.PortSettings.ModId, "selftestFormat", "FORMAT",
+                                                                           new[] { "iso", "dd" }, "iso");
+        UWGame.Mods.ModSetting wanted = UWGame.Mods.ModSettings.Toggle("selftest", "wanted", "WANTED", defaultValue: false, affectsSimulation: true);
+        UWGame.Mods.ModSetting onByDefault = UWGame.Mods.ModSettings.Toggle("selftest", "byDefault", "BY DEFAULT", defaultValue: true, affectsSimulation: true);
+        UWGame.Mods.ModSetting pick = UWGame.Mods.ModSettings.Choice("selftest", "pick", "PICK", new[] { "a", "b" }, "b",
+                                                                     affectsSimulation: true, stockValue: "a");
+        Check(!wanted.On, "-nomods: a mod switched on in the file reads as off");
+        Check(!onByDefault.On, "-nomods: a mod on by default reads as off");
+        Check(pick.Value == "a", "-nomods: a choice reads as its stock value, not the file's or the default");
+        Check(portFormat.Value == "dd",
+              "-nomods: the port's own settings keep the file's values - they are not a mod");
+        Check(UWGame.Mods.ModSettings.Signature() == "", "-nomods: the session signs as stock");
+        wanted.Value = "false";
+        UWGame.Mods.ModSettings.Save((m, t) => Console.WriteLine("    " + t + ": " + m));
+        written = File.ReadAllText(path);
+        Check(written.Contains("id=\"selftest.wanted\" value=\"true\"") && written.Contains("id=\"selftest.pick\" value=\"b\""),
+              "-nomods: saving the options keeps the player's own mod values in the file");
+        Check(!written.Contains("selftest.byDefault"),
+              "-nomods: a mod at its default is not written as off");
+
+        UWGame.Mods.ModSettings.Reset();
+        UWGame.Mods.ModSettings.Load((m, t) => Console.WriteLine("    " + t + ": " + m));
+        wanted = UWGame.Mods.ModSettings.Toggle("selftest", "wanted", "WANTED", defaultValue: false, affectsSimulation: true);
+        onByDefault = UWGame.Mods.ModSettings.Toggle("selftest", "byDefault", "BY DEFAULT", defaultValue: true, affectsSimulation: true);
+        Check(wanted.On && onByDefault.On, "without -nomods the next start has the player's mods back");
 
         Console.WriteLine();
         if (failures == 0)

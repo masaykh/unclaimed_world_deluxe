@@ -289,7 +289,9 @@ attributes decide; the loader does not order them beyond the filename.
 `Errors.txt`, and the game starts without it. That is the normal outcome after a game update
 whose patch targets moved, so the message names the mod — you can tell which one to remove.
 
-`-nomods` disables both the loader and the bundled mod below.
+`-nomods` disables the loader and the bundled mod below, and holds every other mod's
+setting at its stock value for that session (`ModSettings.StockOnly`). `user/ModSettings.xml`
+keeps your own values, so the next start without it has them back.
 
 ### Testing a mod without launching
 

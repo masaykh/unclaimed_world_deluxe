@@ -215,6 +215,28 @@ public static class ModSettings
 
     private static bool loaded;
 
+    /// <summary>
+    /// Set by <c>-nomods</c>: every mod's setting reads as its <see cref="ModSetting.StockValue"/>
+    /// for this session, whatever the file says, so the game runs as the studio shipped it without
+    /// anyone having to untick thirty switches and tick them again afterwards (Kastuk, 2026-10-05:
+    /// "Need this mode to quickly test game in clean state without cleaning all mod settings").
+    ///
+    /// The file is left as it was. A save from the options menu writes the file's own values back
+    /// for these settings (<see cref="Save"/>), so a change made during a -nomods session lasts
+    /// for that session only. The port's own settings (<see cref="PortSettings"/>) are not a mod
+    /// and keep the file's values.
+    /// </summary>
+    public static bool StockOnly { get; private set; }
+
+    /// <summary>Switches <see cref="StockOnly"/> on. Call before anything registers.</summary>
+    public static void UseStockValues()
+    {
+        StockOnly = true;
+    }
+
+    /// <summary>Whether this setting is held at stock, with the file keeping the player's value.</summary>
+    private static bool KeepsFileValue(ModSetting s) => StockOnly && s.ModId != PortSettings.ModId;
+
     /// <summary>Every registered setting, in registration order - which is the menu order.</summary>
     public static IReadOnlyList<ModSetting> All => registered;
 
@@ -328,14 +350,15 @@ public static class ModSettings
             // File order first, so a file someone has arranged by hand keeps its arrangement.
             foreach (string id in storedOrder)
             {
-                if (byId.TryGetValue(id, out ModSetting known))
+                if (byId.TryGetValue(id, out ModSetting known) && !KeepsFileValue(known))
                 {
                     Append(root, known);
                 }
                 else
                 {
                     // An unclaimed entry: a mod that is not installed right now, or a typo. Either
-                    // way it is someone's configuration and not ours to drop.
+                    // way it is someone's configuration and not ours to drop. Also a setting held at
+                    // stock by -nomods (StockOnly): the player's own value goes back as it came.
                     root.Add(new XElement("Setting",
                         new XAttribute("id", id),
                         new XAttribute("value", stored[id])));
@@ -345,7 +368,9 @@ public static class ModSettings
 
             foreach (ModSetting s in registered)
             {
-                if (!written.Contains(s.Id))
+                // Held at stock and not in the file: it was at its default, and writing the stock
+                // value here would turn a mod on by default off for good.
+                if (!written.Contains(s.Id) && !KeepsFileValue(s))
                 {
                     Append(root, s);
                 }
@@ -469,6 +494,10 @@ public static class ModSettings
         if (stored.TryGetValue(s.Id, out string v))
         {
             s.Value = v;
+        }
+        if (KeepsFileValue(s))
+        {
+            s.Value = s.StockValue;
         }
         registered.Add(s);
         byId[s.Id] = s;
@@ -817,6 +846,7 @@ public static class ModSettings
         stored.Clear();
         storedOrder.Clear();
         loaded = false;
+        StockOnly = false;
         DataSignature = null;
         appliedFromSave = null;
     }
