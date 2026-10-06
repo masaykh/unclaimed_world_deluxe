@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InputEventSystem;
 using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Interface.HUD_Windows;
 using UWGame.ClientSide.Log;
@@ -104,6 +105,13 @@ public class TalkPanel
 			lastSeenLine = newest;
 			secondsSinceLastLine = 0.0;
 		}
+		// Kastuk: "do not hide, when cursor is over it. Restart time of hiding, when cursor is
+		// away." The clock is held at 0 while the pointer is on the panel, so leaving it starts a
+		// full HudMod.TalkPanelLingerSeconds.
+		if (isShown && mode == UWGame.Mods.HudMod.TalkWhenSpoken && secondsSinceLastLine < double.MaxValue && PointerIsOver())
+		{
+			secondsSinceLastLine = 0.0;
+		}
 		bool wanted = mode == UWGame.Mods.HudMod.TalkAlways
 			|| (mode == UWGame.Mods.HudMod.TalkWhenSpoken && secondsSinceLastLine < UWGame.Mods.HudMod.TalkPanelLingerSeconds);
 		if (wanted != isShown)
@@ -128,6 +136,23 @@ public class TalkPanel
 				crtContent.Remove(faceImage);
 			}
 		}
+	}
+
+	/// <summary>Whether the pointer is on any of the panel's three windows.</summary>
+	private bool PointerIsOver()
+	{
+		InputData input = The.InGameUI.gui.InputData;
+		if (input == null)
+		{
+			return false;
+		}
+		Point pointer = new Point(input.mouseX, input.mouseY);
+		return Contains(plasticPanel, pointer) || Contains(crtWindow, pointer) || Contains(HUDTalkPanel.DisplayWindow, pointer);
+	}
+
+	private static bool Contains(Window window, Point pointer)
+	{
+		return window != null && new Rectangle(window.AbsolutePosition.X, window.AbsolutePosition.Y, window.Width, window.Height).Contains(pointer);
 	}
 
 	public void ShowSpeaker(TalkEvent talkEvent)
