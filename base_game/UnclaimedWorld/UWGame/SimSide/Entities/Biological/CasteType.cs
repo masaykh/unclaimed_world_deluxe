@@ -202,7 +202,7 @@ namespace UWGame.SimSide.Entities.Biological
                 {
                     new CustomXmlSerializer.XmlTypeMapping<Vector3, string> ()
                     {
-                        GetterMethod = t => t == null ? null : PersonType.Vector3ToHexString(t),
+                        GetterMethod = t => PersonType.Vector3ToHexString(t), ////GetterMethod = t => t == null ? null : PersonType.Vector3ToHexString(t),
                         SetterMethod = s => PersonType.HexStringToVector3(s)
                     }       
                 }
