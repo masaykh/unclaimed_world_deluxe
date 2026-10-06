@@ -1,11 +1,16 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace UWGame.SimSide.Entities.Body;
-
-/// <summary>
-/// Enables body-part tree operations on both <see cref="Body"/> and <see cref="BodyPart"/>.
-/// </summary>
-public interface IHasBodyParts
+namespace UWGame.SimSide.Entities.Body
 {
-	List<BodyPart> BodyParts { get; set; }
+    /// <summary>
+    /// this interface enables tree methods on both Body and BodyPart
+    /// </summary>
+    public interface IHasBodyParts
+    {
+        List<BodyPart> BodyParts { get; set; }
+       
+    }
 }

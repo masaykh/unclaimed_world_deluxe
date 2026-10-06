@@ -1,119 +1,178 @@
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
-
-namespace UWGame.SimSide.Entities.Body;
-
-[XmlInclude(typeof(MachineBodyPartType))]
-[XmlInclude(typeof(BiologicalBodyPartType))]
-public abstract class BodyPartType
+using UWGame.ClientSide;
+namespace UWGame.SimSide.Entities.Body
 {
-	/// <summary>
-	/// The model part to hide when this body part is destroyed.
-	/// </summary>
-	public string ModelMesh;
+   
+    [XmlInclude(typeof(MachineBodyPartType))] 
+    [XmlInclude(typeof(BiologicalBodyPartType))]
+    public abstract class BodyPartType
+    {
+        //public string TypeName;
 
-	// Entity functions affected by this body part.
-	public BodyPartFunction[] Functions;
+        // can machine and bio parts be mixed?
+        // make 2 classes
+        
+        /// <summary>
+        /// hide model part if destroyed?
+        /// </summary>
+        public string ModelMesh;
 
-	public string Name;
+        
+        // the entity functions affected by this body part.
+        public BodyPartFunction[] Functions;
 
-	/// <summary>
-	/// Used by the attack-type serializer to reference the correct object.
-	/// </summary>
-	public string BodyKeyName;
+        public string Name;
 
-	public string ArmorLayer;
+        /// <summary>
+        /// this is needed for Attack Types serializer to reference the correct objects.
+        /// </summary>
+        public string BodyKeyName;
 
-	[XmlIgnore]
-	public BodyLayerType ArmorLayerType;
+      /*  public MachineBodyPartType MachineBodyPartTypeComponent;
+        public BiologicalBodyPartType BiologicalBodyPartTypeComponent;
+        */
+        public string ArmorLayer;
 
-	// Child body parts.
-	public BodyPartType[] BodyPartTypes;
+        [XmlIgnore]
+        public BodyLayerType ArmorLayerType;
 
-	public float HitpointsFraction;
+        // children parts      
+      //  [XmlArrayItem(typeof(MachineBodyPartType)), XmlArrayItem(typeof(BodyPartType)), XmlArrayItem(typeof(BiologicalBodyPartType))]
+        public BodyPartType[] BodyPartTypes;
 
-	public float ToHitProfileFront;
+       // public MachineBodyPartType[] MachineBodyPartTypes;
+       // public BiologicalBodyPartType[] BiologicalBodyPartTypes;
 
-	public float ToHitProfileBack;
+        public float HitpointsFraction;
 
-	public float ToHitProfileLeft;
+        public float ToHitProfileFront;
+        public float ToHitProfileBack;
+        public float ToHitProfileLeft;
+        public float ToHitProfileRight;
+        
+        /// <summary>
+        /// serializer uses this
+        /// </summary>
+        public BodyPartType()
+        {
+           
+        }
+        //public Dictionary<PresentationTypeCategory, List<PresentationType<BodyPart>>> healthRepresentation;
+     /*   public BodyPartType(string bodyKeyName, string name)
+        {
+          //  this.KeyName = bodyKeyName + "_" + name;
+            this.BodyKeyName = bodyKeyName;
 
-	public float ToHitProfileRight;
+            this.Name = name;
+        }*/
 
-	public BodyPartType()
-	{
-	}
+        public BodyPartType FindBodyPart(string name)
+        {
+            if (Name == name)
+            {
+                return this;
+            }
+            else
+            {
+                BodyPartType found = BodyPartTypes.First(b => b.Name == name);
 
-	public BodyPartType FindBodyPart(string name)
-	{
-		if (Name == name)
-		{
-			return this;
-		}
-		BodyPartType bodyPartType = BodyPartTypes.First((BodyPartType b) => b.Name == name);
-		if (bodyPartType == null)
-		{
-			if (BodyPartTypes.Length != 0)
-			{
-				BodyPartType[] bodyPartTypes = BodyPartTypes;
-				for (int num = 0; num < bodyPartTypes.Length; num++)
-				{
-					bodyPartType = bodyPartTypes[num].FindBodyPart(name);
-					if (bodyPartType != null)
-					{
-						return bodyPartType;
-					}
-				}
-				return null;
-			}
-			return null;
-		}
-		return bodyPartType;
-	}
+                if (found == null)
+                {
+                    if (BodyPartTypes.Length > 0)
+                    {
+                        foreach (BodyPartType bodypart in BodyPartTypes)
+                        {
+                            found = bodypart.FindBodyPart(name);
+                            if (found != null)
+                            {
+                                return found;
+                            }
+                        }
 
-	public virtual bool IsVital()
-	{
-		return false;
-	}
+                        return null;
+                    }
+                    else return null;
+                }
+                else
+                {
+                    return found;
+                }
+            }
 
-	public virtual void PostLoadContentInitialize()
-	{
-		if (ArmorLayerType != null)
-		{
-			ArmorLayerType.PostLoadContentInitialize();
-		}
-		if (BodyPartTypes != null)
-		{
-			BodyPartType[] bodyPartTypes = BodyPartTypes;
-			for (int i = 0; i < bodyPartTypes.Length; i++)
-			{
-				bodyPartTypes[i].PostLoadContentInitialize();
-			}
-		}
-	}
+        }
 
-	public virtual void Initialize()
-	{
-		if (ArmorLayer != null)
-		{
-			ArmorLayerType = GameData.Instance.AllBodyLayerTypes[ArmorLayer];
-		}
-		if (BodyPartTypes != null)
-		{
-			BodyPartType[] bodyPartTypes = BodyPartTypes;
-			for (int i = 0; i < bodyPartTypes.Length; i++)
-			{
-				bodyPartTypes[i].Initialize();
-			}
-		}
-		if (ToHitProfileBack == 0f && ToHitProfileFront == 0f && ToHitProfileLeft == 0f && ToHitProfileRight == 0f)
-		{
-			ToHitProfileBack = (ToHitProfileFront = (ToHitProfileRight = (ToHitProfileLeft = 1f)));
-		}
-	}
 
-	public override string ToString()
-	{
-		return Name;
-	}
+        public virtual bool IsVital()
+        {
+            return false;
+        }
+
+        public virtual void PostLoadContentInitialize()
+        {
+            if (ArmorLayerType != null)
+            {
+                ArmorLayerType.PostLoadContentInitialize();
+            }
+
+
+            if (BodyPartTypes != null)
+            {
+                foreach (BodyPartType bodypart in BodyPartTypes)
+                {
+                    bodypart.PostLoadContentInitialize();
+                }
+            }
+        }
+
+
+        public virtual void Initialize()
+        {
+            if (ArmorLayer != null)
+            {
+                ArmorLayerType = GameData.Instance.AllBodyLayerTypes[ArmorLayer];
+            }
+
+            if (BodyPartTypes != null)
+            {
+                foreach (BodyPartType bodypart in BodyPartTypes)
+                {
+                    bodypart.Initialize();
+                }
+            }
+
+            if (ToHitProfileBack == 0f && ToHitProfileFront == 0f && ToHitProfileLeft == 0f && ToHitProfileRight == 0f)
+            {
+                ToHitProfileBack = ToHitProfileFront = ToHitProfileRight = ToHitProfileLeft = 1f;
+            }
+        }
+
+
+      /*  public void PostInitValidate(List<string> listOfErrors)
+        {
+            if (BiologicalBodyPartTypeComponent != null)
+            {
+                BiologicalBodyPartTypeComponent.PostInitValidate(listOfErrors);
+            }
+
+            if (BodyPartTypes != null)
+            {
+                foreach (BodyPartType bodypart in BodyPartTypes)
+                {
+                    bodypart.PostInitValidate(listOfErrors);
+                }
+            }
+        }*/
+
+
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+    }
 }

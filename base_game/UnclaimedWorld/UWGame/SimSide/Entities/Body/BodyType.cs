@@ -1,90 +1,113 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Xml.Serialization;
 
-namespace UWGame.SimSide.Entities.Body;
-
-public class BodyType : IGameData
+namespace UWGame.SimSide.Entities.Body
 {
-	public BodyPartType[] BodyPartTypes;
+  
+    public class BodyType : IGameData    
+    {
+        public string KeyName
+        {
+            get;
+            set;
+        }
 
-	/// <summary>
-	/// When defined, overrides hitpoints normally computed from bulk.
-	/// </summary>
-	public float? Hitpoints;
+        public string Name
+        {
+            get;
+            set;
+        }
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
+       // [XmlArrayItem(typeof(MachineBodyPartType)), XmlArrayItem(typeof(BodyPartType)), XmlArrayItem(typeof(BiologicalBodyPartType))]
+        public BodyPartType[] BodyPartTypes; //List<BodyPartType> BodyPartTypes;
 
-	/// <summary>
-	/// Supports bodies such as robots with an explicit bulk.
-	/// </summary>
-	public float? Bulk;
+        /// <summary>
+        /// if defined, will override the normal computed hitpoints from bulk
+        /// </summary>
+        public float? Hitpoints;
 
-	public string KeyName { get; set; }
 
-	public string Name { get; set; }
+        /// <summary>
+        /// Added this for robots...
+        /// </summary>
+        public float? Bulk;
 
-	public bool DeleteRecord { get; set; }
+        public BodyType()
+        {
+        }
 
-	public BodyType()
-	{
-	}
+        public BodyType(string keyName)
+        {
+            this.KeyName = keyName; 
 
-	public BodyType(string keyName)
-	{
-		KeyName = keyName;
-	}
+        }
 
-	public override string ToString()
-	{
-		return KeyName;
-	}
+        public override string ToString()
+        {
+            return KeyName;
+        }
 
-	public BodyPartType FindBodyPart(string name)
-	{
-		BodyPartType[] bodyPartTypes = BodyPartTypes;
-		for (int i = 0; i < bodyPartTypes.Length; i++)
-		{
-			BodyPartType bodyPartType = bodyPartTypes[i].FindBodyPart(name);
-			if (bodyPartType != null)
-			{
-				return bodyPartType;
-			}
-		}
-		return null;
-	}
+        public BodyPartType FindBodyPart(string name)
+        {
+            BodyPartType found;
 
-	public void PostLoadContentInitialize()
-	{
-		BodyPartType[] bodyPartTypes = BodyPartTypes;
-		for (int i = 0; i < bodyPartTypes.Length; i++)
-		{
-			bodyPartTypes[i].PostLoadContentInitialize();
-		}
-	}
+            foreach (BodyPartType bodypart in BodyPartTypes)
+            {
+                found = bodypart.FindBodyPart(name);
 
-	public void Initialize()
-	{
-		BodyPartType[] bodyPartTypes = BodyPartTypes;
-		for (int i = 0; i < bodyPartTypes.Length; i++)
-		{
-			bodyPartTypes[i].Initialize();
-		}
-	}
+                if (found != null)
+                {
+                    return found;
+                }
+            }
 
-	public void PreInitValidate(ref List<string> listOfErrors)
-	{
-	}
+            return null;
+        }
 
-	public void PostInitValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostLoadContentInitialize()
+        {
+            foreach (BodyPartType bodypart in BodyPartTypes)
+            {
+                bodypart.PostLoadContentInitialize();
+            }
+        }
 
-	public void PostDataCompleteInitialize()
-	{
-	}
+        #region IGameData Members
+                
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void Initialize()
+        {
+            foreach (BodyPartType bodypart in BodyPartTypes)
+            {
+                bodypart.Initialize();
+            }
+        }
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+
+        public void PreInitValidate(ref List<string> listOfErrors) { }
+        public void PostInitValidate(ref List<string> listOfErrors) 
+        {
+           /* foreach (BodyPartType bodypart in BodyPartTypes)
+            {
+                bodypart.PostInitValidate();
+            }*/
+        }
+        public void PostDataCompleteInitialize()
+        {
+        }
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) { }
+       
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+        }
+        #endregion
+    }
 }

@@ -1,462 +1,622 @@
 ﻿using System;
 using System.Collections.Generic;
-using UWGame.ClientSide.Renderables;
+using System.Linq;
+using System.Text;
 using UWGame.SimSide.AI;
+using UWGame.ClientSide;
 using UWGame.SimSide.Entities.Biological;
 using UWGame.SimSide.Snapshots;
-
-namespace UWGame.SimSide.Entities.Body;
-
-/// <summary>
-/// Represents a body; <see cref="BodyComponent"/> provides its entity-component wrapper.
-/// </summary>
-public class Body : IHasBodyParts, ISnapshot
+namespace UWGame.SimSide.Entities.Body
 {
-	public struct BodyPartChance : IScore, IEdge
-	{
-		public BodyPart BodyPart;
+    
 
-		public float Score { get; set; }
+    /// <summary>
+    /// not a component - has a wrapper classs that serves that purpose
+    /// </summary>
+    public class Body : IHasBodyParts, ISnapshot //, ILookUp<Body, BodyID>
+    {
+        /// <summary>
+        /// is null for Entity!
+        /// </summary>       
+        public MemoryFact ParentMemoryFact;
+        MemoryFactID? snapshotParentMemoryFact;
 
-		public float Edge { get; set; }
-	}
+        /// <summary>
+        /// is null for MemoryFact!
+        /// </summary>
+        public Entity Parent;
+        EntityID? snapshotParentEntity;
 
-	/// <summary>
-	/// The parent when this body belongs to a memory fact; otherwise <see langword="null"/>.
-	/// </summary>
-	public MemoryFact ParentMemoryFact;
+        /// <summary>
+        /// should be lower than the sum of body parts' hp
+        /// </summary>
+        public float MaxHitpoints;
+      
+        /// <summary>
+        /// a caching of the current state of the various body parts, to be used in evaluators
+        /// </summary>
+        public double FunctionalScore = 1.0;
 
-	private MemoryFactID? snapshotParentMemoryFact;
+        private float globalHitpoints;
 
-	/// <summary>
-	/// The parent entity; <see langword="null"/> when this body belongs to a memory fact.
-	/// </summary>
-	public Entity Parent;
+       
+        /// <summary>
+        /// keeps track of the lowest hitpoints fraction we have ever had
+        /// </summary>
+        private float lowestHitpointsFraction;
+     
+       // public event EventHandler HitpointsChanged; // easier to push changes than snapshot event
 
-	private EntityID? snapshotParentEntity;
 
-	/// <summary>
-	/// Should be lower than the sum of the body parts' hitpoints.
-	/// </summary>
-	public float MaxHitpoints;
+        private List<BodyPart> bodyParts = new List<BodyPart>();
+        public List<BodyPart> BodyParts
+        {
+            get { return bodyParts; }
+            set { bodyParts = value; }
+        }
 
-	/// <summary>
-	/// Cached state of the body's parts for use by evaluators.
-	/// </summary>
-	public double FunctionalScore = 1.0;
+        public Body(Entity parent)
+        {
+            Parent = parent;
+            lowestHitpointsFraction = 1f;
 
-	private float globalHitpoints;
+        }
 
-	/// <summary>
-	/// Tracks the lowest hitpoint fraction this body has had.
-	/// </summary>
-	private float lowestHitpointsFraction;
+        public Body()
+        {
+            System.Diagnostics.Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor.");
+        }
+      
 
-	private List<BodyPart> bodyParts = new List<BodyPart>();
+        /// <summary>
+        /// Clone the body for memoryfact
+        /// </summary>
+        /// <param name="original"></param>
+        public Body(Body original) //: base(original.Parent)
+        {
+            MaxHitpoints = original.MaxHitpoints;
+            FunctionalScore = original.FunctionalScore;
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+            globalHitpoints = original.globalHitpoints;
 
-	public List<BodyPart> BodyParts
-	{
-		get
-		{
-			return bodyParts;
-		}
-		set
-		{
-			bodyParts = value;
-		}
-	}
+            CopyBodyParts(bodyParts, original.bodyParts);
+            //Parent = original.Parent;
+        }
 
-	private float HitpointsFractionLeft => GlobalHitpoints / MaxHitpoints;
+       
 
-	public float GlobalHitpoints
-	{
-		get
-		{
-			return globalHitpoints;
-		}
-		set
-		{
-			if (value != globalHitpoints)
-			{
-				globalHitpoints = value;
-				lowestHitpointsFraction = Math.Min(HitpointsFractionLeft, lowestHitpointsFraction);
-				UpdateRenderableHitpoints();
-				if (Parent != null && Parent.EntityType.IntelligenceType != null)
-				{
-					Parent.Intelligence.SetPanicLevelDirty();
-				}
-			}
-		}
-	}
+        private void CopyBodyParts(List<BodyPart> copiedBodyParts, List<BodyPart> originalBodyParts)
+        {
+            foreach (var originalBodyPart in originalBodyParts)
+            {
+               // BodyPart copiedBodyPart = new BodyPart(originalBodyPart);
+                BodyPart copiedBodyPart;
+                if (originalBodyPart is BiologicalBodyPart)
+                {
+                    copiedBodyPart = new BiologicalBodyPart(originalBodyPart);
+                }
+                else
+                {
+                    copiedBodyPart = new MachineBodyPart(originalBodyPart);
+                }
 
-	public bool IsSnapshotted { get; set; }
+                copiedBodyPart.Body = this;
 
-	public Body(Entity parent)
-	{
-		Parent = parent;
-		lowestHitpointsFraction = 1f;
-	}
+                bodyParts.Add(copiedBodyPart);
 
-	public Body()
-	{
-	}
+                if (originalBodyPart.BodyParts != null)
+                {
+                    copiedBodyPart.BodyParts = new List<BodyPart>();
+                    CopyBodyParts(copiedBodyPart.BodyParts, originalBodyPart.BodyParts);
+                }
+            }
+        }
 
-	/// <summary>
-	/// Clones a body for a memory fact.
-	/// </summary>
-	public Body(Body original)
-	{
-		MaxHitpoints = original.MaxHitpoints;
-		FunctionalScore = original.FunctionalScore;
-		globalHitpoints = original.globalHitpoints;
-		CopyBodyParts(bodyParts, original.bodyParts);
-	}
 
-	private void CopyBodyParts(List<BodyPart> copiedBodyParts, List<BodyPart> originalBodyParts)
-	{
-		foreach (BodyPart originalBodyPart in originalBodyParts)
-		{
-			BodyPart bodyPart = ((!(originalBodyPart is BiologicalBodyPart)) ? ((BodyPart)new MachineBodyPart(originalBodyPart)) : ((BodyPart)new BiologicalBodyPart(originalBodyPart)));
-			bodyPart.Body = this;
-			bodyParts.Add(bodyPart);
-			if (originalBodyPart.BodyParts != null)
-			{
-				bodyPart.BodyParts = new List<BodyPart>();
-				CopyBodyParts(bodyPart.BodyParts, originalBodyPart.BodyParts);
-			}
-		}
-	}
 
-	/// <summary>
-	/// Returns a factor from 0 (bad) to 1 (good) for hurt vital body parts.
-	/// </summary>
-	public float GetHurtVitalBodyPartFactorForMorale()
-	{
-		float currentFactor = 1f;
-		foreach (BodyPart bodyPart in bodyParts)
-		{
-			bodyPart.GetHurtVitalBodyPartFactor(ref currentFactor);
-		}
-		return currentFactor;
-	}
+        /// <summary>
+        /// 0 is bad, 1 is good
+        /// </summary>
+        /// <returns></returns>
+        public float GetHurtVitalBodyPartFactorForMorale()
+        {
+            float hurtVitalBodyPartFactor = 1.0f;
+            foreach(BodyPart bodyPart in bodyParts)
+            {
+                bodyPart.GetHurtVitalBodyPartFactor(ref hurtVitalBodyPartFactor);
+            }
+            return hurtVitalBodyPartFactor;
+        }
 
-	/// <summary>
-	/// Gets presentation hitpoints, whose maximum is greater than <see cref="MaxHitpoints"/>.
-	/// </summary>
-	public float GetModifiedHitpointsForPresentation()
-	{
-		float totalHitpoints = 0f;
-		float totalMaxHitpoints = 0f;
-		foreach (BodyPart bodyPart in bodyParts)
-		{
-			bodyPart.GetModifiedHitpointsForPresentation(ref totalHitpoints, ref totalMaxHitpoints);
-		}
-		return Common.Clamp(totalHitpoints / totalMaxHitpoints, 0f, 1f);
-	}
+        public float GetModifiedHitpointsForPresentation()
+        {
+            float currentHitpoints = 0f;
+            float totalMaxHitpoints = 0f; // the sum is greater than the Body.MaxHitpoints
+            foreach (BodyPart bodyPart in bodyParts)
+            {
+                bodyPart.GetModifiedHitpointsForPresentation(ref currentHitpoints, ref totalMaxHitpoints);
+            }
 
-	public void UpdateRenderable()
-	{
-		UpdateRenderableHitpoints();
-	}
+            return Common.Clamp(currentHitpoints / totalMaxHitpoints /* MaxHitpoints*/, 0f, 1f);
+        }
 
-	private void UpdateRenderableHitpoints()
-	{
-		if (Parent.Renderable != null)
-		{
-			if (HitpointsFractionLeft < 0.5f)
-			{
-				Parent.Renderable.SetAnimationStateFlag(AnimModifier.Damaged);
-			}
-			else
-			{
-				Parent.Renderable.ClearAnimationStateFlag(AnimModifier.Damaged);
-			}
-		}
-	}
+        private float HitpointsFractionLeft
+        {
+            get
+            {
+                return GlobalHitpoints / MaxHitpoints;
+            }
+        }
 
-	public void RegainHitpoints(double deltaTimeInSeconds)
-	{
-		if (GlobalHitpoints < MaxHitpoints)
-		{
-			BiologicalEntity biologicalEntity = Parent.BiologicalEntity;
-			float num = lowestHitpointsFraction + (1f - lowestHitpointsFraction) * biologicalEntity.MaxRegainLimit;
-			// MOD: a wound may heal all the way rather than stopping halfway back to full.
-			num = UWGame.Mods.HealingMod.RecoveryCeiling(num);
-			if (HitpointsFractionLeft < num)
-			{
-				// MOD: and how fast depends on food, sleep and morale, not muscle energy alone.
-				float healingFactor = UWGame.Mods.HealingMod.RateFactor(Parent);
-				float val = (float)((double)(healingFactor * Common.ClampBottom(Parent.BiologicalEntity.EnergyLevel, 0.5f) * biologicalEntity.FractionOfMaxHitpointsGainedPerDay * MaxHitpoints) * deltaTimeInSeconds / The.Sim.DateAndTime.SecondsPerDay);
-				val = Math.Min(val, MaxHitpoints - GlobalHitpoints);
-				RegainInBodyParts(val);
-				GlobalHitpoints += val;
-			}
-		}
-	}
+       
 
-	private void RegainInBodyParts(float totalRegainAmount)
-	{
-		foreach (BodyPart bodyPart in BodyParts)
-		{
-			bodyPart.Regain(totalRegainAmount);
-		}
-	}
+       /// <summary>
+       /// current hitpoints
+       /// </summary>
+        public float GlobalHitpoints
+        {
+            get { return globalHitpoints; }
+            set 
+            {
+                if (value != globalHitpoints)
+                {
+                    globalHitpoints = value;
+                    /*MaxHitpoints = ComputeHitpointsFromBulk(Parent.Bulk);
+                    GlobalHitpoints = MaxHitpoints;
 
-	public BodyPart GetRandomBodyPartToHit(BodyPart.AttackDirection attackDirection)
-	{
-		List<BodyPartChance> list = new List<BodyPartChance>();
-		foreach (BodyPart bodyPart in BodyParts)
-		{
-			bodyPart.GatherBodyParts(list, attackDirection);
-		}
-		Common.BuildEdgesFromBucketSizes(list, doSort: true, out var totalScore);
-		int stairstep;
-		return Common.GetStairStepIndex(list, out stairstep, The.Sim.GameplayRandomGenerator, totalScore).BodyPart;
-	}
+                    //GlobalHitpointsCausingUnconsciousness = GameData.Instance.Constants.FractionOfHitpointsCausingCollapse * GlobalHitpoints;
 
-	public void UpdateBulk(float oldBulk)
-	{
-		if (!Parent.IsDead)
-		{
-			if (GlobalHitpoints == 0f)
-			{
-				UpdateHitpoints();
-			}
-			else
-			{
-				UpdateHitpointsWithNewBulk(oldBulk);
-			}
-		}
-	}
+                    InitializeBodyPartHitpoints();*/
 
-	public void ChangeMaxHitpoints(float newMaxHitPointsValue)
-	{
-		MaxHitpoints = newMaxHitPointsValue;
-		UpdateBodyHitpoints();
-	}
+                    lowestHitpointsFraction = Math.Min(HitpointsFractionLeft, lowestHitpointsFraction);
 
-	public void Initialize()
-	{
-		if (Parent.EntityType.BodyType.Bulk.HasValue)
-		{
-			Parent.Bulk = Parent.EntityType.BodyType.Bulk.Value;
-		}
-	}
+                    UpdateRenderableHitpoints();
 
-	private void UpdateBodyHitpoints()
-	{
-		GlobalHitpoints = MaxHitpoints;
-		UpdateBodyPartHitpoints();
-	}
 
-	private void UpdateHitpoints()
-	{
-		float? resilience = null;
-		if (Parent.BiologicalEntity != null)
-		{
-			resilience = Parent.BiologicalEntity.Resilience;
-		}
-		MaxHitpoints = ComputeHitpoints(Parent.EntityType, Parent.Bulk, resilience);
-		UpdateBodyHitpoints();
-	}
+                    // push the change instead of using an event that we have to snapshot:
+                    if (Parent != null
+                        && Parent.EntityType.IntelligenceType != null)
+                    {
+                        Parent.Intelligence.SetPanicLevelDirty();
+                    }
 
-	public static float ComputeHitpoints(EntityType entityType, float bulk, float? resilience)
-	{
-		if (entityType.BodyType.Hitpoints.HasValue)
-		{
-			return entityType.BodyType.Hitpoints.Value;
-		}
-		return ComputeHitpoints(bulk, resilience.Value);
-	}
+                   /* if (HitpointsChanged != null)
+                    {
+                        // notify listeners of change
+                        HitpointsChanged(this, null);
+                    }*/
 
-	public void UpdateBodyPartHitpoints()
-	{
-		foreach (BodyPart bodyPart in BodyParts)
-		{
-			bodyPart.InitializeHitpoints();
-		}
-	}
+                  /*  Intelligence intelligence;
+                    if (Parent.Find(out intelligence))
+                    {
+                        intelligence.ResetThreatStance();
+                    }*/
+                }
+            }
 
-	private bool IsBodyPartFatallyDamaged()
-	{
-		foreach (BodyPart bodyPart in BodyParts)
-		{
-			if (bodyPart.IsBodyPartDamageFatal())
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+        }
 
-	private bool IsBodyPartCausingCollapse()
-	{
-		foreach (BodyPart bodyPart in BodyParts)
-		{
-			if (bodyPart.IsBodyPartDamageCausingCollapse())
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+        public void UpdateRenderable()
+        {
+            UpdateRenderableHitpoints();
+        }
 
-	public bool IsDead()
-	{
-		if (!(GlobalHitpoints <= 0f))
-		{
-			return IsBodyPartFatallyDamaged();
-		}
-		return true;
-	}
+        private void UpdateRenderableHitpoints()
+        {
+            if (Parent.Renderable != null)
+            {
+                if (HitpointsFractionLeft < 0.5f)
+                {
+                    Parent.Renderable.SetAnimationStateFlag(ClientSide.Renderables.AnimModifier.Damaged);
+                }
+                else
+                {
+                    Parent.Renderable.ClearAnimationStateFlag(ClientSide.Renderables.AnimModifier.Damaged);
+                }
+            }
+        }
 
-	public void GetStatus(out bool isDead, out bool isUnconscious, ref CauseOfDeath? causeOfDeath, ref CauseOfUnconsciousness? causeOfUnconsciousness)
-	{
-		isDead = IsDead();
-		isUnconscious = false;
-		if (!isDead)
-		{
-			isUnconscious = GlobalHitpoints <= GameData.Instance.Constants.FractionOfHitpointsCausingCollapse * MaxHitpoints;
-			if (!isUnconscious)
-			{
-				isUnconscious = IsBodyPartCausingCollapse();
-			}
-		}
-		if (isDead)
-		{
-			causeOfDeath = CauseOfDeath.Wounds;
-		}
-		if (isUnconscious)
-		{
-			causeOfUnconsciousness = CauseOfUnconsciousness.Wounds;
-		}
-	}
+        
 
-	private static float ComputeHitpoints(float bulk, float resilience)
-	{
-		return 100f * resilience * bulk;
-	}
+        public void RegainHitpoints(double deltaTimeInSeconds)
+        {
+            if (GlobalHitpoints < MaxHitpoints)
+            {
+                BiologicalEntity bioEntity = Parent.BiologicalEntity;
 
-	public void GetBodyParts<Type>(ref List<Type> listToFillWithProperties) where Type : IHasExposedProperties
-	{
-		if (BodyParts == null)
-		{
-			return;
-		}
-		foreach (BodyPart bodyPart in BodyParts)
-		{
-			bodyPart.GetList(ref listToFillWithProperties);
-		}
-	}
+                // calculate the limit to what we can regain
+                float regainLimit = lowestHitpointsFraction + (1f - lowestHitpointsFraction) * bioEntity.MaxRegainLimit; 
 
-	private void UpdateHitpointsWithNewBulk(float oldBulk)
-	{
-		if (GlobalHitpoints == MaxHitpoints)
-		{
-			UpdateHitpoints();
-		}
-		else
-		{
-			if (Parent.EntityType.BodyType.Hitpoints.HasValue)
-			{
-				return;
-			}
-			float resilience = 1f;
-			if (Parent.Find<BiologicalEntity>(out var c))
-			{
-				resilience = c.Resilience;
-			}
-			MaxHitpoints = ComputeHitpoints(Parent.Bulk, resilience);
-			float bulkPercentageIncrease = GetBulkPercentageIncrease(oldBulk, Parent.Bulk);
-			GlobalHitpoints = (1f + bulkPercentageIncrease) * GlobalHitpoints;
-			foreach (BodyPart bodyPart in BodyParts)
-			{
-				bodyPart.UpdateHitpointsWithNewBulk(bulkPercentageIncrease);
-			}
-		}
-	}
+                if (HitpointsFractionLeft < regainLimit)
+                {
+                    // modify the regen speed by Energy (change this if/when hitpoints become a factor in Energy?)
+                    float regenSpeed = Common.ClampBottom(Parent.BiologicalEntity.EnergyLevel, 0.5f) * bioEntity.FractionOfMaxHitpointsGainedPerDay;
 
-	public static float GetBulkPercentageIncrease(float oldBulk, float currentBulk)
-	{
-		return (currentBulk - oldBulk) / oldBulk;
-	}
+                    float totalHitpointsGained = (float)(regenSpeed * MaxHitpoints * deltaTimeInSeconds / The.Sim.DateAndTime.SecondsPerDay);
 
-	public float GetHitpointsFractionUntilUnconsciousness()
-	{
-		return GetHitpointsUntilUnonsciousness() / GetMaxHitpointsUntilUnconsciousness();
-	}
+                    // clamp the value so we don't go over the Max:
+                    totalHitpointsGained = Math.Min(totalHitpointsGained, MaxHitpoints - GlobalHitpoints);
 
-	private float GetMaxHitpointsUntilUnconsciousness()
-	{
-		return MaxHitpoints * (1f - GameData.Instance.Constants.FractionOfHitpointsCausingCollapse);
-	}
+                    // increase the bodyparts:
+                    RegainInBodyParts(totalHitpointsGained);
+                    
+                    // some bodyparts will most likely not heal completely even with full regen...
 
-	private float GetHitpointsUntilUnonsciousness()
-	{
-		float num = MaxHitpoints - globalHitpoints;
-		return GetMaxHitpointsUntilUnconsciousness() - num;
-	}
+                    GlobalHitpoints += totalHitpointsGained;
+                }
+            }
+        }
 
-	public BodyPart FindBodyPartOfType(BodyPartType bodyPartType)
-	{
-		foreach (BodyPart bodyPart2 in BodyParts)
-		{
-			BodyPart bodyPart = bodyPart2.FindFirstMatchingBodyPart((BodyPart p) => p.BodyPartType == bodyPartType);
-			if (bodyPart != null)
-			{
-				return bodyPart;
-			}
-		}
-		return null;
-	}
 
-	public BodyPart FindBodyPart(BodyPartID bodyPartID)
-	{
-		foreach (BodyPart bodyPart2 in BodyParts)
-		{
-			BodyPart bodyPart = bodyPart2.FindFirstMatchingBodyPart((BodyPart p) => p.BodyPartID == bodyPartID);
-			if (bodyPart != null)
-			{
-				return bodyPart;
-			}
-		}
-		return null;
-	}
+        /// <summary>
+        /// distribute the gained hitpoints over the bodyparts
+        /// </summary>
+        /// <param name="totalRegainAmount"></param>
+        private void RegainInBodyParts(float totalRegainAmount)
+        {
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                bodyPart.Regain(totalRegainAmount);
+            }
+        }
 
-	public ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		bodyParts = sn.DoList(bodyParts);
-		FunctionalScore = sn.DoDouble(FunctionalScore);
-		globalHitpoints = sn.DoFloat(globalHitpoints);
-		lowestHitpointsFraction = sn.DoFloat(lowestHitpointsFraction);
-		MaxHitpoints = sn.DoFloat(MaxHitpoints);
-		snapshotParentMemoryFact = sn.SnapshotID<MemoryFact, MemoryFactID>(ParentMemoryFact);
-		snapshotParentEntity = sn.SnapshotID<Entity, EntityID>(Parent);
-		sn.Ignore(Parent);
-		sn.Ignore(ParentMemoryFact);
-		return this;
-	}
 
-	public Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
+        public BodyPart GetRandomBodyPartToHit(BodyPart.AttackDirection attackDirection)
+        {
+            List<BodyPartChance> bodyParts = new List<BodyPartChance>();
 
-	public void LoadPostProcess(Snapshotter sn)
-	{
-		sn.RegisterLoadPostProcessCall(this);
-		if (snapshotParentMemoryFact.HasValue)
-		{
-			ParentMemoryFact = LookUp<MemoryFact, MemoryFactID>.FindByID(snapshotParentMemoryFact.Value);
-		}
-		snapshotParentMemoryFact = null;
-		Parent = Entity.FindByID(snapshotParentEntity);
-		foreach (BodyPart bodyPart in bodyParts)
-		{
-			bodyPart.LoadPostProcess(sn);
-		}
-	}
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                bodyPart.GatherBodyParts(bodyParts, attackDirection);
+            }
+
+            float max;
+            Common.BuildEdgesFromBucketSizes(bodyParts, true, out max);
+
+            int bodyPartIndex;
+            return Common.GetStairStepIndex(bodyParts, out bodyPartIndex,The.Sim.GameplayRandomGenerator, max).BodyPart;
+
+        }
+
+
+        public void UpdateBulk(float oldBulk) //float bulkIncrease) //float oldBulk)
+        {
+            if (!Parent.IsDead)
+            {
+                if (GlobalHitpoints == 0)
+                {
+                    UpdateHitpoints();
+                }
+                else
+                {
+                    UpdateHitpointsWithNewBulk(oldBulk);
+                }
+            }
+        }
+
+        public void ChangeMaxHitpoints(float newMaxHitPointsValue)
+        {
+            MaxHitpoints = newMaxHitPointsValue;
+            UpdateBodyHitpoints();
+        }
+
+
+        public void Initialize()
+        {
+            if (Parent.EntityType.BodyType.Bulk != null)
+            {
+                Parent.Bulk = Parent.EntityType.BodyType.Bulk.Value;
+            }
+
+        }
+
+        void UpdateBodyHitpoints()
+        {
+            GlobalHitpoints = MaxHitpoints;
+
+            UpdateBodyPartHitpoints();
+        }
+
+        private void UpdateHitpoints()
+        {
+            float? resilience = null;
+
+            if (Parent.BiologicalEntity != null)
+            {
+                resilience = Parent.BiologicalEntity.Resilience;
+            }
+
+            MaxHitpoints = ComputeHitpoints(this.Parent.EntityType, Parent.Bulk, resilience);
+
+            UpdateBodyHitpoints();
+        }
+
+        public static float ComputeHitpoints(EntityType entityType, float bulk, float? resilience)
+        {
+            if (entityType.BodyType.Hitpoints.HasValue)
+            {
+                // for robots...
+                return entityType.BodyType.Hitpoints.Value;
+            }
+            else
+            {
+                // for biologicals...
+                return ComputeHitpoints(bulk, resilience.Value);
+            }
+        }
+
+        public void UpdateBodyPartHitpoints()
+        {
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                bodyPart.InitializeHitpoints();
+            }
+        }
+
+
+        private bool IsBodyPartFatallyDamaged()
+        {
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                if (bodyPart.IsBodyPartDamageFatal())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsBodyPartCausingCollapse()
+        {
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                if (bodyPart.IsBodyPartDamageCausingCollapse())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+       
+        public bool IsDead()
+        {
+            return GlobalHitpoints <= 0 || IsBodyPartFatallyDamaged(); 
+        }
+
+        public void GetStatus(out bool isDead, out bool isUnconscious, 
+            ref CauseOfDeath? causeOfDeath, 
+            ref CauseOfUnconsciousness? causeOfUnconsciousness)
+        {
+            isDead = IsDead();
+            isUnconscious = false;
+
+         //   causeOfDeath = null;
+        //    causeOfUnconsciousness = null;
+
+            if (!isDead)
+            {
+                isUnconscious = GlobalHitpoints <= GameData.Instance.Constants.FractionOfHitpointsCausingCollapse * MaxHitpoints; // GlobalHitpointsCausingUnconsciousness;
+
+                if (!isUnconscious)
+                {   // test vital body parts for low hitpoints:
+                    isUnconscious = IsBodyPartCausingCollapse();
+                }
+            }
+
+            if (isDead)
+            {
+                causeOfDeath = CauseOfDeath.Wounds;
+            }
+
+            if (isUnconscious)
+            {
+                causeOfUnconsciousness = CauseOfUnconsciousness.Wounds;
+            }
+        }
+
+        private static float ComputeHitpoints(float bulk, float resilience)
+        {
+           /* float modifier = 1f;
+            BiologicalEntity bioEntity;
+            if (Parent.Find(out bioEntity))
+            {
+                modifier = bioEntity.Resilience;
+            }*/
+
+            return 100f * resilience * bulk;
+        }
+
+     /*   public void GetBodyParts(ref List<IHasExposedProperties> listToFillWithProperties)
+        {
+            if (BodyParts != null)
+            {
+                foreach (BodyPart bodyPart in BodyParts)
+                {
+                    bodyPart.GetList(ref listToFillWithProperties);
+                }
+            }
+        }*/
+
+        public void GetBodyParts<Type>(ref List<Type> listToFillWithProperties) where Type : IHasExposedProperties 
+        {
+            if (BodyParts != null)
+            {
+                foreach (BodyPart bodyPart in BodyParts)
+                {
+                    bodyPart.GetList<Type>(ref listToFillWithProperties);
+                }
+            }
+        }
+
+        private void UpdateHitpointsWithNewBulk(float oldBulk) //float bulkIncrease)
+        {            
+            if (GlobalHitpoints == MaxHitpoints) // ComputeHitpointsFromBulk(oldBulk))
+            {   
+                // still at max...
+                UpdateHitpoints();
+            }
+            else if (!this.Parent.EntityType.BodyType.Hitpoints.HasValue)
+            {
+                BiologicalEntity bioEntity;
+                float resilience = 1f;
+                if (Parent.Find(out bioEntity))
+                {
+                    resilience = bioEntity.Resilience;
+                }
+                MaxHitpoints = ComputeHitpoints(Parent.Bulk, resilience);
+
+                // make changes in relation to bulk change +/-:
+                float percentageIncrease = GetBulkPercentageIncrease(oldBulk, Parent.Bulk);
+
+                GlobalHitpoints = (1f + percentageIncrease) * GlobalHitpoints;
+
+              //  GlobalHitpointsCausingUnconsciousness = GameData.Instance.Constants.FractionOfHitpointsCausingCollapse * GlobalHitpoints;
+
+                // TODO: check for death/collapse here...
+
+                foreach (BodyPart bodyPart in BodyParts)
+                {
+                    bodyPart.UpdateHitpointsWithNewBulk(percentageIncrease);
+                }
+            }
+        }
+
+        public static float GetBulkPercentageIncrease(float oldBulk, float currentBulk)
+        {
+            float percentageIncrease = (currentBulk - oldBulk) / oldBulk;
+            return percentageIncrease;
+        }
+
+        public float GetHitpointsFractionUntilUnconsciousness()
+        {
+            return GetHitpointsUntilUnonsciousness() / GetMaxHitpointsUntilUnconsciousness();
+        }
+
+        private float GetMaxHitpointsUntilUnconsciousness()
+        {
+            return MaxHitpoints * (1 - GameData.Instance.Constants.FractionOfHitpointsCausingCollapse);
+        }
+
+        private float GetHitpointsUntilUnonsciousness()
+        {
+            float differenceToMaxHitpoints = MaxHitpoints - globalHitpoints;
+            return GetMaxHitpointsUntilUnconsciousness() - differenceToMaxHitpoints;
+        }
+
+        public BodyPart FindBodyPartOfType(BodyPartType bodyPartType)
+        {
+            BodyPart foundBodyPart;
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                foundBodyPart = bodyPart.FindFirstMatchingBodyPart(p => p.BodyPartType == bodyPartType);
+
+                if (foundBodyPart != null)
+                {
+                    return foundBodyPart;
+                }
+            }
+
+            return null;
+        }
+        
+
+        public struct BodyPartChance: IScore, IEdge
+        {
+            public BodyPart BodyPart;
+            public float Score{get; set;}
+            public float Edge{get; set;}
+        }
+
+
+        public BodyPart FindBodyPart(BodyPartID bodyPartID)
+        {
+            BodyPart foundBodyPart;
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                foundBodyPart = bodyPart.FindFirstMatchingBodyPart(p => p.BodyPartID == bodyPartID);
+
+                if (foundBodyPart != null)
+                {
+                    return foundBodyPart;
+                }
+            }
+
+            return null;            
+        }
+
+        /*public void GetPresentationInformation(PresentationTypeCategory presentationCategory, Dictionary<PresentationTypeSubCategory, List<PresentationData>> presentationInfoList)
+        {
+            foreach (BodyPart bodyPart in BodyParts)
+            {
+                bodyPart.GetPresentationInformation(presentationCategory, presentationInfoList);
+            }
+        }*/
+
+
+
+        #region ISnapshot
+
+        public ISnapshot DoSnapshot(Snapshotter sn)
+        {            
+            this.bodyParts = sn.DoList(this.bodyParts);
+            this.FunctionalScore = sn.DoDouble(this.FunctionalScore);
+
+            this.globalHitpoints = sn.DoFloat(this.globalHitpoints);
+            this.lowestHitpointsFraction = sn.DoFloat(this.lowestHitpointsFraction);
+            this.MaxHitpoints = sn.DoFloat(this.MaxHitpoints);
+
+        /*    if (ParentMemoryFact != null)
+            {
+                snapshotParentMemoryFact = ParentMemoryFact.ID;
+                snapshotParentMemoryFact = (MemoryFactID)sn.DoEnumNullable(snapshotParentMemoryFact);
+            }*/
+
+            snapshotParentMemoryFact = sn.SnapshotID<MemoryFact, MemoryFactID>(ParentMemoryFact);
+            snapshotParentEntity = sn.SnapshotID<Entity, EntityID>(Parent);
+
+
+            sn.Ignore(Parent);
+            sn.Ignore(ParentMemoryFact);
+
+            return this;
+        }
+
+        public bool IsSnapshotted { get; set; }
+
+
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
+
+
+        public void LoadPostProcess(Snapshotter sn) 
+        {
+
+            sn.RegisterLoadPostProcessCall(this);
+
+            if (snapshotParentMemoryFact.HasValue)
+                ParentMemoryFact = LookUp<MemoryFact, MemoryFactID>.FindByID(snapshotParentMemoryFact.Value);
+
+            snapshotParentMemoryFact = null; // cleared for next save
+
+            Parent = Entity.FindByID(snapshotParentEntity);
+
+            foreach (var item in bodyParts)
+            {
+                item.LoadPostProcess(sn);
+            }           
+        }
+
+        #endregion
+    }
+
 }

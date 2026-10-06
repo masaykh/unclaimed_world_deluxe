@@ -1,8 +1,16 @@
-namespace UWGame.SimSide.Entities.Body;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public class Organ
+namespace UWGame.SimSide.Entities.Body
 {
-	public OrganType OrganType;
+    public class Organ
+    {
+        public OrganType OrganType;
 
-	public float Condition;
+        public float Condition;
+
+
+    }
 }

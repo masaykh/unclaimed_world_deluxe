@@ -1,33 +1,28 @@
-namespace UWGame.SimSide.Entities.Body;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public class OrganType
+namespace UWGame.SimSide.Entities.Body
 {
-	public enum OrganDepth
-	{
-		Internal,
-		External
-	}
+    public class OrganType
+    {
+        public string Name;
 
-	public enum OrganFunctions
-	{
-		NerveSystem,
-		Digestive,
-		Respiratory,
-		Vision,
-		Hearing,
-		Appearance
-	}
+        public enum OrganDepth { Internal, External }
 
-	public string Name;
+        public OrganDepth Depth;
 
-	public OrganDepth Depth;
+        public enum OrganFunctions { NerveSystem, Digestive, Respiratory, Vision, Hearing, Appearance }
 
-	public bool IsVital;
+        public bool IsVital;
 
-	public OrganFunctions[] Functions;
+        public OrganFunctions[] Functions;
 
-	public override string ToString()
-	{
-		return Name;
-	}
+
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
 }

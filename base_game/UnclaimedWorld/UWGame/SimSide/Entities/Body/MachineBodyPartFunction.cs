@@ -5,15 +5,15 @@ using System.Text;
 
 namespace UWGame.SimSide.Entities.Body
 {
-    public class BodyPartFunction
+  /*  public class MachineBodyPartFunction
     {
-        public enum FunctionType { Locomotion, Vision, Appearance, Manipulation, Agility, Strength, UserComfort, Structure }
+        public enum MachineFunction { Comfort, StorageCapacity, Structure }
 
-        public FunctionType Function;
+        public MachineFunction Function;
 
         /// <summary>
         /// 0 - 1
         /// </summary>
         public float Weight;
-    }
+    }*/
 }

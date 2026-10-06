@@ -1,51 +1,72 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
 
-namespace UWGame.SimSide.Entities.Body;
-
-public class BiologicalBodyPartType : BodyPartType
+namespace UWGame.SimSide.Entities.Body
 {
-	public OrganType[] OrganTypes;
+    public class BiologicalBodyPartType : BodyPartType
+    {
+     //   public BodyPartType Parent;
 
-	public string TissueLayer;
+        public OrganType[] OrganTypes;
 
-	[XmlIgnore]
-	public BodyLayerType TissueLayerType;
+      
+        public string TissueLayer;
 
-	[XmlIgnore]
-	public bool HasVitalOrgans;
+       
 
-	public override bool IsVital()
-	{
-		return HasVitalOrgans;
-	}
+        [XmlIgnore]
+        public BodyLayerType TissueLayerType;
 
-	public override void Initialize()
-	{
-		base.Initialize();
-		if (OrganTypes != null)
-		{
-			OrganType[] organTypes = OrganTypes;
-			for (int i = 0; i < organTypes.Length; i++)
-			{
-				if (organTypes[i].IsVital)
-				{
-					HasVitalOrgans = true;
-					break;
-				}
-			}
-		}
-		if (TissueLayer != null)
-		{
-			TissueLayerType = GameData.Instance.AllBodyLayerTypes[TissueLayer];
-		}
-	}
+        [XmlIgnore]
+        public bool HasVitalOrgans = false;
 
-	public override void PostLoadContentInitialize()
-	{
-		base.PostLoadContentInitialize();
-		if (TissueLayerType != null)
-		{
-			TissueLayerType.PostLoadContentInitialize();
-		}
-	}
+        //public BodyLayerType[] LayerTypes;
+
+        public override bool IsVital()
+        {
+            return HasVitalOrgans;
+     
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            if (OrganTypes != null)
+            {
+                foreach (OrganType organ in OrganTypes)
+                {
+                    if (organ.IsVital)
+                    {
+                        this.HasVitalOrgans = true;
+                        break;
+                    }
+                }
+            }
+
+            
+
+            if (TissueLayer != null)
+            {
+                TissueLayerType = GameData.Instance.AllBodyLayerTypes[TissueLayer];
+            }
+        }
+
+        public override void PostLoadContentInitialize()
+        {
+            base.PostLoadContentInitialize();
+
+            
+
+            if (TissueLayerType != null)
+            {
+                TissueLayerType.PostLoadContentInitialize();
+            }
+
+        }
+        
+    }
 }

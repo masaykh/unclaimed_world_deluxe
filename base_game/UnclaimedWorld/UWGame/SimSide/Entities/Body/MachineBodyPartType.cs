@@ -1,34 +1,70 @@
-using System.Xml;
-using System.Xml.Schema;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
+using UWGame.SimSide.Items;
 using UWGame.SimSide.AllGameData;
 
-namespace UWGame.SimSide.Entities.Body;
-
-public class MachineBodyPartType : BodyPartType, IXmlSerializable
+namespace UWGame.SimSide.Entities.Body
 {
-	/// <summary>
-	/// The time needed to assemble this body part with the others.
-	/// </summary>
-	public float ManSecondsOfWorkNeeded;
+   // [XmlInclude(typeof(BiologicalBodyPartType)), XmlInclude(typeof(BodyPartType))]
+    public class MachineBodyPartType: BodyPartType, IXmlSerializable
+    {
+       // public BodyPartType Parent;
 
-	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(MachineBodyPartType))
-	{
-		TypeMappings = DataLoader.GetListOfTypeMappings()
-	};
 
-	public XmlSchema GetSchema()
-	{
-		return null;
-	}
+       // public Dictionary<EntityType, int> MadeOf; 
 
-	public void ReadXml(XmlReader reader)
-	{
-		CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
-	}
+        /// <summary>
+        /// if true, all BodyParts inside will get protection from the elements
+        /// </summary>
+        //public bool IsEnclosed;
+       // public bool IsInternal;
 
-	public void WriteXml(XmlWriter writer)
-	{
-		CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
-	}
+        /// <summary>
+        /// time needed to put this body part together with the others!
+        /// </summary>
+        public float ManSecondsOfWorkNeeded;
+
+        
+        // the entity functions affected by this body part.
+       // public MachineBodyPartFunction[] MachineFunctions;
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        // SERIALIZEDICTIONARY
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(MachineBodyPartType))
+        {
+            TypeMappings = BaseDataLoader.GetListOfTypeMappings()
+
+            /*TypeMappings = new List<CustomXmlSerializer.XmlTypeMappingBase>() 
+                {                   
+                    new CustomXmlSerializer.XmlTypeMapping<Dictionary<EntityType, int>, KVP<string, int>[]>()
+                    {
+                        GetterMethod = GameDataLoader.SerializeEntityTypeIntDictionary,
+                        SetterMethod = GameDataLoader.DeserializeEntityTypeIntDictionary                      
+                    }  
+                }*/
+        };
+
+
+
+        #endregion
+    }
 }
