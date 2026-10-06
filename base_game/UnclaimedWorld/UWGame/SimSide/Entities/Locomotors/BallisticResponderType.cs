@@ -1,5 +1,12 @@
-namespace UWGame.SimSide.Entities.Locomotors;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public class BallisticResponderType
+namespace UWGame.SimSide.Entities.Locomotors
 {
+    public class BallisticResponderType
+    {
+
+    }
 }

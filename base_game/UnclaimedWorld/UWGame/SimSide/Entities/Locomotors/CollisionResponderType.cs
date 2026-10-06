@@ -1,8 +1,15 @@
-namespace UWGame.SimSide.Entities.Locomotors;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public class CollisionResponderType
+namespace UWGame.SimSide.Entities.Locomotors
 {
-	public AgentCollisionResponderType AgentCollisionResponderType;
+    public class CollisionResponderType
+    {
+        public AgentCollisionResponderType AgentCollisionResponderType;
+        public BallisticResponderType BallisticResponderType;
 
-	public BallisticResponderType BallisticResponderType;
+
+    }
 }

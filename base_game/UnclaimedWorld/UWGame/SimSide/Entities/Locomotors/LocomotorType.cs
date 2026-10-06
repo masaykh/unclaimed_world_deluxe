@@ -1,103 +1,135 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using UWGame.SimSide.Entities.Locomotors.Stances;
 
-namespace UWGame.SimSide.Entities.Locomotors;
-
-public class LocomotorType
+namespace UWGame.SimSide.Entities.Locomotors
 {
-	public enum Surface
-	{
-		Ground,
-		WaterFloat,
-		WaterFord,
-		Air,
-		Obstacle
-	}
+    
+    public class LocomotorType //: IGameData
+    {
+        //many of these are non-generic, and should be shelled out to subclasses
+     /*   public float maxSpeed = 1f;
+        public float minSpeed = 0f;
+        public float lift = 0f;
+        public float gravity = 0.1f;
+        public Vector2? tumble;
+        public bool canMoveBackwards = false;
+        */
 
-	public enum Appearance
-	{
-		Biped,
-		Quadruped,
-		Car,
-		Bike,
-		Treads,
-		Hover,
-		Wings,
-		Boat,
-		Thrown
-	}
+        public bool CanRun = false;
 
-	public enum ZBehavior
-	{
-		Ground,
-		SeaLevel,
-		SurfaceRelative,
-		Ballistic,
-		Bounce
-	}
+        /// <summary>
+        /// don't use this - may be overridden in BiologicalEntityType
+        /// </summary>
+        public bool FourSidedSymmetry = false;// TODO MLo: is this a client property? research!
 
-	public enum AxialBehavior
-	{
-		Plumb,
-		Tumble,
-		Roll,
-		Bank,
-		Fletch,
-		Corkscrew
-	}
+        /// <summary>
+        /// can be different than bounding radius...
+        /// it is like a circular base in a tabletop/Warhammer game. If two units want to fight, their bases must touch.
+        /// </summary>
+        public float MeleeRadius;
 
-	public bool CanRun;
+        public LeggedLocomotorType LeggedLocomotorType;
+        public BallisticLocomotorType BallisticLocomotorType;
 
-	/// <summary>
-	/// Do not use directly; this value may be overridden by <c>BiologicalEntityType</c>.
-	/// </summary>
-	public bool FourSidedSymmetry;
 
-	/// <summary>
-	/// Can differ from the bounding radius. It is the circular tabletop-game base that must touch another unit's base for melee.
-	/// </summary>
-	public float MeleeRadius;
+        public CollisionResponderType CollisionResponderType;
 
-	public LeggedLocomotorType LeggedLocomotorType;
+        public float MaxAngularSpeed = 1.5f * MathHelper.Pi;
 
-	public BallisticLocomotorType BallisticLocomotorType;
+        /// <summary>
+        /// if present, allows a part of the entity to rotate during GoalTurnToFace instead of the whole body.
+        /// </summary>
+        public RotatorType RotatorType;
 
-	public CollisionResponderType CollisionResponderType;
+        public string Stances;
 
-	public float MaxAngularSpeed = 4.712389f;
+        [XmlIgnore]
+        public StancesType StancesType;
+        
 
-	/// <summary>
-	/// When present, allows part of the entity to rotate during <c>GoalTurnToFace</c> instead of rotating the whole body.
-	/// </summary>
-	public RotatorType RotatorType;
+        /// <summary>
+        /// these enums may become classes...
+        /// </summary>
+        public enum Surface
+        {
+            Ground, WaterFloat, WaterFord, Air, Obstacle 
+        };
+        public Surface surface = Surface.Ground;
+        
+        /// <summary>
+        /// should these enums trigger creation of a subclass of Locomotor?
+        /// </summary>
+        public enum Appearance
+        {
+            Biped, Quadruped, Car, Bike, Treads, Hover, Wings, Boat, Thrown
+        };
+        public Appearance appearance = Appearance.Biped;
 
-	public string Stances;
+        /// <summary>
+        /// perhaps make the subclass a contained class instead?
+        /// </summary>
+        public enum ZBehavior
+        {
+            Ground, SeaLevel, SurfaceRelative, Ballistic, Bounce
+        }
+        public ZBehavior zBehavior = ZBehavior.Ground;
 
-	[XmlIgnore]
-	public StancesType StancesType;
+        public enum AxialBehavior
+        {
+            Plumb, Tumble, Roll, Bank, Fletch, Corkscrew
+        }
+        public AxialBehavior axialBehavior = AxialBehavior.Plumb;
 
-	public Surface surface;
+        //TODO later on, perhaps move the thrust, braking, turning, skidding, coasting,
+        //rudder, stiffness, suspension, traction, cornering, sideslip, drift, climb
+        //banking, hovering, pitching yawing, damping and damage effect logic to here
+        //instead of GoalTraverseEdgeBetweenWaypointsAtomic::Move, and Entity::Update
 
-	public Appearance appearance;
 
-	public ZBehavior zBehavior;
+       /* public string KeyName
+        {
+            get; set;
+        }
+        public string Name
+        {
+            get; set;
+        }
 
-	public AxialBehavior axialBehavior;
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }*/
 
-	public void Initialize()
-	{
-		if (Stances != null)
-		{
-			StancesType = GameData.Instance.AllStancesTypes[Stances];
-		}
-	}
+        public void Initialize()
+        {
+            if (Stances != null)
+            {
+                StancesType = GameData.Instance.AllStancesTypes[Stances];
+            }
+        }
 
-	public void PreInitValidate(List<string> listOfErrors)
-	{
-	}
 
-	public void PostInitValidate(List<string> listOfErrors)
-	{
-	}
+        public void PreInitValidate(List<string> listOfErrors)
+        {
+
+
+        }
+
+        public void PostInitValidate(List<string> listOfErrors)
+        {
+
+        }
+
+
+       
+                
+    }
+
+    
 }

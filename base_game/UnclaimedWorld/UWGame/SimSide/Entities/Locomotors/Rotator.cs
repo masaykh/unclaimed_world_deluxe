@@ -1,85 +1,106 @@
-using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UWGame.SimSide.Snapshots;
+using Microsoft.Xna.Framework;
 
-namespace UWGame.SimSide.Entities.Locomotors;
-
-public class Rotator : ISnapshot
+namespace UWGame.SimSide.Entities.Locomotors
 {
-	private float relativeRotation;
+    public class Rotator: ISnapshot
+    {
+        float relativeRotation;
 
-	public Locomotor Parent;
+        /// <summary>
+        /// tracks the rotation of part of the entity. It would be illegal to use a bone rotation in simulations.
+        /// </summary>
+        public float RelativeRotation
+        {
+            set
+            {
+                if (relativeRotation != value)
+                {
+                    relativeRotation = value;
+                    SetBoneAngle();
+                }
+            }
+            get
+            {
+                return relativeRotation;
+            }
+        }
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+        public float AbsoluteRotation
+        {
+            set
+            {
+                relativeRotation = value - Parent.Parent.Rotation;
+                SetBoneAngle();
+            }
+            get
+            {
+                return Parent.Parent.Rotation + relativeRotation;
+            }
+        }
 
-	/// <summary>
-	/// Tracks the rotation of part of an entity without using a bone rotation in the simulation.
-	/// </summary>
-	public float RelativeRotation
-	{
-		get
-		{
-			return relativeRotation;
-		}
-		set
-		{
-			if (relativeRotation != value)
-			{
-				relativeRotation = value;
-				SetBoneAngle();
-			}
-		}
-	}
+        public Locomotor Parent;  
 
-	public float AbsoluteRotation
-	{
-		get
-		{
-			return Parent.Parent.Rotation + relativeRotation;
-		}
-		set
-		{
-			relativeRotation = value - Parent.Parent.Rotation;
-			SetBoneAngle();
-		}
-	}
+        public Rotator()
+        {
+            System.Diagnostics.Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor.");
+        }
 
-	public bool IsSnapshotted { get; set; }
+        public Rotator(Locomotor parent)
+        {
+            this.Parent = parent;
+        }
 
-	public Rotator()
-	{
-	}
+        private void SetBoneAngle()
+        {
+            Matrix rotationMatrix =
+              Matrix.CreateFromYawPitchRoll(-relativeRotation, 0f, 0f); // why negate..?
 
-	public Rotator(Locomotor parent)
-	{
-		Parent = parent;
-	}
+            Parent.Parent.Renderable.SetModelBoneRotation(Parent.Parent.EntityType.LocomotorType.RotatorType.BoneKeyName, rotationMatrix);
+        }
 
-	private void SetBoneAngle()
-	{
-		Matrix rotation = Matrix.CreateFromYawPitchRoll(0f - relativeRotation, 0f, 0f);
-		Parent.Parent.Renderable.SetModelBoneRotation(Parent.Parent.EntityType.LocomotorType.RotatorType.BoneKeyName, rotation);
-	}
+        public void DoneRotating()
+        {
+            Parent.Parent.Renderable.StopOverridingAnimTransforms(Parent.Parent.EntityType.LocomotorType.RotatorType.BoneKeyName);
+        }
 
-	public void DoneRotating()
-	{
-		Parent.Parent.Renderable.StopOverridingAnimTransforms(Parent.Parent.EntityType.LocomotorType.RotatorType.BoneKeyName);
-	}
+        #region ISnapshot
 
-	public Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
 
-	public ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		relativeRotation = sn.DoFloat(relativeRotation);
-		sn.Ignore(Parent);
-		return this;
-	}
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
 
-	public void LoadPostProcess(Snapshotter sn)
-	{
-		sn.RegisterLoadPostProcessCall(this);
-	}
+        public bool IsSnapshotted { get; set; }
+
+
+        public ISnapshot DoSnapshot(Snapshotter sn)
+        {
+            this.relativeRotation = sn.DoFloat(relativeRotation);
+
+            sn.Ignore(Parent); // gets pushed to us
+
+            return this;
+        }
+
+        public void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+
+            //lookups and other fix-ups
+        }
+
+
+        #endregion
+    }
 }

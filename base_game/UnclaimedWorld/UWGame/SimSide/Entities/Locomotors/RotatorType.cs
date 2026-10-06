@@ -1,6 +1,14 @@
-namespace UWGame.SimSide.Entities.Locomotors;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public class RotatorType
+namespace UWGame.SimSide.Entities.Locomotors
 {
-	public string BoneKeyName;
+    public class RotatorType
+    {
+        public string BoneKeyName;
+
+
+    }
 }

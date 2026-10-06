@@ -1,71 +1,92 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UWGame.ClientSide.Renderables;
 
-namespace UWGame.SimSide.Entities.Locomotors.Stances;
-
-public class StanceType : IGameData
+namespace UWGame.SimSide.Entities.Locomotors.Stances
 {
-	/// <summary>
-	/// Changing from a higher-numbered stance to a lower-numbered stance sets the Reverse animation flag.
-	/// </summary>
-	public int Number;
+    public class StanceType: IGameData
+    {
+        public string KeyName
+        {
+            get;
+            set;
+        }
 
-	public AnimModifier? AnimModifier;
+        public string Name
+        {
+            get;
+            set;
+        }
 
-	/// <summary>
-	/// Whether a character in this stance may take part in an idle conversation.
-	/// </summary>
-	public bool? CanStartIdleConversation;
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
 
-	/// <summary>
-	/// Used when reacting to interest.
-	/// </summary>
-	public bool? CanTurnBody;
 
-	/// <summary>
-	/// Used when reacting to interest.
-	/// </summary>
-	public bool? CanTurnHead;
+        /// <summary>
+        /// going from a stance with a higher number to a lower number will set the Reverse anim flag
+        /// </summary>
+        public int Number;
 
-	/// <summary>
-	/// Prone stances take more damage from attacks.
-	/// </summary>
-	public bool? IsProne;
+        public AnimModifier? AnimModifier;
 
-	public float IdleExertionLevel;
+        /// <summary>
+        /// if true, the character is permitted to take part in conversation in this stance
+        /// </summary>
+        public bool? CanStartIdleConversation;
 
-	public string KeyName { get; set; }
+        /// <summary>
+        /// used when reacting to interest
+        /// </summary>
+        public bool? CanTurnBody;
 
-	public string Name { get; set; }
+        /// <summary>
+        /// used when reacting to interest
+        /// </summary>
+        public bool? CanTurnHead;
 
-	public bool DeleteRecord { get; set; }
+        /// <summary>
+        /// prone states take more damage from attacks
+        /// </summary>
+        public bool? IsProne;
 
-	public void PreInitValidate(ref List<string> errors)
-	{
-	}
 
-	public void Initialize()
-	{
-	}
+        public float IdleExertionLevel;
 
-	public void PostInitValidate(ref List<string> errors)
-	{
-	}
 
-	public override string ToString()
-	{
-		return Name ?? KeyName;
-	}
+        public void PreInitValidate(ref List<string> errors)
+        {
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        }
 
-	public void PostDataCompleteInitialize()
-	{
-	}
+        public void Initialize()
+        {
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        }
+
+        public void PostInitValidate(ref List<string> errors)
+        {
+
+        }
+
+        public override string ToString()
+        {
+            return Name ?? KeyName;
+        }
+
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) { }
+       
+        public void PostDataCompleteInitialize()
+        {
+        }
+
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+        }
+
+    }
 }
