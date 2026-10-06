@@ -88,7 +88,126 @@ public static class GatherOnDemandMod
         {
             return 0;
         }
-        return UnmatchedHaulingJobs(owner, type) + ProductionWaitingFor(owner, type);
+        return UnmatchedHaulingJobs(owner, type) + ProductionWaitingFor(owner, type) + FuelWaitingFor(owner, type);
+    }
+
+    /// <summary>
+    /// Fuel that production orders will burn and the colony does not have. Kastuk, 2026-10-04:
+    /// gathering on demand "not works ... for gathering the firewood, when cooking tasks need fuel".
+    /// Fuel is no recipe input: the recipe names a tool that burns it (a campfire, a field kitchen,
+    /// RequiresFuelType), the tool is topped up from stock by its own replenish goal, and a job
+    /// whose tool cannot be fuelled is not taken (EvaluateJob.HasEnergyForToolType). So no hauling
+    /// job ever asks for firewood and the counts above never see it.
+    ///
+    /// Counted here per order: the recipe's batches still to make (those short with no job, and
+    /// jobs not started) times its days, at the tool's burn rate (RequiresFuelType.GetNeededFuel),
+    /// less the bulk of every fuel that tool accepts already in stock. It is asked of the FIRST
+    /// fuel in the tool's list with a standing order, so two padlocked fuels do not both gather
+    /// for one fire. An estimate: fuel already in the fire is not counted, so it errs towards a
+    /// little more.
+    /// </summary>
+    private static int FuelWaitingFor(EntityGroup owner, EntityType type)
+    {
+        float unitBulk = type.ItemType?.MaximumBulk ?? 0f;
+        if (type.ItemType?.FuelType == null || unitBulk <= 0f || owner.ProductionOrders == null)
+        {
+            return 0;
+        }
+        Dictionary<RequiresFuelType, float> burns = new Dictionary<RequiresFuelType, float>();
+        foreach (KeyValuePair<EntityType, ProductionOrder> pair in owner.ProductionOrders.Orders)
+        {
+            ProductionOrder order = pair.Value;
+            if (!order.AmountToKeepInStore.HasValue && !order.ProductionJobsToComplete.HasValue)
+            {
+                continue;
+            }
+            ProcessType recipe = PreferredRecipe(pair.Key);
+            RequiresFuelType fuel = recipe == null ? null : FuelBurnedBy(recipe);
+            float? days = recipe?.WorkOrTimeNeeded?.DaysNeeded;
+            if (fuel?.FuelEntityTypes == null || !days.HasValue || FirstOrderedFuel(owner, fuel) != type)
+            {
+                continue;
+            }
+            int perBatch = recipe.GetOutputAmount(pair.Key) ?? 1;
+            int batches = BatchesShort(owner, pair.Key, order, perBatch) + UnstartedJobs(owner, pair.Key);
+            if (batches > 0)
+            {
+                burns.TryGetValue(fuel, out float bulk);
+                burns[fuel] = bulk + fuel.GetNeededFuel(days.Value * batches);
+            }
+        }
+        int units = 0;
+        foreach (KeyValuePair<RequiresFuelType, float> burn in burns)
+        {
+            float shortBulk = burn.Value - FuelInStock(owner, burn.Key);
+            if (shortBulk > 0f)
+            {
+                units += (int)Math.Ceiling(shortBulk / unitBulk);
+            }
+        }
+        return units;
+    }
+
+    /// <summary>
+    /// The fuel a recipe's tools burn: a tool slot whose every alternative burns fuel, at the
+    /// lowest rate among them. Null when a slot can be filled without fuel, or none burns any.
+    /// </summary>
+    private static RequiresFuelType FuelBurnedBy(ProcessType recipe)
+    {
+        if (recipe.ProcessToolSet?.Tools == null)
+        {
+            return null;
+        }
+        foreach (ToolAlternatives slot in recipe.ProcessToolSet.Tools)
+        {
+            RequiresFuelType cheapest = null;
+            bool allBurn = slot.ToolsAndProductivity != null && slot.ToolsAndProductivity.Count > 0;
+            foreach (Tuple<EntityType, float> tool in slot.ToolsAndProductivity ?? new List<Tuple<EntityType, float>>())
+            {
+                RequiresFuelType burns = tool.Item1?.ContainerType?.GetRequiresReplenishType()?.RequiresFuelType;
+                if (burns == null)
+                {
+                    allBurn = false;
+                    break;
+                }
+                if (cheapest == null || burns.BurnRatePerDay < cheapest.BurnRatePerDay)
+                {
+                    cheapest = burns;
+                }
+            }
+            if (allBurn && cheapest != null)
+            {
+                return cheapest;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>The first fuel this tool accepts that the group has a standing order for.</summary>
+    private static EntityType FirstOrderedFuel(EntityGroup owner, RequiresFuelType fuel)
+    {
+        foreach (EntityType candidate in fuel.FuelEntityTypes)
+        {
+            if (owner.ProductionOrders.Orders.TryGetValue(candidate, out ProductionOrder order) && order.AmountToKeepInStore.HasValue)
+            {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>The bulk of every fuel this tool accepts that the group holds.</summary>
+    private static float FuelInStock(EntityGroup owner, RequiresFuelType fuel)
+    {
+        float bulk = 0f;
+        foreach (EntityType candidate in fuel.FuelEntityTypes)
+        {
+            if (owner.AllEntities != null && owner.AllEntities.TryGetValue(candidate, out List<EntityID> ids) && ids != null)
+            {
+                bulk += ids.Count * (candidate.ItemType?.MaximumBulk ?? 0f);
+            }
+        }
+        return bulk;
     }
 
     /// <summary>Inputs that construction sites and existing production jobs ask for and nobody has found.</summary>

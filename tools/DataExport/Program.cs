@@ -702,16 +702,18 @@ internal static partial class Program
         Check(UWGame.Mods.GatherOnDemandMod.ZoneGathersAt(5), "mod on: a padlock at 5 gathers");
 
         // Production orders as demand. Needs the tables, and the production graph the validation pass builds.
+        // A Sim, as SaveSelfTest makes one: TileResourceType reads The.Sim.Mode while the tables
+        // build, which the post-load pass below needs.
+        UWGame.The.Sim = new Sim { Mode = Sim.EngineMode.Game };
+        typeof(Sim).GetMethod("CreateLookupCollections", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(UWGame.The.Sim, null);
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
         if (!ValidateDataComplete()) return 1;
-        // The recipe index the job manager reads (ProcessYieldsThisOutput, ProcessesUsingThisInput)
-        // is built by GameData.Initialize on the loading screen, which this tool never reaches. Build
-        // it with the studio's own method rather than a copy of it.
-        if (GameData.Instance.ProcessYieldsThisOutput.Count == 0)
-        {
-            typeof(GameData).GetMethod("CreateProcessGraph", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(GameData.Instance, null);
-        }
+        // The recipe index the job manager reads (ProcessYieldsThisOutput, ProcessesUsingThisInput),
+        // and each fire's list of fuels (RequiresFuelType.FuelEntityTypes), are built by
+        // GameData.Initialize on the loading screen, which this tool never reaches. Run its
+        // content-free part, the studio's own steps in its order (InitializeWithoutContent).
+        if (GameData.Instance.ProcessYieldsThisOutput.Count == 0 && !InitializeWithoutContent()) return 1;
         Console.WriteLine($"  info  recipe index: {GameData.Instance.ProcessYieldsThisOutput.Count} items made, {GameData.Instance.ProcessesUsingThisInput.Count} used");
         var types = GameData.Instance.AllEntityTypes;
         var processes = GameData.Instance.AllProcessTypes;
@@ -780,6 +782,40 @@ internal static partial class Program
               "mod on: a soup order at 0 that nothing asks for gathers no clams");
         Check(ToGather(chainOwner, branches) == bedBranches,
               $"mod on: a bed frame order pulls trimmed branches at 0, which pull {bedBranches} branches at 0 (got {ToGather(chainOwner, branches)})");
+
+        // Fuel (Kastuk, 2026-10-04: "not works ... for gathering the firewood, when cooking tasks
+        // need fuel"). Fuel is burned by a recipe's tool, not taken as an input, so nothing asked
+        // for it. Any item whose first managed recipe needs a fire that burns firewood will do.
+        Check(types.TryGetValue("item:firewood", out var firewood), "item:firewood is in the tables");
+        UWGame.SimSide.Entities.EntityType cooked = null;
+        foreach (var made in GameData.Instance.ProcessYieldsThisOutput)
+        {
+            var recipe = made.Value.FirstOrDefault(r => UWGame.SimSide.Jobs.JobManager.IsManagedProcess(r) && !r.IsGathering && r.InputsByType != null);
+            bool burnsFirewood = recipe?.ProcessToolSet?.Tools != null && recipe.WorkOrTimeNeeded?.DaysNeeded > 0f
+                && recipe.ProcessToolSet.Tools.Any(slot => slot.ToolsAndProductivity != null && slot.ToolsAndProductivity.Count > 0
+                    && slot.ToolsAndProductivity.All(t => t.Item1?.ContainerType?.GetRequiresReplenishType()?.RequiresFuelType?.FuelEntityTypes?.Contains(firewood) == true));
+            if (burnsFirewood)
+            {
+                cooked = made.Key;
+                break;
+            }
+        }
+        Check(cooked != null, $"an item is made at a fire that burns firewood ({cooked?.KeyName})");
+        if (cooked != null && firewood != null)
+        {
+            var fireOwner = NewOwner();
+            fireOwner.ProductionOrders.SetStandingOrder(cooked, 6);
+            fireOwner.ProductionOrders.SetStandingOrder(firewood, 0);
+            var idleFireOwner = NewOwner();
+            idleFireOwner.ProductionOrders.SetStandingOrder(cooked, 0);
+            idleFireOwner.ProductionOrders.SetStandingOrder(firewood, 0);
+            setting.Value = "false";
+            Check(ToGather(fireOwner, firewood) == 0, $"mod off: a {cooked.KeyName} order does not move a firewood order at 0");
+            setting.Value = "true";
+            int wood = ToGather(fireOwner, firewood);
+            Check(wood > 0, $"mod on: {cooked.KeyName} kept at 6 with no fuel - the firewood order at 0 gathers {wood}");
+            Check(ToGather(idleFireOwner, firewood) == 0, $"mod on: a {cooked.KeyName} order at 0 gathers no firewood");
+        }
         setting.Value = setting.DefaultValue;
         Console.WriteLine(failures == 0 ? "gatherondemand self-test OK" : $"gatherondemand self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
