@@ -1,56 +1,97 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
+using UWGame.SimSide.XmlCollections;
 
-namespace UWGame.SimSide.Entities.Containers;
-
-[DebuggerDisplay("{KeyName}")]
-/// <summary>
-/// Defines the upgrade categories supported by a container type such as a home or workshop container.
-/// </summary>
-public class UpgradeProfile : IGameData
+namespace UWGame.SimSide.Entities.Containers
 {
-	/// <summary>
-	/// Upgrade category keys available to this profile.
-	/// </summary>
-	public string[] UpgradeCategories;
+    /// <summary>
+    /// can be held by HomeContainerType, WorkshopContainerType...
+    ///    
+    /// </summary>
+    [DebuggerDisplay("{KeyName}")]
+    public class UpgradeProfile: IGameData
+    {
+        public string KeyName
+        {
+            get;
+            set;
+        }
+        public string Name
+        {
+            get;
+            set;
+        }
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
 
-	[XmlIgnore]
-	public List<UpgradeCategory> UpgradeCategoriesFinal;
 
-	public string KeyName { get; set; }
+        public string[] UpgradeCategories;
 
-	public string Name { get; set; }
+        [XmlIgnore]
+        public List<UpgradeCategory> UpgradeCategoriesFinal;
 
-	public bool DeleteRecord { get; set; }
+        /*
+        /// <summary>
+        /// UpgradeCategory key, entity tag
+        /// 
+        /// the entity type should have Effects, and a process type, as well as salvage process
+        /// </summary>
+        public SerializableDictionary<string, string> UpgradeOptions;
 
-	public void PostDataCompleteInitialize()
-	{
-		UpgradeCategoriesFinal = new List<UpgradeCategory>();
-		string[] upgradeCategories = UpgradeCategories;
-		foreach (string key in upgradeCategories)
-		{
-			UpgradeCategoriesFinal.Add(GameData.Instance.AllUpgradeCategories[key]);
-		}
-	}
 
-	public void PreInitValidate(ref List<string> errors)
-	{
-	}
+        [XmlIgnore]
+        public Dictionary<UpgradeCategory, List<EntityType>> UpgradeEntityOptions;
 
-	public void Initialize()
-	{
-	}
+        */
 
-	public void PostInitValidate(ref List<string> listOfErrors)
-	{
-	}
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostDataCompleteInitialize()
+        {
+            UpgradeCategoriesFinal = new List<UpgradeCategory>();
+            foreach (var item in UpgradeCategories)
+            {
+                UpgradeCategoriesFinal.Add(GameData.Instance.AllUpgradeCategories[item]);
+            }
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+            /*
+            UpgradeEntityOptions = new Dictionary<UpgradeCategory, List<EntityType>>();
+
+            foreach (var item in UpgradeOptions)
+            {
+                UpgradeEntityOptions.Add(GameData.Instance.AllUpgradeCategories[item.Key], GameData.Instance.UpgradesByTag[item.Value]);
+                
+            }*/
+        }
+
+
+        public void PreInitValidate(ref List<string> errors)
+        {
+
+        }
+
+        public void Initialize()
+        {
+
+        }
+
+        public void PostInitValidate(ref List<string> listOfErrors)
+        {
+        }
+
+      
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) { }
+
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+        }
+
+
+    }
 }

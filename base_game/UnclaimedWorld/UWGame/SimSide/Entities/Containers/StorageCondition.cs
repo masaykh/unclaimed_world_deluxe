@@ -1,88 +1,98 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
-namespace UWGame.SimSide.Entities.Containers;
-
-[DebuggerDisplay("{KeyName}")]
-public class StorageCondition : IGameData
+namespace UWGame.SimSide.Entities.Containers
 {
-	public string Description;
+    [DebuggerDisplay("{KeyName}")]
+    public class StorageCondition: IGameData
+    {
+        public string Name { get; set; }
+        public string KeyName { get; set; }
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
 
-	public bool RequiresPower;
+        public string Description;
 
-	/// <summary>
-	/// Maintains a constant moisture level.
-	/// </summary>
-	public float? FixedMoisture;
 
-	/// <summary>
-	/// Maintains a constant temperature.
-	/// </summary>
-	public float? FixedTemperature;
+        public bool RequiresPower;
 
-	/// <summary>
-	/// Maintains a fixed light level where 0 is darkness and 1 is maximum light.
-	/// </summary>
-	public float? FixedLightLevel;
+        /// <summary>
+        /// maintains a constant moisture level
+        /// </summary>
+        public float? FixedMoisture;
 
-	/// <summary>
-	/// If true, follows the ambient temperature but skews it toward room temperature.
-	/// </summary>
-	public bool IsolatedTemperature;
+        /// <summary>
+        /// maintains a constant temperature
+        /// </summary>
+        public float? FixedTemperature;
 
-	public string Name { get; set; }
+        /// <summary>
+        /// maintains a fixed light level: 0 is darkness, 1 is maximum
+        /// </summary>
+        public float? FixedLightLevel;
+        
+        /// <summary>
+        /// if true, follows the ambient temperature but skewed towards 21C
+        /// </summary>
+        public bool IsolatedTemperature;
 
-	public string KeyName { get; set; }
 
-	public bool DeleteRecord { get; set; }
+        public float GetTemperature(bool isPowered, float ambientTemperature)
+        {
+            if (RequiresPower && !isPowered)
+            {
+                return ambientTemperature;
+            }
 
-	public float GetTemperature(bool isPowered, float ambientTemperature)
-	{
-		if (RequiresPower && !isPowered)
-		{
-			return ambientTemperature;
-		}
-		if (IsolatedTemperature)
-		{
-			return ComputeIsolatedTemperature(ambientTemperature);
-		}
-		return FixedTemperature ?? ambientTemperature;
-	}
+            if (IsolatedTemperature == true)
+            {
+                return ComputeIsolatedTemperature(ambientTemperature);
+            }
 
-	/// <summary>
-	/// Skews the temperature toward room temperature.
-	/// </summary>
-	public static float ComputeIsolatedTemperature(float ambientTemperature)
-	{
-		float num = 293f;
-		return ambientTemperature - 0.4f * (ambientTemperature - num);
-	}
+            return FixedTemperature ?? ambientTemperature;
+        }
 
-	public void Initialize()
-	{
-	}
 
-	public void PreInitValidate(ref List<string> listOfErrors)
-	{
-		if (IsolatedTemperature && FixedTemperature.HasValue)
-		{
-			EntityType.CreateValidationError(ref listOfErrors, "Cannot specify both IsolatedTemperature and FixedTemperature.");
-		}
-	}
+        /// <summary>
+        /// skews the temperature towards 21C... not very realistic...
+        /// </summary>
+        /// <param name="ambientTemperature"></param>
+        /// <returns></returns>
+        public static float ComputeIsolatedTemperature(float ambientTemperature)
+        {
+            // f(x) = x - 0.4 (x - 21)
+            // 0C -> 8C
+            // 30C -> 26C
+            float roomTemperature = 293f;
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+            return ambientTemperature - 0.4f * (ambientTemperature - roomTemperature);
+        }
 
-	public void PostInitValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void Initialize()
+        { }
 
-	public void PostDataCompleteInitialize()
-	{
-	}
+        public void PreInitValidate(ref List<string> listOfErrors) 
+        {
+            if (IsolatedTemperature == true && FixedTemperature.HasValue)
+            {
+                EntityType.CreateValidationError(ref listOfErrors, "Cannot specify both IsolatedTemperature and FixedTemperature.");
+            }
+        }
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) { }
+       
+        public void PostInitValidate(ref List<string> listOfErrors) { }
+        public void PostDataCompleteInitialize()
+        {
+        }
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+        }
+    }
 }

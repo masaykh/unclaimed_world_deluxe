@@ -6,11 +6,9 @@ using System.Text;
 namespace UWGame.SimSide.Entities.Containers
 {
     /// <summary>
-    /// any container that agents can enter must implement this!
+    /// a container to hold process output(s)
     /// </summary>
-    interface IGarrison
+    public class ProductionContainerType
     {
-        int GetNoOfAgentsInside();
-
     }
 }

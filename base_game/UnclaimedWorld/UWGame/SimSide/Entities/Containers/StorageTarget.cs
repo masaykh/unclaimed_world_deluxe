@@ -1,52 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
-namespace UWGame.SimSide.Entities.Containers;
-
-[DebuggerDisplay("StorageEntity: {StorageEntity}, {StorageID}")]
-public struct StorageTarget
+namespace UWGame.SimSide.Entities.Containers
 {
-	private readonly EntityID storageEntity;
+    [DebuggerDisplay("StorageEntity: {StorageEntity}, {StorageID}")]
+    public struct StorageTarget
+    {       
+        public EntityID StorageEntity
+        {
+            get
+            {
+                return storageEntity;
+            }
+        }
 
-	private readonly StorageID storageID;
+        private readonly EntityID storageEntity;
 
-	public EntityID StorageEntity => storageEntity;
+       /// <summary>
+       /// this id will give Compartment and StorageConditions when used tgoether with Container Entity
+       /// </summary>
+        public StorageID StorageID
+        {
+            get
+            {
+                return storageID;
+            }
+        }
 
-	/// <summary>
-	/// Used together with the container entity to resolve the target compartment and storage conditions.
-	/// </summary>
-	public StorageID StorageID => storageID;
+        private readonly StorageID storageID;
 
-	public StorageTarget(EntityID storageEntity, StorageID storageID)
-	{
-		this.storageID = storageID;
-		this.storageEntity = storageEntity;
-	}
 
-	public override bool Equals(object obj)
-	{
-		if (obj is StorageTarget)
-		{
-			return this == (StorageTarget)obj;
-		}
-		return false;
-	}
+      /*  public void ResolveStorage(out Storage storage)
+        {
 
-	public override int GetHashCode()
-	{
-		return storageID.GetHashCode() ^ storageEntity.GetHashCode();
-	}
+             Storage GetToStorage
 
-	public static bool operator ==(StorageTarget x, StorageTarget y)
-	{
-		if (x.StorageEntity == y.StorageEntity)
-		{
-			return x.StorageID == y.StorageID;
-		}
-		return false;
-	}
+        }*/
 
-	public static bool operator !=(StorageTarget x, StorageTarget y)
-	{
-		return !(x == y);
-	}
+    
+        /// <summary>
+        /// Use a lookup in the container instead.
+        /// 
+        /// this gives the answer to what ItemStorage is the target. We need it because Storage does not have a parent pointer to ItemStorage...  we don't cache ItemStorage since Storage objects in MemoryFact don't have one...
+        /// </summary>
+      /*  public Compartment? Compartment
+        {
+            get
+            {
+                return compartment;
+            }
+        }
+
+        private readonly Compartment? compartment;
+        */
+
+
+        public StorageTarget(EntityID storageEntity, StorageID storageID) //, Compartment? compartment) 
+        {
+            this.storageID = storageID;
+            this.storageEntity = storageEntity;
+            //this.compartment = compartment;
+          
+        }
+
+
+
+        public override bool Equals(Object obj)
+        {
+            return obj is StorageTarget && this == (StorageTarget)obj;
+        }
+
+        public override int GetHashCode()
+        {
+            // ??
+            return storageID.GetHashCode() ^ storageEntity.GetHashCode(); //^ storageCondition.GetHashCode() 
+        }
+
+        public static bool operator ==(StorageTarget x, StorageTarget y)
+        {
+            return x.StorageEntity == y.StorageEntity
+                && x.StorageID == y.StorageID;
+               // && x.compartment == y.compartment;
+                //&& x.StorageCondition == y.StorageCondition;
+        }
+
+        public static bool operator !=(StorageTarget x, StorageTarget y)
+        {
+            return !(x == y);
+        }
+    }
 }

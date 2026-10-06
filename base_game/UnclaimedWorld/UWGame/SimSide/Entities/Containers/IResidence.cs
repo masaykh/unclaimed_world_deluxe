@@ -1,8 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UWGame.SimSide.Buildings;
 
-namespace UWGame.SimSide.Entities.Containers;
-
-internal interface IResidence
+namespace UWGame.SimSide.Entities.Containers
 {
-	Residence Residence { get; }
+    /// <summary>
+    /// this can be implemented by mobile homes (vehicles) too
+    /// </summary>
+    interface IResidence
+    {
+        Residence Residence { get; }
+
+    //    ResidenceType ResidenceType { get; }
+
+     //   int Capacity { get; }
+    }
 }

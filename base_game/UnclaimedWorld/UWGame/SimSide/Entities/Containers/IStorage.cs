@@ -1,22 +1,31 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UWGame.SimSide.Entities.Containers.Components;
 
-namespace UWGame.SimSide.Entities.Containers;
-
-/// <summary>
-/// Implementing this requires storage, though it does not have to be permanent storage.
-/// </summary>
-public interface IStorage
+namespace UWGame.SimSide.Entities.Containers
 {
-	float TotalItemStorageCapacity { get; }
 
-	float TotalStored { get; }
+    /// <summary>
+    /// implementing this REQUIRES storage! Does not have to be "permanent" storage.
+    /// </summary>
+    public interface IStorage
+    {
 
-	Storage GetStoredIn(Entity entity);
+        Storage GetStoredIn(Entity entity);
 
-	Dictionary<StorageCondition, Storage> GetStorageSpaces();
 
-	StorageCompartment GetCompartment(StorageID storageID);
+        float TotalItemStorageCapacity { get; }
+        float TotalStored { get; }
 
-	Storage FindStorage(StorageID storageID);
+
+        Dictionary<StorageCondition, Storage> GetStorageSpaces();
+
+        StorageCompartment GetCompartment(StorageID storageID);
+
+        Storage FindStorage(StorageID storageID);
+
+       
+    }
 }

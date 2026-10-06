@@ -98,7 +98,10 @@ namespace UWGame.SimSide.Entities.Containers.Components
             }
 
         }
-
+        public void GetDebugMarkers()
+        {
+            ExitAndEntrance.GetDebugMarkers(this, ref preventRecursion);
+        }
         public override List<Entity> GetContainedItemsList(Predicate<Entity> rule)
         {
             List<Entity> items = new List<Entity>();
@@ -516,48 +519,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
 
 
         private bool preventRecursion = false;
-        public void GetDebugMarkers()
-        {
-            ExitAndEntrance.GetDebugMarkers(this, ref preventRecursion);
-
-            /*
-#if (DEBUG || PROFILE)
-
-
-            if (Kensei.Dev.Options.GetOption("Overlays.Markers") == false)
-                return;
-
-            if (preventRecursion) // so we can call DrawAllPoints from GetDoor, GetRally, etc.
-                return;
-            preventRecursion = true;
-
-            // MapClient.ClearAllVisitorMarkers(this);
-
-            ExitDoor doorThatWasUsed;
-            for (ExitDoor t = ExitDoor.Door1; t < ExitDoor.Max; t++)
-            {
-                Vector3 door = Vector3.Zero;
-                if (GetDoorPosition(ref door, false, out doorThatWasUsed, t))
-                {
-                    The.MapUI.AddDebugMarker(door, Color.Chartreuse, this);
-
-                    Vector3 rally = GetRallyPoint(t);
-                    The.MapUI.AddDebugMarker(rally, Color.Green, this);                    
-                }
-
-            }
-
-            Vector3 naturalRallyPoint = parent.PlaySiteLocation;
-            if (GetNaturalRallyPoint(ref naturalRallyPoint))
-            {
-                The.MapUI.AddDebugMarker(naturalRallyPoint, Color.Gray, this);
-
-            }
-            preventRecursion = false;
-#endif**/
-
-        }
-
+        
         #region ISnapshot
 
         /// <summary>

@@ -1,127 +1,186 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
 using UWGame.SimSide.XmlCollections;
 
-namespace UWGame.SimSide.Entities.Containers;
-
-/// <summary>
-/// Defines which items a structure may store by default.
-/// Positive values allow storage and make this structure the preferred destination for that item.
-/// If a setting is omitted, storage is allowed by default. When settings overlap, entity-type entries override tag entries.
-/// </summary>
-public class DefaultStorageSettings : IGameData
+namespace UWGame.SimSide.Entities.Containers
 {
-	public string Comments;
 
-	/// <summary>
-	/// Item tags are shorthand for naming groups such as food, ammo, or fuel.
-	/// Settings here can be overridden by <see cref="MayStockpileEntityType"/>.
-	/// </summary>
-	public SerializableDictionary<string, int> MayStockpileItemTag;
+    /// <summary>
+    /// This defines the items that may be stored in the structure by default. 
+    /// If the value is true, it means storage is allowed -  this structure will then be the preferred storage for that item. 
+    /// if false, storage is not permitted.
+    /// The value can also be left undefined - then the default is true. 
+    /// 
+    /// item tag is a shorthand for naming all item types individually. all the different tags can be used: food/ammo/fuel...
+    /// 
+    /// in case of overlap, this priority is used: 
+    /// entitytype overrides item tag.
+    /// </summary>
+    public class DefaultStorageSettings: IGameData
+    {
+        public string KeyName
+        {
+            get;
+            set;
+        }
 
-	/// <summary>
-	/// Category-specific settings override broader category groupings.
-	/// </summary>
-	public SerializableDictionary<string, bool> MayStockpileCategory;
+        public string Name
+        {
+            get;
+            set;
+        }
 
-	/// <summary>
-	/// Entity-type settings override tag-based settings.
-	/// Using tags is usually safer long term than listing many specific entity types.
-	/// </summary>
-	public SerializableDictionary<string, int> MayStockpileEntityType;
+        public string Comments;
 
-	public string KeyName { get; set; }
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
 
-	public string Name { get; set; }
+        /// <summary>
+        ///  item tag is a shorthand for naming all item types individually. all the different tags can be used: food/ammo/fuel...
+        ///  the item setting applied here can be overriden by MayStockpileEntityType.
+        /// </summary>
+        public SerializableDictionary<string, int> MayStockpileItemTag;
 
-	public bool DeleteRecord { get; set; }
+        /// <summary>
+        /// item settings will override the catgeory settings.      
+        /// </summary>
+        public SerializableDictionary<string, bool> MayStockpileCategory;
 
-	[XmlIgnore]
-	public Dictionary<EntityType, int> MayStockpileItemFinal { get; private set; }
+        /// <summary>
+        /// it may be safer in the long run to use the MayStockpileItemTag collection instead of this!
+        /// i.e. use a tag 'knife' instead of defining item:advancedKnife, item:improvisedKnife etc.
+        /// </summary>
+        public SerializableDictionary<string, int> MayStockpileEntityType;
 
-	[XmlIgnore]
-	public Dictionary<EntityCategory, bool> MayStockpileCategoryFinal { get; private set; }
 
-	public void PreInitValidate(ref List<string> errors)
-	{
-	}
 
-	public void Initialize()
-	{
-	}
+        [XmlIgnore]
+        public Dictionary<EntityType, int> MayStockpileItemFinal
+        {
+            get;
+            private set;
+        }
+       
+        [XmlIgnore]
+        public Dictionary<EntityCategory, bool> MayStockpileCategoryFinal 
+        {
+            get;
+            private set;
+        }
 
-	public void PostInitValidate(ref List<string> errors)
-	{
-	}
 
-	public void PostLoadContentInitialize()
-	{
-		if (MayStockpileItemTag != null)
-		{
-			foreach (KeyValuePair<string, int> item in MayStockpileItemTag)
-			{
-				if (!TryTagCollection(GameData.Instance.AmmoByTag, item) && !TryTagCollection(GameData.Instance.FoodByTag, item) && !TryTagCollection(GameData.Instance.ToolsByTag, item))
-				{
-					TryTagCollection(GameData.Instance.FuelByTag, item);
-				}
-			}
-		}
-		if (MayStockpileCategory != null)
-		{
-			MayStockpileCategoryFinal = new Dictionary<EntityCategory, bool>();
-			foreach (KeyValuePair<string, bool> item2 in MayStockpileCategory)
-			{
-				MayStockpileCategoryFinal.Add(GameData.Instance.AllEntityCategories[item2.Key], item2.Value);
-			}
-		}
-		if (MayStockpileEntityType == null)
-		{
-			return;
-		}
-		foreach (KeyValuePair<string, int> item3 in MayStockpileEntityType)
-		{
-			AddItem(GameData.Instance.AllEntityTypes[item3.Key], item3.Value);
-		}
-	}
+        public void PreInitValidate(ref List<string> errors)
+        {
+            
+        }
 
-	public void PostDataCompleteInitialize()
-	{
-	}
+        public void Initialize()
+        {
+            
+        }
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostInitValidate(ref List<string> errors)
+        {
+            
+        }
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostLoadContentInitialize()
+        {
+            if (MayStockpileItemTag != null)
+            {               
+                foreach (var tag in MayStockpileItemTag)
+                {
+                    // go through all tag collections until a match is found:
+                    if (TryTagCollection(GameData.Instance.AmmoByTag, tag))
+                    {
+                        continue;
+                    }
 
-	private bool TryTagCollection(Dictionary<string, List<EntityType>> tagCollection, KeyValuePair<string, int> tag)
-	{
-		if (tagCollection.TryGetValue(tag.Key, out var value))
-		{
-			foreach (EntityType item in value)
-			{
-				AddItem(item, tag.Value);
-			}
-			return true;
-		}
-		return false;
-	}
+                    if (TryTagCollection(GameData.Instance.FoodByTag, tag))
+                    {
+                        continue;
+                    }
 
-	private void AddItem(EntityType item, int value)
-	{
-		if (MayStockpileItemFinal == null)
-		{
-			MayStockpileItemFinal = new Dictionary<EntityType, int>();
-		}
-		if (MayStockpileItemFinal.ContainsKey(item))
-		{
-			MayStockpileItemFinal[item] = value;
-		}
-		else
-		{
-			MayStockpileItemFinal.Add(item, value);
-		}
-	}
+                    if (TryTagCollection(GameData.Instance.ToolsByTag, tag))
+                    {
+                        continue;
+                    }
+
+                    if (TryTagCollection(GameData.Instance.FuelByTag, tag))
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            if (MayStockpileCategory != null)
+            {
+                MayStockpileCategoryFinal = new Dictionary<EntityCategory,bool>();
+
+                foreach (var item in MayStockpileCategory)
+                {
+                    MayStockpileCategoryFinal.Add(GameData.Instance.AllEntityCategories[item.Key], item.Value);
+                }
+            }
+
+            if (MayStockpileEntityType != null)
+            {
+                foreach (var item in MayStockpileEntityType)
+                {
+                    AddItem(GameData.Instance.AllEntityTypes[item.Key], item.Value);                   
+                }
+            }
+        }
+
+        public void PostDataCompleteInitialize()
+        {
+        }
+
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+        }
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) { }
+       
+        private bool TryTagCollection(Dictionary<string, List<EntityType>> tagCollection, KeyValuePair<string, int> tag)
+        {
+            List<EntityType> list;
+            if (tagCollection.TryGetValue(tag.Key, out list))
+            {
+                foreach (var item in list)
+                {
+                    AddItem(item, tag.Value);
+                }
+
+                return true;
+
+            }
+
+            return false;
+        }
+
+        private void AddItem(EntityType item, int value)
+        {
+            if (MayStockpileItemFinal == null)
+                MayStockpileItemFinal = new Dictionary<EntityType, int>();
+
+
+            if (MayStockpileItemFinal.ContainsKey(item))
+            {
+                MayStockpileItemFinal[item] = value;
+            }
+            else
+            {
+                MayStockpileItemFinal.Add(item, value);
+            }
+           
+        }
+
+
+    }
 }

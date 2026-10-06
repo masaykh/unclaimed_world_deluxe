@@ -1,11 +1,18 @@
-namespace UWGame.SimSide.Entities.Containers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UWGame.SimSide.Entities;
 
-/// <summary>
-/// Crew for a vehicle or similar container.
-/// </summary>
-internal interface ICrew
+namespace UWGame.SimSide.Entities.Containers
 {
-	EntityID? Driver { get; set; }
+    /// <summary>
+    /// crew for a vehicle etc.
+    /// </summary>
+    interface ICrew
+    {
+        bool IsDriver(Entity entity);
 
-	bool IsDriver(Entity entity);
+        EntityID? Driver { get; set; }
+    }
 }

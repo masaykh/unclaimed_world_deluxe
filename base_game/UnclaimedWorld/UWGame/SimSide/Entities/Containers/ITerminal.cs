@@ -5,10 +5,8 @@ using System.Text;
 
 namespace UWGame.SimSide.Entities.Containers
 {
-    /// <summary>
-    /// an output container is optional
-    /// </summary>
-    public interface IHoldsProductionOutput
+   
+    public interface ITerminal
     {
         void UncontainAllProductionOutput();
 

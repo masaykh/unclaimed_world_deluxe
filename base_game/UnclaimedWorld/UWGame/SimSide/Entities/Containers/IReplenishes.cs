@@ -1,10 +1,18 @@
-namespace UWGame.SimSide.Entities.Containers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-/// <summary>
-/// Implemented by fuel, magazine, and similar containers.
-/// Used to access the entity that is currently being replenished.
-/// </summary>
-internal interface IReplenishes
+namespace UWGame.SimSide.Entities.Containers
 {
-	bool IsReplenishing(EntityID entityID);
+    /// <summary>
+    /// implemented bu fuelcontainer, magazinecontainer etc.
+    /// used to gain access to the entity that contains the item in question
+    /// </summary>
+    interface IReplenishes
+    {
+      //  ReplenishItems ReplenishItems { get; }
+
+        bool IsReplenishing(EntityID entityID);
+    }
 }

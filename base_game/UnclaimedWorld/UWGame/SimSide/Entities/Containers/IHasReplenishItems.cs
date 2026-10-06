@@ -1,9 +1,17 @@
-namespace UWGame.SimSide.Entities.Containers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public interface IHasReplenishItems
+namespace UWGame.SimSide.Entities.Containers
 {
-	/// <summary>
-	/// Can be null.
-	/// </summary>
-	ReplenishItems ReplenishItems { get; }
+    public interface IHasReplenishItems
+    {
+        /// <summary>
+        /// can be null. 
+        /// 
+        /// perhaps we are exposing a bit too much, here
+        /// </summary>
+        ReplenishItems ReplenishItems { get; }
+    }
 }
