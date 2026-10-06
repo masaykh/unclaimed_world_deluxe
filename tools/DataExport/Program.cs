@@ -97,6 +97,11 @@ internal static partial class Program
             Console.Error.WriteLine("               delivered: none waits as a passenger with nothing to ride, each");
             Console.Error.WriteLine("               belongs to the expedition that owns it, none is in a Port's stock.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --mapedit-selftest");
+            Console.Error.WriteLine("               the Map Editor's terrain height edit on a small map built in memory,");
+            Console.Error.WriteLine("               at the map's corner and away from it: it completes, and the coast");
+            Console.Error.WriteLine("               keeps its subtiles in the same pattern. Loads nothing.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --traces     print a stack trace for every table that fails to load or export.");
             return 2;
         }
@@ -110,6 +115,11 @@ internal static partial class Program
         if (randomSelfTest)
         {
             return RandomSelfTest();
+        }
+
+        if (args.Contains("--mapedit-selftest"))
+        {
+            return MapEditSelfTest();
         }
 
         if (settingsSelfTest)

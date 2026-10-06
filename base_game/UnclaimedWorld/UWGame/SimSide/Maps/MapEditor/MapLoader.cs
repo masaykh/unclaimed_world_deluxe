@@ -652,8 +652,13 @@ public class MapLoader
 			Point point = new Point(item.X, item.Y);
 			int num2 = Math.Max(tileArea.Left, point.X - num);
 			int num3 = Math.Max(tileArea.Top, point.Y - num);
-			int num4 = Math.Min(tileArea.Width - 1, point.X + num);
-			int num5 = Math.Min(tileArea.Height - 1, point.Y + num);
+			// PORT: the area's far edge, not its size. The studio turned this from a whole-map pass
+			// into an area pass ("should be 0 with whole map!") and kept Width - 1 / Height - 1,
+			// which equal Right - 1 / Bottom - 1 only for an area at the map's corner. Anywhere
+			// else, the Map Editor's terrain height tools grew nothing, so the tiles beside a
+			// coast they had just edited lost their subtiles.
+			int num4 = Math.Min(tileArea.Right - 1, point.X + num);
+			int num5 = Math.Min(tileArea.Bottom - 1, point.Y + num);
 			for (int i = num2; i <= num4; i++)
 			{
 				for (int j = num3; j <= num5; j++)
@@ -759,7 +764,14 @@ public class MapLoader
 				{
 					num3 = 0;
 					num++;
-					if (num == height)
+					// PORT: wrap at the area's bottom edge, and step columns up to its right edge,
+					// as ReduceSubdivisionScanHorizontally already does (tileArea.Right / .Bottom).
+					// The studio compared against Height and Width, the area's size - correct only
+					// for the whole map, whose corner is 0,0. For an area lower on the map the
+					// column never wrapped, and the scan walked on into tiles below the area that
+					// have no subtiles: the NullReferenceException the Map Editor's terrain height
+					// Pencil and Brush crashed with.
+					if (num == tileArea.Bottom)
 					{
 						num = top;
 					}
@@ -771,7 +783,7 @@ public class MapLoader
 			{
 				num4 = 0;
 				num2++;
-				if (num2 < width)
+				if (num2 < tileArea.Right)
 				{
 					terrainTile = map.TileMap[num2][num];
 				}

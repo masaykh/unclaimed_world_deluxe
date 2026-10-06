@@ -36,6 +36,7 @@
 #  30. a dog drops vermin for a real threat only with the self-preservation switch on
 #  31. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
 #  32. a save with a delivered dog loads headlessly (only when UW_DOG_SAVE names one)
+#  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -874,6 +875,21 @@ if [ -n "$UW_DOG_SAVE" ] && [ -f "$UW_DOG_SAVE" ]; then
   fi
 else
   say "  SKIP  UW_DOG_SAVE is not set to a save file - this case did not run"
+fi
+
+# The Map Editor's terrain height Pencil and Brush crashed on the first click (Kastuk,
+# 2026-10-03) in MapLoader.ReduceSubdivisionScanVertically: RecomputeSubdivision was a whole-map
+# pass made into an area pass, and two limits kept the area's size where they needed its far edge.
+# Right only at the map's corner, which is where the loader's area sits - so the same edit, on a
+# map built in memory, at the corner and at four places away from it.
+say "==> 33. a terrain height edit away from the map's corner completes and keeps the coast's subtiles"
+out=$( cd "$(new_install case33)" && "$EXPORT" . --mapedit-selftest 2>&1 ) || true
+if echo "$out" | grep -q "mapedit self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception' | head -4
+  fail "the mapedit self-test reported failures"
 fi
 
 # ------------------------------------------------- 8. the settings file round-trips
