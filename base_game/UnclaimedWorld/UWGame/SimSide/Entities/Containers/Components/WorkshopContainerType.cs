@@ -1,95 +1,144 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
-using UWGame.SimSide.Processes;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-public class WorkshopContainerType : ContainerType, IHasItemStorageType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	public string DefaultStorageSettings;
+    public class WorkshopContainerType : ContainerType, IHasItemStorageType
+    {
+        public ItemStorageType ItemStorageType { get; set; }
+        
 
-	public bool AllowStockpiling = true;
+        public string DefaultStorageSettings;
 
-	public RequiresReplenishType RequiresReplenishType;
+        [XmlIgnore]
+        public DefaultStorageSettings DefaultStorageSettingsFinal
+        {
+            get;
+            private set;
+        }
 
-	public ItemStorageType ProductionOutputStorageType;
+        public bool AllowStockpiling = true;
 
-	public ItemStorageType ItemStorageType { get; set; }
+        public bool AllowsStockpiling
+        {
+            get
+            {
+                return AllowStockpiling;
+            }
+        }
 
-	[XmlIgnore]
-	public DefaultStorageSettings DefaultStorageSettingsFinal { get; private set; }
+        public override Container CreateContainer(Entity parent)
+        {
+            return new WorkshopContainer(parent);
+        }
 
-	public bool AllowsStockpiling => AllowStockpiling;
+        /// <summary>
+        /// optional
+        /// A container holding items that are currently replenishing the entity
+        /// shared between ReplenishContainerType, VehicleType and AgentStorageType (for robots)
+        /// </summary>
+        public RequiresReplenishType RequiresReplenishType;
 
-	public override bool HasOutputStorage => ProductionOutputStorageType != null;
+        /// <summary>
+        /// holds production outputs. not meant for other storage.
+        /// </summary>
+        public ItemStorageType ProductionOutputStorageType;
 
-	public override float? FullStatePercentage => ItemStorageType.FullStatePercentage;
+        public override RequiresReplenishType GetRequiresReplenishType()
+        {
+            return RequiresReplenishType;
+        }
 
-	public override float? HalfFullStatePercentage => ItemStorageType.HalfFullStatePercentage;
+        public override float GetOutputStorageCapacity()
+        {
+            return ProductionOutputStorageType.GetTotalCapacity();
+        }
 
-	public override Container CreateContainer(Entity parent)
-	{
-		return new WorkshopContainer(parent);
-	}
+        public override Dictionary<EntityType, Processes.ProcessType> GetReplenishProcesses()
+        {
+            if (RequiresReplenishType != null)
+            {
+                return RequiresReplenishType.ReplenishProcesses;
+            }
+            else return null;
+        }
 
-	public override RequiresReplenishType GetRequiresReplenishType()
-	{
-		return RequiresReplenishType;
-	}
+        public override bool HasOutputStorage
+        {
+            get
+            {
+                return ProductionOutputStorageType != null;
+            }
+        }
 
-	public override float GetOutputStorageCapacity()
-	{
-		return ProductionOutputStorageType.GetTotalCapacity();
-	}
+        public override float? FullStatePercentage
+        {
+            get
+            {
+                return ItemStorageType.FullStatePercentage;
+            }
+        }
 
-	public override Dictionary<EntityType, ProcessType> GetReplenishProcesses()
-	{
-		if (RequiresReplenishType != null)
-		{
-			return RequiresReplenishType.ReplenishProcesses;
-		}
-		return null;
-	}
+        public override float? HalfFullStatePercentage
+        {
+            get
+            {
+                return ItemStorageType.HalfFullStatePercentage;
+            }
+        }
 
-	public WorkshopContainerType()
-	{
-	}
+        public WorkshopContainerType()
+        {
+            
+        }
 
-	public WorkshopContainerType(string condition1, float capacity1, string condition2 = null, float? capacity2 = null, string condition3 = null, float? capacity3 = null)
-	{
-		ItemStorageType = new ItemStorageType(condition1, capacity1, condition2, capacity2, condition3, capacity3);
-	}
+        public WorkshopContainerType(string condition1, float capacity1, string condition2 = null,
+                                float? capacity2 = null, string condition3 = null, float? capacity3 = null)
+        {
+            ItemStorageType = new ItemStorageType(condition1, capacity1, condition2, capacity2, condition3, capacity3);
+        }
 
-	public override DefaultStorageSettings GetDefaultStorageSettings()
-	{
-		return DefaultStorageSettingsFinal;
-	}
+        public override DefaultStorageSettings GetDefaultStorageSettings()
+        {
+            return DefaultStorageSettingsFinal;
+        }
 
-	public override void Initialize()
-	{
-		base.Initialize();
-		ItemStorageType.Initialize();
-		if (DefaultStorageSettings != null)
-		{
-			DefaultStorageSettingsFinal = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
-		}
-	}
+        public override void Initialize()
+        {
+            base.Initialize();
 
-	public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		base.PostInitValidate(parent, ref listOfErrors);
-		if (CanBeEnteredByTags != null)
-		{
-			EntityType.CreateValidationError(ref listOfErrors, "CanBeEnteredByTags should not be specified because this container type has no doors and cannot be entered.");
-		}
-	}
+           
+            ItemStorageType.Initialize(); // mandatory
+        
 
-	public override void PostLoadContentInitialize(EntityType parent)
-	{
-		base.PostLoadContentInitialize(parent);
-		if (RequiresReplenishType != null)
-		{
-			RequiresReplenishType.PostLoadContentInitialize(parent);
-		}
-	}
+            if (DefaultStorageSettings != null)
+                DefaultStorageSettingsFinal = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
+
+        }
+
+        public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            base.PostInitValidate(parent, ref listOfErrors);
+
+            if (CanBeEnteredByTags != null)
+            {
+                EntityType.CreateValidationError(ref listOfErrors, "CanBeEnteredByTags should not be specified because this container type has no doors and cannot be entered.");
+
+            }
+        }
+
+        public override void PostLoadContentInitialize(EntityType parent)
+        {
+            base.PostLoadContentInitialize(parent);
+
+            if (RequiresReplenishType != null)
+            {
+                RequiresReplenishType.PostLoadContentInitialize(parent);
+            }
+        }
+    }
 }

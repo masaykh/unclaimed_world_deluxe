@@ -1,167 +1,287 @@
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
-using Microsoft.Xna.Framework;
+using System.Collections;
 using UWGame.SimSide.Processes;
+using Microsoft.Xna.Framework;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-[XmlInclude(typeof(TerminalContainerType))]
-[XmlInclude(typeof(VehicleContainerType))]
-[XmlInclude(typeof(AgentStorageType))]
-[XmlInclude(typeof(HomeContainerType))]
-[XmlInclude(typeof(ReplenishContainerType))]
-[XmlInclude(typeof(WorkshopContainerType))]
-[XmlInclude(typeof(ToolContainerType))]
-[XmlInclude(typeof(StorageContainerType))]
-public abstract class ContainerType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	public string[] CanTransactWithTags;
+    [XmlInclude(typeof(TerminalContainerType))]
+    [XmlInclude(typeof(VehicleContainerType))]
+    [XmlInclude(typeof(AgentStorageType))]
+    [XmlInclude(typeof(HomeContainerType))]
+    [XmlInclude(typeof(ReplenishContainerType))]
+    [XmlInclude(typeof(WorkshopContainerType))]
+    [XmlInclude(typeof(ToolContainerType))]
+    [XmlInclude(typeof(StorageContainerType))]
+    public abstract class ContainerType
+    {
+        /// <summary>
+        /// who can retrieve or deposit contents - is assumed if the agent can enter 
+        /// </summary>
+        public string[] CanTransactWithTags;
+        /// <summary>
+        /// A bitarray from the string tags to quicker match CanTransactWithDesignerTags
+        /// </summary>
+        [XmlIgnore]
+        private BitArray CanTransactWith;
 
-	[XmlIgnore]
-	private BitArray CanTransactWith;
 
-	public string[] CanBeEnteredByTags;
+        /// <summary>
+        /// who can enter - only relevant for agents
+        /// </summary>
+        public string[] CanBeEnteredByTags;
+        /// <summary>
+        /// A bitarray from the string tags to quicker match CanBeContainedByDesignerTags
+        /// </summary>
+        [XmlIgnore]
+        private BitArray CanBeEnteredBy;
 
-	[XmlIgnore]
-	private BitArray CanBeEnteredBy;
 
-	public string[] StorageTags;
+        /// <summary>
+        /// referenced by Item to determine what can be stored here.
+        /// </summary>
+        public string[] StorageTags;
 
-	public ResidenceType ResidenceType;
+       
 
-	[XmlIgnore]
-	public bool VerminCanAccess;
 
-	public virtual float? FullStatePercentage => null;
+        /// <summary>
+        /// i decided to make this separate from HomeContainer because I want to combine it with VehicleContainer as a mobile home too...
+        /// then it would be better to make an interface 
+        /// </summary>
+        public ResidenceType ResidenceType;
 
-	public virtual float? HalfFullStatePercentage => null;
 
-	public virtual bool HasOutputStorage => false;
+        [XmlIgnore]
+        public bool VerminCanAccess;
 
-	public virtual bool CanBeUpgraded => false;
+        /// <summary>
+        /// this object can be located in different places - let's make this the single access point!
+        ///      
+        /// </summary>
+        public virtual RequiresReplenishType GetRequiresReplenishType()
+        {
+            return null;
+        }
 
-	public virtual RequiresReplenishType GetRequiresReplenishType()
-	{
-		return null;
-	}
 
-	public abstract Container CreateContainer(Entity parent);
+        public abstract Container CreateContainer(Entity parent);
 
-	public virtual void Initialize()
-	{
-		if (ResidenceType != null)
-		{
-			ResidenceType.Initialize();
-		}
-	}
+        public virtual void Initialize()
+        {            
+            if (ResidenceType != null)
+            {
+                ResidenceType.Initialize();
+            }
+            
+         /*   if (MagazineContainerType != null)
+            {
+                MagazineContainerType.Initialize();
+            }*/
+         }
 
-	public virtual void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		if (HasOutputStorage && parent.ToolType == null)
-		{
-			EntityType.CreateValidationError(ref listOfErrors, "Only tools can have production output. Either make the type a tool by defining EntityType.ToolType, or change the container type.");
-		}
-	}
 
-	public virtual void PostDataCompleteInitialize(EntityType parent)
-	{
-		if (GetUpgradeOptions() == null)
-		{
-			return;
-		}
-		foreach (UpgradeCategory upgradeOption in GetUpgradeOptions())
-		{
-			Common.AddToMultiList(GameData.Instance.EntityTypesToUpgradeByUpgradeCategory, upgradeOption, parent);
-		}
-	}
+        public virtual void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            if (HasOutputStorage)
+            {
+                // validate that parent is a tool!
+                if (parent.ToolType == null)
+                {
+                    EntityType.CreateValidationError(ref listOfErrors, "Only tools can have production output. Either make the type a tool by defining EntityType.ToolType, or change the container type.");
+                }
+            }
+            
+        }
 
-	public virtual void PostLoadContentInitialize(EntityType parent)
-	{
-		string[] array = CanTransactWithTags;
-		if (CanTransactWithTags == null)
-		{
-			array = CanBeEnteredByTags;
-		}
-		else if (CanBeEnteredByTags != null)
-		{
-			int num = array.Length;
-			Array.Resize(ref array, num + CanBeEnteredByTags.Length);
-			Array.Copy(CanBeEnteredByTags, 0, array, num, CanBeEnteredByTags.Length);
-			array = array.Distinct().ToArray();
-		}
-		CanTransactWith = GameData.CreateBitArrayFromTags(GameData.Instance.ContainerTags, array);
-		CanBeEnteredBy = GameData.CreateBitArrayFromTags(GameData.Instance.ContainerTags, CanBeEnteredByTags);
-	}
+        public virtual void PostDataCompleteInitialize(EntityType parent)
+        {
+            if (GetUpgradeOptions() != null)
+            {                
+                foreach (var item in GetUpgradeOptions()) // UpgradesProfileFinal.UpgradeCategoriesFinal)
+	            {
+                    Common.AddToMultiList(GameData.Instance.EntityTypesToUpgradeByUpgradeCategory, item, parent);
+	            }
+            } 
 
-	public void SetVerminCanAccess()
-	{
-		foreach (KeyValuePair<string, EntityType> allVerminType in GameData.Instance.AllVerminTypes)
-		{
-			if (CanTransactWithContainer(allVerminType.Value))
-			{
-				VerminCanAccess = true;
-				break;
-			}
-		}
-	}
 
-	public bool CanTransactWithContainer(EntityType agentType)
-	{
-		if (agentType.IntelligenceType != null && agentType.IntelligenceType.ContainerTransactValue.HasValue)
-		{
-			return CanTransactWith[agentType.IntelligenceType.ContainerTransactValue.Value];
-		}
-		return false;
-	}
+        }
 
-	public bool AllowedInContainer(EntityType agentType)
-	{
-		if (agentType.IntelligenceType != null && agentType.IntelligenceType.ContainerTransactValue.HasValue)
-		{
-			return CanBeEnteredBy[agentType.IntelligenceType.ContainerTransactValue.Value];
-		}
-		return false;
-	}
+        public virtual void PostLoadContentInitialize(EntityType parent)
+        {
+            
+            string[] combinedArray = CanTransactWithTags;
 
-	public virtual DefaultStorageSettings GetDefaultStorageSettings()
-	{
-		return null;
-	}
+            //If we only have one array we do not need to combine them. As we want to use the combined set of tags.
+            if (CanTransactWithTags == null)
+            {
+                combinedArray = CanBeEnteredByTags;
+            }
+            else if (CanBeEnteredByTags != null) // why not put a comment here that explains this code..? //Added a few comments that explains what this code does.
+            {
+                //Here we copy both the arrays to the same combined array so we use the flags from both.
+                int array1OriginalLength = combinedArray.Length;
+                Array.Resize<string>(ref combinedArray, array1OriginalLength + CanBeEnteredByTags.Length);
+                Array.Copy(CanBeEnteredByTags, 0, combinedArray, array1OriginalLength, CanBeEnteredByTags.Length);
+                
+                //Here we make sure so that only one of each element is saved in the array.
+                combinedArray = combinedArray.Distinct().ToArray();
+            }
 
-	public virtual List<UpgradeCategory> GetUpgradeOptions()
-	{
-		return null;
-	}
+            CanTransactWith = GameData.CreateBitArrayFromTags(GameData.Instance.ContainerTags, combinedArray);
+            CanBeEnteredBy = GameData.CreateBitArrayFromTags(GameData.Instance.ContainerTags, CanBeEnteredByTags);
 
-	public virtual Dictionary<EntityType, ProcessType> GetReplenishProcesses()
-	{
-		return null;
-	}
+           /* if (parent.KeyName == "structure:wigwamSpoakShingles")
+            {
 
-	public virtual float GetOutputStorageCapacity()
-	{
-		return 0f;
-	}
+            }
 
-	public virtual Vector2[] GetDoors()
-	{
-		return null;
-	}
+            if (parent.KeyName == "structure:clayGranary")
+            {
 
-	public virtual bool GetHasCourtyard()
-	{
-		return false;
-	}
+            }*/
+            
+           // SetVerminCanAccess();
 
-	public int GetCapacityForIdlingPeople()
-	{
-		if (ResidenceType != null)
-		{
-			return ResidenceType.PeopleCapacity;
-		}
-		return 0;
-	}
+        }
+
+        public void SetVerminCanAccess()
+        {           
+            foreach (var verminType in GameData.Instance.AllVerminTypes) // see if ANY vermin can access
+            {
+                if (CanTransactWithContainer(verminType.Value))
+                {
+                    VerminCanAccess = true;
+                    return;
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// can the agent add/remove things from the container?
+        /// </summary>
+        /// <param name="agentType"></param>
+        /// <returns></returns>
+        public bool CanTransactWithContainer(EntityType agentType)  
+        {
+            if (agentType.IntelligenceType != null
+                && agentType.IntelligenceType.ContainerTransactValue.HasValue)
+            {
+                
+                return CanTransactWith[agentType.IntelligenceType.ContainerTransactValue.Value];
+
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// can the agent enter this container? (if yes, then he can also transact with items in it)
+        /// </summary>
+        /// <param name="agentType"></param>
+        /// <returns></returns>
+        public bool AllowedInContainer(EntityType agentType)  
+        {
+            if (agentType.IntelligenceType != null
+                && agentType.IntelligenceType.ContainerTransactValue.HasValue)
+            {
+
+                return CanBeEnteredBy[agentType.IntelligenceType.ContainerTransactValue.Value];
+
+            }
+            else
+                return false;
+        }
+
+        public virtual DefaultStorageSettings GetDefaultStorageSettings()
+        {           
+            return null;
+        }
+
+        public virtual float? FullStatePercentage
+        {
+            get
+            {           
+                return null;
+            }
+        }
+
+        public virtual float? HalfFullStatePercentage
+        {
+            get
+            {               
+                return null;
+            }
+        }
+
+        public virtual bool HasOutputStorage
+        {
+            get
+            {
+               return false;
+            }
+        }
+
+        public virtual bool CanBeUpgraded
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public virtual List<UpgradeCategory> /*Dictionary<UpgradeCategory, List<EntityType>>*/ GetUpgradeOptions()
+        {
+            return null;
+        }
+
+        public virtual Dictionary<EntityType, ProcessType> GetReplenishProcesses()
+        {          
+            return null;
+        }
+        
+        public virtual float GetOutputStorageCapacity()
+        {           
+            return 0f;
+        }
+
+        /// <summary>
+        /// IExit
+        /// </summary>
+        /// <returns></returns>
+        public virtual Vector2[] GetDoors()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// IExit
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool GetHasCourtyard()
+        {
+            return false;
+        }
+
+
+        public int GetCapacityForIdlingPeople()
+        {
+            if (ResidenceType != null) //HomeContainerType != null)
+            {
+                return ResidenceType.PeopleCapacity;
+            }
+            /*else if (VehicleContainerType != null)
+            {
+                return VehicleContainerType.PeopleCapacity;
+            }*/
+
+            return 0;
+        }
+    }
 }

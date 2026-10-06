@@ -1,123 +1,186 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UWGame.SimSide.Snapshots;
+using System.Linq;
+using System.Text;
 using UWGame.SimSide.Vehicles;
+using UWGame.SimSide.Snapshots;
+using System.Diagnostics;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-/// <summary>
-/// Simple dedicated storage container, such as the storage hole.
-/// </summary>
-internal class StorageContainer : Container, IStorage
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	private ItemStorage storage;
+ 
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+    /// <summary>
+    /// this is for the storage hole...
+    /// </summary>
+    class StorageContainer: Container, IStorage
+    {
 
-	public float TotalStored => storage.TotalStored;
+        ItemStorage storage;
 
-	public float TotalItemStorageCapacity => storage.TotalCapacity;
 
-	public StorageContainer(Entity parent)
-		: base(parent)
-	{
-		storage = new ItemStorage(parent, hasFixedCapacity: true, ((StorageContainerType)parent.EntityType.ContainerType).ItemStorageType);
-	}
+        public StorageContainer(Entity parent)
+            : base(parent)
+        {
+            storage = new ItemStorage(parent, true, ((StorageContainerType)parent.EntityType.ContainerType).ItemStorageType);
 
-	public StorageContainer()
-	{
-	}
+          
+        }
 
-	public override void IterateContained(Action<Entity> del)
-	{
-		if (storage != null)
-		{
-			storage.IterateContained(del);
-		}
-	}
+        public StorageContainer()         
+        {
+            Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor.");     
+        }
 
-	public override List<Entity> GetContainedItemsList(Predicate<Entity> rule)
-	{
-		List<Entity> list = new List<Entity>();
-		if (storage != null)
-		{
-			storage.GetContainedItemsList(rule, list);
-		}
-		return list;
-	}
+        public override void IterateContained(Action<Entity> del) // Container.IterateMethod del)
+        {
+            if (storage != null)
+            {
+                storage.IterateContained(del);
+            }         
 
-	public StorageCompartment GetCompartment(StorageID storageID)
-	{
-		return StorageCompartment.NormalStorage;
-	}
+        }
 
-	public override void ThrowOutContents()
-	{
-		storage.UncontainAllEntities();
-	}
+        public override List<Entity> GetContainedItemsList(Predicate<Entity> rule)
+        {
+            List<Entity> items = new List<Entity>();
 
-	public override void Destroy()
-	{
-		storage.UncontainAllEntities(GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers, GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
-		storage.Destroy();
-	}
+            if (storage != null)
+            {
+                storage.GetContainedItemsList(rule, items);
+            }
+            
+            return items;
+        }
 
-	public override bool Contains(EntityID item)
-	{
-		return storage.Contains(item);
-	}
+        public StorageCompartment GetCompartment(StorageID storageID)
+        {
+            return StorageCompartment.NormalStorage;
+        }
 
-	public Dictionary<StorageCondition, Storage> GetStorageSpaces()
-	{
-		return storage.StorageSpaces;
-	}
 
-	public Storage FindStorage(StorageID storageID)
-	{
-		return storage.FindStorage(storageID);
-	}
+        public override void ThrowOutContents()
+        {
+            storage.UncontainAllEntities();
+        }
 
-	public Storage GetStoredIn(Entity entity)
-	{
-		return storage.GetStoredIn(entity.EntityID);
-	}
+        public override void Destroy()
+        {
+            // eject all items:
+            storage.UncontainAllEntities(
+                GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers,
+                GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
 
-	protected override bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, bool ignoreCapacity = false, bool replenish = false, bool isProductionOutput = false, UpgradeCategory upgradeCategory = null)
-	{
-		return storage.Add(entity, placeInStorage, ignoreCapacity);
-	}
+            storage.Destroy();
+            
+        }
 
-	public override void SwitchEntities(Entity itemToRemove, Entity exchangeWithItem, bool ignoreCapacity = false)
-	{
-		StorageCondition storageConditions = storage.GetStorageConditions(itemToRemove.EntityID);
-		if (Remove(itemToRemove))
-		{
-			AddToContain(exchangeWithItem, null, storageConditions, ignoreCapacity: true);
-		}
-	}
+        public float TotalStored
+        {
+            get
+            {
+                return storage.TotalStored;
+            }
+        }
+        public float TotalItemStorageCapacity
+        {
+            get
+            {
+                return storage.TotalCapacity;
+            }
+        }
 
-	protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
-	{
-		return storage.Remove(entity, removeFromChildStorage: true);
-	}
 
-	public override Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		base.DoVersion(sn);
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
+        public override bool Contains(EntityID item)
+        {
+            return storage.Contains(item);
+        }
 
-	public override ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		base.DoSnapshot(sn);
-		storage = (ItemStorage)sn.DoISnapshot(storage);
-		return this;
-	}
+        public Dictionary<StorageCondition, Storage> GetStorageSpaces()
+        {
+            return storage.StorageSpaces;
 
-	public override void LoadPostProcess(Snapshotter sn)
-	{
-		base.LoadPostProcess(sn);
-		storage.LoadPostProcess(sn);
-	}
+        }
+
+        public Storage FindStorage(StorageID storageID)
+        {
+            return storage.FindStorage(storageID);
+        }
+
+
+        public Storage GetStoredIn(Entity entity)
+        {
+            return storage.GetStoredIn(entity.EntityID);
+        }
+
+        protected override bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null,
+            bool ignoreCapacity = false,
+            bool replenish = false,
+            bool isProductionOutput = false, 
+            UpgradeCategory upgradeCategory = null) //)bool isUpgrade = false,
+            
+        {
+            return storage.Add(entity, placeInStorage, ignoreCapacity);
+        }
+
+        public override void SwitchEntities(Entity itemToRemove, Entity exchangeWithItem, bool ignoreCapacity = false)
+        {
+            StorageCondition conditions = storage.GetStorageConditions(itemToRemove.EntityID);
+
+            if (Remove(itemToRemove, null))
+            {
+                AddToContain(exchangeWithItem, null, conditions, ignoreCapacity: true);
+            }
+
+           /* if (storage.Contains(itemToRemove))
+            {
+                storage.SwitchEntities(itemToRemove, exchangeWithItem);
+            }  */          
+        }
+
+
+        protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
+        {
+            bool wasRemoved = storage.Remove(entity, true);
+
+            return wasRemoved;
+            
+        }
+
+
+        #region ISnapshot
+
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public override Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
+
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
+
+
+        public override ISnapshot DoSnapshot(Snapshotter sn)
+        {
+            base.DoSnapshot(sn);
+
+            this.storage = (ItemStorage)sn.DoISnapshot(storage);
+
+
+            return this;
+        }
+
+        public override void LoadPostProcess(Snapshotter sn)
+        {
+            base.LoadPostProcess(sn);
+
+            storage.LoadPostProcess(sn);
+        }
+        
+
+        #endregion
+    }
 }

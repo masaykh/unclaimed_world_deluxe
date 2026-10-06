@@ -1,68 +1,102 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-public class StorageContainerType : ContainerType, IHasItemStorageType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	public string DefaultStorageSettings;
+    public class StorageContainerType : ContainerType, IHasItemStorageType
+    {
+        public ItemStorageType ItemStorageType { get; set; }
 
-	public bool AllowStockpiling = true;
+        public string DefaultStorageSettings;
 
-	public ItemStorageType ItemStorageType { get; set; }
 
-	[XmlIgnore]
-	public DefaultStorageSettings DefaultStorageSettingsFinal { get; private set; }
+        public override Container CreateContainer(Entity parent)
+        {
+            return new StorageContainer(parent);
+        }
 
-	public bool AllowsStockpiling => AllowStockpiling;
+        [XmlIgnore]
+        public DefaultStorageSettings DefaultStorageSettingsFinal
+        {
+            get;
+            private set;
+        }
 
-	public override float? FullStatePercentage => ItemStorageType.FullStatePercentage;
+        public bool AllowStockpiling = true;
 
-	public override float? HalfFullStatePercentage => ItemStorageType.HalfFullStatePercentage;
+        public bool AllowsStockpiling
+        {
+            get
+            {
+                return AllowStockpiling;
+            }
+        }
 
-	public override Container CreateContainer(Entity parent)
-	{
-		return new StorageContainer(parent);
-	}
+        public override float? FullStatePercentage
+        {
+            get
+            {
+                return ItemStorageType.FullStatePercentage;
+            }
+        }
 
-	public StorageContainerType()
-	{
-	}
 
-	public StorageContainerType(float isolatedCapacity)
-	{
-		ItemStorageType = new ItemStorageType(isolatedCapacity);
-	}
+        public override float? HalfFullStatePercentage
+        {
+            get
+            {
+                return ItemStorageType.HalfFullStatePercentage;
+            }
+        }
 
-	public StorageContainerType(string condition1, float capacity1, string condition2 = null, float? capacity2 = null, string condition3 = null, float? capacity3 = null)
-	{
-		ItemStorageType = new ItemStorageType(condition1, capacity1, condition2, capacity2, condition3, capacity3);
-	}
+        public StorageContainerType()
+        { }
 
-	public override DefaultStorageSettings GetDefaultStorageSettings()
-	{
-		return DefaultStorageSettingsFinal;
-	}
+        public StorageContainerType(float isolatedCapacity)
+        {
+            ItemStorageType = new ItemStorageType(isolatedCapacity);
+        }
 
-	public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		base.PostInitValidate(parent, ref listOfErrors);
-		if (CanBeEnteredByTags != null)
-		{
-			EntityType.CreateValidationError(ref listOfErrors, "CanBeEnteredByTags should not be specified because this container type has no doors and cannot be entered.");
-		}
-	}
+        public StorageContainerType(string condition1, float capacity1,
+            string condition2 = null, float? capacity2 = null,
+            string condition3 = null, float? capacity3 = null)
+        {
 
-	public override void Initialize()
-	{
-		base.Initialize();
-		if (ItemStorageType != null)
-		{
-			ItemStorageType.Initialize();
-		}
-		if (DefaultStorageSettings != null)
-		{
-			DefaultStorageSettingsFinal = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
-		}
-	}
+            ItemStorageType = new ItemStorageType(condition1, capacity1, condition2, capacity2, condition3, capacity3);
+                       
+        }
+
+        public override DefaultStorageSettings GetDefaultStorageSettings()
+        {
+            return DefaultStorageSettingsFinal;
+        }
+
+        public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            base.PostInitValidate(parent, ref listOfErrors);
+
+            if (CanBeEnteredByTags != null)
+            {
+                EntityType.CreateValidationError(ref listOfErrors, "CanBeEnteredByTags should not be specified because this container type has no doors and cannot be entered.");
+
+            }
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            if (ItemStorageType != null)
+            {
+                ItemStorageType.Initialize();
+            }
+
+            if (DefaultStorageSettings != null)
+                DefaultStorageSettingsFinal = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
+
+        }
+    }
 }

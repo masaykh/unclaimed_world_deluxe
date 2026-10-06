@@ -1,151 +1,204 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Serialization;
-using UWGame.SimSide.Buildings;
-using UWGame.SimSide.Maps;
-using UWGame.SimSide.Overland;
+using System.Text;
 using UWGame.SimSide.Vehicles;
+using System.Xml.Serialization;
+using UWGame.SimSide.Overland;
+using Microsoft.Xna.Framework;
+using UWGame.SimSide.Buildings;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-public class VehicleContainerType : ContainerType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	public enum VehicleTypes
-	{
-		Aircraft,
-		Boat,
-		LandVehicle
-	}
+    public class VehicleContainerType : ContainerType
+    {
+        public enum VehicleTypes { Aircraft, Boat, LandVehicle }
 
-	public enum Function
-	{
-		PersonalTransport,
-		Hauling,
-		Other
-	}
 
-	public VehicleTypes VehicleType;
+        public VehicleTypes VehicleType;
 
-	public RequiresReplenishType RequiresReplenishType;
+       // public Vector2[] Doors;
 
-	public ItemStorageType ItemStorageType;
+        public RequiresReplenishType RequiresReplenishType;
 
-	private int maxPassengers;
+        public ItemStorageType ItemStorageType;
+        
 
-	public SurfaceType.TransportType Transport;
+        [XmlIgnore]
+        public int MaxPassengers
+        {
+            get { return maxPassengers; }
+        }
 
-	public float LoadingRadius;
+        private int maxPassengers;
 
-	public float UnladenWeight;
+        public global::UWGame.SimSide.Maps.SurfaceType.TransportType Transport;
 
-	/// <summary>
-	/// The most the vehicle can speed up or slow down in one second.
-	/// </summary>
-	public float MaxAcceleration;
+        public float LoadingRadius;
 
-	public float Deceleration;
 
-	public RouteType[] CanNavigateRoutes;
+       
+        public float UnladenWeight;
 
-	public AircraftType Aircraft;
+        //   public float MaxAngularVelocity;
 
-	/// <summary>
-	/// Measured in km/day.
-	/// </summary>
-	public float AverageOverlandTravelSpeed;
+        /// <summary>
+        /// This is most the vehicle can speed up or slow down in one second.
+        /// </summary>
+        public float MaxAcceleration;
 
-	public TerminalType.TypesOfTerminal? CanUseTerminal;
+        public float Deceleration;
 
-	/// <summary>
-	/// Slot offsets are defined for the unrotated vehicle, meaning it is facing right.
-	/// </summary>
-	public PassengerOrCargoSlotType[] PassengerOrCargoSlotTypes;
+       
 
-	public Function MainFunction;
+        public RouteType[] CanNavigateRoutes;
 
-	[XmlIgnore]
-	public int MaxPassengers => maxPassengers;
+        public AircraftType Aircraft;
 
-	public override RequiresReplenishType GetRequiresReplenishType()
-	{
-		return RequiresReplenishType;
-	}
+        /// <summary>
+        /// km/day
+        /// </summary>
+        public float AverageOverlandTravelSpeed;
 
-	public VehicleContainerType()
-	{
-	}
 
-	public VehicleContainerType(float? itemStorageCapacity = null)
-	{
-		if (itemStorageCapacity.HasValue)
-		{
-			ItemStorageType = new ItemStorageType(itemStorageCapacity.Value);
-		}
-	}
+        public TerminalType.TypesOfTerminal? CanUseTerminal;
 
-	public override Container CreateContainer(Entity parent)
-	{
-		return new VehicleContainer(parent);
-	}
 
-	public override void Initialize()
-	{
-		base.Initialize();
-		maxPassengers = 0;
-		if (PassengerOrCargoSlotTypes != null)
-		{
-			PassengerOrCargoSlotType[] passengerOrCargoSlotTypes = PassengerOrCargoSlotTypes;
-			for (int i = 0; i < passengerOrCargoSlotTypes.Length; i++)
-			{
-				if (passengerOrCargoSlotTypes[i].PassengerSlotType != null)
-				{
-					maxPassengers++;
-				}
-			}
-		}
-		if (ItemStorageType != null)
-		{
-			ItemStorageType.Initialize();
-		}
-	}
+        //   public Vector3 ModelOffset;
+        //   public float ModelScale = 1f;
 
-	public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		base.PostInitValidate(parent, ref listOfErrors);
-		float num = 0f;
-		if (ItemStorageType != null)
-		{
-			num = ItemStorageType.GetTotalCapacity();
-		}
-		float num2 = 0f;
-		if (PassengerOrCargoSlotTypes == null)
-		{
-			return;
-		}
-		for (int i = 0; i < PassengerOrCargoSlotTypes.Length; i++)
-		{
-			CargoSlotType cargoSlotType = PassengerOrCargoSlotTypes[i].CargoSlotType;
-			if (cargoSlotType != null)
-			{
-				num2 += cargoSlotType.Capacity;
-			}
-		}
-		if (num2 != num)
-		{
-			EntityType.CreateValidationError(ref listOfErrors, $"There is a mismatch between the total cargo slot capacity ({num2}) and the total item storage capacity ({num}). They should be equal. Remember that a passenger/cargo slot has the capacity '2'.");
-		}
-	}
+        /// <summary>
+        /// Offsets for when the rotation = 0f, meaning when the vehicle faces right!
+        /// </summary>
+        /* public Vector2? DriversEntrance;
+         public Vector2? PassengersEntrance1;
+         public Vector2? PassengersEntrance2;
+         public Vector2? PassengersEntrance3;
+         public Vector2? LoadingPoint;
 
-	public bool CanUseRoute(RouteType? routeType, bool isAirRoute, double distance)
-	{
-		if (Aircraft != null && isAirRoute)
-		{
-			return true;
-		}
-		if (routeType.HasValue && CanNavigateRoutes != null && CanNavigateRoutes.Contains(routeType.Value))
-		{
-			return true;
-		}
-		return false;
-	}
+
+         public Vector2? DriversSeat;
+         public Vector2? PassengersSeat1;
+         public Vector2? PassengersSeat2;
+         public Vector2? PassengersSeat3;
+         public Vector2? CargoHold;*/
+
+        //    public PassengerOrCargoSlotType DriversSeat;
+        public PassengerOrCargoSlotType[] PassengerOrCargoSlotTypes;
+
+
+        public enum Function { PersonalTransport, Hauling, Other }
+
+        public Function MainFunction;
+
+        public override RequiresReplenishType GetRequiresReplenishType()
+        {
+            return RequiresReplenishType;
+        }
+
+
+        public VehicleContainerType()
+        { }
+
+        public VehicleContainerType(float? itemStorageCapacity = null)
+        {
+            if (itemStorageCapacity.HasValue)
+            {
+                ItemStorageType = new ItemStorageType(itemStorageCapacity.Value);
+            }
+
+        }
+
+        public override Container CreateContainer(Entity parent)
+        {
+            return new VehicleContainer(parent);
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            maxPassengers = 0;
+
+            if (PassengerOrCargoSlotTypes != null)
+            {
+                foreach (PassengerOrCargoSlotType slot in PassengerOrCargoSlotTypes)
+                {
+                    if (slot.PassengerSlotType != null)
+                    {
+                        maxPassengers++;
+                    }
+
+                }
+            }
+
+            if (ItemStorageType != null)
+            {
+                ItemStorageType.Initialize();
+            }
+
+        }
+
+        public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            base.PostInitValidate(parent, ref listOfErrors);
+
+            // check if the cargo spaces are correct:
+            float totalStorageCapacity = 0f;
+
+            if (ItemStorageType != null)
+            {
+                totalStorageCapacity = ItemStorageType.GetTotalCapacity();
+            }
+
+            float slotCapacity = 0;
+            if (PassengerOrCargoSlotTypes != null)
+            {
+                for (int i = 0; i < PassengerOrCargoSlotTypes.Length; i++)
+                {
+                    CargoSlotType cargoSlot = PassengerOrCargoSlotTypes[i].CargoSlotType;
+                    if (cargoSlot != null)
+                    {
+                        slotCapacity += cargoSlot.Capacity;
+                    }
+                }
+
+                if (slotCapacity != totalStorageCapacity)
+                {
+                    EntityType.CreateValidationError(ref listOfErrors, 
+                        string.Format("There is a mismatch between the total cargo slot capacity ({0}) and the total item storage capacity ({1}). They should be equal. Remember that a passenger/cargo slot has the capacity '2'.", slotCapacity, totalStorageCapacity));
+                }
+
+                
+            }
+
+        }
+
+
+       
+        public bool CanUseRoute(RouteType? routeType, bool isAirRoute, double distance)
+        {
+            if (Aircraft != null)
+            {
+                if (isAirRoute)
+                {
+                    return true;
+                }
+            }
+
+            if (routeType.HasValue)
+            {
+                if (CanNavigateRoutes != null)
+                {
+                    if (CanNavigateRoutes.Contains(routeType.Value))
+                    {
+                        return true;
+                    }
+                }
+
+            }
+
+            return false; // TODO
+        }
+    }
 }

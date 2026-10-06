@@ -1,395 +1,616 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UWGame.SimSide.Vehicles;
 using Microsoft.Xna.Framework;
 using UWGame.SimSide.Buildings;
+using UWGame.SimSide.Maps;
+using Microsoft.Xna.Framework.Input;
+using UWGame.ClientSide;
+using GameStateManagement;
+using UWGame.Control;
 using UWGame.SimSide.Snapshots;
-using UWGame.SimSide.Vehicles;
+using System.Diagnostics;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
 
-/// <summary>
-/// Used for structures where entities can sleep and make a home.
-/// </summary>
-internal class HomeContainer : Container, IGarrison, IStorage, IResidence, IExit, IUpgrades
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	/// <summary>
-	/// Contains stored items.
-	/// </summary>
-	private ItemStorage storage;
+ 
 
-	/// <summary>
-	/// Contains agents.
-	/// </summary>
-	private Garrison garrison;
+    /// <summary>
+    /// used for structures where entities can sleep/make a home
+    /// </summary>
+    class HomeContainer : Container, IGarrison, IStorage, IResidence, IExit, IUpgrades
+    {
+        /// <summary>
+        /// contains items
+        /// </summary>
+        ItemStorage storage;
 
-	private Residence residence;
+        /// <summary>
+        /// contains agents
+        /// </summary>
+        Garrison garrison;
 
-	/// <summary>
-	/// Can be null.
-	/// </summary>
-	private UpgradeItems upgradeItems;
+        Residence residence;
 
-	private ExitDoor simplifiedDoorToUseIndex;
+        /// <summary>
+        /// can be null!!!
+        /// </summary>
+        UpgradeItems upgradeItems;
 
-	private bool preventRecursion;
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+        public HomeContainer(Entity parent)
+            : base(parent)
+        {
+            storage = new ItemStorage(parent, true, ((HomeContainerType)parent.EntityType.ContainerType).ItemStorageType);
 
-	public Residence Residence => residence;
+            garrison = new Garrison(parent);
 
-	public float TotalStored => storage.TotalStored;
+            if (parent.EntityType.ContainerType.CanBeUpgraded)
+            {
+                upgradeItems = new UpgradeItems(parent);
+            }
 
-	public float TotalItemStorageCapacity => storage.TotalCapacity;
+            if (parent.EntityType.ContainerType.ResidenceType != null)
+            {
+                residence = new Residence(parent);
+            }
 
-	public Dictionary<UpgradeCategory, EntityID> ContainedUpgrades
-	{
-		get
-		{
-			if (upgradeItems != null)
-			{
-				return upgradeItems.ContainedUpgrades;
-			}
-			return null;
-		}
-	}
 
-	public bool DockOpen => true;
+        }
 
-	public bool UsesRallyPointAfterUndock => true;
+        public HomeContainer()         
+        {
+            Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor.");     
+        }
 
-	public HomeContainer(Entity parent)
-		: base(parent)
-	{
-		storage = new ItemStorage(parent, hasFixedCapacity: true, ((HomeContainerType)parent.EntityType.ContainerType).ItemStorageType);
-		garrison = new Garrison(parent);
-		if (parent.EntityType.ContainerType.CanBeUpgraded)
-		{
-			upgradeItems = new UpgradeItems(parent);
-		}
-		if (parent.EntityType.ContainerType.ResidenceType != null)
-		{
-			residence = new Residence(parent);
-		}
-	}
 
-	public HomeContainer()
-	{
-	}
+        public Residence Residence
+        {
+            get
+            {
+                return residence;
+            }
+        }
+        public override void ThrowOutContents()
+        {
+            storage.UncontainAllEntities();
+            garrison.UncontainAllEntities();
+        }
 
-	public override void IterateContained(Action<Entity> del)
-	{
-		if (storage != null)
-		{
-			storage.IterateContained(del);
-		}
-		if (garrison != null)
-		{
-			garrison.IterateContained(del);
-		}
-		if (upgradeItems != null)
-		{
-			upgradeItems.IterateContained(del);
-		}
-	}
+        public override void IterateContained(Action<Entity> del) //Container.IterateMethod del)
+        {
+            if (storage != null)
+            {
+                storage.IterateContained(del);
+            }
 
-	public override List<Entity> GetContainedItemsList(Predicate<Entity> rule)
-	{
-		List<Entity> list = new List<Entity>();
-		if (storage != null)
-		{
-			storage.GetContainedItemsList(rule, list);
-		}
-		if (garrison != null)
-		{
-			garrison.GetContainedItemsList(rule, list);
-		}
-		if (upgradeItems != null)
-		{
-			upgradeItems.GetContainedItemsList(rule, list);
-		}
-		return list;
-	}
+            if (garrison != null)
+            {
+                garrison.IterateContained(del);
+            }
 
-	public Storage FindStorage(StorageID storageID)
-	{
-		return storage.FindStorage(storageID);
-	}
+            if (upgradeItems != null)
+            {
+                upgradeItems.IterateContained(del);
+            }
 
-	public override bool Contains(EntityID entityID)
-	{
-		if (!storage.Contains(entityID) && (garrison == null || !garrison.Contains(entityID)))
-		{
-			if (upgradeItems != null)
-			{
-				return upgradeItems.Contains(entityID);
-			}
-			return false;
-		}
-		return true;
-	}
+        }
 
-	public Storage GetStoredIn(Entity entity)
-	{
-		return storage.GetStoredIn(entity.EntityID);
-	}
+        public override List<Entity> GetContainedItemsList(Predicate<Entity> rule)
+        {
+            List<Entity> items = new List<Entity>();
 
-	public Dictionary<StorageCondition, Storage> GetStorageSpaces()
-	{
-		return storage.StorageSpaces;
-	}
+            if (storage != null)
+            {
+                storage.GetContainedItemsList(rule, items);
+            }
 
-	public int GetNoOfAgentsInside()
-	{
-		return garrison.GetNoOfAgentsInside();
-	}
+            if (garrison != null)
+            {
+                garrison.GetContainedItemsList(rule, items);
+            }
 
-	public void FixContainmentBug(EntityID entityID)
-	{
-		garrison.Remove(entityID);
-	}
+            if (upgradeItems != null)
+            {
+                upgradeItems.GetContainedItemsList(rule, items);
+            }
 
-	protected override bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, bool ignoreCapacity = false, bool replenish = false, bool isProductionOutput = false, UpgradeCategory upgradeCategory = null)
-	{
-		if (upgradeCategory != null)
-		{
-			return upgradeItems.Add(upgradeCategory, entity);
-		}
-		if (Garrison.EntityBelongs(entity))
-		{
-			return garrison.Add(entity.EntityID);
-		}
-		return storage.Add(entity, placeInStorage, ignoreCapacity);
-	}
+            return items;
+        }
 
-	public override void NotifyBrokenContainedEntity(Entity entity)
-	{
-		EndEffectsFromUpgraderItem(entity);
-	}
+        public Storage FindStorage(StorageID storageID)
+        {
+            Storage foundStorage = storage.FindStorage(storageID);
 
-	public override void NotifyFunctionalContainedEntity(Entity entity)
-	{
-		StartEffectsAndSpriteFromUpgraderItem(entity);
-	}
+            return foundStorage;
+        }
+        
+        public override bool Contains(EntityID entityID)
+        {
+            return storage.Contains(entityID) 
+                || (garrison != null && garrison.Contains(entityID))
+                || (upgradeItems != null && upgradeItems.Contains(entityID));
+        }
 
-	public void EndEffectsFromUpgraderItem(Entity entity)
-	{
-		if (upgradeItems != null && upgradeItems.Contains(entity.EntityID))
-		{
-			upgradeItems.EndEffects(entity);
-		}
-	}
+        public float TotalStored
+        {
+            get
+            {
+                return storage.TotalStored;
+            }
+        }
+        public float TotalItemStorageCapacity
+        {
+            get
+            {
+                return storage.TotalCapacity;
+            }
+        }
+        public Storage GetStoredIn(Entity entity)
+        {
+            return storage.GetStoredIn(entity.EntityID);
+        }
 
-	public void StartEffectsAndSpriteFromUpgraderItem(Entity entity)
-	{
-		if (upgradeItems != null && upgradeItems.Contains(entity.EntityID))
-		{
-			upgradeItems.ApplyUpgradeEffects(entity);
-		}
-	}
+        public Dictionary<StorageCondition, Storage> GetStorageSpaces()
+        {
+            return storage.StorageSpaces;
 
-	public override void SwitchEntities(Entity itemToRemove, Entity exchangeWithItem, bool ignoreCapacity = false)
-	{
-		if (upgradeItems != null && upgradeItems.Contains(itemToRemove.ID))
-		{
-			UpgradeCategory upgradeCategory = upgradeItems.GetUpgradeCategory(itemToRemove.ID);
-			if (Remove(itemToRemove))
-			{
-				AddToContain(exchangeWithItem, null, null, ignoreCapacity: true, replenish: false, isProductionOutput: false, assertContainment: true, upgradeCategory);
-			}
-		}
-		else
-		{
-			StorageCondition storageConditions = storage.GetStorageConditions(itemToRemove.EntityID);
-			if (Remove(itemToRemove))
-			{
-				AddToContain(exchangeWithItem, null, storageConditions, ignoreCapacity: true);
-			}
-		}
-	}
+        }
 
-	protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
-	{
-		bool flag = storage.Remove(entity, removeFromChildStorage: true);
-		if (!flag)
-		{
-			flag = garrison.Remove(entity.EntityID);
-		}
-		if (!flag && upgradeItems != null)
-		{
-			flag = upgradeItems.Remove(entity.EntityID);
-		}
-		return true;
-	}
+        public int GetNoOfAgentsInside()
+        {
+            return garrison.GetNoOfAgentsInside();
+        }
 
-	public StorageCompartment GetCompartment(StorageID storageID)
-	{
-		return StorageCompartment.NormalStorage;
-	}
+        public void FixContainmentBug(EntityID entityID)
+        {
+            garrison.Remove(entityID);
+        }
 
-	public bool IsUpgrade(EntityID entityID)
-	{
-		if (upgradeItems != null)
-		{
-			return upgradeItems.Contains(entityID);
-		}
-		return false;
-	}
+        protected override bool AddToContainList(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, List<PassengerOrCargoSlot> slotsToUse = null, 
+            bool ignoreCapacity = false,
+            bool replenish = false,
+            bool isProductionOutput = false, 
+            UpgradeCategory upgradeCategory = null) //bool isUpgrade = false)
+        {
+            if (upgradeCategory != null) // isUpgrade)
+            {
+                return upgradeItems.Add(upgradeCategory, entity);
+            }
+            else if (Garrison.EntityBelongs(entity))
+            {
+                return garrison.Add(entity.EntityID);
+            }
+            else
+            {
+                return storage.Add(entity, placeInStorage,ignoreCapacity);
+            }
+        }
 
-	public bool IsDoorAvailable()
-	{
-		return false;
-	}
+        public override void NotifyBrokenContainedEntity(Entity entity)
+        {
+            EndEffectsFromUpgraderItem(entity);
+        }
 
-	public ExitDoor ReserveDoorForEntryOrExit(Entity entity, bool exiting)
-	{
-		return ExitAndEntrance.ReserveDoorForEntryOrExit(Parent, entity, exiting, ref simplifiedDoorToUseIndex);
-	}
+        public override void NotifyFunctionalContainedEntity(Entity entity)
+        {
+            StartEffectsAndSpriteFromUpgraderItem(entity);
+        }
 
-	public void UseDoor(Entity entity, ExitDoor door, bool exiting)
-	{
-	}
+        public void EndEffectsFromUpgraderItem(Entity entity)
+        {
+            if (upgradeItems != null && upgradeItems.Contains(entity.EntityID))
+            {
+                upgradeItems.EndEffects(entity);
+            }
+        }
 
-	public void UnreserveDoor(ExitDoor door)
-	{
-	}
+        public void StartEffectsAndSpriteFromUpgraderItem(Entity entity)
+        {
+            if (upgradeItems != null && upgradeItems.Contains(entity.EntityID))
+            {
+                upgradeItems.ApplyUpgradeEffects(entity);
+            }
+        }
 
-	public void SetRallyPoint(Vector3 pos, ExitDoor door)
-	{
-	}
+        /*
+        public override void NotifyBrokenContainedEntity(Entity entity)
+        {
+            EndEffectsFromUpgraderItem(entity);
+        }*/
 
-	public Vector3 GetRallyPoint(ExitDoor door = ExitDoor.NextAvailable)
-	{
-		_ = (HomeContainerType)Parent.EntityType.ContainerType;
-		return ExitAndEntrance.GetRallyPoint(this, door);
-	}
+        public override void SwitchEntities(Entity itemToRemove, Entity exchangeWithItem, bool ignoreCapacity = false)
+        {
+            if (upgradeItems != null && upgradeItems.Contains(itemToRemove.ID))
+            {
+                UpgradeCategory upgradeCategory = upgradeItems.GetUpgradeCategory(itemToRemove.ID);
+                if (Remove(itemToRemove, null))
+                {
+                    AddToContain(exchangeWithItem, upgradeCategory: upgradeCategory, ignoreCapacity: true);
+                }
+            }
+            else
+            {
+                StorageCondition conditions = storage.GetStorageConditions(itemToRemove.EntityID);
 
-	public bool GetNaturalRallyPoint(ref Vector3 rallyPoint, bool offset = true)
-	{
-		return ExitAndEntrance.GetNaturalRallyPoint(this, ref rallyPoint, offset);
-	}
+                if (Remove(itemToRemove, null))
+                {
+                    AddToContain(exchangeWithItem, null, conditions, ignoreCapacity: true);
+                }
+            }
 
-	public bool GetDoorPosition(ref Vector3 position, bool exiting, out ExitDoor doorThatWasUsed, ExitDoor door = ExitDoor.NextAvailable)
-	{
-		return ExitAndEntrance.GetDoorPosition(this, ref position, ref door, out doorThatWasUsed);
-	}
+            /*if (garrison.Contains(itemToRemove.ID))
+            {
+                garrison.Remove(itemToRemove.ID);
 
-	public Vector3 ComputeAccessPoint()
-	{
-		return GetRallyPoint();
-	}
+                storage.Add(exchangeWithItem, null);
 
-	public bool IsClearToApproach(Entity docker)
-	{
-		return IsDoorAvailable();
-	}
+                exchangeWithItem.ContainedBy = parent.ID;
 
-	public bool AdvanceApproachPosition(ref Entity docker, ref Vector3 position, out int index)
-	{
-		index = -1;
-		return false;
-	}
+            }*/
+        }
 
-	public bool IsClearToEnter(Entity docker)
-	{
-		return IsDoorAvailable();
-	}
+        protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
+        {
 
-	public bool IsClearToAdvance(Entity docker, int dockerIndex)
-	{
-		return true;
-	}
+            bool wasRemoved = storage.Remove(entity, true);
 
-	public void GetEnterPosition(ref Entity docker, ref Vector3 position)
-	{
-	}
+            if (!wasRemoved)
+            {
+                wasRemoved = garrison.Remove(entity.EntityID);
+            }
 
-	public void GetDockPosition(ref Entity docker, ref Vector3 position)
-	{
-	}
+            if (!wasRemoved && upgradeItems != null)
+            {
+                wasRemoved = upgradeItems.Remove(entity.EntityID);
+            }
 
-	public void GetDeparturePosition(ref Entity docker, ref Vector3 position)
-	{
-	}
+            //return wasRemoved;
 
-	public void OnApproachRallyReached(ref Entity docker)
-	{
-	}
+            return true;
 
-	public void OnDockReached(ref Entity docker)
-	{
-	}
+        }
 
-	public void OnDepartureRallyReached(ref Entity docker)
-	{
-	}
 
-	public bool Action(ref Entity docker)
-	{
-		return true;
-	}
+        public StorageCompartment GetCompartment(StorageID storageID)
+        {
+            return StorageCompartment.NormalStorage;            
+        }
 
-	public void CancelDock(ref Entity docker)
-	{
-	}
+        #region IUpgrades
 
-	public bool IsAllowedtoDock(ref Entity dockingEntity)
-	{
-		return true;
-	}
+        public bool IsUpgrade(EntityID entityID)
+        {
+            if (upgradeItems != null)
+            {
+                return upgradeItems.Contains(entityID);
+            }
 
-	public override void ThrowOutContents()
-	{
-		storage.UncontainAllEntities();
-		garrison.UncontainAllEntities();
-	}
+            return false;
+        }
 
-	public override void Destroy()
-	{
-		storage.UncontainAllEntities(GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers, GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
-		storage.Destroy();
-		garrison.UncontainAllEntities();
-		if (upgradeItems != null)
-		{
-			upgradeItems.DestroyAllEntities();
-		}
-	}
+        public Dictionary<UpgradeCategory, EntityID> ContainedUpgrades
+        {
+            get
+            {
+                if (upgradeItems != null)
+                {
+                    return upgradeItems.ContainedUpgrades;
+                }
 
-	public void GetDebugMarkers()
-	{
-		ExitAndEntrance.GetDebugMarkers(this, ref preventRecursion);
-	}
+                return null;
+            }
+        }
 
-	public override Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		base.DoVersion(sn);
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
+        #endregion
 
-	public override ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		base.DoSnapshot(sn);
-		garrison = (Garrison)sn.DoISnapshot(garrison);
-		storage = (ItemStorage)sn.DoISnapshot(storage);
-		residence = (Residence)sn.DoISnapshot(residence);
-		upgradeItems = (UpgradeItems)sn.DoISnapshot(upgradeItems);
-		simplifiedDoorToUseIndex = sn.DoEnum(simplifiedDoorToUseIndex);
-		sn.Ignore(preventRecursion);
-		return this;
-	}
+        #region IExit Methods
+        public bool IsDoorAvailable()
+        {
+            //Lookup flags iterating doors[]; return true on first unreserved door 
 
-	public override void LoadPostProcess(Snapshotter sn)
-	{
-		base.LoadPostProcess(sn);
-		garrison.LoadPostProcess(sn);
-		storage.LoadPostProcess(sn);
-		if (residence != null)
-		{
-			residence.LoadPostProcess(sn);
-		}
-		if (upgradeItems != null)
-		{
-			upgradeItems.LoadPostProcess(sn);
-		}
-	}
+            return false;
+        }
+
+        ExitDoor simplifiedDoorToUseIndex = ExitDoor.Door1;
+
+        public ExitDoor ReserveDoorForEntryOrExit(Entity entity, bool exiting)
+        {
+            return ExitAndEntrance.ReserveDoorForEntryOrExit(Parent, entity, exiting, ref simplifiedDoorToUseIndex);
+        }
+
+        public void UseDoor(Entity entity, ExitDoor door, bool exiting)
+        {
+            //if exiting
+            //consult the containertype for constants...
+            //compute exit position and orentation using method getExitPosition()
+            //dequeue the exiting entity
+            //ask the locomotor of entity to teleport to that position/orientation
+            //getRallyPoint()
+            //push a movetoposition subgoal to the rally point
+            //after that subgoal, goalthink takes over
+            //else entering
+            //suspend the ai (goalthink)
+            //push a movetoposition subgoal to the enteroffset
+            //set a collision callback to parent container, which will contain entity instantly
+        }
+
+        public void UnreserveDoor(ExitDoor door)
+        {
+            //clear the flag in doors[]  
+
+        }
+
+        public void SetRallyPoint(Vector3 pos, ExitDoor door)
+        {
+            //dynamically adjust or define a rally point for this door
+            //these are assigned in worldspace
+            //store new rally point in member doors[], keyed to door ExitDoor value
+        }
+
+        public Vector3 GetRallyPoint(ExitDoor door = ExitDoor.NextAvailable)
+        {
+            HomeContainerType containerType = (HomeContainerType)Parent.EntityType.ContainerType;
+
+            return ExitAndEntrance.GetRallyPoint(this, door);           
+        }
+
+        public bool GetNaturalRallyPoint(ref Vector3 rallyPoint, bool offset = true)
+        {
+            return ExitAndEntrance.GetNaturalRallyPoint(this, ref rallyPoint, offset);
+            
+          /*  rallyPoint = parent.PlaySiteLocation;
+            if (((HomeContainerType)parent.EntityType.ContainerType).HasRallyPointInCourtyard)
+                return true;//because the middle of the building is the middle of the courtyard
+
+            //just whip up a point in "front" of the building
+            float rallyPointDistance = Math.Min(2, parent.EntityType.StructureType.HeightInTiles) * MapManager.tileSize;
+            rallyPoint.Y += rallyPointDistance;
+            return true;*/
+        }
+
+        public bool GetDoorPosition(ref Vector3 position, bool exiting, out ExitDoor doorThatWasUsed, ExitDoor door = ExitDoor.NextAvailable)
+        {
+            return ExitAndEntrance.GetDoorPosition(this, ref position, ref door, out doorThatWasUsed);
+        }
+              
+
+
+        public Vector3 ComputeAccessPoint()
+        {
+            return GetRallyPoint();
+        }
+
+        public bool IsClearToApproach(Entity docker)
+        {
+            return IsDoorAvailable();
+        }
+
+       
+
+      
+        public bool AdvanceApproachPosition(ref Entity docker, ref Vector3 position, out int index)
+        {
+            
+            /// Give Entity the next Queue point to move to, and record that that point is taken.
+            //In impl, this will consult with IExit ReserveDoor()
+
+            index = -1; // this should look for the next best unreserved door
+            return false; //TODO impl
+        }
+
+
+        public bool IsClearToEnter(Entity docker)
+        {
+            return IsDoorAvailable();
+        }
+
+        public bool IsClearToAdvance(Entity docker, int dockerIndex)
+        {
+            //this fn should examine the area between the door at dockerIndex and its rally point
+            //to make sure it is clear of interlopers, rapscallions or other ne'erdowells
+
+            return true;//for now, everyone is clear to advance all the time, oops
+        }
+
+        public void GetEnterPosition(ref Entity docker, ref Vector3 position)
+        {
+            /// Give Entity the point that is the start of his docking path
+            /// Returning null means there is none free
+            /// All functions take docker as arg so we could have multiple docks on a building.  
+            /// Docker is not assumed, it is recorded and checked.    
+
+            //In impl, this will consult with IExit.GetRallyPoint()
+        }
+
+        public void GetDockPosition(ref Entity docker, ref Vector3 position)
+        {
+            /// Give Entity the middle point of the dock process where the action() happens 	
+            //In impl, this will consult with IExit.GetDoorPosition()
+        }
+
+        public void GetDeparturePosition(ref Entity docker, ref Vector3 position)
+        {
+            /// Give Entity the point to move to when he is done  
+            //In impl, this will consult with IExit.GetRallyPoint()
+        }
+
+        public void OnApproachRallyReached(ref Entity docker)
+        {
+            /// Entity has reached the Enter rally Point.
+        }
+
+        public void OnDockReached(ref Entity docker)
+        {
+            /// Entity has reached the Dock point        
+        }
+
+        public void OnDepartureRallyReached(ref Entity docker)
+        {
+            /// Entity has reached the rally point on his way out.  He is no longer busy
+        }
+
+        public bool Action(ref Entity docker)
+        {
+            /// Perform our specific action on visiting entity.
+            /// examples, fill his basket with apples, his tank with fuel, his belly with food...
+            /// Returning FALSE means there is nothing for you to do so entity should leave
+            return true;
+        }
+
+
+        public void CancelDock(ref Entity docker)
+        {
+            /// Clear entity from any reserved points, and if entity was the reason we were Busy, we aren't anymore.
+        }
+
+        public bool DockOpen
+        {
+            /// Is the dock open to accepting dockers?
+            get
+            {
+                return true;
+            }
+        }
+
+        public bool IsAllowedtoDock(ref Entity dockingEntity)
+        {
+            ///can entity dock here?
+            ///this should be a combination of DockOpen, and also applying an entityFilter on dockingEntity
+            ///this filter should be defined in COntainerTYpe, but might be hard coded in the interim
+            return true;
+        }
+
+        public bool UsesRallyPointAfterUndock
+        {
+            /// A minority of docks want to give you a final command to their rally point. 
+            /// this should refer to data in ContainType in many cases
+            get
+            {
+                return true; // for now
+            }
+        }
+
+        #endregion
+
+
+        public override void Destroy()
+        {
+
+            // eject all items:
+            storage.UncontainAllEntities(GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers,
+                GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
+
+            storage.Destroy();
+
+            garrison.UncontainAllEntities();
+
+            if (upgradeItems != null)
+            {
+                upgradeItems.DestroyAllEntities();
+            }
+        }
+
+
+        private bool preventRecursion = false;
+        public void GetDebugMarkers()
+        {
+            ExitAndEntrance.GetDebugMarkers(this, ref preventRecursion);
+
+            /*
+#if (DEBUG || PROFILE)
+
+
+            if (Kensei.Dev.Options.GetOption("Overlays.Markers") == false)
+                return;
+
+            if (preventRecursion) // so we can call DrawAllPoints from GetDoor, GetRally, etc.
+                return;
+            preventRecursion = true;
+
+            // MapClient.ClearAllVisitorMarkers(this);
+
+            ExitDoor doorThatWasUsed;
+            for (ExitDoor t = ExitDoor.Door1; t < ExitDoor.Max; t++)
+            {
+                Vector3 door = Vector3.Zero;
+                if (GetDoorPosition(ref door, false, out doorThatWasUsed, t))
+                {
+                    The.MapUI.AddDebugMarker(door, Color.Chartreuse, this);
+
+                    Vector3 rally = GetRallyPoint(t);
+                    The.MapUI.AddDebugMarker(rally, Color.Green, this);                    
+                }
+
+            }
+
+            Vector3 naturalRallyPoint = parent.PlaySiteLocation;
+            if (GetNaturalRallyPoint(ref naturalRallyPoint))
+            {
+                The.MapUI.AddDebugMarker(naturalRallyPoint, Color.Gray, this);
+
+            }
+            preventRecursion = false;
+#endif**/
+
+        }
+
+        #region ISnapshot
+
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public override Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
+
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
+
+
+        public override ISnapshot DoSnapshot(Snapshotter sn)
+        {
+            base.DoSnapshot(sn);
+
+            this.garrison = (Garrison)sn.DoISnapshot(garrison);
+            this.storage = (ItemStorage)sn.DoISnapshot(storage);
+            this.residence = (Residence)sn.DoISnapshot(residence);
+            this.upgradeItems = (UpgradeItems)sn.DoISnapshot(upgradeItems);
+
+            this.simplifiedDoorToUseIndex = sn.DoEnum(simplifiedDoorToUseIndex);
+
+
+            sn.Ignore(preventRecursion);
+
+            return this;
+        }
+
+        public override void LoadPostProcess(Snapshotter sn)
+        {
+            base.LoadPostProcess(sn);
+
+            garrison.LoadPostProcess(sn);
+            storage.LoadPostProcess(sn);
+
+            if (residence != null)
+            {
+                residence.LoadPostProcess(sn);
+            }
+
+            if (upgradeItems != null)
+            {
+                upgradeItems.LoadPostProcess(sn);
+            }
+        }
+
+       
+
+        #endregion
+
+    }
 }

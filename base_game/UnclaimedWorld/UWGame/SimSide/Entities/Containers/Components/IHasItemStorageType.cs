@@ -1,8 +1,18 @@
-namespace UWGame.SimSide.Entities.Containers.Components;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-internal interface IHasItemStorageType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	ItemStorageType ItemStorageType { get; }
+    /// <summary>
+    /// parallel to IStorage? No, more restricted... not implemented by AgentStorageType...
+    /// </summary>
+    interface IHasItemStorageType
+    {
+        ItemStorageType ItemStorageType  { get; }
 
-	bool AllowsStockpiling { get; }
+        bool AllowsStockpiling { get; }
+    }
 }

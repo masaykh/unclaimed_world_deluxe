@@ -1,101 +1,152 @@
+﻿using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
+using System.Xml.Serialization;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-public class UpgradableBuildingContainerType : ContainerType, IHasItemStorageType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	public Vector2[] Doors;
+    /// <summary>
+    /// non-homes that can be upgraded
+    /// 
+    /// the workshop building can be customized by choosing a tool, but the upgrade is the tool, not this entity.
+    /// 
+    /// Can be entered by people!
+    /// </summary>
+    public class UpgradableBuildingContainerType : ContainerType, IHasItemStorageType
+    {
+        public ItemStorageType ItemStorageType { get; set; }
 
-	public bool HasRallyPointInCourtyard;
+        public Vector2[] Doors;
+        public bool HasRallyPointInCourtyard = false;
 
-	public string UpgradesProfile;
+        public string UpgradesProfile;
 
-	[XmlIgnore]
-	public UpgradeProfile UpgradesProfileFinal;
+        [XmlIgnore]
+        public UpgradeProfile UpgradesProfileFinal;
 
-	public string DefaultStorageSettings;
+       
+        public string DefaultStorageSettings;
 
-	public bool AllowStockpiling = true;
+        [XmlIgnore]
+        public DefaultStorageSettings DefaultStorageSettingsFinal
+        {
+            get;
+            private set;
+        }
 
-	public ItemStorageType ItemStorageType { get; set; }
+        public bool AllowStockpiling = true;
 
-	[XmlIgnore]
-	public DefaultStorageSettings DefaultStorageSettingsFinal { get; private set; }
+        public bool AllowsStockpiling
+        {
+            get
+            {
+                return AllowStockpiling;
+            }
+        }
 
-	public bool AllowsStockpiling => AllowStockpiling;
+        public override Container CreateContainer(Entity parent)
+        {
+            return new UpgradableBuildingContainer(parent);
+        }
 
-	public override bool CanBeUpgraded => UpgradesProfileFinal != null;
+        public override bool CanBeUpgraded
+        {
+            get
+            {
+                return UpgradesProfileFinal != null;
+            }
+        }
 
-	public override float? FullStatePercentage => ItemStorageType.FullStatePercentage;
+        public override List<UpgradeCategory> GetUpgradeOptions() 
+        {
+            if (UpgradesProfileFinal != null)
+            {
+                return UpgradesProfileFinal.UpgradeCategoriesFinal;
+            }
 
-	public override float? HalfFullStatePercentage => ItemStorageType.HalfFullStatePercentage;
+            return null;
+        }
 
-	public override Container CreateContainer(Entity parent)
-	{
-		return new UpgradableBuildingContainer(parent);
-	}
+        
+        public override float? FullStatePercentage
+        {
+            get
+            {
+                return ItemStorageType.FullStatePercentage;
+            }
+        }
 
-	public override List<UpgradeCategory> GetUpgradeOptions()
-	{
-		if (UpgradesProfileFinal != null)
-		{
-			return UpgradesProfileFinal.UpgradeCategoriesFinal;
-		}
-		return null;
-	}
+        public override float? HalfFullStatePercentage
+        {
+            get
+            {
+                return ItemStorageType.HalfFullStatePercentage;
+            }
+        }
 
-	public UpgradableBuildingContainerType()
-	{
-	}
+        public UpgradableBuildingContainerType()
+        {
+            
+        }
 
-	public override Vector2[] GetDoors()
-	{
-		return Doors;
-	}
 
-	public override bool GetHasCourtyard()
-	{
-		return HasRallyPointInCourtyard;
-	}
+        public override Vector2[] GetDoors()
+        {
+            return Doors;
+        }
 
-	public UpgradableBuildingContainerType(string condition1, float capacity1, string condition2 = null, float? capacity2 = null, string condition3 = null, float? capacity3 = null)
-	{
-		ItemStorageType = new ItemStorageType(condition1, capacity1, condition2, capacity2, condition3, capacity3);
-	}
+        public override bool GetHasCourtyard()
+        {
+            return HasRallyPointInCourtyard;
+        }
 
-	public override DefaultStorageSettings GetDefaultStorageSettings()
-	{
-		return DefaultStorageSettingsFinal;
-	}
 
-	public override void Initialize()
-	{
-		base.Initialize();
-		ItemStorageType.Initialize();
-		if (DefaultStorageSettings != null)
-		{
-			DefaultStorageSettingsFinal = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
-		}
-	}
+        public UpgradableBuildingContainerType(string condition1, float capacity1, string condition2 = null,
+                                float? capacity2 = null, string condition3 = null, float? capacity3 = null)
+        {
+            ItemStorageType = new ItemStorageType(condition1, capacity1, condition2, capacity2, condition3, capacity3);
+        }
 
-	public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		base.PostInitValidate(parent, ref listOfErrors);
-	}
+        public override DefaultStorageSettings GetDefaultStorageSettings()
+        {
+            return DefaultStorageSettingsFinal;
+        }
 
-	public override void PostLoadContentInitialize(EntityType parent)
-	{
-		base.PostLoadContentInitialize(parent);
-	}
+        public override void Initialize()
+        {
+            base.Initialize();
+           
+            ItemStorageType.Initialize(); // mandatory
+        
 
-	public override void PostDataCompleteInitialize(EntityType parent)
-	{
-		if (UpgradesProfile != null)
-		{
-			UpgradesProfileFinal = GameData.Instance.AllUpgradeProfiles[UpgradesProfile];
-		}
-		base.PostDataCompleteInitialize(parent);
-	}
+            if (DefaultStorageSettings != null)
+                DefaultStorageSettingsFinal = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
+
+        }
+
+        public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            base.PostInitValidate(parent, ref listOfErrors);
+                       
+        }
+
+        public override void PostLoadContentInitialize(EntityType parent)
+        {
+            base.PostLoadContentInitialize(parent);
+
+        }
+
+        public override void PostDataCompleteInitialize(EntityType parent)
+        {
+            if (UpgradesProfile != null)
+            {
+                UpgradesProfileFinal = GameData.Instance.AllUpgradeProfiles[UpgradesProfile];
+
+            }
+
+            base.PostDataCompleteInitialize(parent);
+        }
+    }
 }

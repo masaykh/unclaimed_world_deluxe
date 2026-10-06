@@ -1,43 +1,52 @@
+﻿using System;
 using System.Collections.Generic;
-using UWGame.SimSide.Processes;
+using System.Linq;
+using System.Text;
 
-namespace UWGame.SimSide.Entities.Containers.Components;
-
-public class ReplenishContainerType : ContainerType
+namespace UWGame.SimSide.Entities.Containers.Components
 {
-	/// <summary>
-	/// Describes items currently replenishing the entity.
-	/// This shared type is used by replenish containers, vehicles, and agent storage.
-	/// </summary>
-	public RequiresReplenishType RequiresReplenishType;
+    public class ReplenishContainerType : ContainerType
+    {
+        /// <summary>
+        /// A container holding items that are currently replenishing the entity
+        /// the contained class RequiresReplenishType is shared between ReplenishContainerType, VehicleType and AgentStorageType (for robots)
+        /// 
+        /// the items are stored in ReplenishContainer
+        /// </summary>
+        public RequiresReplenishType RequiresReplenishType;
 
-	public override Container CreateContainer(Entity parent)
-	{
-		return new ReplenishContainer(parent);
-	}
 
-	public override RequiresReplenishType GetRequiresReplenishType()
-	{
-		return RequiresReplenishType;
-	}
+        public override Container CreateContainer(Entity parent)
+        {
+            return new ReplenishContainer(parent);
+        }
 
-	public override Dictionary<EntityType, ProcessType> GetReplenishProcesses()
-	{
-		return RequiresReplenishType.ReplenishProcesses;
-	}
+        public override RequiresReplenishType GetRequiresReplenishType()
+        {
+            return RequiresReplenishType;
+        }
 
-	public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		base.PostInitValidate(parent, ref listOfErrors);
-		if (CanBeEnteredByTags != null)
-		{
-			EntityType.CreateValidationError(ref listOfErrors, "CanBeEnteredByTags should not be specified because this container type has no doors and cannot be entered.");
-		}
-	}
+        public override Dictionary<EntityType, Processes.ProcessType> GetReplenishProcesses()
+        {
+            return RequiresReplenishType.ReplenishProcesses;     
+        }
 
-	public override void PostLoadContentInitialize(EntityType parent)
-	{
-		base.PostLoadContentInitialize(parent);
-		RequiresReplenishType.PostLoadContentInitialize(parent);
-	}
+        public override void PostInitValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            base.PostInitValidate(parent, ref listOfErrors);
+
+            if (CanBeEnteredByTags != null)
+            {
+                EntityType.CreateValidationError(ref listOfErrors, "CanBeEnteredByTags should not be specified because this container type has no doors and cannot be entered.");
+
+            }
+        }
+
+        public override void PostLoadContentInitialize(EntityType parent)
+        {
+            base.PostLoadContentInitialize(parent);
+
+            RequiresReplenishType.PostLoadContentInitialize(parent);
+        }
+    }
 }
