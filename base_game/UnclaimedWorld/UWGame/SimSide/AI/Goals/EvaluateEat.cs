@@ -179,12 +179,38 @@ public class EvaluateEat : GoalEvaluator
 		return result;
 	}
 
+	/// <summary>
+	/// MOD: ReserveMod - starving, for the reserve's one exception: an ESSENTIAL food need run out.
+	/// GetLowestFoodLevel also counts the stimulants need (FoodNeedType.IsEssential = false, the only
+	/// one), so a colonist who had simply gone without a drink counted as starving and was let past
+	/// every reserve - and the food that need wants is alcohol. Kastuk: "They stay out of reserved
+	/// smoked fish except when starving. But freely drink reserved Crystal wine."
+	/// </summary>
+	private bool IsStarvingOfEssentials()
+	{
+		return IsStarvingOfEssentials(bioEntity.Needs.NeedsList.Values.Select((Need n) => (n.NeedType, n.CurrentLevel)));
+	}
+
+	/// <summary>The rule of <see cref="IsStarvingOfEssentials()"/> on its own, for the self-test.</summary>
+	public static bool IsStarvingOfEssentials(IEnumerable<(NeedType Type, float Level)> needs)
+	{
+		foreach ((NeedType type, float level) in needs)
+		{
+			FoodNeedType foodNeedType = type.FoodNeedType;
+			if (foodNeedType != null && foodNeedType.IsEssential && (level < 0f || Common.IsZero(level)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void GetAllFoodItems()
 	{
 		allFoodItems.Clear();
 		SharedKnowledge sharedKnowledge = entityIntelligence.Allegiance.SharedKnowledge;
 		// ReserveMod: a food at or below its reserve is not on the menu, unless this one is starving.
-		bool starving = UWGame.Mods.ReserveMod.Enabled && GetLowestFoodLevel() == FoodLevels.Starving;
+		bool starving = UWGame.Mods.ReserveMod.Enabled && IsStarvingOfEssentials();
 		foreach (KeyValuePair<EntityType, List<EntityID>> item in foodItemsGroup.Food)
 		{
 			if (UWGame.Mods.ReserveMod.Enabled && UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, item.Key, starving, entity))
@@ -512,7 +538,7 @@ public class EvaluateEat : GoalEvaluator
 				// scoring can take several ticks; another colonist's meal may since have brought the
 				// food down to its reserve. Household food (OwnershipMod) was never on that check.
 				if (UWGame.Mods.ReserveMod.Enabled && data.OwnedBy == foodItemsGroup.GetOwnerID()
-					&& UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, data.EntityType, GetLowestFoodLevel() == FoodLevels.Starving, entity))
+					&& UWGame.Mods.ReserveMod.HoldsBackFood(foodItemsGroup, data.EntityType, IsStarvingOfEssentials(), entity))
 				{
 					return false;
 				}

@@ -1326,6 +1326,22 @@ internal static partial class Program
         eating.Clear();
         Check(UWGame.Mods.ReserveMod.CountForMeal(shelf, ClaimOf, eating.Contains, null) == 12,
               "a claim by someone not eating (a haul) is still stock");
+
+        // Starving, for the reserve's exception (EvaluateEat.IsStarvingOfEssentials). Kastuk: reserved
+        // crystal wine was drunk freely. A colonist out of STIMULANTS counted as starving - the studio's
+        // GetLowestFoodLevel takes every food need - and stimulants are what wine is for.
+        var person = types.Values.FirstOrDefault(t => t.Person != null && t.BiologicalType != null);
+        var needs = person?.BiologicalType.GetAdultNeedsAndWeight(out float _) ?? Array.Empty<UWGame.SimSide.AI.Needs.NeedType>();
+        var stimulants = needs.FirstOrDefault(n => n.FoodNeedType != null && !n.FoodNeedType.IsEssential);
+        Check(stimulants?.KeyName == "stimulants", $"{person?.KeyName}'s one non-essential food need is stimulants ({stimulants?.KeyName})");
+        Check(types.TryGetValue("item:crystalWine", out var wine)
+              && wine.ItemType.FoodType.FoodNutrientProfile.FoodNutrientTypes.Any(a => a.Amount > 0f && a.Nutrient?.KeyName == stimulants?.FoodNeedType.FoodNutrient),
+              "crystal wine feeds that need");
+        var fedButDry = needs.Select(n => (n, n == stimulants ? 0f : 0.5f)).ToList();
+        Check(fedButDry.Min(p => p.Item2) == 0f && !UWGame.SimSide.AI.Goals.EvaluateEat.IsStarvingOfEssentials(fedButDry),
+              "fed but out of stimulants: the lowest food need is 0, yet the reserve does not count it as starving");
+        var hungry = needs.Select(n => (n, n.FoodNeedType != null && n.FoodNeedType.IsEssential ? 0f : 0.5f)).ToList();
+        Check(UWGame.SimSide.AI.Goals.EvaluateEat.IsStarvingOfEssentials(hungry), "an essential food need at 0 is starving");
         Console.WriteLine(failures == 0 ? "reserve self-test OK" : $"reserve self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
