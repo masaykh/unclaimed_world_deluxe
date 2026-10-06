@@ -797,12 +797,14 @@ public class OptionsDialog : Panel
 	{
 		int longest = 0;
 		TextButton probe = null;
+		int full = Math.Max(80, panelWidth - 124 - 4);
 		foreach (ModSetting s in settings)
 		{
 			if (s.Kind != ModSettingKind.Choice || s.Choices == null)
 			{
 				continue;
 			}
+			int own = 0;
 			foreach (string choice in s.Choices)
 			{
 				if (probe == null)
@@ -812,17 +814,34 @@ public class OptionsDialog : Panel
 				}
 				probe.Text = choice ?? "";
 				probe.ScaleWidthToFitText();
-				longest = Math.Max(longest, probe.Width);
+				// A few pixels of air, so the last letter does not touch the arrow.
+				own = Math.Max(own, probe.Width + 4);
+			}
+			// One that cannot fit beside its caption gets a line of its own (AddModSettingControl)
+			// and does not widen the rest of the category.
+			if (own > full)
+			{
+				ownLineChoices.Add(s);
+			}
+			else
+			{
+				longest = Math.Max(longest, own);
 			}
 		}
-		int full = Math.Max(80, panelWidth - 124 - 4);
 		if (longest == 0)
 		{
 			return full;
 		}
-		// A few pixels of air, so the last letter does not touch the arrow.
-		return Common.Clamp(longest + 4, 60, full);
+		return Common.Clamp(longest, 60, full);
 	}
+
+	/// <summary>
+	/// Dropdowns whose longest choice is wider than the value column: drawn under their caption,
+	/// across the whole panel. Kastuk, TOOL CARE: "LOOK AFTER" and "BACK WHERE IT CAME FROM"
+	/// were cut off, and should be "widened to full separated line width there to fit any
+	/// contained text".
+	/// </summary>
+	private readonly HashSet<ModSetting> ownLineChoices = new HashSet<ModSetting>();
 
 	/// <summary>One setting's row inside a category; returns the Y below it.</summary>
 	private int AddModSettingControl(UIComponent panel, ModSetting setting, int lineY)
@@ -872,7 +891,8 @@ public class OptionsDialog : Panel
 			comboBox.Init(ComboBoxTypes.LCD);
 			// Right-aligned at the category's width; beside the caption when it fits, under it
 			// when it does not ("NORTHERN BUSH DRAGON AGGRO RANGE:" is long).
-			int choiceWidth = (categoryChoiceWidth > 0) ? categoryChoiceWidth : valueWidth;
+			int choiceWidth = ownLineChoices.Contains(setting) ? panel.Width - 6 - 4
+				: (categoryChoiceWidth > 0) ? categoryChoiceWidth : valueWidth;
 			comboBox.Width = choiceWidth;
 			comboBox.X = panel.Width - choiceWidth - 4;
 			if (caption.Right + 6 <= comboBox.X)

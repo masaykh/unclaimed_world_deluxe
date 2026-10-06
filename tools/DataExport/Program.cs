@@ -1003,6 +1003,10 @@ internal static partial class Program
         var whenHungry = UWGame.Mods.ToolCareMod.WhenHungry;
         string[] kept = { placement.Value, forFights.Value, whenHurt.Value, whenHungry.Value };
         bool Drops(bool fight, float? health, float? food) => UWGame.Mods.ToolCareMod.DropsWhereItStands(fight, health, food);
+        // Off unless asked for (Kastuk, 2026-10-05: "A fight: drop it where they stand", and also
+        // "hurt drop" and "hungry drop" must be off by default").
+        Check(forFights.DefaultValue == "false" && whenHurt.DefaultValue == "OFF" && whenHungry.DefaultValue == "OFF",
+              "the fight, hurt and hungry drops are all OFF by default");
         placement.Value = "BACK WHERE IT CAME FROM"; forFights.Value = "true"; whenHurt.Value = "50% HEALTH"; whenHungry.Value = "WHEN HUNGRY";
         Check(!Drops(false, 1f, 1f), "healthy, fed and not fighting: the tool is put back, not dropped");
         Check(Drops(true, 1f, 1f), "setting off to a fight: dropped where they stand");

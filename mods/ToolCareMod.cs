@@ -98,20 +98,20 @@ public static class ToolCareMod
 
     public static ModSetting ForFights =>
         forFights ?? (forFights = ModSettings.Toggle(
-            ModId, "forFights", "A FIGHT: DROP IT WHERE THEY STAND", defaultValue: true,
+            ModId, "forFights", "A FIGHT: DROP IT WHERE THEY STAND", defaultValue: false,
             toolTip: "A colonist setting off to fight a threat (the most urgent work there is) " +
                      "drops what it must where it stands, without a walk first.",
             affectsSimulation: true));
 
     public static ModSetting WhenHurt =>
         whenHurt ?? (whenHurt = ModSettings.Choice(
-            ModId, "whenHurt", "HURT: DROP IT WHERE THEY STAND BELOW", new[] { Off, "25% HEALTH", "50% HEALTH", "75% HEALTH" }, "50% HEALTH",
+            ModId, "whenHurt", "HURT: DROP IT WHERE THEY STAND BELOW", new[] { Off, "25% HEALTH", "50% HEALTH", "75% HEALTH" }, Off,
             toolTip: "A colonist with less health than this drops what it must where it stands.",
             affectsSimulation: true));
 
     public static ModSetting WhenHungry =>
         whenHungry ?? (whenHungry = ModSettings.Choice(
-            ModId, "whenHungry", "HUNGRY: DROP IT WHERE THEY STAND", new[] { Off, Starving, Hungry }, Hungry,
+            ModId, "whenHungry", "HUNGRY: DROP IT WHERE THEY STAND", new[] { Off, Starving, Hungry }, Off,
             toolTip: "HUNGRY is the game's own 'has not eaten' level (a food need at 70% or less); " +
                      "STARVING is a food need run out.",
             affectsSimulation: true));
