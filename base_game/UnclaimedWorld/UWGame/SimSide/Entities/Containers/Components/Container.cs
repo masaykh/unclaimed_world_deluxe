@@ -400,9 +400,7 @@ other buildings might be IGarrison but not IStorage... like a watchtower
         /// <param name="entity"></param>
         protected void ValidateContainStatus(Entity entity)
         {
-            //return; 
-
-#if DEBUG || PROFILE
+#if DEBUG ////|| PROFILE
 
            
             if (entity.ContainedBy.HasValue && entity.PartOfID.HasValue)
