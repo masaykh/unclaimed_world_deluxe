@@ -1,113 +1,179 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
+using UWGame.SimSide.Jobs;
+using UWGame.SimSide.Processes;
 using UWGame.SimSide.XmlCollections;
 
-namespace UWGame.SimSide.Entities.RepairTypes;
-
-public class RepairProfile : IGameData
+namespace UWGame.SimSide.Entities.RepairTypes
 {
-	public string Comments;
+   
+    /// <summary>
+    /// this class is shared between EntityTypes. Each EntityType needs an instance of a different class to hold references to its generated ProcessTypes.
+    /// 
+    /// it should be possible to repair nested parts... changing a gasket inside an engine in a vehicle for instance...
+    /// </summary>
+    public class RepairProfile: IGameData
+    {
+        public string KeyName
+        {
+            get;
+            set;
+        }
 
-	public RepairType Integrity;
+        public string Name
+        {
+            get;
+            set;
+        }
 
-	public RepairType Condition;
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
 
-	public RepairType DefaultPartsReplacement;
+        public string Comments;
 
-	public RepairType DefaultPartsCondition;
 
-	public SerializableDictionary<string, RepairType> PartsReplacement;
+        /// <summary>
+        /// used for increasing integrity
+        /// 
+        /// not on nested parts
+        /// </summary>
+        public RepairType Integrity;
 
-	[XmlIgnore]
-	public Dictionary<EntityType, RepairType> PartsReplacementFinal;
+        /// <summary>
+        /// used for reconditioning the entity when not a part
+        /// </summary>
+        public RepairType Condition;
+        
+        /// <summary>
+        /// used for replacing all parts that do not have a process specified in PartsReplacement
+        /// </summary>
+        public RepairType DefaultPartsReplacement;
 
-	public SerializableDictionary<string, RepairType> PartsCondition;
+        /// <summary>
+        /// used for reconditioning all parts that do not have a process specified in PartsCondition
+        /// </summary>
+        public RepairType DefaultPartsCondition;
 
-	[XmlIgnore]
-	public Dictionary<EntityType, RepairType> PartsConditionFinal;
+        /// <summary>
+        /// overrides DefaultPartsReplacement when replacing parts 
+        /// - can also refer to nested parts!
+        /// 
+        /// </summary>
+        public SerializableDictionary<string, RepairType> PartsReplacement;
+        
+        [XmlIgnore]
+        public Dictionary<EntityType, RepairType> PartsReplacementFinal;
 
-	public string KeyName { get; set; }
 
-	public string Name { get; set; }
+        /// <summary>
+        /// overrides DefaultPartsCondition when increasing condition on parts
+        /// - can also refer to nested parts!
+        /// 
+        /// </summary>
+        public SerializableDictionary<string, RepairType> PartsCondition;
 
-	public bool DeleteRecord { get; set; }
+        [XmlIgnore]
+        public Dictionary<EntityType, RepairType> PartsConditionFinal;
 
-	public void PreInitValidate(ref List<string> errors)
-	{
-	}
 
-	public void Initialize()
-	{
-	}
+        public void PreInitValidate(ref List<string> errors)
+        {
 
-	public void PostInitValidate(ref List<string> errors)
-	{
-	}
+        }
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-		if (Integrity != null)
-		{
-			Integrity.PreDataCompleteValidate(ref listOfErrors);
-		}
-		if (DefaultPartsCondition != null)
-		{
-			DefaultPartsCondition.PreDataCompleteValidate(ref listOfErrors);
-		}
-		if (DefaultPartsReplacement != null)
-		{
-			DefaultPartsReplacement.PreDataCompleteValidate(ref listOfErrors);
-		}
-	}
+        public void Initialize()
+        {
 
-	public void PostDataCompleteInitialize()
-	{
-		if (Integrity != null)
-		{
-			Integrity.PostDataCompleteInitialize();
-		}
-		if (DefaultPartsCondition != null)
-		{
-			DefaultPartsCondition.PostDataCompleteInitialize();
-		}
-		if (DefaultPartsReplacement != null)
-		{
-			DefaultPartsReplacement.PostDataCompleteInitialize();
-		}
-		if (PartsReplacement != null)
-		{
-			PartsReplacementFinal = new Dictionary<EntityType, RepairType>();
-			foreach (KeyValuePair<string, RepairType> item in PartsReplacement)
-			{
-				PartsReplacementFinal.Add(GameData.Instance.AllEntityTypes[item.Key], item.Value);
-			}
-		}
-		if (PartsCondition != null)
-		{
-			PartsConditionFinal = new Dictionary<EntityType, RepairType>();
-			foreach (KeyValuePair<string, RepairType> item2 in PartsCondition)
-			{
-				PartsConditionFinal.Add(GameData.Instance.AllEntityTypes[item2.Key], item2.Value);
-			}
-		}
-		if (PartsConditionFinal != null)
-		{
-			foreach (KeyValuePair<EntityType, RepairType> item3 in PartsConditionFinal)
-			{
-				item3.Value.PostDataCompleteInitialize();
-			}
-		}
-		if (PartsReplacementFinal == null)
-		{
-			return;
-		}
-		foreach (KeyValuePair<EntityType, RepairType> item4 in PartsReplacementFinal)
-		{
-			item4.Value.PostDataCompleteInitialize();
-		}
-	}
+        }
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostInitValidate(ref List<string> errors)
+        {
+
+        }
+
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) 
+        {
+            if (Integrity != null)
+            {
+                Integrity.PreDataCompleteValidate(ref listOfErrors);
+            }
+
+            if (DefaultPartsCondition != null)
+            {
+                DefaultPartsCondition.PreDataCompleteValidate(ref listOfErrors);
+            }
+
+            if (DefaultPartsReplacement != null)
+            {
+                DefaultPartsReplacement.PreDataCompleteValidate(ref listOfErrors);
+            }
+        
+        }
+
+        public void PostDataCompleteInitialize()
+        {
+
+            if (Integrity != null)
+            {
+                Integrity.PostDataCompleteInitialize();
+            }
+
+            if (DefaultPartsCondition != null)
+            {
+                DefaultPartsCondition.PostDataCompleteInitialize();
+            }
+
+            if (DefaultPartsReplacement != null)
+            {
+                DefaultPartsReplacement.PostDataCompleteInitialize();
+            }
+
+            if (PartsReplacement != null)
+            {
+                PartsReplacementFinal = new Dictionary<EntityType, RepairType>();
+                foreach (var item in PartsReplacement)
+                {
+                    PartsReplacementFinal.Add(GameData.Instance.AllEntityTypes[item.Key], item.Value);
+                }
+            }
+
+            if (PartsCondition != null)
+            {
+                PartsConditionFinal = new Dictionary<EntityType, RepairType>();
+                foreach (var item in PartsCondition)
+                {
+                    PartsConditionFinal.Add(GameData.Instance.AllEntityTypes[item.Key], item.Value);
+                }
+            }
+
+            if (PartsConditionFinal != null)
+            {
+                foreach (var item in PartsConditionFinal)
+                {
+                    item.Value.PostDataCompleteInitialize();
+                }
+            }
+
+            if (PartsReplacementFinal != null)
+            {
+                foreach (var item in PartsReplacementFinal)
+                {
+                    item.Value.PostDataCompleteInitialize();
+                }
+            }
+        }
+
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+
+
+
+        }
+    }
 }
