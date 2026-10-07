@@ -225,12 +225,18 @@ namespace UWGame.SimSide.Entities.Body
                 BiologicalEntity bioEntity = Parent.BiologicalEntity;
 
                 // calculate the limit to what we can regain
-                float regainLimit = lowestHitpointsFraction + (1f - lowestHitpointsFraction) * bioEntity.MaxRegainLimit; 
+                float regainLimit = lowestHitpointsFraction + (1f - lowestHitpointsFraction) * bioEntity.MaxRegainLimit;
+
+                // MOD: a wound may heal all the way rather than stopping halfway back to full.
+                regainLimit = UWGame.Mods.HealingMod.RecoveryCeiling(regainLimit);
 
                 if (HitpointsFractionLeft < regainLimit)
                 {
                     // modify the regen speed by Energy (change this if/when hitpoints become a factor in Energy?)
                     float regenSpeed = Common.ClampBottom(Parent.BiologicalEntity.EnergyLevel, 0.5f) * bioEntity.FractionOfMaxHitpointsGainedPerDay;
+
+                    // MOD: and how fast depends on food, sleep and morale, not muscle energy alone.
+                    regenSpeed *= UWGame.Mods.HealingMod.RateFactor(Parent);
 
                     float totalHitpointsGained = (float)(regenSpeed * MaxHitpoints * deltaTimeInSeconds / The.Sim.DateAndTime.SecondsPerDay);
 
