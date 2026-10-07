@@ -182,18 +182,33 @@ UW_FONT_FACE_LCD=Jura sh tools/build/36-build-fonts.sh   # or Jura
 ```
 
 Copy the **contents** of `artifacts/content/fonts/gl` (DesktopGL) or `…/dx` (DirectX) into the
-game's `port-content\`, so that it holds `Arial.xnb` and a `Fonts\` folder. English text looks the
-same by design: it is the same typeface. The new letters show only where text has them.
-Electrolize, the main UI font, has no Cyrillic at all. That is why a replacement is needed.
+game's `port-content\` - the folder beside `Content\` - so that it holds
+`port-content\Arial.xnb` and `port-content\Fonts\LCDandHUDBody.xnb` (a `port-content\dx\` folder
+is never looked in). English text looks the same by design: it is the same typeface. The new
+letters show only where text has them.
 
-To check which fonts the game will actually load, without launching it:
+**Typing in another alphabet needs the LCD font.** Every text box - save names, map names, the
+trade and task windows - draws with `Fonts/LCDandHUDBody`, which is Electrolize, and Electrolize
+has no Cyrillic at all. A plain run of the script adds Cyrillic to the Arial fonts only, so typed
+Russian still shows as `.` (the fallback). Build with `UW_FONT_FACE_LCD=Play` (or `Jura`). The
+keyboard side needs nothing: since v1.4 a text box takes characters from the system's keyboard
+layout (`GUIManager.Window_TextInput` → `TextBox.OnTextInput`), so switch Windows to the Russian
+layout and type.
+
+To check which fonts the game will actually load, without launching it, use the probe for the
+platform you play - `release_dx` for DirectX, `release_gl` for DesktopGL - built **after** the game
+for that platform (`dotnet build tools/ContentProbe/ContentProbe.csproj -c Release`):
 
 ```sh
-artifacts/bin/ContentProbe/release_gl/contentprobe.exe "<game>/Content" Arial Fonts/LCDandHUDBody
-#   OK  Arial  -> SpriteFont, lineSpacing=14, 710 glyphs, fallback='?', cyrillic=yes, greek=yes
+artifacts/bin/ContentProbe/release_dx/contentprobe.exe "<game>/Content" Fonts/LCDandHUDBody Arial
+#   override:     <game>\port-content (found)
+#   OK  Fonts/LCDandHUDBody -> SpriteFont, ..., 612 glyphs, fallback='.', cyrillic=yes, greek=yes, from port-content
 ```
 
-`cyrillic=yes` means the override is picked up. The stock font reports `95 glyphs … cyrillic=no`.
+`cyrillic=yes` on `Fonts/LCDandHUDBody` is what typing needs. The stock fonts report
+`cyrillic=no` and `from Content`. If the `override:` line says `NOT CONSULTED`, the
+probe was built before the game and is reading `Content\` alone - build the game for that
+platform, then rebuild the probe.
 
 ## Procedural maps
 

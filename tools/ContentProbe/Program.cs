@@ -334,10 +334,17 @@ internal static class Program
             // will actually be asked to compile the shaders, which is not the same question.
             GlCapabilities.Report();
 #endif
-            if (_overrideDir != null)
-            {
-                Console.WriteLine($"override:     {_overrideDir}");
-            }
+            // Which port-content\ this probe reads, said every time. Kastuk, 2026-10-03, built the
+            // GL probe with only a DX game built, so it compiled without UW_HAVE_GAME, read
+            // Content\ alone, and printed the stock font ("95 glyphs ... cyrillic=no") over a
+            // correctly placed override - with nothing to say that the override was never looked at.
+#if UW_HAVE_GAME
+            string? overrideFolder = _overrideDir ?? UWGame.Port.UwContentManager.OverrideFolderFor(_contentDir);
+            Console.WriteLine($"override:     {overrideFolder} ({(overrideFolder != null && Directory.Exists(overrideFolder) ? "found" : "NOT THERE - every asset comes from the content root")})");
+#else
+            Console.WriteLine("override:     NOT CONSULTED - this probe was built without the game, so port-content\\ is ignored " +
+                "and every asset comes from the content root. Build UnclaimedWorld for this platform first, then rebuild the probe.");
+#endif
             ProbeMediaSubsystem();
             ProbeMenuAnimation();
             ProbeEffectVersionCheck();
@@ -361,7 +368,7 @@ internal static class Program
                     {
                         font.MeasureString(ForeignTextProbe);
                     }
-                    Console.WriteLine($"  OK      {asset,-42} -> {Describe(loaded)}");
+                    Console.WriteLine($"  OK      {asset,-42} -> {Describe(loaded)}{Source(asset)}");
                     ok++;
                 }
                 catch (Exception ex)
@@ -724,6 +731,21 @@ internal static class Program
                 return $" tag=[{keys}]  <-- no SkinInfo; ModelAnimator would throw";
             }
             return " tag=" + m.Tag.GetType().Name;
+        }
+
+        /// <summary>
+        /// Where the asset was read from: ", from port-content" when the game's content manager
+        /// took the override (UwContentManager.OpenStream's rule: the same name plus .xnb under
+        /// the override folder), else ", from Content". Nothing without the game.
+        /// </summary>
+        private string Source(string asset)
+        {
+#if UW_HAVE_GAME
+            string? folder = _overrideDir ?? UWGame.Port.UwContentManager.OverrideFolderFor(_contentDir);
+            return folder != null && File.Exists(Path.Combine(folder, asset) + ".xnb") ? ", from port-content" : ", from Content";
+#else
+            return "";
+#endif
         }
 
         private string Describe(object o) => o switch

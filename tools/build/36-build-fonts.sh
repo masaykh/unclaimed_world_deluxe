@@ -192,5 +192,13 @@ for platform in Windows:dx DesktopGL:gl; do
 done
 
 say ""
-say "fonts built - copy $OUT/dx (WindowsDX) or $OUT/gl (DesktopGL) into the game's port-content\\"
-say "to try them; tools/ContentProbe <Content> checks each one loads and survives foreign text."
+say "fonts built - copy the CONTENTS of $OUT/dx (WindowsDX) or $OUT/gl (DesktopGL) into the game's"
+say "port-content\\ (beside Content\\), so it holds Arial.xnb and Fonts\\LCDandHUDBody.xnb; then"
+say "tools/ContentProbe <Content> Fonts/LCDandHUDBody Arial checks each one loads, and from where."
+# Text boxes draw with the LCD font. Kastuk built with the defaults, saw Arial gain Cyrillic and
+# still could not type Russian (2026-10-03): Electrolize has no Cyrillic, so typed letters were dots.
+if [ -z "${UW_FONT_FACE_LCD:-}" ]; then
+  say ""
+  say "NOTE: the LCD fonts are still Electrolize, which has no Cyrillic. Text boxes use them, so"
+  say "      typing Russian needs UW_FONT_FACE_LCD=Play (or Jura) - see docs/build.md."
+fi
