@@ -17,6 +17,13 @@ namespace UWGame.SimSide.Entities.Containers.Components
     [XmlInclude(typeof(WorkshopContainerType))]
     [XmlInclude(typeof(ToolContainerType))]
     [XmlInclude(typeof(StorageContainerType))]
+    // PORT: the four subtypes the studio added after this list was written. Without them every
+    // entity type holding one - workshops with upgrade slots, magazines - made entityTypes.xml
+    // unexportable ("UpgradableBuildingContainerType was not expected").
+    [XmlInclude(typeof(MagazineContainerType))]
+    [XmlInclude(typeof(OtherContainerType))]
+    [XmlInclude(typeof(UpgradableBuildingContainerType))]
+    [XmlInclude(typeof(UpgradableContainerType))]
     public abstract class ContainerType
     {
         /// <summary>

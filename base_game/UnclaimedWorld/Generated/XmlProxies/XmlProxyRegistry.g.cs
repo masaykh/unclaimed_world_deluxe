@@ -27,7 +27,6 @@ internal static class XmlProxyRegistry
 		{ typeof(global::UWGame.SimSide.Entities.Biological.CasteType), typeof(global::UWGame.Generated.XmlProxies.CasteType) },
 		{ typeof(global::UWGame.SimSide.Entities.Biological.ColorProbability), typeof(global::UWGame.Generated.XmlProxies.ColorProbability) },
 		{ typeof(global::UWGame.SimSide.Entities.Biological.RaceType), typeof(global::UWGame.Generated.XmlProxies.RaceType) },
-		{ typeof(global::UWGame.SimSide.Entities.Body.MachineBodyPartType), typeof(global::UWGame.Generated.XmlProxies.MachineBodyPartType) },
 		{ typeof(global::UWGame.SimSide.Entities.DetectionFactor), typeof(global::UWGame.Generated.XmlProxies.DetectionFactor) },
 		{ typeof(global::UWGame.SimSide.Entities.EntityType), typeof(global::UWGame.Generated.XmlProxies.EntityType) },
 		{ typeof(global::UWGame.SimSide.Entities.IntelligenceType), typeof(global::UWGame.Generated.XmlProxies.IntelligenceType) },

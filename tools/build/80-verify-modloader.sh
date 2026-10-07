@@ -877,6 +877,22 @@ else
   say "  SKIP  UW_DOG_SAVE is not set to a save file - this case did not run"
 fi
 
+# The data export round-trips: every table is written to XML, read back from the XML alone, and the
+# result passes the game's own validation - the --data-from-xml workflow, and the only way to see a
+# change in entityTypes.xml. Seven tables could not, for years: ResourceTypes (no Sim), BodyTypes
+# (an IXmlSerializable subtype), BodyLayerTypes (dictionaries), EntityTypes (four container
+# subtypes missing from [XmlInclude]), Particles (a BlendState), and two knock-ons. A new subtype or
+# field of the wrong shape breaks a table silently in the game; here it fails by name.
+say "==> 35. every data table exports to XML, reads back from it alone, and validates"
+out=$( cd "$(new_install case35)" && "$EXPORT" . --read-back 2>&1 ) || true
+if [ "$(echo "$out" | grep -c " 0 table(s) failed")" = "2" ] && echo "$out" | grep -q "ok - the tables survive the game's own validation"; then
+  pass "$(echo "$out" | grep -m1 "XML file(s)" | sed 's/^ *//'), written and read back"
+else
+  echo "$out" | sed -n 's/^    FAIL/      FAIL/p'
+  echo "$out" | grep -A20 "Tables that cannot be exported" | head -12
+  fail "the data export does not round-trip"
+fi
+
 # DiscomfortMod names its filth and its loud workplaces by category and key (Kastuk, "Discomfort",
 # 2026-10-05), so a key that stops matching silently exempts it. Each against the validated tables,
 # then the 3%-per-5, 40%-cap arithmetic and the once-a-day measurement.

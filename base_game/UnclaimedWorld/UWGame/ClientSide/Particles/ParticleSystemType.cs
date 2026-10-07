@@ -73,13 +73,65 @@ public class ParticleSystemType : IGameData
 
 	public float maxScale;
 
+	// PORT: written by name (SpriteBlendStateName). A BlendState is a graphics object -
+	// XmlSerializer walks into its GraphicsDevice and TextureCollection and refuses the whole
+	// table, so particleSystems.xml could not be exported (docs/modding.md, the Particles row).
+	[XmlIgnore]
 	public BlendState spriteBlendState;
+
+	/// <summary>
+	/// PORT: spriteBlendState in the XML, as the name of one of MonoGame's shared states -
+	/// "Additive" or "AlphaBlend" in every particle system the game defines. Same element name, so
+	/// the file reads as it always meant to.
+	/// </summary>
+	[XmlElement("spriteBlendState")]
+	public string SpriteBlendStateName
+	{
+		get
+		{
+			if (spriteBlendState == null)
+			{
+				return null;
+			}
+			if (spriteBlendState == BlendState.Additive)
+			{
+				return "Additive";
+			}
+			if (spriteBlendState == BlendState.AlphaBlend)
+			{
+				return "AlphaBlend";
+			}
+			if (spriteBlendState == BlendState.NonPremultiplied)
+			{
+				return "NonPremultiplied";
+			}
+			if (spriteBlendState == BlendState.Opaque)
+			{
+				return "Opaque";
+			}
+			return spriteBlendState.Name;
+		}
+		set
+		{
+			spriteBlendState = value switch
+			{
+				"Additive" => BlendState.Additive,
+				"AlphaBlend" => BlendState.AlphaBlend,
+				"NonPremultiplied" => BlendState.NonPremultiplied,
+				"Opaque" => BlendState.Opaque,
+				null => null,
+				_ => throw new System.ArgumentException("particleSystems.xml: unknown spriteBlendState '" + value + "' (Additive, AlphaBlend, NonPremultiplied or Opaque)"),
+			};
+		}
+	}
 
 	public float StartMeanMoveDirectionInDegrees;
 
 	public float StartMaxMoveDirectionDifferenceInDegrees;
 
-	public int NoOfEmitters { get; private set; }
+	// PORT: settable, so particleSystems.xml can carry it - XmlSerializer refuses a type with a
+	// property it cannot set back. Only the constructor ever set it; nothing else writes it.
+	public int NoOfEmitters { get; set; }
 
 	[XmlIgnore]
 	public Animation2D Animation { get; private set; }

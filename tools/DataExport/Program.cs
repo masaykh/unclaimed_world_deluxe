@@ -367,6 +367,9 @@ internal static partial class Program
             Console.WriteLine();
             rc = Run(Sim.SerializeMode.Read, "read-back (from the exported XML only)");
             if (rc != 0) return rc;
+            // Loading the XML is not the same as a game being able to start from it: the
+            // validation pass is where bad data kills the game (CLAUDE.md, "Gates, not launches").
+            if (!ValidateDataComplete()) return 1;
         }
 
         Console.WriteLine();
@@ -2269,6 +2272,27 @@ internal static partial class Program
         return failures;
     }
 
+    /// <summary>
+    /// The Sim the tables are built under, as the game always has one by the loading screen.
+    ///
+    /// Without it ResourceTypes threw a NullReferenceException in every run that did not make one
+    /// first - the plain export and most self-tests: TileResourceType.Initialize asks
+    /// RenderableTypeMode, which reads The.Sim.Mode to choose the game's or the editor's
+    /// renderable. The loop below steps past a table that throws, so those runs went on with
+    /// ResourceTypes half built (every type from the first tile resource on uninitialized) and
+    /// EntityTypes failing after it on a key that table should have supplied. A self-test that
+    /// needs the editor's mode, or a save's Sim, makes its own first and keeps it.
+    /// </summary>
+    private static void EnsureSim()
+    {
+        if (UWGame.The.Sim != null)
+        {
+            return;
+        }
+        UWGame.The.Sim = new Sim { Mode = Sim.EngineMode.Game };
+        typeof(Sim).GetMethod("CreateLookupCollections", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(UWGame.The.Sim, null);
+    }
+
     private static int Run(Sim.SerializeMode mode, string what)
     {
         // The load screen is the data layer's only dependency on the UI, and it is null here.
@@ -2292,6 +2316,7 @@ internal static partial class Program
     {
         Console.WriteLine("==> " + what);
         Sim.CurrentSerializeMode = mode;
+        EnsureSim();
 
         var sw = Stopwatch.StartNew();
         int steps = 0;
@@ -2371,8 +2396,9 @@ internal static partial class Program
                 Console.WriteLine($"      {state,-32} {Truncate(error, 110)}");
         }
 
-        // Non-zero only when nothing worked. A partial export is the honest current state of
-        // the game's data hooks, not a tool failure - see PORTING-NOTES.md.
+        // Non-zero only when nothing worked: the self-tests load the tables through here and judge
+        // what they need themselves. Every table exports today, and gate 80 case 35 holds the
+        // plain export and read-back to that (docs/modding.md, "What actually round-trips today").
         return steps > 1 ? 0 : 1;
     }
 

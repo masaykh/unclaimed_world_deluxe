@@ -581,10 +581,8 @@ dataexport <game-dir> --read-back  also load back in Read mode - the real test t
 ```
 
 Diffing the two exports is how the content above was checked: `processTypes.xml` is the only
-table that differs, by exactly the two new keys, and the count of tables that fail to export is
-13 either way — so the mod adds no new failures. Those 13 are pre-existing and documented in
-`PORTING-NOTES.md` (deviation 13); `entityTypes.xml` is one of them, so the item and smithy
-changes are not visible in an export and still need checking in-game.
+table that differs, by exactly the two new keys, and no table fails to export either way — so
+`entityTypes.xml` shows the item and smithy changes too.
 
 Why it is in source rather than loaded: BepInEx 5 targets .NET Framework / Mono and cannot load
 into a .NET 8 process, and BepInEx 6's CoreCLR loader is pre-release. But the deeper reason is
@@ -612,41 +610,34 @@ which is faster to iterate on and prints exactly which tables worked.
 
 ### What actually round-trips today
 
-**62 of the 69 tables export and re-import cleanly — 75 files, 3.9 MB.** `processTypes.xml`
-alone is 2.17 MB, so the interesting content is very much in scope.
+**All 69 tables export, read back from the XML alone, and pass the game's validation — 79 files,
+8.8 MB.** `processTypes.xml` alone is over 2 MB, so the interesting content is very much in scope.
+Gate 80 case 35 runs `dataexport --read-back` and fails on any table that does not.
 
-**7 tables do not.** These are not port bugs — they are properties of the shipped data types,
-and they would have failed the same way in retail had anyone flipped the switch. Grouped by
-cause:
+Until October 2026, 7 did not. What it took, for anyone extending a data type:
 
-| what to fix | tables |
-|---|---|
-| `BodyLayerType.DamageReductionFactor` is a `Dictionary<string, float>`; `XmlSerializer` cannot serialize `IDictionary`. Give the type a proxy, the way the other 29 have one | BodyLayerTypes |
-| A polymorphic member needs `[XmlInclude(typeof(MachineBodyPartType))]` | BodyTypes |
-| `TextureCollection` has no parameterless constructor — mark it `[XmlIgnore]`, it is runtime state, not data | Particles |
-| Cross-table references are not resolvable in this load order: `KeyNotFoundException` on `'humanoid'`, `'sentry'` and `'entity:human'`, plus a `NullReferenceException` out of `InitTypeList` | AttackTypes, EntityTypes, ResourceTypes, FilterSettingTypes |
+| cause | fix | tables |
+|---|---|---|
+| `TileResourceType.RenderableTypeMode` reads `The.Sim.Mode`, and the tool had no Sim | `DataExport` makes one before loading, as the game has by its loading screen (`EnsureSim`) | ResourceTypes |
+| `XmlSerializer` will not use an `IXmlSerializable` class as the derived type an `[XmlInclude]` names, and `MachineBodyPartType` was one | `MachineBodyPartType` is plain data now, like `BiologicalBodyPartType`; its generated proxy is gone | BodyTypes |
+| `BodyLayerType.DamageReductionFactor` / `DamageReductionConstant` are `Dictionary<string, float>`, which `XmlSerializer` cannot serialize | `[XmlIgnore]`, and written as `KVP<string, float>[]` under the same element names | BodyLayerTypes |
+| `ContainerType`'s `[XmlInclude]` list stopped at 8 of its 12 subtypes | the other four added: Magazine, Other, UpgradableBuilding, Upgradable | EntityTypes |
+| `ParticleSystemType.spriteBlendState` is a `BlendState`, a graphics object (`TextureCollection` and all); `NoOfEmitters` had a private setter | the blend state is written by name (`Additive`, `AlphaBlend`, ...); the setter is public | Particles |
+| knock-ons: a table whose write fails stays empty, and the next one to look something up in it dies | nothing more | AttackTypes (`'humanoid'`), FilterSettingTypes (`'entity:human'`) |
 
-The first three rows are mechanical. The last needs a decision about load ordering.
-
-**Two rows came off this list with one attribute each.** `XmlSerializer` flattens a type to its
-UNQUALIFIED name, so `ChangeCreditsAction.Operation` collided with `ChangeResourcesAction.Operation`
-and `PropertyPresentation.Sorting` with `WindowSystem.Grid.Sorting` — and it refuses the whole
-graph rather than picking one. `[XmlType("ChangeCreditsOperation")]` and
+**Two tables came off an earlier version of this list with one attribute each.** `XmlSerializer`
+flattens a type to its UNQUALIFIED name, so `ChangeCreditsAction.Operation` collided with
+`ChangeResourcesAction.Operation` and `PropertyPresentation.Sorting` with `WindowSystem.Grid.Sorting`
+— and it refuses the whole graph rather than picking one. `[XmlType("ChangeCreditsOperation")]` and
 `[XmlType("PresentationSorting")]` took six tables with them: ActionSets, EventActionTypes,
-AllegianceEvents, PolledEventTypes, PresentationTypeCategories and GUI. That matters more than the
-count — `actionSets.xml` is 474 KB and is what every scenario's `Actions` list points at.
+AllegianceEvents, PolledEventTypes, PresentationTypeCategories and GUI. Worth knowing if you try
+the same trick: the attribute has to go on the type that is **not** nested. Putting it on
+`Grid.Sorting` changed nothing; putting it on the top-level `PropertyPresentation.Sorting` fixed
+both tables.
 
-Worth knowing if you try the same trick: the attribute has to go on the type that is **not**
-nested. Putting it on `Grid.Sorting` changed nothing; putting it on the top-level
-`PropertyPresentation.Sorting` fixed both tables.
-
-**The last row is mostly a cascade, not four separate problems.** A table whose *write* fails never
-reaches `InitTypeList`, so its collection stays empty and the next table that looks something up in
-it dies too: EntityTypes asks `AllBodyTypes["sentry"]`, which is empty only because BodyTypes could
-not serialize. Load the tables **without** exporting and 68 of the 69 build — `dataexport
-<game-dir> --disassembly` does exactly that, and the only table that still fails is ResourceTypes,
-on a renderable mode that needs graphics. So fixing the `[XmlInclude]` row would likely take
-EntityTypes and FilterSettingTypes with it.
+**If you add a subtype** of a polymorphic data type (`ContainerType`, `BodyPartType`, ...), add it
+to the base's `[XmlInclude]` list, and do not make it `IXmlSerializable`: either one breaks the
+export of every table that holds one, and case 35 will say which.
 
 Two things had to be true before that could be seen, and both are in `tools/DataExport`:
 `PrepareLookups` creates the two ID lookup collections the *data loaders* use
@@ -655,10 +646,9 @@ without them `StructureLoader.Init` died on a null dictionary inside `LookUp<T, 
 of this was visible. And `--traces` prints the stack for each failed table, which is how those two
 were found; the failure list alone says which table, never where.
 
-**Careful:** a table whose write fails leaves a truncated XML file behind — `bodyTypes.xml` from
-a fresh export stops mid-element. Delete the files for any table the tool reports as failed
-before running `--data-from-xml`, or you get an `XmlException` that looks like an unrelated
-problem.
+**Careful:** a table whose write fails leaves a truncated XML file behind. None fails today, but
+if you break one, delete its file before running `--data-from-xml`, or you get an
+`XmlException` that looks like an unrelated problem.
 
 ### If you add a proxied data type
 

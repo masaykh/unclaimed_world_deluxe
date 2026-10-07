@@ -72,7 +72,16 @@ GEN=$(find artifacts/bin/XmlProxyGen -name 'xmlproxygen.exe' -path '*release*' |
 # "Cannot load a reference assembly for execution", while the usable one sits under
 # runtimes/win-x64/. Same root cause as the note in build/40-deploy.sh.
 GENDIR=$(dirname "$GEN")
-cp -p "$BIN"/*.dll "$GENDIR"/ 2>/dev/null || true
+# Not the .NET host itself. When the game output holds a self-contained runtime's hostfxr.dll and
+# hostpolicy.dll, a copy beside the generator makes its (framework-dependent) xmlproxygen.exe load
+# them, look for coreclr.dll next to itself and stop with "Could not resolve CoreCLR path".
+for dll in "$BIN"/*.dll; do
+  case "$(basename "$dll")" in
+    hostfxr.dll|hostpolicy.dll|coreclr.dll|clrjit.dll) ;;
+    *) cp -p "$dll" "$GENDIR"/ ;;
+  esac
+done
+rm -f "$GENDIR"/hostfxr.dll "$GENDIR"/hostpolicy.dll
 RT=$(find artifacts/publish/UnclaimedWorld/release_dx/runtimes/win-x64 -name 'Steamworks.NET.dll' 2>/dev/null | head -1)
 if [ -n "$RT" ]; then
   cp -p "$RT" "$GENDIR"/
