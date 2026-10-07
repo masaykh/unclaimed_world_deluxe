@@ -639,7 +639,7 @@ namespace UWGame.SimSide.Entities.Locomotors
                     RecomputeCurrentMaximumSpeed();
                 }
 
-#if DEBUG || PROFILE
+#if DEBUG
                 if (MaximumSpeedDebugOnly.HasValue)
                 {
                     return MaximumSpeedDebugOnly.Value;
@@ -795,14 +795,6 @@ namespace UWGame.SimSide.Entities.Locomotors
             newLocation = The.Map.ClampWorldPosition(newLocation);
             Parent.Location = Parent.ModifyNewLocationToStayOnFreeTerrain(newLocation, pushVector);
         }
-
-
-
-        private bool IsEntityIdle(Entity entity)
-        {
-            return entity.Intelligence.IsIdle();
-        }
-
 
 
         /*
