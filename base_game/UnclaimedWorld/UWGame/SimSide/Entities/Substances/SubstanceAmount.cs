@@ -1,135 +1,187 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Xml.Serialization;
+using UWGame.SimSide.Entities;
+using UWGame.SimSide.AllGameData;
 using UWGame.ClientSide.PropertyPresentation;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.InGameEvents.Conditions;
 using UWGame.SimSide.Snapshots;
 
-namespace UWGame.SimSide.Entities.Substances;
-
-public class SubstanceAmount : ISnapshot, IHasExposedProperties
+namespace UWGame.SimSide.Entities.Substances
 {
-	public SubstanceType SubstanceType;
+    public class SubstanceAmount: ISnapshot, IHasExposedProperties
+    {
+        public SubstanceType SubstanceType;
 
-	public float Amount;
+        /// <summary>
+        /// amount per bulk!!!
+        /// I think it is alright to go above 1 for special items...
+        /// </summary>
+        public float Amount;
 
-	private static Dictionary<string, GetPropertyValue> exposedPropertyValueFunctions;
+        public SubstanceAmount()
+        {
+            System.Diagnostics.Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor");       
 
-	private Dictionary<string, PropertyResult> customFields;
+        }
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+        public SubstanceAmount(float amount, SubstanceType type)
+        {
+            SubstanceType = type;
+            Amount = amount;
+            //if (!exposedPropertyValueFunctions.ContainsKey("substanceLevel"))
+            //{
+            //    exposedPropertyValueFunctions.Add("substanceLevel", GetNutrientLevel);
+            //}
+        }
 
-	public string KeyName => SubstanceType.KeyName;
+        /// <summary>
+        /// copy ctor for memoryfact
+        /// </summary>
+        /// <param name="original"></param>
+        public SubstanceAmount(SubstanceAmount original)
+        {
+            Amount = original.Amount;
+            SubstanceType = original.SubstanceType;
+        }
 
-	public bool IsSnapshotted { get; set; }
+        static SubstanceAmount()
+        {
+            exposedPropertyValueFunctions.Add("substanceLevel", GetSubstanceAmount);
+        }
 
-	public SubstanceAmount()
-	{
-	}
+        #region ExposedProperties
 
-	public SubstanceAmount(float amount, SubstanceType type)
-	{
-		SubstanceType = type;
-		Amount = amount;
-	}
 
-	public SubstanceAmount(SubstanceAmount original)
-	{
-		Amount = original.Amount;
-		SubstanceType = original.SubstanceType;
-	}
+        public void GetChildren(string keyToList, ref List<IHasExposedProperties> listToFillWithProperties, FilterCondition filter,
+            EntityID? triggeringEntity, EntityID? targetEntity, IHasExposedProperties polledEventSource, IHasExposedProperties dynamicTarget, SharedKnowledge getterKnowledge = null)
+        {
+        }
 
-	static SubstanceAmount()
-	{
-		exposedPropertyValueFunctions = new Dictionary<string, GetPropertyValue>();
-		exposedPropertyValueFunctions.Add("substanceLevel", GetSubstanceAmount);
-	}
 
-	public void GetChildren(string keyToList, ref List<IHasExposedProperties> listToFillWithProperties, FilterCondition filter, EntityID? triggeringEntity, EntityID? targetEntity, IHasExposedProperties polledEventSource, IHasExposedProperties dynamicTarget, SharedKnowledge getterKnowledge = null)
-	{
-	}
+        public string GetDefaultCaption(string propertyKey)
+        {
+            return SubstanceType.Name;
+        }
+        public void GetDefaultKey(out string PropertyKey)
+        {
+            PropertyKey = null;
+        }
+        public string KeyName
+        {
+            get { return SubstanceType.KeyName; }
+        }
+        public EntityID? GetEntityID()
+        {
+            return null;
+        }
+        public string GetCaption(string captionKey)
+        {
+            return null;
+        }
 
-	public string GetDefaultCaption(string propertyKey)
-	{
-		return SubstanceType.Name;
-	}
 
-	public void GetDefaultKey(out string PropertyKey)
-	{
-		PropertyKey = null;
-	}
+        public bool GetIsSeenDirectly() //SharedKnowledge sharedKnowledge)
+        {
+            return true; // should maybe depend on parent status...?
+        }
 
-	public EntityID? GetEntityID()
-	{
-		return null;
-	}
+        private static Dictionary<string, GetPropertyValue> exposedPropertyValueFunctions = new Dictionary<string, GetPropertyValue>();
 
-	public string GetCaption(string captionKey)
-	{
-		return null;
-	}
 
-	public bool GetIsSeenDirectly()
-	{
-		return true;
-	}
 
-	public PropertyResult? GetPropertyValue(string propertyKey, SharedKnowledge getterKnowledge, IHasExposedProperties parent)
-	{
-		PropertyResult? result = null;
-		if (exposedPropertyValueFunctions.ContainsKey(propertyKey))
-		{
-			return exposedPropertyValueFunctions[propertyKey](this, getterKnowledge, parent);
-		}
-		if (customFields != null && customFields.TryGetValue(propertyKey, out var value))
-		{
-			result = value;
-		}
-		return result;
-	}
+        //Copied customFields,GetPropertyValue,SetPropertyValue from the skills. 
+        //TODO: See if theese should be here aswell or empty functions?
+        private Dictionary<string, PropertyResult> customFields;
 
-	public void SetPropertyValue(string propertyKey, PropertyResult? value)
-	{
-		Entity.SetPropertyValue(ref customFields, propertyKey, value);
-	}
+        public PropertyResult? GetPropertyValue(string propertyKey, SharedKnowledge getterKnowledge, IHasExposedProperties parent)
+        {
+            PropertyResult? result = null;
+            if (exposedPropertyValueFunctions.ContainsKey(propertyKey))
+            {
+                result = exposedPropertyValueFunctions[propertyKey].Invoke(this, getterKnowledge, parent);
+            }
+            else
+            {
+                PropertyResult customResult;
+                if (customFields != null && customFields.TryGetValue(propertyKey, out customResult))
+                {
+                    result = customResult;
+                }
+            }
 
-	public static PropertyResult? GetSubstanceAmount(IHasExposedProperties anoObjectToGetValueFrom, SharedKnowledge getterKnowledge, IHasExposedProperties parent = null)
-	{
-		return ((SubstanceAmount)anoObjectToGetValueFrom).GetSubstanceLevel();
-	}
+            return result;
+        }
 
-	public PropertyResult? GetSubstanceLevel()
-	{
-		return new PropertyResult
-		{
-			NumberResult = Amount * 100f
-		};
-	}
+        public void SetPropertyValue(string propertyKey, PropertyResult? value)
+        {
+            Entity.SetPropertyValue(ref customFields, propertyKey, value);
+            
+        }
 
-	public ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		Amount = sn.DoFloat(Amount);
-		customFields = sn.DoDictionary(customFields);
-		SubstanceType = sn.DoGameData(SubstanceType);
-		sn.Ignore(exposedPropertyValueFunctions);
-		return this;
-	}
 
-	public Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
+        public static PropertyResult? GetSubstanceAmount(IHasExposedProperties anoObjectToGetValueFrom, SharedKnowledge getterKnowledge, IHasExposedProperties parent = null)
+        {
+            return ((SubstanceAmount)anoObjectToGetValueFrom).GetSubstanceLevel();
+        }
+        public PropertyResult? GetSubstanceLevel()
+        {
+            PropertyResult skillResult = new PropertyResult();
 
-	public void LoadPostProcess(Snapshotter sn)
-	{
-		sn.RegisterLoadPostProcessCall(this);
-		if (customFields == null)
-		{
-			return;
-		}
-		foreach (KeyValuePair<string, PropertyResult> customField in customFields)
-		{
-			customField.Value.LoadPostProcess(sn);
-		}
-	}
+            skillResult.NumberResult = this.Amount * 100;
+
+            return skillResult;
+        }
+       
+        #endregion
+
+
+        #region ISnapshot
+
+        public bool IsSnapshotted { get; set; }
+
+        public ISnapshot DoSnapshot(Snapshotter sn)
+        {
+
+            this.Amount = sn.DoFloat(Amount);
+            this.customFields = sn.DoDictionary(customFields);
+            this.SubstanceType = sn.DoGameData(SubstanceType);
+
+
+            sn.Ignore(exposedPropertyValueFunctions);
+
+            return this;
+
+        }
+
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
+
+        public void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+
+
+            if (customFields != null)
+            {
+                foreach (var item in customFields)
+                {
+                    item.Value.LoadPostProcess(sn);
+                }
+            }
+        }
+
+        #endregion
+
+    }
 }

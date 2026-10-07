@@ -1,36 +1,57 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace UWGame.SimSide.Entities.Substances;
-
-public class SubstanceType : IGameData
+namespace UWGame.SimSide.Entities.Substances
 {
-	public string KeyName { get; set; }
+    public class SubstanceType: IGameData 
+    {
 
-	public string Name { get; set; }
+        public SubstanceType()
+        {
+        }
 
-	public bool DeleteRecord { get; set; }
+        public string KeyName
+        {
+            get;
+            set;
+        }
 
-	public void PreInitValidate(ref List<string> errors)
-	{
-	}
+        public string Name
+        {
+            get;
+            set;
+        }
 
-	public void Initialize()
-	{
-	}
+        public bool DeleteRecord
+        {
+            get; set;
+        }
 
-	public void PostInitValidate(ref List<string> errors)
-	{
-	}
+        public void PreInitValidate(ref List<string> errors)
+        {
+           
+        }
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void Initialize()
+        {
+          
+        }
 
-	public void PostDataCompleteInitialize()
-	{
-	}
+        public void PostInitValidate(ref List<string> errors)
+        {
+           
+        }
+        public void PreDataCompleteValidate(ref List<string> listOfErrors) { }
+       
+        public void PostDataCompleteInitialize()
+        {
+        }
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+        }
+
+    }
 }
