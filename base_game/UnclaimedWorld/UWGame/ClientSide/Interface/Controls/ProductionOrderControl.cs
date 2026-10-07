@@ -452,6 +452,14 @@ public class ProductionOrderControl : UIComponent
 		{
 			btBuild.Visible = false;
 		}
+		// MOD: GatherOnDemandMod - a structure on the Attainable list may be placed before its
+		// materials are in; the site's hauling jobs wait for them (Structure.PlaceMaterialHaulingJobs).
+		bool beforeMaterials = !btBuild.Visible && UWGame.Mods.GatherOnDemandMod.PlacesBeforeMaterials(attainableInfo, process);
+		if (beforeMaterials)
+		{
+			btBuild.Visible = true;
+		}
+		btBuild.ToolTip = beforeMaterials ? "Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made" : "Build: Click the button, then place the structure on the terrain";
 		if (!btBuild.Visible)
 		{
 			UpdateAttainable(attainableInfo, hzAttainable, hzNotAttainable, hasTools, hasInputs, hasSkills, hasResources, canProduceNow, process);

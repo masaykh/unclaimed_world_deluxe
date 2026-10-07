@@ -816,6 +816,64 @@ internal static partial class Program
             Check(wood > 0, $"mod on: {cooked.KeyName} kept at 6 with no fuel - the firewood order at 0 gathers {wood}");
             Check(ToGather(idleFireOwner, firewood) == 0, $"mod on: a {cooked.KeyName} order at 0 gathers no firewood");
         }
+
+        // Planning ahead (Kastuk, "auto harvesting", 2026-10-05): BUILD for a structure on the
+        // Attainable list before its materials are in, and STOP in a construction's priority list.
+        var beforeMaterials = UWGame.Mods.ModSettings.Find("gatherondemand.beforeMaterials");
+        var stopSetting = UWGame.Mods.ModSettings.Find("gatherondemand.stop");
+        Check(beforeMaterials != null && stopSetting != null && beforeMaterials.DefaultValue == "false" && stopSetting.DefaultValue == "false",
+              "PLACE STRUCTURES BEFORE THEIR MATERIALS ARE IN and STOP IN A CONSTRUCTION'S PRIORITY LIST exist, off by default");
+        if (beforeMaterials != null && stopSetting != null)
+        {
+            var producable = new Dictionary<UWGame.SimSide.Processes.ProcessType, UWGame.ClientSide.Interface.Inventory.AttainableInfo>
+            {
+                { makeBed, new UWGame.ClientSide.Interface.Inventory.AttainableInfo(1) { IsProducable = true } },
+            };
+            var notAttainable = new Dictionary<UWGame.SimSide.Processes.ProcessType, UWGame.ClientSide.Interface.Inventory.AttainableInfo>
+            {
+                { makeBed, new UWGame.ClientSide.Interface.Inventory.AttainableInfo(-1) },
+            };
+            beforeMaterials.Value = "false";
+            Check(!UWGame.Mods.GatherOnDemandMod.PlacesBeforeMaterials(producable, makeBed), "setting off: BUILD only with every material in stock, as the studio made it");
+            beforeMaterials.Value = "true";
+            Check(UWGame.Mods.GatherOnDemandMod.PlacesBeforeMaterials(producable, makeBed), "setting on: BUILD for a recipe the Attainable list marks producible");
+            Check(!UWGame.Mods.GatherOnDemandMod.PlacesBeforeMaterials(notAttainable, makeBed) && !UWGame.Mods.GatherOnDemandMod.PlacesBeforeMaterials(null, makeBed),
+                  "  but not for one it does not, nor with no Attainable entry");
+            beforeMaterials.Value = beforeMaterials.DefaultValue;
+            // The Attainable list is computed over NonSalvageProductionProcesses
+            // (InventorySettings.StartRecomputeAttainability); building recipes must be in it, or
+            // no structure could ever be marked producible.
+            int buildRecipes = GameData.Instance.NonSalvageProductionProcesses.Count(r => r.GetProductionUI() == UWGame.SimSide.Processes.ProcessType.ProductionUI.Build);
+            Check(buildRecipes > 0, $"the Attainable list covers construction recipes ({buildRecipes} of them)");
+
+            // A stopped task rates 0, which every job picker drops; the others keep their rating.
+            double rated = 0.8, stopped = 0.8;
+            UWGame.SimSide.AI.Goals.EvaluateJob.ApplyJobPriorityModifier(UWGame.SimSide.Jobs.Priority.Normal, ref rated);
+            UWGame.SimSide.AI.Goals.EvaluateJob.ApplyJobPriorityModifier(UWGame.SimSide.Jobs.Priority.Stopped, ref stopped);
+            Check(rated == 0.8 && stopped == 0.0, $"STOP rates a task 0, NORMAL leaves it (got {stopped}, {rated})");
+            Check(UWGame.SimSide.Jobs.Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.Stopped) == "STOP", "the list shows it as STOP");
+
+            // A construction site waiting for one bundle of spoak branches, which nobody has found.
+            var build = (UWGame.SimSide.Jobs.ProcessJob)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UWGame.SimSide.Jobs.ProcessJob));
+            build.BuildingJob = (UWGame.SimSide.Jobs.BuildingJob)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UWGame.SimSide.Jobs.BuildingJob));
+            var workshopJob = (UWGame.SimSide.Jobs.ProcessJob)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UWGame.SimSide.Jobs.ProcessJob));
+            var haul = (UWGame.SimSide.Jobs.HaulingJobAnyItemOfType)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UWGame.SimSide.Jobs.HaulingJobAnyItemOfType));
+            haul.RequiredByProcessJob = build;
+            var siteOwner = NewOwner();
+            siteOwner.ProductionOrders.SetStandingOrder(branches, 0);
+            siteOwner.HaulingJobsAnyItemOfType[branches] = new List<UWGame.SimSide.Jobs.HaulingJobAnyItemOfType> { haul };
+            build.Priority = UWGame.SimSide.Jobs.Priority.Normal;
+            Check(ToGather(siteOwner, branches) == 1, $"a site waiting for 1 bundle of branches asks for 1 (got {ToGather(siteOwner, branches)})");
+            build.Priority = UWGame.SimSide.Jobs.Priority.Stopped;
+            Check(ToGather(siteOwner, branches) == 0, $"  stopped, it asks for none (got {ToGather(siteOwner, branches)})");
+
+            stopSetting.Value = "false";
+            Check(!UWGame.Mods.GatherOnDemandMod.OffersStop(build), "setting off: no STOP in the list");
+            stopSetting.Value = "true";
+            Check(UWGame.Mods.GatherOnDemandMod.OffersStop(build) && !UWGame.Mods.GatherOnDemandMod.OffersStop(workshopJob) && !UWGame.Mods.GatherOnDemandMod.OffersStop(null),
+                  "setting on: STOP for a construction, not for a workshop task");
+            stopSetting.Value = stopSetting.DefaultValue;
+        }
         setting.Value = setting.DefaultValue;
         Console.WriteLine(failures == 0 ? "gatherondemand self-test OK" : $"gatherondemand self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;

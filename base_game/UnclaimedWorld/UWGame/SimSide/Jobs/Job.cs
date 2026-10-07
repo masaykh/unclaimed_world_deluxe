@@ -85,6 +85,7 @@ public abstract class Job : ISnapshot, ILookUp<Job, JobID>
 			Priority.Low => "LOW", 
 			Priority.Normal => "NORMAL", 
 			Priority.High => "HIGH", 
+			Priority.Stopped => "STOP", 
 			_ => null, 
 		};
 	}

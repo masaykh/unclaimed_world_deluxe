@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UWGame.ClientSide.Interface.Inventory;
 using UWGame.SimSide;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Expeditions;
@@ -73,11 +74,67 @@ public static class GatherOnDemandMod
                      "of the amount kept. Set the slider to 0 to gather only on demand.",
             affectsSimulation: true));
 
+    // ---- planning a camp ahead of its materials ------------------------------------------------
+    //
+    // Kastuk, "auto harvesting", 2026-10-05: "let's make Structures become placeable without all
+    // needful materials, so it will be no need to wait for all harvesting done. Only for structures
+    // from Attainable list, where's needful material sources already discovered and building is
+    // possible on current map." And: "Add option to pause construction task without usual lowering
+    // of priority (maybe just add "Stop" option to Priority dropdown menu?), so hauling to
+    // construction site will be stopped to save resources for other structures".
+    //
+    // PLACING. The studio shows BUILD only while every material is in stock
+    // (ProductionOrderControl.UpdateItemRowStructureType, from InventoryPanel's production limit).
+    // Nothing past the button asks: the Build command places the site and makes one hauling job per
+    // missing unit (Structure.PlaceMaterialHaulingJobs), which waits until the unit exists - and
+    // which this mod's demand count already turns into gathering. So BUILD now also shows for a
+    // structure whose recipe the Attainable list marks producible (InventorySettings'
+    // AttainableInfo.IsProducable: every input owned, tradable or itself attainable, and the skill,
+    // resource, policy and special site available).
+    //
+    // STOP. A fourth entry in a construction's priority list. Priority.Stopped rates the job 0
+    // (EvaluateJob.ApplyJobPriorityModifier), which every job picker drops, and the site's hauling
+    // jobs are rated by their build job's priority (EvaluateHaulingJobs), so nothing more is
+    // carried to it either. A stopped site's missing materials are no demand (UnmatchedHaulingJobs).
+    // Choosing NORMAL, HIGH or LOW again restarts it. A task type's priority (the asterisk) never
+    // becomes STOP and does not restart a stopped site (SetJobTypePriority).
+
+    private static ModSetting beforeMaterials;
+
+    private static ModSetting stop;
+
+    public static ModSetting BeforeMaterialsSetting =>
+        beforeMaterials ?? (beforeMaterials = ModSettings.Toggle(
+            ModId, "beforeMaterials", "PLACE STRUCTURES BEFORE THEIR MATERIALS ARE IN", defaultValue: false,
+            toolTip: "BUILD is offered for a structure on the Attainable list even when not all its " +
+                     "materials are in stock. The site waits for them, and they are hauled to it as " +
+                     "they are gathered or made."));
+
+    public static ModSetting StopSetting =>
+        stop ?? (stop = ModSettings.Toggle(
+            ModId, "stop", "STOP IN A CONSTRUCTION'S PRIORITY LIST", defaultValue: false,
+            toolTip: "A construction task's priority can be set to STOP in the task list: nobody " +
+                     "builds it and nothing more is hauled to it, until another priority is chosen.",
+            affectsSimulation: true));
+
     public static void RegisterSettings()
     {
         ModSettings.SetCategoryLabel(ModId, "GATHER ON DEMAND");
         _ = EnabledSetting;
+        _ = BeforeMaterialsSetting;
+        _ = StopSetting;
     }
+
+    /// <summary>
+    /// Called from ProductionOrderControl.UpdateItemRowStructureType when the studio would not show
+    /// BUILD: whether to show it anyway, because the recipe is on the Attainable list.
+    /// </summary>
+    public static bool PlacesBeforeMaterials(Dictionary<ProcessType, AttainableInfo> attainable, ProcessType process) =>
+        BeforeMaterialsSetting.On && attainable != null && process != null
+        && attainable.TryGetValue(process, out AttainableInfo info) && info.IsProducable;
+
+    /// <summary>Called from JobsPanel.CreatePriorityComboBox: whether this task's list offers STOP.</summary>
+    public static bool OffersStop(Job job) => StopSetting.On && job is ProcessJob { BuildingJob: not null };
 
     public static bool Enabled => EnabledSetting.On;
 
@@ -222,7 +279,8 @@ public static class GatherOnDemandMod
         for (int i = jobs.Count - 1; i >= 0; i--)
         {
             HaulingJobAnyItemOfType job = jobs[i];
-            if (job != null && !job.Item.HasValue && job.RequiredByProcessJob != null && !job.IsOfferedForTrade)
+            if (job != null && !job.Item.HasValue && job.RequiredByProcessJob != null && !job.IsOfferedForTrade
+                && job.RequiredByProcessJob.Priority != Priority.Stopped)
             {
                 count++;
             }

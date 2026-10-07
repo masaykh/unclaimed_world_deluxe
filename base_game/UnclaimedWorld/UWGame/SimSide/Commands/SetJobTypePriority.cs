@@ -31,13 +31,18 @@ public class SetJobTypePriority : Command
 	public override void Execute(bool giveClientFeedback)
 	{
 		EntityGroup entityGroup = LookUp<EntityGroup, UWGame.SimSide.Entities.EntityGroupID>.FindByID((EntityGroupID)EntityGroupID);
-		if (entityGroup != null)
+		// MOD: STOP is for one task (GatherOnDemandMod), never a default for every task of a type.
+		if (entityGroup != null && jobPriority != Priority.Stopped)
 		{
 			JobType jobType = GameData.Instance.AllJobTypes[JobTypeKey];
 			entityGroup.Policy.JobTypePriorities[jobType] = jobPriority;
 			jobType.IterateJobs(entityGroup, delegate(Job j)
 			{
-				j.Priority = jobPriority;
+				// MOD: and a stopped task stays stopped when its type's priority changes.
+				if (j.Priority != Priority.Stopped)
+				{
+					j.Priority = jobPriority;
+				}
 			});
 		}
 	}

@@ -483,7 +483,7 @@ public class JobsPanel : RosterPanel
 		fillableBar.MaxValue = 100;
 		fillableBar.Height = 12;
 		fillableBar.BarColor = BaseDataLoader.ProgressColor;
-		ComboBox comboBox = CreatePriorityComboBox();
+		ComboBox comboBox = CreatePriorityComboBox(job);
 		comboBox.ID = UIComponent.DataControlID.Priority;
 		comboBox.Tag1 = GetKey(job);
 		comboBox.SelectionChanged += cbPriority_SelectionChanged;
@@ -600,7 +600,7 @@ public class JobsPanel : RosterPanel
 		taMessages.EndAddingEntries();
 	}
 
-	private ComboBox CreatePriorityComboBox()
+	private ComboBox CreatePriorityComboBox(Job job)
 	{
 		ComboBox comboBox = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
 		comboBox.Init(ComboBoxTypes.LCD);
@@ -609,6 +609,12 @@ public class JobsPanel : RosterPanel
 		comboBox.AddEntry(UWGame.SimSide.Jobs.Priority.Low, Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.Low));
 		comboBox.AddEntry(UWGame.SimSide.Jobs.Priority.Normal, Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.Normal));
 		comboBox.AddEntry(UWGame.SimSide.Jobs.Priority.High, Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.High));
+		// MOD: GatherOnDemandMod's STOP for a construction - and for any task already stopped, so a
+		// save from with the setting on still shows what it holds.
+		if (UWGame.Mods.GatherOnDemandMod.OffersStop(job) || job.Priority == UWGame.SimSide.Jobs.Priority.Stopped)
+		{
+			comboBox.AddEntry(UWGame.SimSide.Jobs.Priority.Stopped, Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.Stopped));
+		}
 		comboBox.EndAddingEntries();
 		return comboBox;
 	}
@@ -1584,6 +1590,9 @@ public class JobsPanel : RosterPanel
 				break;
 			case UWGame.SimSide.Jobs.Priority.High:
 				num = 2;
+				break;
+			case UWGame.SimSide.Jobs.Priority.Stopped:
+				num = -1;
 				break;
 			}
 			itemRow.OrderByTag1 = num;

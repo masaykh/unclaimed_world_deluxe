@@ -650,6 +650,11 @@ public class EvaluateJob : GoalEvaluator, IScoreJob
 		case UWGame.SimSide.Jobs.Priority.Low:
 			score *= GameData.Instance.AIConstants.LowJobModifier;
 			break;
+		case UWGame.SimSide.Jobs.Priority.Stopped:
+			// MOD: a stopped task scores 0, and every job picker drops a 0 (FilterAndSortCombos,
+			// EvaluateHaulingJobs.ScoreAllCombosAndReturnBest).
+			score = 0.0;
+			break;
 		}
 	}
 

@@ -24,4 +24,10 @@ public static class GatherOnDemandMod
 
     /// <summary>The studio's rule: a padlocked slider at 0 is no order.</summary>
     public static bool ZoneGathersAt(int sliderValue) => sliderValue > 0;
+
+    /// <summary>The studio's BUILD: only with every material in stock.</summary>
+    public static bool PlacesBeforeMaterials(System.Collections.Generic.Dictionary<UWGame.SimSide.Processes.ProcessType, UWGame.ClientSide.Interface.Inventory.AttainableInfo> attainable, UWGame.SimSide.Processes.ProcessType process) => false;
+
+    /// <summary>The studio's priority list: LOW, NORMAL, HIGH.</summary>
+    public static bool OffersStop(UWGame.SimSide.Jobs.Job job) => false;
 }
