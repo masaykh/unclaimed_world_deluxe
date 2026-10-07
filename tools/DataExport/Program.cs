@@ -1544,7 +1544,7 @@ internal static partial class Program
             Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
             if (!ok) failures++;
         }
-        var keys = UWGame.Mods.RegrowthMod.WoodKeys;
+        var keys = UWGame.Mods.RegrowthMod.PlantKeys;
         if (keys.Length == 0)
         {
             Console.WriteLine("  the mod is not in this build - nothing to check");
@@ -1564,6 +1564,19 @@ internal static partial class Program
             rising &= UWGame.Mods.RegrowthMod.Curve(i / 100f) >= UWGame.Mods.RegrowthMod.Curve((i - 1) / 100f);
         }
         Check(rising, "never goes down as more is left");
+        // Kastuk, 2026-10-04: the six living-plant resources, a 3-tile zone, firewood at most -20%.
+        foreach (string key in new[] { "crop:shadeleafCanes", "crop:wingweedLeaves", "crop:waterCaneStem", "crop:waterCaneLeaves", "crop:daysheenLeaves", "firegrassSod" })
+        {
+            Check(Array.IndexOf(keys, key) >= 0, key + " regrows slowly when gathered down");
+        }
+        Check(Array.IndexOf(keys, "commonOilTubers") < 0 && Array.IndexOf(keys, "spottedOilTubers") < 0, "oil tubers do not (early survival)");
+        Check(UWGame.Mods.RegrowthMod.ZoneRadius == 3, "the zone is 3 tiles around the place");
+        var firewoodType = GameData.Instance.AllResourceTypes["firewood"];
+        var sticksType = GameData.Instance.AllResourceTypes["crop:sticks"];
+        float firewoodFloor = UWGame.Mods.RegrowthMod.Floor(firewoodType), sticksFloor = UWGame.Mods.RegrowthMod.Floor(sticksType);
+        Check(UWGame.Mods.RegrowthMod.Curve(0f, firewoodFloor) == 0.8f && UWGame.Mods.RegrowthMod.Curve(0.4f, firewoodFloor) == 1f,
+              FormattableString.Invariant($"firewood, nothing left: x{UWGame.Mods.RegrowthMod.Curve(0f, firewoodFloor):0.##} (-20%), x1 from 40%"));
+        Check(UWGame.Mods.RegrowthMod.Curve(0f, sticksFloor) == 0.5f, "sticks, nothing left: x0.5, as before");
 
         // The Gather window's Regrowth column: the studio's "+x.x" with the switch off; with it on
         // "+current" rounded down to a whole number, short enough for a column 50 pixels wide even

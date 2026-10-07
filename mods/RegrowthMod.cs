@@ -5,7 +5,7 @@ using UWGame.SimSide.Resources;
 namespace UWGame.Mods;
 
 /// <summary>
-/// Wood grows back more slowly where the woods around it have been cut down.
+/// Wood and living plants grow back more slowly where those around them have been gathered down.
 ///
 /// THE REQUEST. Kastuk, "Nature can be more natural", point 7: overharvesting wood should reduce
 /// its respawn - "if there's no remained resource anywhere in resource zone, its -50% of the
@@ -19,10 +19,19 @@ namespace UWGame.Mods;
 /// tiles in zone will not respawn that resource." Wood only for now: "firewood, sticks and
 /// branches".
 ///
+/// MORE PLANTS, A SMALLER ZONE, GENTLER ON FIREWOOD. Kastuk, 2026-10-04: "May add more of plant
+/// resources into it (ones, which is related to vegetative parts of living plants): shadeleaf
+/// canes, wingweed leaves, water cane stem, water cane leaves, daysheen leaves, firegrass sod ...
+/// need to reduce zone checking from 5 to 3 tiles again." And: "Firewood must be less affected
+/// (like fully harvested zone will reduce regrow only for 20%), as it's actually dead parts of the
+/// plants, harvested from the ground." So the zone is 3 tiles, the six are in
+/// <see cref="PlantKeys"/>, and firewood's floor is x0.8 rather than x0.5 (<see cref="Floor"/>).
+/// Oil tubers are not: "it surely will make starting survival become too hard".
+///
 /// HOW. On the day a tile replenishes (ResourceReplenish.ReplenishResourceItems), every tile of
-/// the same resource within 5 tiles of it is its zone; what the zone holds now over the most it
+/// the same resource within 3 tiles of it is its zone; what the zone holds now over the most it
 /// has ever held is how much is left. The amount the tile would add is multiplied by
-/// <see cref="Curve"/> - x0.5 with nothing left, easing smoothly to x1 at 40% - and the fraction
+/// <see cref="Curve"/> - x0.5 with nothing left (x0.8 for firewood), easing smoothly to x1 at 40% - and the fraction
 /// that does not make a whole item is rolled for, on the game's own seeded generator, so a tile
 /// that respawns one item has exactly that chance of doing it and a replay stays deterministic.
 ///
@@ -42,10 +51,11 @@ public static class RegrowthMod
 
     public static ModSetting WoodOverharvest =>
         woodOverharvest ?? (woodOverharvest = ModSettings.Toggle(
-            ModId, "woodOverharvest", "CUT-DOWN WOODS REGROW SLOWLY", defaultValue: false,
-            toolTip: "Firewood, sticks and spoak branches respawn more slowly where the woods " +
-                     "within 5 tiles have been gathered down: half speed with nothing left, normal " +
-                     "again from 40% left.",
+            ModId, "woodOverharvest", "GATHERED-DOWN PLANTS REGROW SLOWLY", defaultValue: false,
+            toolTip: "Sticks, spoak branches, shadeleaf canes, wingweed and daysheen leaves, water " +
+                     "cane stems and leaves and firegrass sod respawn more slowly where the same " +
+                     "plants within 3 tiles have been gathered down: half speed with nothing left, " +
+                     "normal again from 40% left. Firewood, which is dead wood, by at most 20%.",
             affectsSimulation: true));
 
     public static void RegisterSettings()
@@ -54,10 +64,21 @@ public static class RegrowthMod
     }
 
     /// <summary>The resources this applies to.</summary>
-    public static readonly string[] WoodKeys = { "firewood", "crop:sticks", "crop:spoakBranches" };
+    public static readonly string[] PlantKeys =
+    {
+        "firewood", "crop:sticks", "crop:spoakBranches",
+        "crop:shadeleafCanes", "crop:wingweedLeaves", "crop:waterCaneStem", "crop:waterCaneLeaves",
+        "crop:daysheenLeaves", "firegrassSod",
+    };
+
+    /// <summary>Firewood: dead wood from the ground, so a gathered-down zone slows it far less.</summary>
+    private const string Firewood = "firewood";
 
     /// <summary>The zone's radius in tiles.</summary>
-    public const int ZoneRadius = 5;
+    public const int ZoneRadius = 3;
+
+    /// <summary>The multiplier with nothing left in the zone: x0.8 for firewood, x0.5 for the rest.</summary>
+    public static float Floor(ResourceType type) => type?.KeyName == Firewood ? 0.8f : 0.5f;
 
     /// <summary>
     /// Called by MapArea.AddToResourceSum, once per tile, with the studio's yearly regrowth for it
@@ -72,11 +93,11 @@ public static class RegrowthMod
     public static float ForecastRegrowth(ResourceContainer tile, float yearlyRegrowth)
     {
         if (!WoodOverharvest.On || yearlyRegrowth <= 0f || tile?.ResourceType == null
-            || Array.IndexOf(WoodKeys, tile.ResourceType.KeyName) < 0)
+            || Array.IndexOf(PlantKeys, tile.ResourceType.KeyName) < 0)
         {
             return yearlyRegrowth;
         }
-        return yearlyRegrowth * Curve(ZoneFraction(tile));
+        return yearlyRegrowth * Curve(ZoneFraction(tile), Floor(tile.ResourceType));
     }
 
     /// <summary>
@@ -103,9 +124,9 @@ public static class RegrowthMod
         {
             return null;
         }
-        return Array.IndexOf(WoodKeys, type.KeyName) >= 0
-            ? "The column shows current regrowth, rounded down. Current counts the woods within 5 tiles of each place: where they are cut down, it regrows down to half as fast (CUT-DOWN WOODS REGROW SLOWLY)."
-            : "The column shows current regrowth, rounded down. This resource is not slowed by cutting it down.";
+        return Array.IndexOf(PlantKeys, type.KeyName) >= 0
+            ? "The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast, firewood to 80% (GATHERED-DOWN PLANTS REGROW SLOWLY)."
+            : "The column shows current regrowth, rounded down. This resource is not slowed by gathering it down.";
     }
 
     /// <summary>
@@ -115,11 +136,11 @@ public static class RegrowthMod
     public static int AdjustReplenish(ResourceContainer tile, int amount)
     {
         if (!WoodOverharvest.On || amount <= 0 || tile?.ResourceType == null
-            || Array.IndexOf(WoodKeys, tile.ResourceType.KeyName) < 0)
+            || Array.IndexOf(PlantKeys, tile.ResourceType.KeyName) < 0)
         {
             return amount;
         }
-        float scaled = amount * Curve(ZoneFraction(tile));
+        float scaled = amount * Curve(ZoneFraction(tile), Floor(tile.ResourceType));
         int whole = (int)Math.Floor(scaled);
         float rest = scaled - whole;
         if (rest > 0f && The.Sim.GameplayRandomGenerator.RandomBetween(0f, 1f) < rest)
@@ -130,15 +151,15 @@ public static class RegrowthMod
     }
 
     /// <summary>
-    /// The respawn multiplier for a zone with <paramref name="fractionLeft"/> of its wood: 0.5 at
-    /// nothing, 1 from 0.4 up, a smoothstep between - so 20-39% left averages about x0.85, the
-    /// "-15%" asked for, with no step anywhere.
+    /// The respawn multiplier for a zone with <paramref name="fractionLeft"/> of its plants:
+    /// <paramref name="floor"/> at nothing, 1 from 0.4 up, a smoothstep between - so with the 0.5
+    /// floor, 20-39% left averages about x0.85, the "-15%" asked for, with no step anywhere.
     /// </summary>
-    public static float Curve(float fractionLeft)
+    public static float Curve(float fractionLeft, float floor = 0.5f)
     {
         float t = Math.Max(0f, Math.Min(1f, fractionLeft / 0.4f));
         float smooth = t * t * (3f - 2f * t);
-        return 0.5f + 0.5f * smooth;
+        return floor + (1f - floor) * smooth;
     }
 
     /// <summary>What the tile's zone holds now over the most it has ever held; 1 if unknown.</summary>
