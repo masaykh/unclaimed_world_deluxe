@@ -139,7 +139,8 @@ public class Intelligence : Component
 
 	public Vector3? LocationToLookAt => locationToLookAt;
 
-	public float Comfort => Parent.GetEffect(AffectsNumbers.AgentComfort, 0f);
+	// MOD: less what DiscomfortMod measured of stink and noise where this colonist sleeps; 0 without it.
+	public float Comfort => Parent.GetEffect(AffectsNumbers.AgentComfort, 0f) - UWGame.Mods.DiscomfortMod.Penalty(Parent);
 
 	public ThreatStance ThreatStance => threatStance;
 

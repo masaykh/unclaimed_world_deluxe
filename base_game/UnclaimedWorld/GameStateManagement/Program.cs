@@ -117,6 +117,7 @@ internal static class Program
 		UWGame.Mods.FreshFoodMod.RegisterSettings();
 		UWGame.Mods.SafeSleepMod.RegisterSettings();
 		UWGame.Mods.GatherOnDemandMod.RegisterSettings();
+		UWGame.Mods.DiscomfortMod.RegisterSettings();
 		UWGame.Mods.HuntingMod.RegisterSettings();
 		UWGame.Mods.KeybindMod.RegisterSettings();
 		UWGame.Mods.PreyFearMod.RegisterSettings();

@@ -98,6 +98,10 @@ internal static partial class Program
             Console.Error.WriteLine("               delivered: none waits as a passenger with nothing to ride, each");
             Console.Error.WriteLine("               belongs to the expedition that owns it, none is in a Port's stock.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --discomfort-selftest");
+            Console.Error.WriteLine("               DiscomfortMod against the tables: what stinks, which workplaces are");
+            Console.Error.WriteLine("               loud, the comfort lost, and the once-a-day measurement.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --mapedit-selftest");
             Console.Error.WriteLine("               the Map Editor's terrain height edit on a small map built in memory,");
             Console.Error.WriteLine("               at the map's corner and away from it: it completes, and the coast");
@@ -162,6 +166,7 @@ internal static partial class Program
         UWGame.Mods.TradeMod.RegisterSettings();
         UWGame.Mods.SafeSleepMod.RegisterSettings();
         UWGame.Mods.GatherOnDemandMod.RegisterSettings();
+        UWGame.Mods.DiscomfortMod.RegisterSettings();
         UWGame.Mods.HuntingMod.RegisterSettings();
         UWGame.Mods.KeybindMod.RegisterSettings();
         UWGame.Mods.PreyFearMod.RegisterSettings();
@@ -232,6 +237,11 @@ internal static partial class Program
         if (args.Contains("--regrowth-selftest"))
         {
             return RegrowthSelfTest();
+        }
+
+        if (args.Contains("--discomfort-selftest"))
+        {
+            return DiscomfortSelfTest();
         }
 
         if (args.Contains("--homeraid-selftest"))

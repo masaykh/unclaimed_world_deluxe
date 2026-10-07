@@ -53,6 +53,8 @@ internal class GoalDoSleep : CompositeGoal
 			return;
 		}
 		ComputeSleepConditions(entity, container, out maximumSleepGainFromThisLocation, out increaseAmountPerDay);
+		// MOD: DiscomfortMod measures stink and noise around the sleeping place, once a day.
+		UWGame.Mods.DiscomfortMod.OnSleepStart(entity, container);
 		base.Status = Status.Active;
 		if (entity.EntityType.Person != null)
 		{

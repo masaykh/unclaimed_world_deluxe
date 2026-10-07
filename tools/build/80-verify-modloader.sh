@@ -877,6 +877,19 @@ else
   say "  SKIP  UW_DOG_SAVE is not set to a save file - this case did not run"
 fi
 
+# DiscomfortMod names its filth and its loud workplaces by category and key (Kastuk, "Discomfort",
+# 2026-10-05), so a key that stops matching silently exempts it. Each against the validated tables,
+# then the 3%-per-5, 40%-cap arithmetic and the once-a-day measurement.
+say "==> 34. what the discomfort mod finds filthy or loud is in the tables, and its comfort cost adds up"
+out=$( cd "$(new_install case34)" && "$EXPORT" . --discomfort-selftest 2>&1 ) || true
+if echo "$out" | grep -q "discomfort self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception' | head -4
+  fail "the discomfort self-test reported failures"
+fi
+
 # The Map Editor's terrain height Pencil and Brush crashed on the first click (Kastuk,
 # 2026-10-03) in MapLoader.ReduceSubdivisionScanVertically: RecomputeSubdivision was a whole-map
 # pass made into an area pass, and two limits kept the area's size where they needed its far edge.
