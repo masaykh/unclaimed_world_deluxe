@@ -72,29 +72,36 @@ public static class HudMod
     // anything else: fishing spots, arable plots, the port location) and STATUS (the ByStatus
     // icons - problems and crafting). A selected entity always shows its marker.
     //
+    // Kastuk, 2026-10-06: "Add layer of markers to hide Zones separately too." ZONES hides a zone's
+    // area on the ground (GameWorldRenderer.SetupInterfaceOnMapQuads) and its label
+    // (InGameInterface.RefreshZoneMarkers). The studio had thought of it there:
+    // "if (The.InGameUI.ShowOverlaysAndMarkerWindows) // || The.InGameUI.Minimap.ShowZones".
+    // A selected zone always shows, so the one being worked on cannot vanish.
+    //
     // Phrased as HIDE so that off is the studio's game. They are rows in the overlay panel above
     // the minimap (HUDOverlayPanel), kept in ModSettings.xml rather than the save.
 
-    private static readonly ModSetting[] hideMarkers = new ModSetting[3];
+    private static readonly ModSetting[] hideMarkers = new ModSetting[4];
 
-    private static readonly string[] markerKeys = { "hideNames", "hideLabels", "hideStatus" };
+    private static readonly string[] markerKeys = { "hideNames", "hideLabels", "hideStatus", "hideZones" };
 
-    private static readonly string[] markerLabels = { "HIDE NAMES ON THE MAP", "HIDE LABELS ON THE MAP", "HIDE STATUS ICONS ON THE MAP" };
+    private static readonly string[] markerLabels = { "HIDE NAMES ON THE MAP", "HIDE LABELS ON THE MAP", "HIDE STATUS ICONS ON THE MAP", "HIDE ZONES ON THE MAP" };
 
-    private static readonly string[] markerRows = { "NAMES", "LABELS", "STATUS ICONS" };
+    private static readonly string[] markerRows = { "NAMES", "LABELS", "STATUS ICONS", "ZONES" };
 
     private static readonly string[] markerTips =
     {
         "Colonist and creature names on the map. A selected one always shows its name.",
         "Point-of-interest labels on the map: fishing spots, arable plots, the port location.",
         "Status icons on the map - problems and what is being made.",
+        "Zones on the map - their area and their label. A selected zone always shows.",
     };
 
     private static ModSetting HideMarker(int i) =>
         hideMarkers[i] ?? (hideMarkers[i] = ModSettings.Toggle(ModId, markerKeys[i], markerLabels[i], defaultValue: false,
             toolTip: markerTips[i] + " Also a row in the overlay panel above the minimap."));
 
-    public const int MarkerRowCount = 3;
+    public const int MarkerRowCount = 4;
 
     public static string MarkerRowLabel(int i) => markerRows[i];
 
@@ -118,6 +125,12 @@ public static class HudMod
         }
         return type?.IntelligenceType != null ? !HideMarker(0).On : !HideMarker(1).On;
     }
+
+    /// <summary>
+    /// Called from GameWorldRenderer.SetupInterfaceOnMapQuads and InGameInterface.RefreshZoneMarkers:
+    /// whether a zone's area and label show. A selected zone always does.
+    /// </summary>
+    public static bool ShowsZone(bool selected) => selected || !HideMarker(3).On;
 
     private static ModSetting revealKey;
 
@@ -251,8 +264,8 @@ public static class HudMod
         entity != null && ItemGrouping(entity.EntityType) != null
         && The.InGameUI?.OverlaySettings != null && The.InGameUI.OverlaySettings.DisplayEntityType(entity.EntityType);
 
-    /// <summary>Two presses of the key within this long latch the markers on, or off again.</summary>
-    public const long DoublePressMilliseconds = 1000;
+    /// <summary>Two presses of the key within this long latch the markers on, or off again. 0.8 s (Kastuk, 2026-10-06; was 1 s).</summary>
+    public const long DoublePressMilliseconds = 800;
 
     private static bool keyWasDown;
     private static long? lastPressAt;
@@ -261,7 +274,7 @@ public static class HudMod
     /// <summary>
     /// Called from InGameInterface.Update every frame; returns at once unless switched on.
     ///
-    /// Held, the key shows the markers while it is down. Pressed twice within a second, it latches
+    /// Held, the key shows the markers while it is down. Pressed twice within 0.8 s, it latches
     /// them on until the next double press - Kastuk: with LeftAlt held, the Steam overlay's
     /// screenshot key does nothing, so a screenshot with names on needs them to stay by themselves.
     /// Wall-clock time, not game time: it is a keyboard gesture, and it works while paused.

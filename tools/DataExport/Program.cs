@@ -856,7 +856,7 @@ internal static partial class Program
 
     /// <summary>
     /// Plays key presses through HudMod.MarkersShown, the LeftAlt gesture: held shows the markers
-    /// only while down; two presses within a second latch them on until the next such pair; a
+    /// only while down; two presses within 0.8 s latch them on until the next such pair; a
     /// press alone does not change the latch, and two presses too far apart are not a pair.
     /// Then the item layers against the loaded and validated tables (HudMod.ItemGrouping).
     /// </summary>
@@ -884,16 +884,32 @@ internal static partial class Program
         UWGame.Mods.HudMod.ResetMarkerGesture();
         Check(Step(true, 1000) && !Step(false, 1300), "held: shown while down, gone when released");
         Check(Step(true, 5000) && Step(false, 5100) == false && Step(true, 5600) && Step(false, 5700),
-              "two presses within a second: still shown after release");
+              "two presses within 0.8 s: still shown after release");
         Check(Step(false, 8000), "latched: stays shown with no key down");
         Check(Step(true, 9000) && Step(false, 9100), "one press alone leaves the latch on");
         Check(Step(true, 9500) && !Step(false, 9600), "the next quick pair releases it");
         Check(Step(true, 20000) && !Step(false, 20100) && Step(true, 21500) && !Step(false, 21600),
               "two presses 1.5 s apart are not a pair");
-        Check(Step(true, 30000) && !Step(false, 30050) && Step(true, 30900) && Step(false, 31000)
-              && Step(true, 31100) && Step(false, 31200),
+        Check(Step(true, 25000) && !Step(false, 25100) && Step(true, 25900) && !Step(false, 26000),
+              "two presses 0.9 s apart are not a pair (HudMod.DoublePressMilliseconds, 0.8 s)");
+        Check(Step(true, 30000) && !Step(false, 30050) && Step(true, 30700) && Step(false, 30750)
+              && Step(true, 30800) && Step(false, 30850),
               "a third quick press starts a new pair rather than releasing");
         UWGame.Mods.HudMod.ResetMarkerGesture();
+        // ZONES (HudMod.ShowsZone): a row of its own in the overlay panel, off hides every zone but
+        // the selected one, and the stock value shows them all.
+        int zonesRow = Enumerable.Range(0, UWGame.Mods.HudMod.MarkerRowCount).FirstOrDefault(i => UWGame.Mods.HudMod.MarkerRowLabel(i) == "ZONES", -1);
+        Check(zonesRow >= 0, "the overlay panel has a ZONES row");
+        var hideZones = UWGame.Mods.ModSettings.Find("hud.hideZones");
+        Check(hideZones != null && UWGame.Mods.HudMod.ShowsZone(selected: false), "zones show by default (the studio's game)");
+        if (hideZones != null)
+        {
+            hideZones.Value = "true";
+            Check(!UWGame.Mods.HudMod.ShowsZone(selected: false) && UWGame.Mods.HudMod.ShowsZone(selected: true)
+                  && zonesRow >= 0 && !UWGame.Mods.HudMod.MarkerRowIsOn(zonesRow),
+                  "ZONES off: zones are hidden, except the selected one");
+            hideZones.Value = "false";
+        }
         // Item layers (HudMod.ItemGrouping): every layer gets real items, nothing alive or built is an
         // item, each layer has a name and a colour, and the studio's own groupings are untouched.
         var types = GameData.Instance.AllEntityTypes.Values.ToList();

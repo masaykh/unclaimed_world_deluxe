@@ -1428,7 +1428,11 @@ public class GameWorldRenderer
 		}
 		foreach (Zone zone in expedition.OwnedEntities.Zones)
 		{
-			zone.MapArea.MapAreaRender.SetupQuad(overlayGroundSpriteVertices, ref overlayGroundSpriteQuadIndex);
+			// MOD: HudMod's ZONES row in the overlay panel; every zone without it.
+			if (UWGame.Mods.HudMod.ShowsZone(zone == The.InGameUI.SelectedZone))
+			{
+				zone.MapArea.MapAreaRender.SetupQuad(overlayGroundSpriteVertices, ref overlayGroundSpriteQuadIndex);
+			}
 		}
 	}
 

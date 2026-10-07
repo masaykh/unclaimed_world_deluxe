@@ -716,6 +716,11 @@ public class InGameInterface : CommonInterface
 		}
 		foreach (Zone zone in expedition.OwnedEntities.Zones)
 		{
+			// MOD: HudMod's ZONES row - a hidden zone's label is not renewed, so it is taken down.
+			if (!UWGame.Mods.HudMod.ShowsZone(zone == SelectedZone))
+			{
+				continue;
+			}
 			if (!activeMarkerWindows.TryGetValue(zone, out var value))
 			{
 				if (TryToAddZoneMarker(zone, screenBounds))

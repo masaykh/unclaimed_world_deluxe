@@ -36,6 +36,9 @@ public static class HudMod
     /// <summary>Every marker the studio shows.</summary>
     public static bool ShowsMarker(UWGame.SimSide.Entities.EntityType type, bool byStatus) => true;
 
+    /// <summary>Every zone, as the studio shows them.</summary>
+    public static bool ShowsZone(bool selected) => true;
+
     public const string TalkAlways = "always";
     public const string TalkWhenSpoken = "when someone speaks";
 
