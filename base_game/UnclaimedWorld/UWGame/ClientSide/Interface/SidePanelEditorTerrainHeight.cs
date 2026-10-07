@@ -50,8 +50,8 @@ public class SidePanelEditorTerrainHeight : RosterPanel, IEditorPanel
 			SubtilePos subtilePos = affectedTile.SubtilePos;
 			Terrain terrain = map.GetTerrain(subtilePos.ToPoint());
 			float num = 0f - affectedTile.Change;
-			float terrainDepth = terrain.TerrainDepth + num;
-			MapLoader.SetTerrainDepth(waterLevelBelowTerrain, terrain, terrainDepth);
+			// PORT: clamped to the depths terrainHeights.png can hold (MapLoader.ChangeTerrainDepth).
+			MapLoader.ChangeTerrainDepth(waterLevelBelowTerrain, terrain, num);
 			MapManager map2 = The.Map;
 			subtilePos = affectedTile.SubtilePos;
 			map2.SetSubtileCostToSurfaceType(subtilePos.ToPoint());

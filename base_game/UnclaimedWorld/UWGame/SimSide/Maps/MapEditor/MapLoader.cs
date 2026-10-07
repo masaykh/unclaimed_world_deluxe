@@ -114,6 +114,10 @@ public class MapLoader
 			}
 			string mapDataXmlPath = MapManager.ComposeMapDataXmlFilePathFromFolderPath(mapFolderPath);
 			mapData = LoadMapData(mapDataXmlPath, mapFolderName);
+			// PORT: the Map Editor's SAVE needs to know where this map's pictures are, to carry
+			// them to a map saved under a new name (MapManager.SaveMap).
+			The.Map.LoadedMapFolderPath = mapFolderPath;
+			The.Map.TerrainHeightsEdited = false;
 			The.Map.SetDimensions(mapData.Dimensions);
 			The.MapUI.SetSize();
 			queueState = QueueStateLoad.InitCollisionTrees;
@@ -568,10 +572,29 @@ public class MapLoader
 
 	private Color ReadColor(float x, float y, Color[] colors, Texture2D texture)
 	{
+		return colors[TexelIndex(x, y, texture.Width, texture.Height)];
+	}
+
+	/// <summary>
+	/// PORT: ReadColor's arithmetic, on its own so that MapManager.TerrainHeightsTexels writes
+	/// each subtile's height to exactly the texel this loader reads it back from.
+	/// </summary>
+	public static int TexelIndex(float x, float y, int textureWidth, int textureHeight)
+	{
 		MapManager map = The.Map;
 		float num = x / (float)map.mapTileWidth;
 		float num2 = y / (float)map.mapTileHeight;
-		return colors[(int)(num * (float)texture.Width) + (int)(num2 * (float)(texture.Height - 1)) * texture.Width];
+		return (int)(num * (float)textureWidth) + (int)(num2 * (float)(textureHeight - 1)) * textureWidth;
+	}
+
+	/// <summary>
+	/// PORT: the texel LoadTerrainHeightsTexture reads for subtile (j, k) of tile (x, y).
+	/// </summary>
+	public static int TerrainHeightTexelIndex(int x, int y, int j, int k, int textureWidth, int textureHeight)
+	{
+		float x2 = (float)x + (float)j * 0.33f;
+		float y2 = (float)y + (float)k * 0.33f;
+		return TexelIndex(x2, y2, textureWidth, textureHeight);
 	}
 
 	private bool LoadTerrainHeightsTexture()
@@ -599,10 +622,8 @@ public class MapLoader
 						for (int k = 0; k < 3; k++)
 						{
 							Point subtileCostToSurfaceType = MapManager.TileAndRelativeSubtileToAbsoluteSubtile(x, i, j, k);
-							float x2 = (float)x + (float)j * 0.33f;
-							float y = (float)i + (float)k * 0.33f;
 							Terrain terrain = terrainTile.TerrainSubtiles[j][k];
-							float terrainDepth = (int)ReadColor(x2, y, colors, texture).R;
+							float terrainDepth = (int)colors[TerrainHeightTexelIndex(x, i, j, k, texture.Width, texture.Height)].R;
 							SetTerrainDepth(waterLevelBelowTerrain, terrain, terrainDepth);
 							The.Map.SetSubtileCostToSurfaceType(subtileCostToSurfaceType);
 						}
@@ -628,6 +649,24 @@ public class MapLoader
 			terrain.SurfaceType = PlainsType.Instance;
 		}
 		terrain.LevelBelowWater = num;
+	}
+
+	/// <summary>
+	/// The deepest a terrain can be: terrainHeights.png holds a depth per texel in one byte, 0..255.
+	/// </summary>
+	public const float MaxTerrainDepth = 255f;
+
+	/// <summary>
+	/// PORT: a Map Editor terrain height change, kept within what terrainHeights.png can hold.
+	/// The studio added the tool's change unclamped (SidePanelEditorTerrainHeight.AffectMap). The
+	/// Eraser lowers by 60 per step of the drag while the Pencil and Brush raise by at most 1, so
+	/// erased ground went thousands deep and could not visibly be raised again (Kastuk, 2026-10-06).
+	/// </summary>
+	public static void ChangeTerrainDepth(float waterLevelBelowTerrain, Terrain terrain, float change)
+	{
+		float terrainDepth = MathHelper.Clamp(terrain.TerrainDepth + change, 0f, MaxTerrainDepth);
+		SetTerrainDepth(waterLevelBelowTerrain, terrain, terrainDepth);
+		The.Map.TerrainHeightsEdited = true;
 	}
 
 	private static bool ReduceSubdivisionCombineTiles(Rectangle tileArea, HashSet<TerrainTile> grownTilesFromWaterEdge)

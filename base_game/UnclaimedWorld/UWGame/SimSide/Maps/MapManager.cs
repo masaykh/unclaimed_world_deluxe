@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using UWGame.ClientSide.Interface;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.AI.Pathfinding;
@@ -118,6 +119,18 @@ public class MapManager : ISnapshot
 	public int mapTileWidth;
 
 	public int mapTileHeight;
+
+	/// <summary>
+	/// PORT: the folder the current map was loaded from (MapLoader), whose pictures SaveMap carries
+	/// to a map saved under another name.
+	/// </summary>
+	public string LoadedMapFolderPath;
+
+	/// <summary>
+	/// PORT: the Map Editor changed terrain heights since the map was loaded
+	/// (MapLoader.ChangeTerrainDepth), so SaveMap writes terrainHeights.png.
+	/// </summary>
+	public bool TerrainHeightsEdited;
 
 	public int mapSubtileWidth;
 
@@ -861,6 +874,128 @@ public class MapManager : ISnapshot
 			Directory.CreateDirectory(Path.Combine(fullFolderPath, "Vegetation"));
 			Directory.CreateDirectory(Path.Combine(fullFolderPath, "Soil"));
 		}
+		// PORT: the studio's "TODO: copy over texture pngs also". A map saved under a new name got
+		// MapData.xml alone, and loading it threw "File not found: ...terrainHeights.png" (Kastuk,
+		// 2026-10-06). Terrain height edits were not written at all, under any name.
+		if (LoadedMapFolderPath != null)
+		{
+			CopyMapPictures(LoadedMapFolderPath, fullFolderPath);
+		}
+		string terrainHeightsPath = Path.Combine(fullFolderPath, "terrainHeights.png");
+		if (TerrainHeightsEdited || !File.Exists(terrainHeightsPath))
+		{
+			Color[] texels = TerrainHeightsTexels(out int width, out int height);
+			using Texture2D texture = new Texture2D(The.Client.GraphicsDevice, width, height);
+			texture.SetData(texels);
+			using (Stream stream = File.Create(terrainHeightsPath))
+			{
+				texture.SaveAsPng(stream, width, height);
+			}
+			TerrainHeightsEdited = false;
+		}
+		// The map's current pictures are now the ones in this folder, for the next SAVE elsewhere.
+		LoadedMapFolderPath = fullFolderPath;
+	}
+
+	/// <summary>
+	/// The map's subfolders of pictures MapLoader reads, one picture per kind.
+	/// </summary>
+	private static readonly string[] MapPictureFolders = { "Soil", "Vegetation" };
+
+	/// <summary>
+	/// PORT: gives the map in <paramref name="toFolder"/> the pictures of the one in
+	/// <paramref name="fromFolder"/> - terrain heights, moisture, water colours, soil, vegetation -
+	/// replacing any it had. Nothing happens when the two are the same folder.
+	/// </summary>
+	public static void CopyMapPictures(string fromFolder, string toFolder)
+	{
+		if (string.Equals(Path.GetFullPath(fromFolder).TrimEnd(Path.DirectorySeparatorChar), Path.GetFullPath(toFolder).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase))
+		{
+			return;
+		}
+		CopyPictures(fromFolder, toFolder);
+		foreach (string folder in MapPictureFolders)
+		{
+			CopyPictures(Path.Combine(fromFolder, folder), Path.Combine(toFolder, folder));
+		}
+	}
+
+	private static void CopyPictures(string fromFolder, string toFolder)
+	{
+		if (Directory.Exists(toFolder))
+		{
+			foreach (string stale in Directory.GetFiles(toFolder, "*.png"))
+			{
+				File.Delete(stale);
+			}
+		}
+		if (!Directory.Exists(fromFolder))
+		{
+			return;
+		}
+		Directory.CreateDirectory(toFolder);
+		foreach (string picture in Directory.GetFiles(fromFolder, "*.png"))
+		{
+			File.Copy(picture, Path.Combine(toFolder, Path.GetFileName(picture)), overwrite: true);
+		}
+	}
+
+	/// <summary>
+	/// PORT: the map's terrain depths as the texels of a terrainHeights.png, depth in red (as
+	/// MapLoader.LoadTerrainHeightsTexture reads it). Six texels a tile across and down, so the
+	/// loader's nine samples a tile (at 0, 0.33 and 0.66 of it) each land on a texel of their own;
+	/// each is written where MapLoader.TerrainHeightTexelIndex says the loader will read it, and the
+	/// texels between are filled from their neighbours so the picture is whole.
+	/// </summary>
+	public Color[] TerrainHeightsTexels(out int width, out int height)
+	{
+		width = mapTileWidth * 6;
+		height = mapTileHeight * 6 + 1;
+		Color[] texels = new Color[width * height];
+		bool[] written = new bool[texels.Length];
+		for (int x = 0; x < mapTileWidth; x++)
+		{
+			for (int y = 0; y < mapTileHeight; y++)
+			{
+				TerrainTile tile = TileMap[x][y];
+				for (int j = 0; j < 3; j++)
+				{
+					for (int k = 0; k < 3; k++)
+					{
+						Terrain terrain = tile.GetTerrain(new Point(j, k));
+						byte depth = (byte)Math.Round(MathHelper.Clamp(terrain.TerrainDepth, 0f, MapLoader.MaxTerrainDepth));
+						int index = MapLoader.TerrainHeightTexelIndex(x, y, j, k, width, height);
+						texels[index] = new Color(depth, depth, depth, (byte)255);
+						written[index] = true;
+					}
+				}
+			}
+		}
+		for (int row = 0; row < height; row++)
+		{
+			bool rowWritten = false;
+			for (int column = 0; column < width; column++)
+			{
+				rowWritten |= written[row * width + column];
+			}
+			for (int column = 0; column < width; column++)
+			{
+				int index = row * width + column;
+				if (written[index])
+				{
+					continue;
+				}
+				if (!rowWritten && row > 0)
+				{
+					texels[index] = texels[index - width];
+				}
+				else if (column > 0)
+				{
+					texels[index] = texels[index - 1];
+				}
+			}
+		}
+		return texels;
 	}
 
 	private static EntityData CreateEntityDataFromEntity(Entity entity)
