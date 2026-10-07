@@ -981,6 +981,27 @@ internal static partial class Program
                   "ZONES off: zones are hidden, except the selected one");
             hideZones.Value = "false";
         }
+        // Smoke on top (HudMod.EffectsOnTop / CoversEffects): off by default, and what still covers
+        // it - Kastuk's "terrain things, which contans "hill" in name, and also gardtower big and
+        // giant" - must be real keys, and nothing else.
+        var effectsOnTop = UWGame.Mods.ModSettings.Find("hud.effectsOnTop");
+        Check(effectsOnTop != null && effectsOnTop.DefaultValue == "false" && !UWGame.Mods.HudMod.EffectsOnTop,
+              "SMOKE AND SPARKS DRAWN OVER EVERYTHING exists, off by default");
+        int hills = 0, covering = 0;
+        foreach (var t in GameData.Instance.AllEntityTypes.Values)
+        {
+            if (t.KeyName.StartsWith("terrain:", StringComparison.Ordinal) && t.KeyName.IndexOf("hill", StringComparison.OrdinalIgnoreCase) >= 0) hills++;
+            if (UWGame.Mods.HudMod.CoversEffects(t)) covering++;
+        }
+        bool towersReal = GameData.Instance.AllEntityTypes.TryGetValue("terrain:utgardstowerBig", out var bigTower)
+                          & GameData.Instance.AllEntityTypes.TryGetValue("terrain:utgardstowerTall", out var tallTower);
+        Check(towersReal && UWGame.Mods.HudMod.CoversEffects(bigTower) && UWGame.Mods.HudMod.CoversEffects(tallTower),
+              "the big and the tall rock tower cover smoke");
+        Check(hills > 0 && covering == hills + 2, $"every hill covers smoke ({hills}), and nothing else does but the two towers (got {covering})");
+        Check(!UWGame.Mods.HudMod.CoversEffects(GameData.Instance.AllEntityTypes["terrain:utgardstowerSmall1"])
+              && !UWGame.Mods.HudMod.CoversEffects(GameData.Instance.AllEntityTypes["structure:simpleSmithy"])
+              && !UWGame.Mods.HudMod.CoversEffects(null),
+              "a small tower, a smithy and nothing do not");
         // Item layers (HudMod.ItemGrouping): every layer gets real items, nothing alive or built is an
         // item, each layer has a name and a colour, and the studio's own groupings are untouched.
         var types = GameData.Instance.AllEntityTypes.Values.ToList();

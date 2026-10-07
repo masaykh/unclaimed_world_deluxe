@@ -2070,11 +2070,25 @@ public class GameWorldRenderer
 				sortedObjectsToDraw.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 				" bucket(s), " + offered.ToString(System.Globalization.CultureInfo.InvariantCulture) + " item(s)");
 		}
+		// MOD: HudMod's effects-on-top. Kastuk: smoke from workshops and sulphur sources "is drawn
+		// under structures, colonists and plants. Let it be drawn over everything, except high cliffs
+		// (all terrain things, which contans "hill" in name, and also gardtower big and giant)".
+		// The rows are drawn back to front and each renderable drew its particles straight after its
+		// model, so anything in a nearer row covered them. With the switch on the particles are held
+		// back and drawn once the rows are done - or, when a hill or a big tower comes up in a nearer
+		// row, just before it, so that stays in front.
+		bool holdEffects = UWGame.Mods.HudMod.EffectsOnTop;
+		Renderable.HoldParticleEmitters = holdEffects;
+		List<Renderable> heldEffects = null;
 		foreach (List<ILocatable> item in sortedObjectsToDraw)
 		{
 			foreach (ILocatable item2 in item)
 			{
 				Entity entity = null;
+				if (heldEffects != null && heldEffects.Count > 0 && UWGame.Mods.HudMod.CoversEffects((item2 as RenderAsBillboard)?.Parent?.Entity?.EntityType ?? item2.AsRenderable?.Entity?.EntityType))
+				{
+					featureQuadIndex = DrawHeldEffects(heldEffects, featureQuadIndex);
+				}
 				if (item2 is RenderAsBillboard)
 				{
 					RenderAsBillboard renderAsBillboard = (RenderAsBillboard)item2;
@@ -2102,6 +2116,10 @@ public class GameWorldRenderer
 								featureQuadIndex = 0;
 							}
 							asRenderable.Draw(RenderTechnique.Standard, ref View, ref The.Client.Projection);
+							if (holdEffects && asRenderable.ParticleEmitters != null && asRenderable.ParticleEmitters.Count > 0)
+							{
+								(heldEffects ??= new List<Renderable>()).Add(asRenderable);
+							}
 						}
 					}
 				}
@@ -2111,11 +2129,35 @@ public class GameWorldRenderer
 				}
 			}
 		}
+		Renderable.HoldParticleEmitters = false;
+		if (heldEffects != null && heldEffects.Count > 0)
+		{
+			featureQuadIndex = DrawHeldEffects(heldEffects, featureQuadIndex);
+		}
 		if (featureQuadIndex > 0)
 		{
 			DrawBillboardBatch(featureQuadIndex, renderTechnique);
 			featureQuadIndex = 0;
 		}
+		return featureQuadIndex;
+	}
+
+	/// <summary>
+	/// MOD: draws the particle emitters DrawSortedObjectsMain held back (HudMod.EffectsOnTop), after
+	/// the billboards queued so far, so they land on top of everything already drawn.
+	/// </summary>
+	private int DrawHeldEffects(List<Renderable> heldEffects, int featureQuadIndex)
+	{
+		if (featureQuadIndex > 0)
+		{
+			DrawBillboardBatch(featureQuadIndex, RenderTechnique.Standard);
+			featureQuadIndex = 0;
+		}
+		foreach (Renderable held in heldEffects)
+		{
+			held.DrawHeldParticleEmitters();
+		}
+		heldEffects.Clear();
 		return featureQuadIndex;
 	}
 

@@ -149,6 +149,7 @@ public static class HudMod
         _ = RevealKey;
         _ = TalkPanel;
         _ = ItemLayers;
+        _ = EffectsOnTopSetting;
         for (int i = 0; i < MarkerRowCount; i++)
         {
             _ = HideMarker(i);
@@ -257,6 +258,46 @@ public static class HudMod
             _ => null,
         };
         return c.HasValue && faded ? c.Value * 0.55f : c;
+    }
+
+    // ------------------------------------------------------------------ smoke and sparks on top
+
+    private static ModSetting effectsOnTop;
+
+    /// <summary>
+    /// Kastuk, 2026-10-05: "Old bug with emitters effects is layered behind all other things, so
+    /// smoke of production structures and sulphur material sources is drawn under structures,
+    /// colonists and plants. Let it be drawn over everything, except high cliffs (all terrain
+    /// things, which contans "hill" in name, and also gardtower big and giant) and diamond birds at
+    /// flying animation mode." GameWorldRenderer.DrawSortedObjectsMain draws the map in rows, back
+    /// to front, and each object's particles straight after it (Renderable.Draw), so anything in a
+    /// nearer row covered them. With this on the particles are drawn after the rows, except that a
+    /// hill or a big tower (<see cref="CoversEffects"/>) in a nearer row still goes over them.
+    /// Diamond birds do not fly in the game (BirdHopMod: flight "waits for flight animations"), so
+    /// they are not an exception. Interface only.
+    /// </summary>
+    public static ModSetting EffectsOnTopSetting =>
+        effectsOnTop ?? (effectsOnTop = ModSettings.Toggle(
+            ModId, "effectsOnTop", "SMOKE AND SPARKS DRAWN OVER EVERYTHING", defaultValue: false,
+            toolTip: "Smoke from workshops, fires and sulphur sources is drawn over structures, " +
+                     "colonists and plants instead of behind whatever stands in front of it. Hills " +
+                     "and the big rock towers still cover it."));
+
+    /// <summary>Called from GameWorldRenderer.DrawSortedObjectsMain every frame.</summary>
+    public static bool EffectsOnTop => EffectsOnTopSetting.On;
+
+    /// <summary>The big rock towers that still stand in front of smoke: terrain:utgardstowerBig and terrain:utgardstowerTall.</summary>
+    private static readonly string[] CoveringTowers = { "terrain:utgardstowerBig", "terrain:utgardstowerTall" };
+
+    /// <summary>Whether this stands in front of smoke drawn on top: a hill (any terrain with "hill" in its key) or a big tower.</summary>
+    public static bool CoversEffects(EntityType type)
+    {
+        string key = type?.KeyName;
+        if (key == null || !key.StartsWith("terrain:", System.StringComparison.Ordinal))
+        {
+            return false;
+        }
+        return key.IndexOf("hill", System.StringComparison.OrdinalIgnoreCase) >= 0 || System.Array.IndexOf(CoveringTowers, key) >= 0;
     }
 
     /// <summary>Called from MapResourceRenderer: whether this item is outlined because its layer is on.</summary>

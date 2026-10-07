@@ -2110,7 +2110,12 @@ public class Renderable : GameObject, ISleepingUpdatable
 			DrawModel(technique, ref view, ref projection, drawWithAlpha, lightIntensity, ref tintColor);
 			if (technique == GameWorldRenderer.RenderTechnique.Standard)
 			{
-				DrawParticleEmitters(combinedEffectsAsColor);
+				// MOD: HudMod's effects-on-top - GameWorldRenderer.DrawSortedObjectsMain draws them
+				// after the rows instead (DrawHeldParticleEmitters).
+				if (!HoldParticleEmitters)
+				{
+					DrawParticleEmitters(combinedEffectsAsColor);
+				}
 				UpdateSoundDirectionAndDistance();
 			}
 		}
@@ -2151,6 +2156,22 @@ public class Renderable : GameObject, ISleepingUpdatable
 					renderAsModel2.AnimatedModel.DrawStandard(technique, view, projection, renderAsModel2.CustomColor0, renderAsModel2.CustomColor1, renderAsModel2.CustomColor2, renderAsModel2.CustomColor3, drawWithAlpha, lightIntensity, dirtLevel, renderAsModel2.FinalModelBasicTexture, tintColor);
 				}
 			}
+		}
+	}
+
+	/// <summary>
+	/// MOD: set by GameWorldRenderer.DrawSortedObjectsMain while HudMod.EffectsOnTop is on: Draw
+	/// leaves the particle emitters out, and the renderer draws them later through
+	/// DrawHeldParticleEmitters.
+	/// </summary>
+	public static bool HoldParticleEmitters;
+
+	/// <summary>MOD: the particle emitters Draw held back, in the colour Draw would have used.</summary>
+	public void DrawHeldParticleEmitters()
+	{
+		if (IsDrawn)
+		{
+			DrawParticleEmitters(GetCombinedEffectsAsColor());
 		}
 	}
 

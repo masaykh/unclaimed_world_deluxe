@@ -60,6 +60,11 @@ public static class HudMod
 
     public static bool OutlinesItem(UWGame.SimSide.Entities.Entity entity) => false;
 
+    /// <summary>The studio's order: each object's smoke and sparks drawn in its own row.</summary>
+    public static bool EffectsOnTop => false;
+
+    public static bool CoversEffects(UWGame.SimSide.Entities.EntityType type) => false;
+
     /// <summary>The studio's order: rows stay in the order they were first added.</summary>
     public static bool SortsMarkerLists => false;
 
