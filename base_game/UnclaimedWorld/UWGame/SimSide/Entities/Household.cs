@@ -301,8 +301,8 @@ namespace UWGame.SimSide.Entities
         }
              
 
-        private void FillNewHome()
-        {
+        /*private void FillNewHome()
+        {*/
             // fill stocks:
           /*  ClearHaulingJobs();
 
@@ -331,7 +331,7 @@ namespace UWGame.SimSide.Entities
                 HaulStuffToNewHome(member.PersonEntity.Items);
             }*/
 
-        }
+       /* }*/
 
       /*  private void HaulStuffToNewHome(Dictionary<ItemType, List<Item>> items)
         {
@@ -464,11 +464,13 @@ namespace UWGame.SimSide.Entities
                 });
         }*/
 
+        /*
         void FoodExtraction_FoodProcessesChanged()
         {
             ownedEntities.SetFoodDirty();
             
         }
+        */
 
         public void AddMember(Entity entity)
         {
@@ -479,7 +481,7 @@ namespace UWGame.SimSide.Entities
            
         }
 
-       
+       /*
         void Members_ListItemAdded(object sender)
         {
             AssignHeadsOfHousehold();
@@ -489,6 +491,7 @@ namespace UWGame.SimSide.Entities
         {
             AssignHeadsOfHousehold();
         }
+       */
 
         public bool IsEntitled()
         {
