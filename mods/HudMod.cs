@@ -24,7 +24,7 @@ namespace UWGame.Mods;
 /// and a drag shows the markers anyway, so the two uses agree. Interface only: nothing the
 /// simulation reads changes, so it is not a simulation setting.
 /// </summary>
-public static class HudMod
+public static partial class HudMod
 {
     public const string ModId = "hud";
 
@@ -150,6 +150,7 @@ public static class HudMod
         _ = TalkPanel;
         _ = ItemLayers;
         _ = EffectsOnTopSetting;
+        _ = LabelListSetting;
         for (int i = 0; i < MarkerRowCount; i++)
         {
             _ = HideMarker(i);

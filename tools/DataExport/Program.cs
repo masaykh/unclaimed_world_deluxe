@@ -1056,6 +1056,32 @@ internal static partial class Program
               + (weaponsElsewhere.Count == 0 ? "" : " - not there: " + string.Join(", ", weaponsElsewhere.Select(t => t.KeyName))));
         Console.WriteLine("  info  TOOLS: " + string.Join(", ", items.Where(t => Layer(t) == toolsLayer).Select(t => t.Name).OrderBy(n => n, StringComparer.Ordinal)));
         Console.WriteLine("  info  WEAPONS: " + string.Join(", ", items.Where(t => Layer(t) == weaponsLayer).Select(t => t.Name).OrderBy(n => n, StringComparer.Ordinal)));
+
+        // Overlapping labels into a list (tripleacoder, "HUD mod"): which labels go in it, and where.
+        var R = (Func<int, int, int, int, Microsoft.Xna.Framework.Rectangle>)((x, y, w, h) => new Microsoft.Xna.Framework.Rectangle(x, y, w, h));
+        // A touches B, B touches C, C does not touch A; D is apart.
+        var labels = new[] { R(100, 100, 80, 20), R(150, 110, 80, 20), R(220, 125, 80, 20), R(600, 400, 80, 20) };
+        var crowd = UWGame.Mods.HudMod.TouchingClosure(labels, 0);
+        Check(crowd.OrderBy(i => i).SequenceEqual(new[] { 0, 1, 2 }),
+              $"the list takes the hovered label, what touches it, and what touches those - not a label apart (got {string.Join(",", crowd)})");
+        Check(UWGame.Mods.HudMod.TouchingClosure(labels, 3).SequenceEqual(new[] { 3 }), "a label touching nothing makes no list");
+        var column = UWGame.Mods.HudMod.LayOutList(new[] { R(0, 0, 80, 20), R(0, 0, 120, 20), R(0, 0, 60, 20) }, new Microsoft.Xna.Framework.Point(100, 100), 900);
+        Check(column.Select(r => r.X).Distinct().SequenceEqual(new[] { 100 }) && column[1].Y == column[0].Bottom + UWGame.Mods.HudMod.ListGap
+              && column[2].Y == column[1].Bottom + UWGame.Mods.HudMod.ListGap && column[0].Y == 100,
+              "laid out one under another from the hovered label, left edges lined up");
+        bool apart = true;
+        for (int i = 0; i < column.Count; i++)
+            for (int j = i + 1; j < column.Count; j++)
+                apart &= !column[i].Intersects(column[j]);
+        Check(apart, "  and none covers another");
+        var tall = UWGame.Mods.HudMod.LayOutList(Enumerable.Repeat(R(0, 0, 70, 20), 50).ToList(), new Microsoft.Xna.Framework.Point(100, 300), 600);
+        Check(tall.All(r => r.Bottom <= 600 && r.Y >= 0) && tall.Select(r => r.X).Distinct().Count() > 1,
+              $"too many for the screen: more columns side by side, nothing below the bottom interface ({tall.Select(r => r.X).Distinct().Count()} columns)");
+        var low = UWGame.Mods.HudMod.LayOutList(Enumerable.Repeat(R(0, 0, 70, 20), 5).ToList(), new Microsoft.Xna.Framework.Point(100, 590), 600);
+        Check(low.All(r => r.Bottom <= 600) && low.Select(r => r.X).Distinct().Count() == 1, "near the bottom, the list moves up instead of splitting");
+        Check(UWGame.Mods.HudMod.LabelListSetting.DefaultValue == "true" && !UWGame.Mods.HudMod.LabelListSetting.AffectsSimulation,
+              "hud.labelList is on by default and interface only");
+
         Console.WriteLine(failures == 0 ? "hud self-test OK" : $"hud self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }

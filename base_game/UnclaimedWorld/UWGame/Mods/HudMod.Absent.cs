@@ -74,4 +74,9 @@ public static class HudMod
     public static void ResetMarkerGesture()
     {
     }
+
+    /// <summary>Nothing moves: labels stay where the studio put them, covering each other or not.</summary>
+    public static void ArrangeOverlappingLabels(System.Collections.Generic.ICollection<UWGame.ClientSide.Interface.HUD_Windows.MarkerWindow> markers, Microsoft.Xna.Framework.GameTime time)
+    {
+    }
 }

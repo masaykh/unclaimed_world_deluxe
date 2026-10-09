@@ -600,6 +600,8 @@ public class InGameInterface : CommonInterface
 			poolOfMarkerWindows.Retire(markerWindow);
 		}
 		markersToRemove.Clear();
+		// MOD: HudMod lines up labels that cover each other into a list, under a resting pointer.
+		UWGame.Mods.HudMod.ArrangeOverlappingLabels(activeMarkerWindows.Values, elapsedTime);
 	}
 
 	public void UpdateSpokenLines(CollideShape2D screenBounds)
