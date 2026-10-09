@@ -1,61 +1,91 @@
+using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Schema;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
+using UWGame.SimSide.Maps;
 using UWGame.SimSide.AllGameData;
 
-namespace UWGame.SimSide.Entities;
-
-public class SensorType : IXmlSerializable
+namespace UWGame.SimSide.Entities
 {
-	public float Range = 480f;
+    public class SensorType : IXmlSerializable
+    {
+        // only vision...?
 
-	public float RangeAtNight = 200f;
+        /// <summary>
+        /// default values are set...
+        /// </summary>
+        public float Range = 480; // 10;        
+        public float RangeAtNight = 200;// = 4;
 
-	public float PowerNeeds;
+        public float PowerNeeds;
 
-	public string DetectionTypeKey;
 
-	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(SensorType))
-	{
-		TypeMappings = DataLoader.GetListOfTypeMappings(useEntityTypePlaceholders: true)
-	};
+        public string DetectionTypeKey;
 
-	[XmlIgnore]
-	public DetectionType DetectionType { get; private set; }
+        [XmlIgnore]
+        public DetectionType DetectionType
+        {
+            get;
+            private set;
+        }
 
-	public void Initialize()
-	{
-	}
 
-	public void PostInitValidate(ref List<string> listOfErrors)
-	{
-	}
 
-	public void PostLoadContentInitialize()
-	{
-		if (!string.IsNullOrEmpty(DetectionTypeKey))
-		{
-			DetectionType = GameData.Instance.AllDetectionTypes[DetectionTypeKey];
-		}
-		if (DetectionType == null)
-		{
-			DetectionType = new DetectionType();
-		}
-	}
 
-	public XmlSchema GetSchema()
-	{
-		return null;
-	}
 
-	public void ReadXml(XmlReader reader)
-	{
-		CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
-	}
+        public void Initialize()
+        {
 
-	public void WriteXml(XmlWriter writer)
-	{
-		CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
-	}
+
+            //  DetectionType.Initialize(); // was already init'ed
+        }
+
+
+        public void PostInitValidate(ref List<string> listOfErrors)
+        {
+
+
+            //DetectionType.PostInitValidate(listOfErrors);  // was already init'ed
+        }
+
+        public void PostLoadContentInitialize()
+        {
+            if (!string.IsNullOrEmpty(DetectionTypeKey))
+            {
+                DetectionType = GameData.Instance.AllDetectionTypes[DetectionTypeKey];
+            }
+
+            if (DetectionType == null)
+            {
+                DetectionType = new DetectionType(); // default
+            }
+        }
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(SensorType))
+        {
+            // use placeholders!
+            TypeMappings = BaseDataLoader.GetListOfTypeMappings(true)
+        };
+
+        #endregion
+    }
 }
