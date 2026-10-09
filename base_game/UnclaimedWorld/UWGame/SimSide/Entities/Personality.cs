@@ -1,254 +1,478 @@
+//// MIGRATED FROM ORIGINAL SOURCE
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UWGame.SimSide.Allegiances;
 using UWGame.SimSide.Allegiances.Statistics;
-using UWGame.SimSide.SimEffects;
 using UWGame.SimSide.Snapshots;
+using UWGame.Control.Replays;
+using UWGame.SimSide.Allegiances;
+using WindowSystem;
+using UWGame.SimSide.SimEffects;
 
-namespace UWGame.SimSide.Entities;
-
-public class Personality : ISnapshot
+namespace UWGame.SimSide.Entities
 {
-	public Entity Parent;
+    public class Personality : ISnapshot
+    {
+        public Entity Parent;
 
-	public PersonalityType PersonalityType;
+        public PersonalityType PersonalityType;
 
-	public Dictionary<RatingTypes, float> Principles;
+        public Dictionary<RatingTypes, float> Principles;
 
-	public float Adaptability;
+        public float Adaptability;
 
-	public Dictionary<AllegianceID, float> Attraction;
 
-	public float Stability;
+        /// <summary>
+        /// can be set by the designer at start. 
+        /// NEW: is removed after the agent chooses to emigrate away
+        /// </summary>
+        public Dictionary<AllegianceID, float> Attraction;
 
-	private SimplexNoise stabilityNoise;
 
-	private float happiness;
+        public float Stability;
 
-	private bool happinessIsDirty = true;
+        private SimplexNoise stabilityNoise;
 
-	private string happinessBreakdown;
 
-	private RatingTypes? mostUnhappyRating;
+        float happiness;
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+        bool happinessIsDirty = true;
 
-	public float Happiness
-	{
-		get
-		{
-			if (happinessIsDirty)
-			{
-				ComputeHappiness();
-				happinessIsDirty = false;
-				happinessBreakdown = null;
-			}
-			return happiness;
-		}
-	}
+        string happinessBreakdown = null;
 
-	public string HappinessBreakdown
-	{
-		get
-		{
-			if (happinessBreakdown == null)
-			{
-				happinessBreakdown = GetHappinessBreakdown();
-			}
-			return happinessBreakdown;
-		}
-	}
+        RatingTypes? mostUnhappyRating = null;
 
-	public RatingTypes? MostUnhappyRating => mostUnhappyRating;
+        /// <summary>
+        /// -1 - +1
+        /// The difference between principles and Rating. Can be negative. unhappy-content-happy
+        /// </summary>
+        public float Happiness
+        {
+            get
+            {
+                if (happinessIsDirty)
+                {
+                    ComputeHappiness();
+                    happinessIsDirty = false;
 
-	public bool IsSnapshotted { get; set; }
+                    happinessBreakdown = null;
+                }
 
-	public Personality()
-	{
-	}
+                return happiness;
+            }
+        }
 
-	public Personality(Entity entity, PersonalityType type)
-	{
-		PersonalityType = type;
-		Parent = entity;
-		stabilityNoise = new SimplexNoise();
-		PersonalityType.FillEntity(this);
-	}
+        public string HappinessBreakdown
+        {
+            get
+            {
+                if (happinessBreakdown == null)
+                {
+                    happinessBreakdown = GetHappinessBreakdown();
+                }
 
-	public void Initialize()
-	{
-		Parent.Intelligence.Statistics.RatingsChanged += Statistics_RatingsChanged;
-	}
+                return happinessBreakdown;
+            }
+        }
 
-	public RatingTypes GetHighestUnhappiness()
-	{
-		float num = 10f;
-		RatingTypes? ratingTypes = null;
-		foreach (KeyValuePair<RatingTypes, float> principle in Principles)
-		{
-			float value = principle.Value;
-			float rating = Parent.Intelligence.Statistics.GetRating(principle.Key);
-			float num2 = ComputeHappinessComponent(value, rating);
-			if (num2 < num)
-			{
-				num = num2;
-				ratingTypes = principle.Key;
-			}
-		}
-		return ratingTypes.Value;
-	}
+        public RatingTypes? MostUnhappyRating
+        {
+            get
+            {
+                return mostUnhappyRating;
+            }
+        }
 
-	public void SetPrinciplesToMinimum(RatingTypes rating, float minimum)
-	{
-		if (Principles[rating] < minimum)
-		{
-			Principles[rating] = minimum;
-		}
-	}
+        public Personality()
+        {
+            System.Diagnostics.Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor");
+        }
 
-	private string GetHappinessBreakdown()
-	{
-		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendLine(stringBuilder, UWGame.Locale.Text("The person's satisfaction with their living situation."));
-		stringBuilder.Append(UWGame.Locale.Text("Happiness: "));
-		stringBuilder.Append(Common.PercentageToString(Happiness, includePlusPrefix: false, useColoring: true));
-		string arg = ((!Common.IsPositive(Common.ToPercent(Happiness))) ? UWGame.Locale.Text("Unhappy") : UWGame.Locale.Text("Happy"));
-		Common.AppendLine(stringBuilder, $" ({arg})");
-		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
-		Common.AppendLine(stringBuilder);
-		foreach (KeyValuePair<RatingTypes, float> principle in Principles)
-		{
-			float value = principle.Value;
-			Statistic.AppendRatingsTypeToStringAndIcon(stringBuilder, principle.Key);
-			Common.AppendLine(stringBuilder);
-			stringBuilder.Append(UWGame.Locale.Text("   Personal conditions: "));
-			float rating = Parent.Intelligence.Statistics.GetRating(principle.Key);
-			stringBuilder.Append(Common.PercentageToString(rating));
-			Common.AppendLine(stringBuilder);
-			stringBuilder.Append(UWGame.Locale.Text("- Principles: "));
-			Common.AppendLine(stringBuilder, Common.PercentageToString(value));
-			stringBuilder.Append(UWGame.Locale.Text("   Difference: "));
-			Common.AppendLine(stringBuilder, Common.PercentageToString(rating - value, includePlusPrefix: false, useColoring: true));
-			Common.AppendLine(stringBuilder);
-		}
-		stringBuilder.Append(UWGame.Locale.Text("AVERAGE: "));
-		Common.AppendLine(stringBuilder, Common.PercentageToString(happiness, includePlusPrefix: false, useColoring: true));
-		return stringBuilder.ToString();
-	}
+        public Personality(Entity entity, PersonalityType type)
+        {
+            PersonalityType = type;
+            this.Parent = entity;
 
-	public bool CanComplainProperty(List<Tuple<string, bool>> effectComponents = null)
-	{
-		return Parent.GetEffect(AffectsFlags.CanComplain, baseValue: true, null, null, effectComponents);
-	}
+            stabilityNoise = new SimplexNoise();
 
-	public float GetCurrentStability()
-	{
-		float num = stabilityNoise.Generate1D((float)The.Sim.TotalUnPausedGameTimeInSeconds, GameData.Instance.AIConstants.MigrateStabilityFrequency);
-		return (1f - Stability) * num;
-	}
+            /*
+            stabilityRandomSeed = The.Sim.GameplayRandomGenerator.Next("volatilityRandomSeed");
+            CreateStabilitySeedNumbers();*/
 
-	public static float ComputeHappinessComponent(float principle, float rating)
-	{
-		return rating - principle;
-	}
+            PersonalityType.FillEntity(this);
 
-	public float ComputeHappinessComponent(RatingTypes ratingType)
-	{
-		float principle = Principles[ratingType];
-		float rating = Parent.Intelligence.Statistics.GetRating(ratingType);
-		return ComputeHappinessComponent(principle, rating);
-	}
 
-	private void ComputeHappiness()
-	{
-		int count = Principles.Count;
-		float num = 0f;
-		float num2 = 0f;
-		RatingTypes? ratingTypes = null;
-		foreach (KeyValuePair<RatingTypes, float> principle in Principles)
-		{
-			float value = principle.Value;
-			float rating = Parent.Intelligence.Statistics.GetRating(principle.Key);
-			float num3 = ComputeHappinessComponent(value, rating);
-			if (num3 < num2)
-			{
-				num2 = num3;
-				ratingTypes = principle.Key;
-			}
-			num += num3;
-		}
-		happiness = num / (float)count;
-		mostUnhappyRating = ratingTypes;
-	}
+        }
 
-	public void Update(double? timeSinceLastUpdate)
-	{
-		UpdatePrinciples(timeSinceLastUpdate);
-	}
+        public void Initialize()
+        {
+            Parent.Intelligence.Statistics.RatingsChanged += Statistics_RatingsChanged;
 
-	public float GetTimeForPrincipleToReachValue(RatingTypes rating, float value)
-	{
-		float num = Principles[rating];
-		return (value - num) / (Adaptability * GameData.Instance.AIConstants.Ratings.PrinciplesAdaptationSpeedPerSecond);
-	}
+        }
 
-	private void UpdatePrinciples(double? timeSinceLastUpdate)
-	{
-		foreach (RatingTypes item in Principles.Keys.ToList())
-		{
-			float rating = Parent.Intelligence.Statistics.GetRating(item) + GameData.Instance.AIConstants.Ratings.PrinciplesTargetDelta;
-			float num = Principles[item];
-			float num2 = ComputeHappinessComponent(num, rating);
-			float num3 = 0f;
-			if (!Common.IsZero(num2))
-			{
-				num3 = Adaptability * (float)((double)GameData.Instance.AIConstants.Ratings.PrinciplesAdaptationSpeedPerSecond * timeSinceLastUpdate.Value);
-				num3 = Common.ClampTop(num3, Math.Abs(num2));
-				if (Common.IsLessThanOrEqual(num2, 0f))
-				{
-					num3 *= -1f;
-				}
-				float f = num + num3;
-				f = Common.Clamp(f, 0f, 1f);
-				Principles[item] = f;
-			}
-		}
-	}
 
-	private void Statistics_RatingsChanged()
-	{
-		happinessIsDirty = true;
-	}
+        public RatingTypes GetHighestUnhappiness()
+        {
+            int noOfComponents = Principles.Count;
 
-	public Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
+            float highestUnhappiness = 10f;
+            RatingTypes? ratingType = null;
 
-	public ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		PersonalityType = sn.DoGameData(PersonalityType);
-		Principles = sn.DoDictionary(Principles);
-		Stability = sn.DoFloat(Stability);
-		stabilityNoise = (SimplexNoise)sn.DoISnapshot(stabilityNoise);
-		Adaptability = sn.DoFloat(Adaptability);
-		Attraction = sn.DoDictionary(Attraction);
-		sn.Ignore(Parent);
-		sn.Ignore(happinessIsDirty);
-		sn.Ignore(happinessBreakdown);
-		sn.Ignore(happiness);
-		sn.Ignore(mostUnhappyRating);
-		return this;
-	}
+            foreach (var item in Principles)
+            {
+                float principle = item.Value;
 
-	public void LoadPostProcess(Snapshotter sn)
-	{
-		sn.RegisterLoadPostProcessCall(this);
-		stabilityNoise.LoadPostProcess(sn);
-		Parent.Intelligence.Statistics.RatingsChanged += Statistics_RatingsChanged;
-	}
+                float rating = Parent.Intelligence.Statistics.GetRating(item.Key);
+
+                float happiness = ComputeHappinessComponent(principle, rating);
+
+                if (happiness < highestUnhappiness)
+                {
+                    highestUnhappiness = happiness;
+
+                    ratingType = item.Key;
+                }
+            }
+
+            return ratingType.Value;
+
+        }
+
+        public void SetPrinciplesToMinimum(RatingTypes rating, float minimum)
+        {
+            float current = Principles[rating];
+            if (current < minimum)
+            {
+                Principles[rating] = minimum;
+            }
+        }
+
+
+        private string GetHappinessBreakdown()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            Common.AppendLine(stringBuilder, UWGame.Locale.Text("The person's satisfaction with their living situation."));
+            stringBuilder.Append(UWGame.Locale.Text("Happiness: "));
+            stringBuilder.Append(Common.PercentageToString(Happiness, includePlusPrefix: false, useColoring: true));
+            string arg = ((!Common.IsPositive(Common.ToPercent(Happiness))) ? UWGame.Locale.Text("Unhappy") : UWGame.Locale.Text("Happy"));
+            Common.AppendLine(stringBuilder, $" ({arg})");
+            Common.AppendDivider(stringBuilder);
+            Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
+            Common.AppendLine(stringBuilder);
+            foreach (KeyValuePair<RatingTypes, float> principle in Principles)
+            {
+                float value = principle.Value;
+                Statistic.AppendRatingsTypeToStringAndIcon(stringBuilder, principle.Key);
+                Common.AppendLine(stringBuilder);
+                stringBuilder.Append(UWGame.Locale.Text("   Personal conditions: "));
+                float rating = Parent.Intelligence.Statistics.GetRating(principle.Key);
+                stringBuilder.Append(Common.PercentageToString(rating));
+                Common.AppendLine(stringBuilder);
+                stringBuilder.Append(UWGame.Locale.Text("- Principles: "));
+                Common.AppendLine(stringBuilder, Common.PercentageToString(value));
+                stringBuilder.Append(UWGame.Locale.Text("   Difference: "));
+                Common.AppendLine(stringBuilder, Common.PercentageToString(rating - value, includePlusPrefix: false, useColoring: true));
+                Common.AppendLine(stringBuilder);
+            }
+            stringBuilder.Append(UWGame.Locale.Text("AVERAGE: "));
+            Common.AppendLine(stringBuilder, Common.PercentageToString(happiness, includePlusPrefix: false, useColoring: true));
+            return stringBuilder.ToString();
+        }
+
+
+        /*
+        private string GetHappinessBreakdown()
+        {
+            StringBuilder text = new StringBuilder();
+
+            Common.AppendLine(text, "The person's satisfaction with their living situation.");
+            text.Append("Happiness: ");
+            text.Append(Common.PercentageToString(Happiness, useColoring: true));
+
+            string term;
+            if (Common.IsPositive(Common.ToPercent(Happiness))) // > 0)
+            {
+                term = "Happy";
+            }
+            else
+            {
+                term = "Unhappy";
+            }
+
+
+            Common.AppendLine(text, string.Format(" ({0})", term));
+
+            Common.AppendDivider(text);
+            Common.AppendLine(text, "Based on:");
+            Common.AppendLine(text);
+
+            foreach (var item in Principles)
+            {
+                float rating;
+                float principle = item.Value;
+
+                Statistic.AppendRatingsTypeToStringAndIcon(text, item.Key);              
+
+                Common.AppendLine(text);
+
+                // text.Append(Common.indentString);              
+                text.Append("   Personal conditions: "); //was "Rating: "  
+                rating = Parent.Intelligence.Statistics.GetRating(item.Key);
+                text.Append(Common.PercentageToString(rating));
+                Common.AppendLine(text);
+                text.Append("- Principles: ");
+                // text.Append(Common.PercentageToString(foodPrinciple));
+                Common.AppendLine(text, Common.PercentageToString(principle));
+                text.Append("   Difference: ");
+                Common.AppendLine(text, Common.PercentageToString(rating - principle, useColoring: true));
+                Common.AppendLine(text);
+            }
+
+            text.Append("AVERAGE: ");
+            Common.AppendLine(text, Common.PercentageToString(happiness, useColoring: true));
+
+
+            return text.ToString();
+
+        }*/
+
+        /// <summary>
+        /// controls participation in unhappiness group meetings
+        /// leaders don't complain here...
+        /// </summary>
+        /// <param name="effectComponents"></param>
+        /// <returns></returns>
+        public bool CanComplainProperty(List<Tuple<string, bool>> effectComponents = null)
+        {
+            bool value = Parent.GetEffect(AffectsFlags.CanComplain, true, effectComponents: effectComponents);
+
+            return value;
+        }
+
+
+        /// <summary>
+        /// -1 - 1
+        /// returns a person-specific number that fluctuates over time
+        /// </summary>
+        /// <returns></returns>
+        public float GetCurrentStability()
+        {
+            float noise = stabilityNoise.Generate1D((float)The.Sim.TotalUnPausedGameTimeInSeconds, GameData.Instance.AIConstants.MigrateStabilityFrequency);
+            /*
+            SimplexNoiseGenerator.SeedNumbers = stabilitySeedNumbers;
+            float noise = SimplexNoiseGenerator.Generate1D((float)The.Sim.TotalUnPausedGameTimeInSeconds, GameData.Instance.AIConstants.MigrateStabilityFrequency);*/
+
+            return (1f - Stability) * noise; // scale
+
+        }
+
+        public static float ComputeHappinessComponent(float principle, float rating)
+        {
+            return rating - principle;
+        }
+
+        public float ComputeHappinessComponent(RatingTypes ratingType)
+        {
+            float principle = Principles[ratingType];
+
+            float rating = Parent.Intelligence.Statistics.GetRating(ratingType);
+
+            float difference = ComputeHappinessComponent(principle, rating);
+
+            return difference;
+        }
+
+        void ComputeHappiness()
+        {
+            int noOfComponents = Principles.Count;
+
+            float differenceSum = 0f;
+
+            float mostUnhappyRating = 0f;
+            RatingTypes? mostUnhappyRatingType = null;
+
+            foreach (var item in Principles)
+            {
+                float principle = item.Value;
+
+                float rating = Parent.Intelligence.Statistics.GetRating(item.Key);
+
+                float difference = ComputeHappinessComponent(principle, rating);
+
+                if (difference < mostUnhappyRating)
+                {
+                    mostUnhappyRating = difference;
+                    mostUnhappyRatingType = item.Key;
+                }
+
+                differenceSum += difference;
+
+            }
+
+            happiness = differenceSum / noOfComponents;
+
+            /*if (mostUnhappyRatingType.HasValue)
+            {*/
+            this.mostUnhappyRating = mostUnhappyRatingType;
+            // }
+        }
+
+
+        public void Update(double? timeSinceLastUpdate)
+        {
+
+            UpdatePrinciples(timeSinceLastUpdate);
+
+        }
+
+
+        public /*DateAndTime.TimeDateYear*/ float GetTimeForPrincipleToReachValue(RatingTypes rating, float value)
+        {
+            float principle = Principles[rating];
+            float principleDelta = value - principle;
+
+            float timeInSeconds = principleDelta / (Adaptability * (float)(GameData.Instance.AIConstants.Ratings.PrinciplesAdaptationSpeedPerSecond));
+
+            return timeInSeconds;
+
+            //  float principleDelta = Adaptability * (float)(GameData.Instance.AIConstants.Ratings.PrinciplesAdaptationSpeedPerSecond * time);
+
+            // return DateAndTime.GetSecondsToIngameDays(timeInSeconds);
+
+            /* float timeInDays = (float)(timeInSeconds / DateAndTime.secondsPerDay);
+
+             return timeInDays;*/
+
+        }
+
+        /// <summary>
+        /// move principles towards a point above colony's rating, to simulate people's needs for more...
+        ///  
+        /// </summary>
+        /// <param name="timeSinceLastUpdate"></param>
+        void UpdatePrinciples(double? timeSinceLastUpdate)
+        {
+            Allegiance allegiance = Parent.Intelligence.Allegiance;
+
+            List<RatingTypes> ratingTypes = Principles.Keys.ToList();
+            foreach (var item in ratingTypes)
+            {
+                // float colonyRating = allegiance.Statistics.GetRating(item);
+                float rating = Parent.Intelligence.Statistics.GetRating(item);
+
+                float targetPoint = rating + GameData.Instance.AIConstants.Ratings.PrinciplesTargetDelta;
+
+                float principle = Principles[item];
+                float difference = ComputeHappinessComponent(principle, targetPoint); // rating);
+
+                float principleDelta = 0f;
+                if (!Common.IsZero(difference))
+                {
+                    principleDelta = Adaptability * (float)(GameData.Instance.AIConstants.Ratings.PrinciplesAdaptationSpeedPerSecond * timeSinceLastUpdate.Value);
+
+                    principleDelta = Common.ClampTop(principleDelta, Math.Abs(difference));
+
+                    if (Common.IsLessThanOrEqual(difference, 0f))
+                    {
+                        principleDelta *= -1f;
+                    }
+
+                    float newPrinciples = principle + principleDelta;
+                    newPrinciples = Common.Clamp(newPrinciples, 0f, 1f);
+
+                    Principles[item] = newPrinciples;
+                }
+
+            }
+        }
+
+        /* void CreateDecisionPoints(double? timeSinceLastUpdate)
+         {
+             Allegiance allegiance = Parent.Intelligence.Allegiance;
+
+             foreach (var item in Principles)
+             {
+                 float happiness = ComputeHappinessComponent(item.Key);
+
+                 if (happiness < 0f)
+                 {
+                     float points = -(float)(GameData.Instance.AIConstants.Ratings.DecisionPointsPerHappinessPerSecond * timeSinceLastUpdate.Value * happiness);
+
+                     allegiance.AddDecisionPoints(item.Key, points);
+                 }
+             }
+
+
+         }*/
+
+        /*  private void CreateStabilitySeedNumbers()
+          {
+              RandomGenerator generator = new RandomGenerator(stabilityRandomSeed, RandomGenerator.GeneratorType.Sim);
+              stabilitySeedNumbers = SimplexNoiseGenerator.CreateSeedNumbers(generator); // these numbers are the same before and after snapshot.
+          }*/
+
+        void Statistics_RatingsChanged()
+        {
+            happinessIsDirty = true;
+        }
+
+
+        #region ISnapshot
+
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
+
+        public bool IsSnapshotted { get; set; }
+
+        public ISnapshot DoSnapshot(Snapshotter sn)
+        {
+            this.PersonalityType = sn.DoGameData(PersonalityType);
+            this.Principles = sn.DoDictionary(Principles);
+
+            // this.Adventurousness = sn.DoFloat(Adventurousness);
+            this.Stability = sn.DoFloat(Stability);
+            this.stabilityNoise = (SimplexNoise)sn.DoISnapshot(stabilityNoise);
+            this.Adaptability = sn.DoFloat(Adaptability);
+            this.Attraction = sn.DoDictionary(Attraction);
+
+            /*   this.happiness = sn.DoFloat(happiness);
+               this.happinessIsDirty = sn.DoBool(happinessIsDirty);
+             */
+
+            sn.Ignore(Parent);
+
+            // recompute all these on load:
+            sn.Ignore(happinessIsDirty);
+            sn.Ignore(happinessBreakdown);
+            sn.Ignore(happiness);
+            sn.Ignore(mostUnhappyRating);
+
+            return this;
+        }
+
+        public void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+
+            stabilityNoise.LoadPostProcess(sn);
+            //CreateStabilitySeedNumbers();
+
+            Parent.Intelligence.Statistics.RatingsChanged += Statistics_RatingsChanged;
+        }
+
+
+
+
+        #endregion
+
+
+    }
 }
