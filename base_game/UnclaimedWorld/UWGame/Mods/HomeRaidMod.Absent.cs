@@ -34,6 +34,9 @@ public static class HomeRaidMod
 
     public static float DamagePerSecond() => 0f;
 
+    /// <summary>1: colonists inside a home see as far as the studio made them.</summary>
+    public static float SensorFactorInside(Entity sensing) => 1f;
+
     public static void RaidStarted(Entity predator)
     {
     }

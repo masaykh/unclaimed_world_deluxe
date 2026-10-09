@@ -70,15 +70,70 @@ public static class HomeRaidMod
             toolTip: "How long one predator takes to break a sound building open. Two take half as long.",
             affectsSimulation: true));
 
+    public static ModSetting SightFromHome =>
+        sightFromHome ?? (sightFromHome = ModSettings.Choice(
+            ModId, "sightFromHome", "COLONISTS INSIDE A HOME SEE", SightChoices, "1/3",
+            toolTip: "How far colonists inside a home (a hut, a tent) see, compared to outside. " +
+                     "Less, and a predator gets to the door before they notice it.",
+            affectsSimulation: true, stockValue: "ALL THE WAY"));
+
+    private static ModSetting sightFromHome;
+
+    private static readonly string[] SightChoices = { "ALL THE WAY", "1/2", "1/3", "1/4" };
+
     public static void RegisterSettings()
     {
         ModSettings.SetCategoryLabel(ModId, "HOME RAIDS");
         _ = EnabledSetting;
         _ = BreakInSeconds;
+        _ = SightFromHome;
     }
 
     /// <summary>Whether raids happen at all. Read by EvaluateBreakIn and GoalBreakIn.</summary>
     public static bool Enabled => EnabledSetting.On;
+
+    /// <summary>
+    /// Kastuk, 2026-10-04, testing raids: "colonists is not really sleep, but actively attack from
+    /// inside the huts, killing any incoming predator. Let their detection range be reduced from
+    /// inside the buildings to like 1/3 of basic." A contained colonist's Sensor sees from its
+    /// home's tile with the full range of one standing outside, so the sleepers spot a raider long
+    /// before it reaches the door.
+    ///
+    /// The player's people inside a residence (IResidence: the huts, tents, tipis and shelters; not a
+    /// workshop or a vehicle, which hold people too) see COLONISTS INSIDE A HOME SEE of their range, day and night.
+    /// Read by Entity.GetDaySensorRange and GetNightSensorRange. The Sensor rebuilds the tiles it
+    /// sees whenever the range changes (Sensor.UpdatePlaySiteRegulated), so going in and coming out
+    /// takes effect at the next sensor update.
+    /// </summary>
+    public static float SensorFactorInside(Entity sensing)
+    {
+        // Cheapest first: this runs for every detectable a sensor rolls for (Sensor.RollToDetect).
+        if (sensing == null || !Enabled)
+        {
+            return 1f;
+        }
+        if (sensing.Intelligence?.Allegiance?.AllegianceType != UWGame.SimSide.Allegiances.AllegianceType.Player
+            || !sensing.ContainedBy.HasValue)
+        {
+            return 1f;
+        }
+        if (!sensing.GetContainedBy(out Entity container) || !(container?.Contains is IResidence))
+        {
+            return 1f;
+        }
+        return SightFraction(SightFromHome.Value);
+    }
+
+    /// <summary>"1/3" -> 0.333; "ALL THE WAY", or anything unreadable, -> 1.</summary>
+    public static float SightFraction(string value)
+    {
+        if (value != null && value.StartsWith("1/", StringComparison.Ordinal)
+            && int.TryParse(value.Substring(2), out int parts) && parts > 0)
+        {
+            return 1f / parts;
+        }
+        return 1f;
+    }
 
     /// <summary>
     /// The raiders: the big hunters. Not the bush dragon - Kastuk: "not such aggressive and their

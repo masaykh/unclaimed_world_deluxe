@@ -1557,6 +1557,25 @@ internal static partial class Program
         Check(UWGame.Mods.TradeMod.AmountDue(agreed, new[] { ("item:notSold", taken) }) == 0m,
               "an item the sale never priced is not paid for");
 
+        // Kastuk: the ETA "may be less exact to be more roleplayish, like 'half a day' or 'a pair
+        // of hours'". Display only, so it must stay out of the save signature.
+        var rough = UWGame.Mods.TradeMod.RoughEtaSetting;
+        Check(rough.DefaultValue == "true" && !rough.AffectsSimulation, "trade.roughEta is on by default and not in the save signature");
+        string R(double hours) => UWGame.Mods.TradeMod.RoughInterval(hours / 24.0);
+        Check(R(0.5) == "within the hour" && R(2) == "a couple of hours" && R(5) == "a few hours" && R(12) == "half a day"
+              && R(24) == "about a day" && R(40) == "a day or two" && R(96) == "a few days" && R(192) == "about a week" && R(300) == "over a week",
+              $"rough ETAs: 0.5 h {R(0.5)}, 2 h {R(2)}, 5 h {R(5)}, 12 h {R(12)}, 1 d {R(24)}, 40 h {R(40)}, 4 d {R(96)}, 8 d {R(192)}, 12.5 d {R(300)}");
+        string was = rough.Value;
+        rough.Value = "false";
+        Check(UWGame.Mods.TradeMod.ArrivalIn(1.25) == new DateAndTime.TimeDateYear(1.25).ToIntervalString(),
+              $"switch off: the studio's interval form ({UWGame.Mods.TradeMod.ArrivalIn(1.25)})");
+        rough.Value = "true";
+        Check(UWGame.Mods.TradeMod.ArrivalIn(0.5) == "half a day", $"switch on: in words (0.5 days: {UWGame.Mods.TradeMod.ArrivalIn(0.5)})");
+        Check(UWGame.Mods.TradeMod.ArrivalAt(new DateAndTime.TimeDateYear(3.8)) == " in the evening"
+              && UWGame.Mods.TradeMod.ArrivalAt(new DateAndTime.TimeDateYear(3.05)) == " at night",
+              "...and the tooltip names the part of the day, not the clock");
+        rough.Value = was;
+
         Console.WriteLine(failures == 0 ? "trade self-test OK" : $"trade self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
@@ -1752,6 +1771,29 @@ internal static partial class Program
               "once forgotten (SharedKnowledge.DeleteMemoryOfEntity) it is not a target again");
         Check(!UWGame.Mods.HomeRaidMod.Knows(null, seen) && !UWGame.Mods.HomeRaidMod.Knows(knowledge.AllKnownEntities, null),
               "no knowledge or no building: no target");
+
+        // Kastuk: colonists in their huts spotted every raider long before it reached the door.
+        // HomeRaidMod.SensorFactorInside is a share of the sensor range for the player's people
+        // inside a residence. Putting a colonist inside one needs a running Sim; checked here are
+        // the setting, the cases that must stay at 1, and which containers count as a home.
+        var sight = UWGame.Mods.HomeRaidMod.SightFromHome;
+        Check(sight.Value == "1/3" && sight.StockValue == "ALL THE WAY",
+              $"COLONISTS INSIDE A HOME SEE: 1/3 by default, all the way in stock (got {sight.Value}, {sight.StockValue})");
+        Check(UWGame.Mods.HomeRaidMod.SightFraction("1/3") == 1f / 3f && UWGame.Mods.HomeRaidMod.SightFraction("1/4") == 0.25f
+              && UWGame.Mods.HomeRaidMod.SightFraction("ALL THE WAY") == 1f && UWGame.Mods.HomeRaidMod.SightFraction("1/0") == 1f,
+              "1/3 reads as a third; ALL THE WAY, and anything unreadable, as all of it");
+        Check(UWGame.Mods.HomeRaidMod.SensorFactorInside(null) == 1f, "no entity: all the way");
+        enabled.Value = "false";
+        Check(UWGame.Mods.HomeRaidMod.SensorFactorInside(Building(home)) == 1f,
+              "switch off: all the way, decided before the entity is looked at");
+        enabled.Value = "true";
+        var game = typeof(UWGame.SimSide.Entities.Entity).Assembly;
+        var residence = game.GetType("UWGame.SimSide.Entities.Containers.IResidence");
+        bool IsResidence(string container) =>
+            residence != null && residence.IsAssignableFrom(game.GetType("UWGame.SimSide.Entities.Containers.Components." + container));
+        Check(IsResidence("HomeContainer"), "a home (HomeContainer) is a residence: inside it, sight is shortened");
+        Check(!IsResidence("UpgradableBuildingContainer") && !IsResidence("VehicleContainer"),
+              "a workshop (UpgradableBuildingContainer) and a vehicle are not, though both hold people: full sight");
         enabled.Value = was;
 
         Console.WriteLine(failures == 0 ? "home raid self-test OK" : $"home raid self-test FAILED - {failures} check(s)");

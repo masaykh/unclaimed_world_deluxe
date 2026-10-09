@@ -37,4 +37,11 @@ public static class TradeMod
     public static void ReturnUnpaidGoods(Mission mission)
     {
     }
+
+    /// <summary>The time left in the studio's interval form, "1.25 days".</summary>
+    public static string ArrivalIn(double daysLeft) => new UWGame.SimSide.DateAndTime.TimeDateYear(daysLeft).ToIntervalString();
+
+    /// <summary>The arrival date and the part of the day.</summary>
+    public static string ArrivalAt(UWGame.SimSide.DateAndTime.TimeDateYear eta) =>
+        " on " + eta.ToString() + ", " + UWGame.SimSide.DateAndTime.GetTimeOfDayAsString(eta.TimeOfDay);
 }

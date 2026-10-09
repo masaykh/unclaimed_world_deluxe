@@ -206,9 +206,10 @@ public class MissionsPanel : RosterPanel
 			if (site != null && daysLeft >= 0.0 && daysLeft < MaxDaysToShow)
 			{
 				label2.Text = site.Name;
-				label3.Text = new DateAndTime.TimeDateYear(daysLeft).ToIntervalString();
+				// MOD: TradeMod may put both in words ("half a day", "in the evening").
+				label3.Text = UWGame.Mods.TradeMod.ArrivalIn(daysLeft);
 				label3.ToolTip = (inCommRange ? "Estimated time of arrival at " : "We are not in communication with the mission. Estimated from its route and speed: arrival at ")
-					+ site.Name + " on " + eta.Value.ToString() + ", " + DateAndTime.GetTimeOfDayAsString(eta.Value.TimeOfDay) + ".";
+					+ site.Name + UWGame.Mods.TradeMod.ArrivalAt(eta.Value) + ".";
 			}
 		}
 	}

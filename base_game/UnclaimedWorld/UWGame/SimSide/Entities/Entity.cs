@@ -4515,15 +4515,16 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 	public float GetDaySensorRange()
 	{
 		// MOD: DangerousFaunaMod scales both sensor ranges per species - 1 unless a row is changed.
+		// HomeRaidMod shortens them for colonists inside a home - 1 unless that is on.
 		if (EntityType.BiologicalType != null)
 		{
 			BioProperty bioProperty = BiologicalEntity.GetBioProperty("SensorRange");
 			if (bioProperty != null)
 			{
-				return bioProperty.NumberValue.Value * UWGame.Mods.DangerousFaunaMod.SensorFactor(this);
+				return bioProperty.NumberValue.Value * UWGame.Mods.DangerousFaunaMod.SensorFactor(this) * UWGame.Mods.HomeRaidMod.SensorFactorInside(this);
 			}
 		}
-		return EntityType.SensorType.Range * UWGame.Mods.DangerousFaunaMod.SensorFactor(this);
+		return EntityType.SensorType.Range * UWGame.Mods.DangerousFaunaMod.SensorFactor(this) * UWGame.Mods.HomeRaidMod.SensorFactorInside(this);
 	}
 
 	public float GetNightSensorRange()
@@ -4538,7 +4539,7 @@ public class Entity : GameObject, IAddon, IComposite, ILookUp<IComposite, Compos
 			}
 		}
 		num = num ?? EntityType.SensorType.RangeAtNight;
-		return new float?(GetEffect(AffectsNumbers.NightSensorRange, num.Value)).Value * UWGame.Mods.DangerousFaunaMod.SensorFactor(this);
+		return new float?(GetEffect(AffectsNumbers.NightSensorRange, num.Value)).Value * UWGame.Mods.DangerousFaunaMod.SensorFactor(this) * UWGame.Mods.HomeRaidMod.SensorFactorInside(this);
 	}
 
 	public int GetVisionRangeInTiles(float lightLevels)

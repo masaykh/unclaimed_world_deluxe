@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UWGame.ClientSide.PropertyPresentation;
+using UWGame.SimSide;
 using UWGame.SimSide.Allegiances;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Owners;
@@ -68,10 +69,62 @@ public static class TradeMod
                      "leaves behind, or that an aborted run never collects, are yours again.",
             affectsSimulation: true));
 
+    private static ModSetting roughEta;
+
+    public static ModSetting RoughEtaSetting =>
+        roughEta ?? (roughEta = ModSettings.Toggle(
+            ModId, "roughEta", "MISSIONS SAY ROUGHLY WHEN THEY ARRIVE", defaultValue: true,
+            toolTip: "The ETA in the missions list reads \"half a day\" or \"a day or two\" instead " +
+                     "of \"0.48 days\", and its tooltip names the part of the day, not the clock."));
+
     public static void RegisterSettings()
     {
         ModSettings.SetCategoryLabel(ModId, "TRADE");
         _ = PayOnPickupSetting;
+        _ = RoughEtaSetting;
+    }
+
+    // ---- the ETA in the missions list --------------------------------------------------------
+    //
+    // Kastuk, "Trading", 2026-10-04, on the ETA column: "It may be less exact to be more
+    // roleplayish, like 'half a day' or 'a pair of hours'." MissionsPanel.UpdateRow asks here for
+    // the words. Display only: nothing in the simulation reads them.
+
+    /// <summary>How long until arrival, for the ETA column.</summary>
+    public static string ArrivalIn(double daysLeft)
+    {
+        return RoughEtaSetting.On ? RoughInterval(daysLeft) : new DateAndTime.TimeDateYear(daysLeft).ToIntervalString();
+    }
+
+    /// <summary>When it arrives, for the ETA's tooltip, after "arrival at &lt;site&gt;".</summary>
+    public static string ArrivalAt(DateAndTime.TimeDateYear eta)
+    {
+        string partOfDay = DateAndTime.GetTimeOfDayAsString(eta.TimeOfDay);
+        if (!RoughEtaSetting.On)
+        {
+            return " on " + eta.ToString() + ", " + partOfDay;
+        }
+        return partOfDay switch
+        {
+            "Night" => " at night",
+            "Noon" => " around noon",
+            _ => " in the " + partOfDay.ToLowerInvariant()
+        };
+    }
+
+    /// <summary>A game day is 24 hours. The bands are wide on purpose: it is a guess, not a timetable.</summary>
+    public static string RoughInterval(double daysLeft)
+    {
+        double hours = daysLeft * 24.0;
+        if (hours < 1.0) return "within the hour";
+        if (hours < 3.0) return "a couple of hours";
+        if (hours < 8.0) return "a few hours";
+        if (hours < 16.0) return "half a day";
+        if (hours < 30.0) return "about a day";
+        if (daysLeft < 2.5) return "a day or two";
+        if (daysLeft < 6.0) return "a few days";
+        if (daysLeft < 10.0) return "about a week";
+        return "over a week";
     }
 
     /// <summary>The prefix of a sale's entry in the selling expedition's custom fields.</summary>
