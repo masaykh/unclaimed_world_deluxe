@@ -619,7 +619,7 @@ namespace UWGame.SimSide.Entities
 
 
 
-#if DEBUG || PROFILE
+#if DEBUG
             if (Kensei.Dev.Options.GetOption("Dev.Detect all") == true)
             {
                 return true;
