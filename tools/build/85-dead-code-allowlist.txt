@@ -35,3 +35,11 @@ IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalMoveAsGroup.cs  Go
 # CS0162 on a guard whose condition is a const in one build and not another is not listed here:
 # it is silenced at the site with #pragma warning disable CS0162 and a comment saying why, so the
 # tools build with -warnaserror.
+
+# --- The studio's own, unwired in its own source. Lars's migration of Household.cs (c5cc53c,
+# --- 4f57cbc) restored original_src, where the Home setter that calls FillNewHome and the three
+# --- event subscriptions are commented out. Kept as the studio left them.
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/Entities/Household.cs  Household.FillNewHome
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/Entities/Household.cs  Household.FoodExtraction_FoodProcessesChanged
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/Entities/Household.cs  Household.Members_ListItemAdded
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/Entities/Household.cs  Household.Members_ListItemRemoved
