@@ -1,95 +1,177 @@
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
-using UWGame.Client.Audio;
+using Xclna.Xna.Animation;
 using UWGame.Client.Particles;
+using UWGame.SimSide.Entities;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
+using UWGame.SimSide.Collisions;
 using UWGame.ClientSide.Renderables;
+using UWGame.Client.Audio;
 
-namespace UWGame.SimSide.Entities;
-
-[DebuggerDisplay("Conditions:{Conditions} Forbiddens:{Forbiddens.StateNames}")]
-public class ClientStateInfo : IStateInfo
+namespace UWGame.SimSide.Entities
 {
-	public RenderAsBillboardType[] RenderAsBillboardType;
+    public interface IStateInfo
+    {
+        BitMask64 Conditions
+        {
+            get;
+        }
 
-	public RenderAsGroundSpriteType RenderAsGroundSpriteType;
+        /// <summary>
+        /// the info will never be chosen when the entity has one of these states
+        /// </summary>
+        BitMask64 Forbiddens
+        {
+            get;
+        }
+    }
 
-	public ParticleEmitterEffect[] ParticleEmitters;
+    /// <summary>
+    /// Matches status flags to sprites, particles, sounds etc. Same pattern as for animations.
+    /// </summary>
+    [DebuggerDisplay("Conditions:{Conditions} Forbiddens:{Forbiddens.StateNames}")]
+    public class ClientStateInfo : IStateInfo
+    {
 
-	public LightingType[] LightingTypes;
+        /// <summary>
+        /// TODO: XML serialize these as an array/sequence of bits (binary?)
+        /// </summary>     
+        public BitMask64 Conditions { get; set; }
 
-	public NormalDistribution DelayBetweenSounds;
+        /// <summary>
+        /// the info will never be chosen when the entity has one of these states
+        /// </summary>
+        public BitMask64 Forbiddens { get; set; }
 
-	public string[] Sounds;
+        public RenderAsBillboardType[] RenderAsBillboardType;
+        public RenderAsGroundSpriteType RenderAsGroundSpriteType;
 
-	public BitMask64 Conditions { get; set; }
 
-	public BitMask64 Forbiddens { get; set; }
 
-	[XmlIgnore]
-	public SoundData[] SoundDatas { get; private set; }
+        /// <summary>
+        /// particles associated with the state
+        /// </summary>
+        public ParticleEmitterEffect[] ParticleEmitters;
 
-	public bool Test(StateModifier state)
-	{
-		if (Conditions != null && Conditions.Test(state))
-		{
-			return true;
-		}
-		return false;
-	}
+        /// <summary>
+        /// lights to use
+        /// </summary>
+        public LightingType[] LightingTypes;
 
-	internal void Initialize()
-	{
-		if (ParticleEmitters != null)
-		{
-			ParticleEmitterEffect[] particleEmitters = ParticleEmitters;
-			for (int i = 0; i < particleEmitters.Length; i++)
-			{
-				particleEmitters[i].Initialize();
-			}
-		}
-		if (Sounds != null)
-		{
-			SoundDatas = new SoundData[Sounds.Length];
-			for (int j = 0; j < Sounds.Length; j++)
-			{
-				SoundDatas[j] = GameData.Instance.AllSoundData[Sounds[j]];
-			}
-		}
-	}
+        /// <summary>
+        /// 
+        /// </summary>
+        public NormalDistribution DelayBetweenSounds;
 
-	private bool RequiresGhostedImage(EntityType entityType)
-	{
-		if (entityType.GetUsesMemory() || entityType.StructureType != null)
-		{
-			return true;
-		}
-		return false;
-	}
 
-	internal void PostLoadContentValidate(EntityType parent, ref List<string> listOfErrors)
-	{
-		if (RenderAsBillboardType != null)
-		{
-			RenderAsBillboardType[] renderAsBillboardType = RenderAsBillboardType;
-			foreach (RenderAsBillboardType renderAsBillboardType2 in renderAsBillboardType)
-			{
-				if (!string.IsNullOrEmpty(renderAsBillboardType2.AssetName))
-				{
-					if (!GameData.Instance.BillboardSpriteSheet.TryGetSourceRectangle(renderAsBillboardType2.AssetName, out var spriteRect))
-					{
-						EntityType.CreateValidationError(ref listOfErrors, "Billboard asset " + renderAsBillboardType2.AssetName + " not found in BillboardSpriteSheet.");
-					}
-					if (RequiresGhostedImage(parent) && !The.Client.Renderer.GhostedStructuresSpriteSheet.TryGetSourceRectangle(renderAsBillboardType2.AssetName, out spriteRect))
-					{
-						EntityType.CreateValidationError(ref listOfErrors, "Billboard asset " + renderAsBillboardType2.AssetName + " not found in GhostedStructuresSpriteSheet.");
-					}
-				}
-			}
-		}
-		if (RenderAsGroundSpriteType != null && !The.Client.FlatSpriteSheet.TryGetSourceRectangle(RenderAsGroundSpriteType.AssetName, out var _))
-		{
-			EntityType.CreateValidationError(ref listOfErrors, "Flat sprite asset " + RenderAsGroundSpriteType.AssetName + " not found.");
-		}
-	}
+        public string[] Sounds;
+
+
+        [XmlIgnore]
+        public SoundData[] SoundDatas
+        {
+            get;
+            private set;
+        }
+
+
+
+
+        public ClientStateInfo()
+        {
+            // default???
+            //   AnimationSet = new RandomAnimationSet() { BaseAnimations = new string[] { "idle" } }; 
+        }
+
+
+
+
+        public bool Test(StateModifier state)
+        {
+            if (Conditions != null && Conditions.Test(state))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        internal void Initialize()
+        {
+            if (ParticleEmitters != null)
+            {
+                foreach (var item in ParticleEmitters)
+                {
+                    item.Initialize();
+                }
+            }
+
+
+
+            if (Sounds != null)
+            {
+                SoundDatas = new SoundData[Sounds.Length];
+
+                for (int i = 0; i < Sounds.Length; i++)
+                {
+                    SoundDatas[i] = GameData.Instance.AllSoundData[Sounds[i]];
+                }
+
+            }
+
+        }
+
+
+        private bool RequiresGhostedImage(EntityType entityType)
+        {
+            if (entityType.GetUsesMemory() || entityType.StructureType != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+        internal void PostLoadContentValidate(EntityType parent, ref List<string> listOfErrors)
+        {
+            if (RenderAsBillboardType != null)
+            {
+                foreach (var item in RenderAsBillboardType)
+                {
+                    Rectangle? rect;
+                    if (!string.IsNullOrEmpty(item.AssetName))
+                    {
+                        if (!GameData.Instance.BillboardSpriteSheet.TryGetSourceRectangle(item.AssetName, out rect))
+                        {
+                            EntityType.CreateValidationError(ref listOfErrors, "Billboard asset " + item.AssetName + " not found in BillboardSpriteSheet.");
+
+                        }
+                        if (RequiresGhostedImage(parent)
+                            && !The.Client.Renderer.GhostedStructuresSpriteSheet.TryGetSourceRectangle(item.AssetName, out rect))
+                        {
+                            EntityType.CreateValidationError(ref listOfErrors, "Billboard asset " + item.AssetName + " not found in GhostedStructuresSpriteSheet.");
+
+                        }
+                    }
+                }
+            }
+
+            if (RenderAsGroundSpriteType != null)
+            {
+
+                Rectangle? rect;
+                if (!The.Client.FlatSpriteSheet.TryGetSourceRectangle(RenderAsGroundSpriteType.AssetName, out rect))
+                {
+                    EntityType.CreateValidationError(ref listOfErrors, "Flat sprite asset " + RenderAsGroundSpriteType.AssetName + " not found.");
+
+                }
+            }
+
+        }
+    }
 }
