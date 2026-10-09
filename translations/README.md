@@ -1,59 +1,55 @@
 # Translations
 
-**Be warned before you start: this is a mechanism the studio built and barely used.** The file
-here is what shipped, and it contains four entries — one of which is the `MyKey` / `MyValue`
-example row.
+The files here are installed as `data/BaseData/Strings/` (the release script and gate 80 copy
+them). Each one is a language: its file name is what OPTIONS → MODS → PORT → **LANGUAGE** offers.
 
-Translating the game is therefore not "translate this file". Most of the game's text is not in
-it.
+`English (US).xml` is the **template**: every string the game asks for, generated from the code.
+Don't edit it by hand; `tools/build/37-make-strings.sh` rewrites it, and gate 80 fails when it is
+out of date.
 
-## How it works
+## What is translatable so far
 
-`UWGame/Locale.cs`:
+Kastuk, "Translation", 2026-10-09: "Start with adding localisation keys to strings of main menu and
+in-game menu, options. Then to names and descriptions of items." So, today:
 
-- `Init()` loads `English (US)` as the **invariant** table, and makes it the current one.
-- `GetCultures()` lists every `*.xml` in `data/BaseData/Strings/`, so a new file is a new
-  selectable culture. **No code change is needed to add a language** — the file's name is the
-  culture's name.
-- `Get(key)` looks the key up in the current table and **falls back to the invariant one**. So a
-  partial translation is legitimate: whatever is missing comes back in English.
+| key | what | where it comes from |
+|---|---|---|
+| `(GUI)<English>` | the main menu, the in-game menu, the save/load window, OPTIONS | every `Locale.Text("...")` in the code |
+| `(SETTING)<id>`, `(SETTING TIP)<id>` | each mod setting's label and tooltip in OPTIONS → MODS | the setting registry |
+| `(SETTING GROUP)<mod id>` | the headings in OPTIONS → MODS | the setting registry |
+| `(ITEM)<key>`, `(ITEM DESCRIPTION)<key>` | item names and descriptions | the item tables (`ItemLoader`) |
 
-The format is an `XmlSerializer` round-trip of `List<String>`, where `String` is the game's own
-key/value pair type:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<ArrayOfString>
-  <String>
-    <Key>(GUI)CUSTOMIZE</Key>
-    <Value>CUSTOMIZE</Value>
-  </String>
-</ArrayOfString>
-```
-
-Keys are prefixed by area — `(GUI)` for interface text — and, in the shipped file, the key is the
-English string itself.
-
-## The catch
-
-`Get` throws `KeyNotFoundException` if a key is in neither the current table nor the invariant
-one. The invariant table is the one here, with its four entries. So the fallback protects a
-*partial translation*, not a *missing key* — adding `Get("(GUI)SOMETHING")` to the code without
-adding the row here is a crash, not an English string.
-
-That is a fair part of why the mechanism went unused: the cost of routing a string through it is
-an entry in this file, every time.
+Everything else - the side panels, the HUD, other creatures and structures, help texts, events - is
+still written straight into the code or the data, and stays English until it is routed the same way.
+The choices inside a dropdown (`ALL THE WAY`, `1/3`) are stored values and are not translated yet.
 
 ## Adding a language
 
-1. Copy `English (US).xml` to `<Culture Name>.xml` in this directory.
-2. Translate the `<Value>` elements. Leave `<Key>` alone.
-3. Build. `GetCultures()` will find it.
+1. Copy `English (US).xml` to `<Language>.xml` here (for a player: into `data/BaseData/Strings/`).
+2. Translate the `<Value>`s. Leave every `<Key>` exactly as it is.
+3. Choose it in OPTIONS → MODS → PORT → LANGUAGE and restart the game.
 
-Anything you leave out falls back to English.
+Anything you leave out, or leave empty, shows in English - a partial translation works. A key you
+write twice uses the last one. A file that cannot be read is reported and the game stays in English.
 
-## If you want to translate the whole game
+`{0}` and `{1}` in a value are where the game puts a number or a name: keep them.
 
-The larger job is **routing the text through `Locale` in the first place** — most strings are
-literals in the source and in `data/`. That is a base-game change, not a translation, and it
-should be done area by area with the keys added here as it goes.
+Letters outside ASCII need fonts that have them - see "Fonts for translations" in `docs/build.md`
+(`UW_FONT_FACE_LCD=Play` for Cyrillic).
+
+## How it works
+
+`UWGame/Locale.cs`. `Locale.Text(english)` looks up `"(GUI)" + english`; `Locale.Text(key,
+english)` any other key. Both give the chosen language's value, or the English passed in - **the
+English always comes from the code**, so a stale template can never change what an English player
+sees, and neither call ever throws. (The studio's own `Get` threw for any key missing from this
+folder; it had no callers, and is left as it was.)
+
+To make more text translatable, wrap the literal: `label.Text = Locale.Text("SAVE GAME");`. A
+variable part goes through a format string, never `+`, so the template has one fixed entry:
+`string.Format(Locale.Text("Illegal width entered. {0} is maximum."), max)`. Then run
+`bash tools/build/37-make-strings.sh` and commit the template with the change. The script refuses a
+`Locale.Text` whose argument is built from pieces.
+
+Item names are translated once the tables are complete (`GameData.PostDataCompleteInitialize` →
+`Locale.TranslateItems`); the game identifies items by their key, never by name.

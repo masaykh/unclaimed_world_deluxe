@@ -56,7 +56,7 @@ public class SaveLoadGamePanel : Panel
 	public event EventHandler CancelClick;
 
 	public SaveLoadGamePanel(SaveOrLoad saveOrLoad, CommonInterface intf, Point position)
-		: base(intf, "SAVE / LOAD", position, new Vector2(822f, 620f), Level.Menu)
+		: base(intf, UWGame.Locale.Text("SAVE / LOAD"), position, new Vector2(822f, 620f), Level.Menu)
 	{
 		SaveOrLoadValue = saveOrLoad;
 		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out display, out lcdSurface, ref lcdScreen);
@@ -74,11 +74,11 @@ public class SaveLoadGamePanel : Panel
 		taNote.Width = lcdSurface.Width - 4;
 		if (SaveOrLoadValue == SaveOrLoad.Save)
 		{
-			taNote.Text = $"Save files may become obsolete when they are older than the current version {UnclaimedWorld.GetVersionAsString()} of the game. To load those, you must change to the corresponding version of the game using the Steam library list. For more info, go to the Unclaimed World forum on Steam.";
+			taNote.Text = string.Format(UWGame.Locale.Text("Save files may become obsolete when they are older than the current version {0} of the game. To load those, you must change to the corresponding version of the game using the Steam library list. For more info, go to the Unclaimed World forum on Steam."), UnclaimedWorld.GetVersionAsString());
 		}
 		else
 		{
-			taNote.Text = $"Select a game to load. \nSave files with a version number lower than the current version {UnclaimedWorld.GetVersionAsString()} of the game may not work. To load those, you must change to the corresponding version of the game using the Steam library list. For more info, go to the Unclaimed World forum on Steam.";
+			taNote.Text = string.Format(UWGame.Locale.Text("Select a game to load. \nSave files with a version number lower than the current version {0} of the game may not work. To load those, you must change to the corresponding version of the game using the Steam library list. For more info, go to the Unclaimed World forum on Steam."), UnclaimedWorld.GetVersionAsString());
 		}
 		// The same warning the version note above gives, for the other thing that can make a save
 		// unopenable: the modded content it was written with. Stated once, where a player is about
@@ -92,7 +92,7 @@ public class SaveLoadGamePanel : Panel
 		string moddedNow = ModSettings.Signature();
 		if (!string.IsNullOrEmpty(moddedNow))
 		{
-			taNote.Text += " Modded content is on; saves made with it are marked MODDED.";
+			taNote.Text += " " + UWGame.Locale.Text("Modded content is on; saves made with it are marked MODDED.");
 		}
 
 		// Whatever the note ended up being, the list starts below it. The studio's fixed 58px
@@ -115,8 +115,8 @@ public class SaveLoadGamePanel : Panel
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
 		PlaceLeftButtonUnderLCD(textButton);
-		textButton.Text = "CANCEL";
-		textButton.ToolTip = "Cancels and closes the dialog.";
+		textButton.Text = UWGame.Locale.Text("CANCEL");
+		textButton.ToolTip = UWGame.Locale.Text("Cancels and closes the dialog.");
 		textButton.Click += btCancel_Click;
 		textButton.ScaleWidthToFitText();
 		if (SaveOrLoadValue == SaveOrLoad.Save)
@@ -125,8 +125,8 @@ public class SaveLoadGamePanel : Panel
 			Window.Add(textButton2);
 			textButton2.Init(TextButton.TextButtonType.White);
 			textButton2.Position = new Point(300, textButton.Y);
-			textButton2.Text = "NEW SAVE";
-			textButton2.ToolTip = "Saves the game in a new file.";
+			textButton2.Text = UWGame.Locale.Text("NEW SAVE");
+			textButton2.ToolTip = UWGame.Locale.Text("Saves the game in a new file.");
 			textButton2.Click += btSaveNew_Click;
 			textButton2.ScaleWidthToFitText();
 			tbFileName = new TextBox(Interface.gui);
@@ -183,7 +183,7 @@ public class SaveLoadGamePanel : Panel
 		lCDInnerPanel2.AddContentSetFullWidth(label2);
 		label2.Init(Label.LabelType.LCDNormal);
 		label2.Y = label.Bottom + num2;
-		label2.Text = ((scenario != null) ? ("Scenario: " + scenario.DisplayName) : "(Missing)");
+		label2.Text = ((scenario != null) ? (UWGame.Locale.Text("Scenario:") + " " + scenario.DisplayName) : UWGame.Locale.Text("(Missing)"));
 		Label label3 = new Label(Interface.gui);
 		lCDInnerPanel2.Panel.Add(label3);
 		lCDInnerPanel2.AddContentSetFullWidth(label3);
@@ -194,19 +194,19 @@ public class SaveLoadGamePanel : Panel
 		// the XML data path - so a player choosing a culture here to get day-month-year would also
 		// be choosing a decimal separator. The format is its own setting now, applied with the
 		// invariant culture. See PortSettings.SaveDateFormat.
-		label3.Text = "Date: " + ModSettings.FormatDate(header.Timestamp, PortSettings.SaveDateFormat.Value);
+		label3.Text = UWGame.Locale.Text("Date:") + " " + ModSettings.FormatDate(header.Timestamp, PortSettings.SaveDateFormat.Value);
 		Label label4 = new Label(Interface.gui);
 		lCDInnerPanel2.Panel.Add(label4);
 		lCDInnerPanel2.AddContentSetFullWidth(label4);
 		label4.Init(Label.LabelType.LCDNormal);
 		label4.Y = label3.Bottom + num2;
-		label4.Text = "Version: " + header.ProgramVersion.ToString();
+		label4.Text = UWGame.Locale.Text("Version:") + " " + header.ProgramVersion.ToString();
 		Label label5 = new Label(Interface.gui);
 		lCDInnerPanel2.Panel.Add(label5);
 		lCDInnerPanel2.AddContentSetFullWidth(label5);
 		label5.Init(Label.LabelType.LCDNormal);
 		label5.Y = label4.Bottom + num2;
-		label5.Text = "File size: " + fileLength / 1000000 + " mb";
+		label5.Text = UWGame.Locale.Text("File size:") + " " + fileLength / 1000000 + " mb";
 		LCDInnerPanel lCDInnerPanel3 = new LCDInnerPanel(Interface.gui, 148, includeDecor: false);
 		uIComponent.Add(lCDInnerPanel3.Panel);
 		lCDInnerPanel3.Panel.X = lCDInnerPanel2.Panel.Right - 2;
@@ -218,22 +218,21 @@ public class SaveLoadGamePanel : Panel
 			Label lblModded = new Label(Interface.gui);
 			lCDInnerPanel3.Panel.Add(lblModded);
 			lblModded.Init(Label.LabelType.LCDHeadingRed);
-			lblModded.Text = "MODDED";
+			lblModded.Text = UWGame.Locale.Text("MODDED");
 			lblModded.FitToText();
 			lblModded.X = lCDInnerPanel3.Panel.Width - lblModded.Width - 8;
 			lblModded.Y = 5;
 			lblModded.ToolTip = Common.ComposeHeadingAndBlobText(
-				"Made with modded content",
+				UWGame.Locale.Text("Made with modded content"),
 				DescribeSaveMods(header.Mods) +
 				Environment.NewLine +
-				"Loading it without the same content may fail, because a save names the recipes and " +
-				"items it contains.");
+				UWGame.Locale.Text("Loading it without the same content may fail, because a save names the recipes and items it contains."));
 		}
 		TextButton textButton = new TextButton(Interface.gui);
 		lCDInnerPanel3.Panel.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.LCD);
-		textButton.Text = ((SaveOrLoadValue == SaveOrLoad.Save) ? "SAVE" : "LOAD");
-		textButton.ToolTip = ((SaveOrLoadValue == SaveOrLoad.Save) ? "Saves the current game and overwrites this file." : "Loads the game.");
+		textButton.Text = ((SaveOrLoadValue == SaveOrLoad.Save) ? UWGame.Locale.Text("SAVE") : UWGame.Locale.Text("LOAD"));
+		textButton.ToolTip = ((SaveOrLoadValue == SaveOrLoad.Save) ? UWGame.Locale.Text("Saves the current game and overwrites this file.") : UWGame.Locale.Text("Loads the game."));
 		textButton.ScaleWidthToFitText();
 		textButton.X = lCDInnerPanel3.Panel.Width - textButton.Width - lCDInnerPanel3.HorizontalContentPadding;
 		textButton.Y = lCDInnerPanel3.Panel.Height - textButton.Height;
@@ -252,8 +251,8 @@ public class SaveLoadGamePanel : Panel
 		TextButton textButton2 = new TextButton(Interface.gui);
 		lCDInnerPanel3.Panel.Add(textButton2);
 		textButton2.Init(TextButton.TextButtonType.LCD);
-		textButton2.Text = "DELETE";
-		textButton2.ToolTip = "Deletes this saved game file";
+		textButton2.Text = UWGame.Locale.Text("DELETE");
+		textButton2.ToolTip = UWGame.Locale.Text("Deletes this saved game file");
 		textButton2.ScaleWidthToFitText();
 		textButton2.X = 0;
 		textButton2.Y = textButton.Y;
@@ -271,7 +270,7 @@ public class SaveLoadGamePanel : Panel
 		}
 		catch (Exception ex)
 		{
-			output.ShowError("Could not delete the file. Message: " + ex.Message);
+			output.ShowError(UWGame.Locale.Text("Could not delete the file. Message:") + " " + ex.Message);
 		}
 		PopulateFileList();
 	}
@@ -345,7 +344,7 @@ public class SaveLoadGamePanel : Panel
 		Console.WriteLine(sender.Tag1.ToString());
 		if (!File.Exists(text))
 		{
-			output.ShowError("File not found.");
+			output.ShowError(UWGame.Locale.Text("File not found."));
 			return;
 		}
 		SelectedSaveGamePath = text;
@@ -387,7 +386,7 @@ public class SaveLoadGamePanel : Panel
 			default:
 				// Grey rather than red, because nothing here can switch this on. Red would send a
 				// player through the options menu looking for something that is not in it.
-				text.Append(Label.ToLabel(part.Key + " - not installed", UIComponent.lcdDisabledColor));
+				text.Append(Label.ToLabel(part.Key + " - " + UWGame.Locale.Text("not installed"), UIComponent.lcdDisabledColor));
 				break;
 			}
 			text.Append(Environment.NewLine);
@@ -414,8 +413,8 @@ public class SaveLoadGamePanel : Panel
 	/// </summary>
 	private void AskAboutModsThenLoad(string saveMods)
 	{
-		string had = ModSettings.Describe(saveMods) ?? "nothing - a stock save";
-		string have = ModSettings.Describe(ModSettings.EffectiveSignature) ?? "nothing - a stock game";
+		string had = ModSettings.Describe(saveMods) ?? UWGame.Locale.Text("nothing - a stock save");
+		string have = ModSettings.Describe(ModSettings.EffectiveSignature) ?? UWGame.Locale.Text("nothing - a stock game");
 		// One box, created on first use and reused. A new one per click would leave a Window behind
 		// in the GUI manager every time somebody changed their mind.
 		pendingSaveMods = saveMods;
@@ -423,7 +422,7 @@ public class SaveLoadGamePanel : Panel
 		{
 			// Wider and taller than the default box. Two lists and a sentence do not fit in
 			// 330x250: the first version came out clipped on both sides.
-			modMessageBox = new MessageBox(Interface, "DIFFERENT MODS", new Vector2(560f, 420f));
+			modMessageBox = new MessageBox(Interface, UWGame.Locale.Text("DIFFERENT MODS"), new Vector2(560f, 420f));
 			modMessageBox.OKClick += delegate
 			{
 				// In memory only. The file is not rewritten: this is "open that save", not "change
@@ -433,13 +432,10 @@ public class SaveLoadGamePanel : Panel
 			};
 		}
 		modMessageBox.ShowMessage(
-			"MADE WITH:" + Environment.NewLine + had + Environment.NewLine + Environment.NewLine +
-			"YOU ARE RUNNING:" + Environment.NewLine + have + Environment.NewLine + Environment.NewLine +
-			"OK loads it with the save's settings, for this" + Environment.NewLine +
-			"session only. CANCEL leaves it alone." + Environment.NewLine + Environment.NewLine +
-			"ASK ABOUT MODS WHEN LOADING, in the options," + Environment.NewLine +
-			"turns this off.",
-			"DIFFERENT MODS", modal: true, MessageBox.ButtonOptions.OKAndCancel);
+			UWGame.Locale.Text("MADE WITH:") + Environment.NewLine + had + Environment.NewLine + Environment.NewLine +
+			UWGame.Locale.Text("YOU ARE RUNNING:") + Environment.NewLine + have + Environment.NewLine + Environment.NewLine +
+			UWGame.Locale.Text("OK loads it with the save's settings, for this\nsession only. CANCEL leaves it alone.\n\nASK ABOUT MODS WHEN LOADING, in the options,\nturns this off.").Replace("\n", Environment.NewLine),
+			UWGame.Locale.Text("DIFFERENT MODS"), modal: true, MessageBox.ButtonOptions.OKAndCancel);
 	}
 
 	private void btSave_Click(UIComponent sender, EventArgs e)
@@ -452,7 +448,7 @@ public class SaveLoadGamePanel : Panel
 	{
 		if (string.IsNullOrEmpty(tbFileName.Text))
 		{
-			output.ShowError("Please enter a name for the new save file.");
+			output.ShowError(UWGame.Locale.Text("Please enter a name for the new save file."));
 			return;
 		}
 		string dataFolderPath = Config.GetDataFolderPath(Config.DataType.SaveGames);
@@ -468,7 +464,7 @@ public class SaveLoadGamePanel : Panel
 		}
 		catch (Exception ex)
 		{
-			output.ShowError("Error occurred: " + ex.Message);
+			output.ShowError(UWGame.Locale.Text("Error occurred:") + " " + ex.Message);
 			return;
 		}
 		if (File.Exists(saveFileFullPath))
@@ -483,7 +479,7 @@ public class SaveLoadGamePanel : Panel
 
 	private void HandleFileAlreadyExists()
 	{
-		The.InGameUI.MessageBox.ShowMessage("There is already a save file with that name. Overwrite?", "FILE EXISTS", modal: true, MessageBox.ButtonOptions.OKAndCancel);
+		The.InGameUI.MessageBox.ShowMessage(UWGame.Locale.Text("There is already a save file with that name. Overwrite?"), UWGame.Locale.Text("FILE EXISTS"), modal: true, MessageBox.ButtonOptions.OKAndCancel);
 		The.InGameUI.MessageBox.OKClick += MessageBoxOverwriteSaveFile_OKClick;
 	}
 
@@ -495,7 +491,7 @@ public class SaveLoadGamePanel : Panel
 
 	private void Save(string fullFilePath)
 	{
-		output.ShowMessage("Saving. Please wait");
+		output.ShowMessage(UWGame.Locale.Text("Saving. Please wait"));
 		SelectedSaveGamePath = fullFilePath;
 		Window.Hide();
 		if (this.SaveOrLoadClick != null)

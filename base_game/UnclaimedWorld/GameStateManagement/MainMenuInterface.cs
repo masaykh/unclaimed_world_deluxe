@@ -62,7 +62,7 @@ public class MainMenuInterface : CommonInterface
 		Label label = new Label(gui);
 		window2.Add(label);
 		label.Init(Label.LabelType.HUDWindow);
-		label.Text = "© 2012-16 Refactored Games OÜ, all rights reserved. Supported by: ";
+		label.Text = UWGame.Locale.Text("© 2012-16 Refactored Games OÜ, all rights reserved. Supported by: ");
 		label.FitToText();
 		window2.Width = gui.ScreenWidth;
 		window2.Height = image2.Height;
@@ -86,7 +86,7 @@ public class MainMenuInterface : CommonInterface
 		label3.Y = window2.Height - label3.Height - 4;
 		if (!mainMenuScreen.Controller.SteamManager.IsInitialized)
 		{
-			label3.Text = "Warning: Steam has not initialized correctly. Achievements cannot be unlocked in this session!";
+			label3.Text = UWGame.Locale.Text("Warning: Steam has not initialized correctly. Achievements cannot be unlocked in this session!");
 			label3.FitToText();
 			label3.Visible = true;
 		}

@@ -923,6 +923,29 @@ else
   fail "the mapedit self-test reported failures"
 fi
 
+# Translation (Kastuk, 2026-10-09): the menus, the options and the item names go through Locale.
+# A language file a translator writes must change what they show, and leave alone what it does
+# not mention - and a broken one must not stop the game.
+say "==> 36. a language file translates the menus, a setting and an item; English fills the gaps"
+out=$( cd "$(new_install case36)" && "$EXPORT" . --locale-selftest 2>&1 ) || true
+if echo "$out" | grep -q "locale self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception' | head -4
+  fail "the locale self-test reported failures"
+fi
+
+# The template translators copy must hold every string the game asks Locale for. A menu string
+# added without regenerating it is one nobody can translate.
+say "==> 37. translations/English (US).xml has every string the game asks for"
+if out=$(bash tools/build/37-make-strings.sh --check 2>&1); then
+  pass "$(echo "$out" | sed -n 's/^ok    //p')"
+else
+  echo "$out" | sed 's/^/      /' | head -12
+  fail "the translation template is out of date"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a

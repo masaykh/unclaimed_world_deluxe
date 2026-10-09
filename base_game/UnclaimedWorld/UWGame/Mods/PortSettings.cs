@@ -84,5 +84,46 @@ public static class PortSettings
         _ = SaveDateFormat;
         _ = AskAboutModsOnLoad;
         _ = RenderTrace;
+        _ = Language;
+    }
+
+    private static ModSetting language;
+
+    /// <summary>
+    /// The language of the text routed through <see cref="Locale"/>: one choice per file in
+    /// data/BaseData/Strings, English (US) first. Kastuk, "Translation", 2026-10-09. Interface
+    /// only; windows built before a change keep their text until the game is restarted.
+    /// </summary>
+    public static ModSetting Language =>
+        language ?? (language = ModSettings.Choice(
+            ModId, "language", "LANGUAGE", LanguageChoices(), Locale.InvariantCulture,
+            toolTip: "The language of the menus, the options and the item names, from the files in " +
+                     "data/BaseData/Strings. Text with no translation stays in English. Restart the " +
+                     "game to see the change everywhere.",
+            takesEffectOnNextLoad: true));
+
+    /// <summary>The chosen language's file name; English (US) before the settings are read.</summary>
+    public static string LanguageName => language?.Value ?? Locale.InvariantCulture;
+
+    /// <summary>
+    /// Lists the files in Strings again - for a translation dropped in while the game runs. Called
+    /// when the options menu builds its MODS section.
+    /// </summary>
+    public static void RefreshLanguageChoices()
+    {
+        Language.Choices = LanguageChoices();
+    }
+
+    private static string[] LanguageChoices()
+    {
+        var choices = new System.Collections.Generic.List<string> { Locale.InvariantCulture };
+        foreach (string culture in Locale.GetCultures())
+        {
+            if (!choices.Contains(culture))
+            {
+                choices.Add(culture);
+            }
+        }
+        return choices.ToArray();
     }
 }

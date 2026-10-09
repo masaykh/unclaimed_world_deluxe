@@ -65,7 +65,7 @@ public class OptionsDialog : Panel
 	public event EventHandler OKClick;
 
 	public OptionsDialog(CommonInterface intf)
-		: base(intf, "OPTIONS", new Point(420, 120), new Vector2(400f, 600f), Level.Menu, PanelType.RegularEdges)
+		: base(intf, UWGame.Locale.Text("OPTIONS"), new Point(420, 120), new Vector2(400f, 600f), Level.Menu, PanelType.RegularEdges)
 	{
 		GUIManager gui = Interface.gui;
 		int x = 124;
@@ -77,19 +77,19 @@ public class OptionsDialog : Panel
 			Height = 600
 		};
 		surfaceGrid.AddEntry("surfaceKey", uIComponent);
-		Label label = AddSectionHeader(6, uIComponent, "GRAPHICS");
+		Label label = AddSectionHeader(6, uIComponent, UWGame.Locale.Text("GRAPHICS"));
 		Label label2 = new Label(Interface.gui);
 		uIComponent.Add(label2);
 		label2.Init(Label.LabelType.LCDNormal);
 		label2.NormalColor = UIComponent.errorColor;
-		label2.Text = "Restart the game to apply Graphics changes!";
+		label2.Text = UWGame.Locale.Text("Restart the game to apply Graphics changes!");
 		label2.FitToText();
 		label2.X = 6;
 		label2.Y = label.Bottom + 6;
 		cbFullscreen = new CheckBox(Interface.gui);
 		uIComponent.Add(cbFullscreen);
 		cbFullscreen.Init(CheckBoxType.LCD, CheckBoxFlavor.Blue);
-		cbFullscreen.Text = "FULL SCREEN";
+		cbFullscreen.Text = UWGame.Locale.Text("FULL SCREEN");
 		cbFullscreen.FitToText();
 		cbFullscreen.X = 6;
 		cbFullscreen.Y = label2.Bottom + 6;
@@ -98,17 +98,17 @@ public class OptionsDialog : Panel
 		cbHardwareModeSwitch = new CheckBox(Interface.gui);
 		uIComponent.Add(cbHardwareModeSwitch);
 		cbHardwareModeSwitch.Init(CheckBoxType.LCD, CheckBoxFlavor.Green);
-		cbHardwareModeSwitch.Text = "HARDWARE MODE SWITCH";
+		cbHardwareModeSwitch.Text = UWGame.Locale.Text("HARDWARE MODE SWITCH");
 		cbHardwareModeSwitch.FitToText();
 		cbHardwareModeSwitch.X = x;
 		cbHardwareModeSwitch.Y = y;
-		cbHardwareModeSwitch.ToolTip = "If selected, the game attempts to switch the screen resolution when in fullscreen. If not selected, only the desktop resolution is available for fullscreen. Is selected by default.";
+		cbHardwareModeSwitch.ToolTip = UWGame.Locale.Text("If selected, the game attempts to switch the screen resolution when in fullscreen. If not selected, only the desktop resolution is available for fullscreen. Is selected by default.");
 		cbHardwareModeSwitch.Click += cbHardwareModeSwitch_Click;
 		y = cbHardwareModeSwitch.Bottom + 12;
 		Label label3 = new Label(Interface.gui);
 		uIComponent.Add(label3);
 		label3.Init(Label.LabelType.LCDHeadingBlue);
-		label3.Text = "RESOLUTION";
+		label3.Text = UWGame.Locale.Text("RESOLUTION");
 		label3.FitToText();
 		label3.CenterThisVertically(y);
 		label3.X = 6;
@@ -119,11 +119,11 @@ public class OptionsDialog : Panel
 		uIComponent.Add(rbFixed);
 		rgResolution.Add(rbFixed, addAsControl: false);
 		rbFixed.Init(CheckBoxType.LCDRadioBanner);
-		rbFixed.Text = "FIXED:";
+		rbFixed.Text = UWGame.Locale.Text("FIXED:");
 		rbFixed.FitToText();
 		rbFixed.CenterThisVertically(y);
 		rbFixed.X = 6;
-		rbFixed.ToolTip = "Select this option to select a fixed resolution among those supported by the video card.";
+		rbFixed.ToolTip = UWGame.Locale.Text("Select this option to select a fixed resolution among those supported by the video card.");
 		cbResolution = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
 		uIComponent.Add(cbResolution);
 		cbResolution.Init(ComboBoxTypes.LCD);
@@ -136,15 +136,15 @@ public class OptionsDialog : Panel
 		uIComponent.Add(rbCustom);
 		rgResolution.Add(rbCustom, addAsControl: false);
 		rbCustom.Init(CheckBoxType.LCDRadioBanner);
-		rbCustom.Text = "CUSTOM:";
+		rbCustom.Text = UWGame.Locale.Text("CUSTOM:");
 		rbCustom.FitToText();
 		rbCustom.CenterThisVertically(yPosToCenterTo);
 		rbCustom.X = 6;
-		rbCustom.ToolTip = "Select this option to enter a custom window size. Not available in fullscreen.";
+		rbCustom.ToolTip = UWGame.Locale.Text("Select this option to enter a custom window size. Not available in fullscreen.");
 		Label label4 = new Label(Interface.gui);
 		uIComponent.Add(label4);
 		label4.Init(Label.LabelType.LCDHeadingBlue);
-		label4.Text = "W:";
+		label4.Text = UWGame.Locale.Text("W:");
 		label4.FitToText();
 		label4.CenterThisVertically(yPosToCenterTo);
 		label4.X = cbResolution.X;
@@ -161,7 +161,7 @@ public class OptionsDialog : Panel
 		Label label5 = new Label(Interface.gui);
 		uIComponent.Add(label5);
 		label5.Init(Label.LabelType.LCDHeadingBlue);
-		label5.Text = "H:";
+		label5.Text = UWGame.Locale.Text("H:");
 		label5.FitToText();
 		label5.CenterThisVertically(yPosToCenterTo);
 		label5.X = tbWidth.Right + 6;
@@ -178,15 +178,15 @@ public class OptionsDialog : Panel
 		cbBorder = new CheckBox(Interface.gui);
 		uIComponent.Add(cbBorder);
 		cbBorder.Init(CheckBoxType.LCD, CheckBoxFlavor.Purple);
-		cbBorder.Text = "BORDER";
+		cbBorder.Text = UWGame.Locale.Text("BORDER");
 		cbBorder.FitToText();
-		cbBorder.ToolTip = "Select whether the application window should have a border.";
+		cbBorder.ToolTip = UWGame.Locale.Text("Select whether the application window should have a border.");
 		cbBorder.Position = new Point(6, tbHeight.Bottom + 24);
-		string toolTip = "Set the magnification (pixel zoom) level. Restart the game to see the effect. WARNING: Setting a high magnification level may cause the interface to be truncated. In case of problems, use the ZoomFactor property in Options.xml to revert.";
+		string toolTip = UWGame.Locale.Text("Set the magnification (pixel zoom) level. Restart the game to see the effect. WARNING: Setting a high magnification level may cause the interface to be truncated. In case of problems, use the ZoomFactor property in Options.xml to revert.");
 		Label label6 = new Label(Interface.gui);
 		uIComponent.Add(label6);
 		label6.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label6.Text = "MAGNIFICATION:";
+		label6.Text = UWGame.Locale.Text("MAGNIFICATION:");
 		label6.Position = new Point(6, cbBorder.Bottom + 6);
 		label6.ToolTip = toolTip;
 		label6.TooltipExpires = false;
@@ -207,10 +207,10 @@ public class OptionsDialog : Panel
 		fbZoom.MaxSliderValueSymbol = null;
 		fbZoom.MaxSliderValueTooltip = null;
 		fbZoom.DisplayValueFunction = (int v) => (0.01f * (float)v).ToString("N2");
-		y = AddSectionHeader(280, uIComponent, "SOUND").Bottom + 6;
+		y = AddSectionHeader(280, uIComponent, UWGame.Locale.Text("SOUND")).Bottom + 6;
 		cbMusic = new CheckBox(Interface.gui);
 		uIComponent.Add(cbMusic);
-		cbMusic.Text = "MUSIC";
+		cbMusic.Text = UWGame.Locale.Text("MUSIC");
 		cbMusic.Init(CheckBoxType.LCD);
 		cbMusic.X = 6;
 		cbMusic.Y = y;
@@ -221,7 +221,7 @@ public class OptionsDialog : Panel
 		fbMusicVolume.Width = 150;
 		fbMusicVolume.X = 128;
 		fbMusicVolume.Y = y + 5;
-		fbMusicVolume.ToolTip = "Set the music volume.";
+		fbMusicVolume.ToolTip = UWGame.Locale.Text("Set the music volume.");
 		fbMusicVolume.SliderMouseUp += fbMusicVolume_SliderMouseUp;
 		fbMusicVolume.MaxValue = 100;
 		fbMusicVolume.ShowMaxValueLabelAtEnd = false;
@@ -230,7 +230,7 @@ public class OptionsDialog : Panel
 		y = cbMusic.Y + 24;
 		cbSound = new CheckBox(Interface.gui);
 		uIComponent.Add(cbSound);
-		cbSound.Text = "SOUND";
+		cbSound.Text = UWGame.Locale.Text("SOUND");
 		cbSound.Init(CheckBoxType.LCD);
 		cbSound.X = 6;
 		cbSound.Y = y;
@@ -241,7 +241,7 @@ public class OptionsDialog : Panel
 		fbSoundVolume.Width = 150;
 		fbSoundVolume.X = 128;
 		fbSoundVolume.Y = y + 5;
-		fbSoundVolume.ToolTip = "Set the sound effects volume.";
+		fbSoundVolume.ToolTip = UWGame.Locale.Text("Set the sound effects volume.");
 		fbSoundVolume.SliderMouseUp += fbSoundVolume_SliderMouseUp;
 		fbSoundVolume.MaxValue = 100;
 		fbSoundVolume.ShowMaxValueLabelAtEnd = false;
@@ -249,8 +249,8 @@ public class OptionsDialog : Panel
 		fbSoundVolume.KnobWidth = 16;
 		BuildModsSection(uIComponent, fbSoundVolume.Bottom + 24);
 		errorsAndMessages = new ErrorsAndMessages(lcdSurface, Window.guiManager, 6, lcdSurface.Height - 24);
-		AddLowerButton("OK", "Accepts the changes and closes the dialog.", Align.Left).Click += btOK_Click;
-		AddLowerButton("CANCEL", "Closes the dialog without applying the changes.", Align.Right).Click += btCancel_Click;
+		AddLowerButton(UWGame.Locale.Text("OK"), UWGame.Locale.Text("Accepts the changes and closes the dialog."), Align.Left).Click += btOK_Click;
+		AddLowerButton(UWGame.Locale.Text("CANCEL"), UWGame.Locale.Text("Closes the dialog without applying the changes."), Align.Right).Click += btCancel_Click;
 		AddDirtOnStraightEdges(excludeBottomDirt: true);
 	}
 
@@ -352,7 +352,9 @@ public class OptionsDialog : Panel
 			return;
 		}
 
-		Label header = AddSectionHeader(y, panel, "MODS");
+		// PORT: a translation dropped into data/BaseData/Strings while the game runs is offered too.
+		PortSettings.RefreshLanguageChoices();
+		Label header = AddSectionHeader(y, panel, UWGame.Locale.Text("MODS"));
 		int lineY = header.Bottom + 6;
 
 		bool anyNeedsReload = ModSettings.All.Any((ModSetting m) => m.TakesEffectOnNextLoad);
@@ -365,7 +367,7 @@ public class OptionsDialog : Panel
 			// Kept to the width of the studio's own warning above ("Restart the game to apply
 			// Graphics changes!"): the surface is about 340px and a longer line is simply clipped
 			// at the panel edge, which is how the first version shipped.
-			note.Text = "Content changes apply at the next game start!";
+			note.Text = UWGame.Locale.Text("Content changes apply at the next game start!");
 			note.FitToText();
 			note.X = 6;
 			note.Y = lineY;
@@ -408,12 +410,12 @@ public class OptionsDialog : Panel
 			}
 			else
 			{
-				BuildModCategory(panel, group.Key, ModSettings.CategoryLabel(group.Key), group.Value);
+				BuildModCategory(panel, group.Key, UWGame.Locale.Text(UWGame.Locale.SettingGroupKey(group.Key), ModSettings.CategoryLabel(group.Key)), group.Value);
 			}
 		}
 		if (other.Count > 0)
 		{
-			BuildModCategory(panel, "\u0001other", "OTHER", other);
+			BuildModCategory(panel, "\u0001other", UWGame.Locale.Text("OTHER"), other);
 		}
 		LayOutModCategories();
 	}
@@ -462,16 +464,15 @@ public class OptionsDialog : Panel
 		categorySwitch.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
 		categorySwitch.X = 8;
 		cp.CenterOnHeader(categorySwitch);
-		categorySwitch.ToolTip = "Untick: everything in " + label + " back to the studio's game. " +
-			"Tick: every switch in it on. Nothing is applied until OK.";
+		categorySwitch.ToolTip = string.Format(UWGame.Locale.Text("Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK."), label);
 
 		void Refresh()
 		{
 			int changed = settings.Count((ModSetting s) => !string.Equals(ReadModControl(s), s.StockValue, StringComparison.Ordinal));
 			categorySwitch.IsChecked = changed > 0;
 			// The category's state first: STABLE only when every switch in it is confirmed in play.
-			string stability = ModSettings.AllStable(settings) ? "STABLE" : "TESTING";
-			cp.Summary = changed > 0 ? stability + " - " + changed + " CHANGED" : stability;
+			string stability = ModSettings.AllStable(settings) ? UWGame.Locale.Text("STABLE") : UWGame.Locale.Text("TESTING");
+			cp.Summary = changed > 0 ? stability + " - " + changed + " " + UWGame.Locale.Text("CHANGED") : stability;
 		}
 
 		categorySwitch.Click += delegate
@@ -560,7 +561,7 @@ public class OptionsDialog : Panel
 		CollapsablePanel cp = new CollapsablePanel(Interface.gui, CollapsablePanel.PanelType.DropDownBig);
 		panel.Add(cp);
 		cp.Init();
-		cp.Title = "KEYS";
+		cp.Title = UWGame.Locale.Text("KEYS");
 		cp.X = 6;
 		cp.Width = surfaceGrid.SurfaceWidth - cp.X;
 		cp.CollapsedHeight = cp.ExpandedPanelYPos + 5;
@@ -575,7 +576,7 @@ public class OptionsDialog : Panel
 		Options options = Interface.Game.Controller.Options;
 		foreach ((System.Reflection.FieldInfo field, string label) in KeybindMod.VanillaFields())
 		{
-			TextButton button = AddKeyRow(content, label, field.GetValue(options).ToString(), "The studio's binding, saved in Options.xml.", ref lineY);
+			TextButton button = AddKeyRow(content, label, field.GetValue(options).ToString(), UWGame.Locale.Text("The studio's binding, saved in Options.xml."), ref lineY);
 			vanillaKeyButtons.Add(new KeyValuePair<System.Reflection.FieldInfo, TextButton>(field, button));
 		}
 		foreach (ModSetting setting in ModSettings.All)
@@ -583,7 +584,7 @@ public class OptionsDialog : Panel
 			if (setting.Kind == ModSettingKind.Key)
 			{
 				string category = ModSettings.CategoryLabel(setting.ModId);
-				TextButton button = AddKeyRow(content, setting.Label, setting.Value, (category != null ? category + ": " : "") + setting.ToolTip, ref lineY);
+				TextButton button = AddKeyRow(content, setting.DisplayLabel, setting.Value, (category != null ? category + ": " : "") + setting.DisplayToolTip, ref lineY);
 				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, button));
 			}
 		}
@@ -594,11 +595,11 @@ public class OptionsDialog : Panel
 		content.Add(defaults);
 		defaults.Init(TextButton.TextButtonType.LCDToolTipBlack);
 		defaults.CheckedMode = CheckedModes.CannotBeChecked;
-		defaults.Text = "DEFAULT KEYS";
+		defaults.Text = UWGame.Locale.Text("DEFAULT KEYS");
 		defaults.Width = 120;
 		defaults.X = content.Width - defaults.Width - 4;
 		defaults.Y = lineY;
-		defaults.ToolTip = "Every key back to its default. Nothing is applied until OK.";
+		defaults.ToolTip = UWGame.Locale.Text("Every key back to its default. Nothing is applied until OK.");
 		defaults.Click += delegate
 		{
 			RestoreDefaultKeys();
@@ -653,7 +654,7 @@ public class OptionsDialog : Panel
 		{
 			button.Y = caption.Bottom + 2;
 		}
-		button.ToolTip = "Click, then press the new key. Escape cancels.";
+		button.ToolTip = UWGame.Locale.Text("Click, then press the new key. Escape cancels.");
 		keyButtonColor = button.LabelColor;
 		keyButtonValues[button] = keyName;
 		button.Text = KeybindMod.DisplayName(keyName);
@@ -672,7 +673,7 @@ public class OptionsDialog : Panel
 			capturingKeyButton.Text = KeybindMod.DisplayName(keyButtonValues[capturingKeyButton]);
 		}
 		capturingKeyButton = button;
-		button.Text = "PRESS A KEY...";
+		button.Text = UWGame.Locale.Text("PRESS A KEY...");
 	}
 
 	/// <summary>While a key button waits: the first key pressed is its new key, Escape cancels. Returns whether it waited.</summary>
@@ -847,10 +848,10 @@ public class OptionsDialog : Panel
 	private int AddModSettingControl(UIComponent panel, ModSetting setting, int lineY)
 	{
 		// STABLE or TESTING first (ModSettings.IsStable), so a player reads it before the rest.
-		string toolTip = (ModSettings.IsStable(setting) ? "STABLE - confirmed in play. " : "TESTING - not yet confirmed in play. ") + setting.ToolTip;
+		string toolTip = (ModSettings.IsStable(setting) ? UWGame.Locale.Text("STABLE - confirmed in play.") + " " : UWGame.Locale.Text("TESTING - not yet confirmed in play.") + " ") + setting.DisplayToolTip;
 		if (setting.AffectsSimulation)
 		{
-			toolTip += " Changes what a save contains: saves made with it on are marked MODDED.";
+			toolTip += " " + UWGame.Locale.Text("Changes what a save contains: saves made with it on are marked MODDED.");
 		}
 		int valueX = 124;
 		int valueWidth = panel.Width - valueX - 4;
@@ -862,7 +863,7 @@ public class OptionsDialog : Panel
 			CheckBox checkBox = new CheckBox(Interface.gui);
 			panel.Add(checkBox);
 			checkBox.Init(CheckBoxType.LCD, CheckBoxFlavor.Green);
-			checkBox.Text = setting.Label;
+			checkBox.Text = setting.DisplayLabel;
 			checkBox.FitToText();
 			checkBox.X = 6;
 			checkBox.Y = lineY;
@@ -879,7 +880,7 @@ public class OptionsDialog : Panel
 			Label caption = new Label(Interface.gui);
 			panel.Add(caption);
 			caption.Init(Label.LabelType.LCDSmallHeadingBanner);
-			caption.Text = setting.Label + ":";
+			caption.Text = setting.DisplayLabel + ":";
 			caption.FitToText();
 			caption.X = 6;
 			caption.Y = lineY;
@@ -921,7 +922,7 @@ public class OptionsDialog : Panel
 			Label caption2 = new Label(Interface.gui);
 			panel.Add(caption2);
 			caption2.Init(Label.LabelType.LCDSmallHeadingBanner);
-			caption2.Text = setting.Label + ":";
+			caption2.Text = setting.DisplayLabel + ":";
 			caption2.FitToText();
 			caption2.X = 6;
 			caption2.Y = lineY;
@@ -1052,7 +1053,7 @@ public class OptionsDialog : Panel
 		{
 			if (item.Width >= 800 && item.Format == SurfaceFormat.Color)
 			{
-				string text = $"Width: {item.Width} Height: {item.Height}";
+				string text = string.Format(UWGame.Locale.Text("Width: {0} Height: {1}"), item.Width, item.Height);
 				cbResolution.AddEntry(item, text);
 			}
 		}
@@ -1122,7 +1123,7 @@ public class OptionsDialog : Panel
 			{
 				if (cbResolution.SelectedKey.Equals(""))
 				{
-					errorsAndMessages.ShowError("Select a resolution from the list.");
+					errorsAndMessages.ShowError(UWGame.Locale.Text("Select a resolution from the list."));
 					return false;
 				}
 			}
@@ -1130,27 +1131,27 @@ public class OptionsDialog : Panel
 			{
 				if (tbWidth.Text == null || tbHeight.Text == null)
 				{
-					errorsAndMessages.ShowError("Both width and height is required.");
+					errorsAndMessages.ShowError(UWGame.Locale.Text("Both width and height is required."));
 					return false;
 				}
 				if (!int.TryParse(tbWidth.Text, out var result))
 				{
-					errorsAndMessages.ShowError("Illegal width entered.");
+					errorsAndMessages.ShowError(UWGame.Locale.Text("Illegal width entered."));
 					return false;
 				}
 				if (!int.TryParse(tbHeight.Text, out var result2))
 				{
-					errorsAndMessages.ShowError("Illegal height entered.");
+					errorsAndMessages.ShowError(UWGame.Locale.Text("Illegal height entered."));
 					return false;
 				}
 				if (result > UnclaimedWorld.MaxScreenDimensions.X)
 				{
-					errorsAndMessages.ShowError($"Illegal width entered. {UnclaimedWorld.MaxScreenDimensions.X} is maximum.");
+					errorsAndMessages.ShowError(string.Format(UWGame.Locale.Text("Illegal width entered. {0} is maximum."), UnclaimedWorld.MaxScreenDimensions.X));
 					return false;
 				}
 				if (result2 > UnclaimedWorld.MaxScreenDimensions.Y)
 				{
-					errorsAndMessages.ShowError($"Illegal height entered. {UnclaimedWorld.MaxScreenDimensions.Y} is maximum.");
+					errorsAndMessages.ShowError(string.Format(UWGame.Locale.Text("Illegal height entered. {0} is maximum."), UnclaimedWorld.MaxScreenDimensions.Y));
 					return false;
 				}
 			}
@@ -1318,8 +1319,8 @@ public class OptionsDialog : Panel
 		else
 		{
 			cbResolution.SelectedKey = "";
-			tbWidth.Text = "";
-			tbHeight.Text = "";
+			tbWidth.Text = UWGame.Locale.Text("");
+			tbHeight.Text = UWGame.Locale.Text("");
 			DisableResolution();
 		}
 		if (cbFullscreen.IsChecked)

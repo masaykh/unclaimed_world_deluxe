@@ -142,6 +142,15 @@ public static partial class HudMod
                      "when HOLD LEFT ALT FOR NAMES AND MARKERS is on. Press it twice quickly to keep " +
                      "them shown, and twice again to go back. Drag-select still uses LeftAlt."));
 
+    private static ModSetting labelList;
+
+    /// <summary>Overlapping labels open into a list - see HudModLabelList.cs.</summary>
+    public static ModSetting LabelListSetting =>
+        labelList ?? (labelList = ModSettings.Toggle(
+            ModId, "labelList", "OVERLAPPING LABELS OPEN INTO A LIST", defaultValue: true,
+            toolTip: "Rest the pointer for a second on a label that other labels cover, and they " +
+                     "all line up in a list under it, each one clickable. Move away to close it."));
+
     public static void RegisterSettings()
     {
         ModSettings.SetCategoryLabel(ModId, "HUD");

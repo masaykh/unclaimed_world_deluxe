@@ -19,7 +19,7 @@ public class MainMenuPanel : Panel
 	public string MapDataXmlPath;
 
 	public MainMenuPanel(MainMenuInterface intf, Point position)
-		: base(intf, "MAIN MENU", position, new Vector2(424f, 177f), Level.Dialogs, PanelType.MainMenu)
+		: base(intf, UWGame.Locale.Text("MAIN MENU"), position, new Vector2(424f, 177f), Level.Dialogs, PanelType.MainMenu)
 	{
 		optionsDialog = new OptionsDialog(intf);
 		optionsDialog.CancelClick += optionsDialog_CancelClick;
@@ -54,7 +54,7 @@ public class MainMenuPanel : Panel
 		TextButton textButton = new TextButton(Interface.gui);
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.Black);
-		textButton.Text = "NEW GAME";
+		textButton.Text = UWGame.Locale.Text("NEW GAME");
 		textButton.Position = new Point(num2, image.Y + 6);
 		textButton.Click += btNew_Click;
 		textButton.Width = 106;
@@ -63,7 +63,7 @@ public class MainMenuPanel : Panel
 		Window.Add(textButton2);
 		textButton2.Init(TextButton.TextButtonType.Black);
 		textButton2.Position = new Point(num2, textButton.Bottom + 1);
-		textButton2.Text = "LOAD GAME";
+		textButton2.Text = UWGame.Locale.Text("LOAD GAME");
 		textButton2.Click += btLoadGame_Click;
 		textButton2.Width = 106;
 		textButton2.Height = height2;
@@ -72,7 +72,7 @@ public class MainMenuPanel : Panel
 		Window.Add(textButton3);
 		textButton3.Init(TextButton.TextButtonType.White);
 		textButton3.Position = new Point(num2, 116);
-		textButton3.Text = "OPTIONS";
+		textButton3.Text = UWGame.Locale.Text("OPTIONS");
 		textButton3.Click += btOptions_Click;
 		textButton3.Width = 106;
 		num2 += 114;
@@ -80,14 +80,14 @@ public class MainMenuPanel : Panel
 		Window.Add(textButton4);
 		textButton4.Init(TextButton.TextButtonType.White);
 		textButton4.Position = new Point(num2, 76);
-		textButton4.Text = "CREDITS";
+		textButton4.Text = UWGame.Locale.Text("CREDITS");
 		textButton4.Click += btCredits_Click;
 		textButton4.Width = 106;
 		TextButton textButton5 = new TextButton(Interface.gui);
 		Window.Add(textButton5);
 		textButton5.Init(TextButton.TextButtonType.White);
 		textButton5.Position = new Point(num2, 116);
-		textButton5.Text = "EXIT";
+		textButton5.Text = UWGame.Locale.Text("EXIT");
 		textButton5.Click += btExit_Click;
 		textButton5.Width = 106;
 		// UNHIDDEN MOD: EDIT and TEST reach the map editor.
@@ -107,7 +107,7 @@ public class MainMenuPanel : Panel
 			Window.Add(textButton6);
 			textButton6.Init(TextButton.TextButtonType.White);
 			textButton6.Position = new Point(142, 76);
-			textButton6.Text = "EDIT";
+			textButton6.Text = UWGame.Locale.Text("EDIT");
 			textButton6.Click += btEditMap_Click;
 			textButton6.Width = 59;
 			TextButton textButton7 = new TextButton(Interface.gui);
@@ -116,7 +116,7 @@ public class MainMenuPanel : Panel
 			textButton7.Position = new Point(198, 76);
 			// Named TEST MAP, not TEST: it opens a MAP PICKER and plays a raw map with no
 			// colonists on it. The DEBUG MOD dev panel's TEST SCENARIO is the other feature.
-			textButton7.Text = "TEST MAP";
+			textButton7.Text = UWGame.Locale.Text("TEST MAP");
 			textButton7.Click += btTestMap_Click;
 			textButton7.Width = 59;
 		}

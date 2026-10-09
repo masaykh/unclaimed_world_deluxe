@@ -102,6 +102,11 @@ internal static partial class Program
             Console.Error.WriteLine("               DiscomfortMod against the tables: what stinks, which workplaces are");
             Console.Error.WriteLine("               loud, the comfort lost, and the once-a-day measurement.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --strings-literals=FILE --strings-out=FILE");
+            Console.Error.WriteLine("               write English (US).xml: the literals in FILE (from Locale.Text calls),");
+            Console.Error.WriteLine("               every mod setting's label and tooltip, every item's name and description.");
+            Console.Error.WriteLine("               Run by tools/build/37-make-strings.sh.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --mapedit-selftest");
             Console.Error.WriteLine("               the Map Editor's terrain height edit on a small map built in memory,");
             Console.Error.WriteLine("               at the map's corner and away from it: it completes, and the coast");
@@ -198,6 +203,13 @@ internal static partial class Program
 
         PrepareLookups();
 
+        string stringsLiterals = args.FirstOrDefault(a => a.StartsWith("--strings-literals=", StringComparison.Ordinal))?.Substring("--strings-literals=".Length);
+        string stringsOut = args.FirstOrDefault(a => a.StartsWith("--strings-out=", StringComparison.Ordinal))?.Substring("--strings-out=".Length);
+        if (stringsLiterals != null && stringsOut != null)
+        {
+            return WriteStrings(stringsLiterals, stringsOut);
+        }
+
         if (disassemblyReport)
         {
             // NoSerialize is the mode the GAME loads in: the tables are built by the loaders and
@@ -292,6 +304,11 @@ internal static partial class Program
         if (args.Contains("--ownership-selftest"))
         {
             return OwnershipSelfTest();
+        }
+
+        if (args.Contains("--locale-selftest"))
+        {
+            return LocaleSelfTest();
         }
 
         if (args.Contains("--hud-selftest"))

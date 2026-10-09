@@ -93,6 +93,12 @@ public sealed class ModSetting
     /// <summary>Shown as the control's tooltip, and written as a comment above the entry in the file.</summary>
     public string ToolTip { get; internal set; }
 
+    /// <summary>The label in the chosen language (Locale, "(SETTING)" and the id). The file keeps <see cref="Label"/>.</summary>
+    public string DisplayLabel => UWGame.Locale.Text(UWGame.Locale.SettingKey(Id), Label);
+
+    /// <summary>The tooltip in the chosen language (Locale, "(SETTING TIP)" and the id).</summary>
+    public string DisplayToolTip => ToolTip == null ? null : UWGame.Locale.Text(UWGame.Locale.SettingTipKey(Id), ToolTip);
+
     /// <summary>Allowed values, in menu order. <see cref="ModSettingKind.Choice"/> only.</summary>
     public string[] Choices { get; internal set; }
 

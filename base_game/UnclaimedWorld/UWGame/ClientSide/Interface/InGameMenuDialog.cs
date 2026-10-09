@@ -23,7 +23,7 @@ public class InGameMenuDialog : Panel
 	private TextButton btSaveGame;
 
 	public InGameMenuDialog()
-		: base(The.InGameUI, "MENU", new Point(400, 280), new Vector2(260f, 290f), Level.Menu, PanelType.RegularEdges)
+		: base(The.InGameUI, UWGame.Locale.Text("MENU"), new Point(400, 280), new Vector2(260f, 290f), Level.Menu, PanelType.RegularEdges)
 	{
 		int num = 180;
 		int x = 16 + (Window.Width - 32 - num) / 2;
@@ -32,35 +32,35 @@ public class InGameMenuDialog : Panel
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
 		textButton.Position = new Point(x, MarginTop + 5);
-		textButton.Text = "RESUME GAME";
+		textButton.Text = UWGame.Locale.Text("RESUME GAME");
 		textButton.Click += btContinueGame_Click;
 		textButton.Width = num;
 		TextButton textButton2 = new TextButton(Interface.gui);
 		Window.Add(textButton2);
 		textButton2.Init(TextButton.TextButtonType.White);
 		textButton2.Position = new Point(x, textButton.Bottom + num2);
-		textButton2.Text = "QUIT TO TITLE SCREEN";
+		textButton2.Text = UWGame.Locale.Text("QUIT TO TITLE SCREEN");
 		textButton2.Click += btQuitToMainMenu_Click;
 		textButton2.Width = num;
 		TextButton textButton3 = new TextButton(Interface.gui);
 		Window.Add(textButton3);
 		textButton3.Init(TextButton.TextButtonType.White);
 		textButton3.Position = new Point(x, textButton2.Bottom + num2);
-		textButton3.Text = "QUIT TO DESKTOP";
+		textButton3.Text = UWGame.Locale.Text("QUIT TO DESKTOP");
 		textButton3.Click += btQuitToDesktop_Click;
 		textButton3.Width = num;
 		TextButton textButton4 = new TextButton(Interface.gui);
 		Window.Add(textButton4);
 		textButton4.Init(TextButton.TextButtonType.White);
 		textButton4.Position = new Point(x, textButton3.Bottom + num2);
-		textButton4.Text = "OPTIONS";
+		textButton4.Text = UWGame.Locale.Text("OPTIONS");
 		textButton4.Click += btOptions_Click;
 		textButton4.Width = num;
 		TextButton textButton5 = new TextButton(Interface.gui);
 		Window.Add(textButton5);
 		textButton5.Init(TextButton.TextButtonType.White);
 		textButton5.Position = new Point(x, textButton4.Bottom + num2 + num2);
-		textButton5.Text = "SAVE GAME";
+		textButton5.Text = UWGame.Locale.Text("SAVE GAME");
 		textButton5.Click += btSaveGame_Click;
 		textButton5.Width = num;
 		btSaveGame = textButton5;
@@ -68,7 +68,7 @@ public class InGameMenuDialog : Panel
 		Window.Add(textButton6);
 		textButton6.Init(TextButton.TextButtonType.White);
 		textButton6.Position = new Point(x, textButton5.Bottom + num2);
-		textButton6.Text = "LOAD GAME";
+		textButton6.Text = UWGame.Locale.Text("LOAD GAME");
 		textButton6.Click += btLoadGame_Click;
 		textButton6.Width = num;
 		AddDefaultDirt();
@@ -205,7 +205,7 @@ public class InGameMenuDialog : Panel
 	{
 		// PORT: decided here, not when the menu is made: that is before the Sim knows it is the Map
 		// Editor (the Client's constructor runs ahead of Sim.StartGamePreLoadMap).
-		btSaveGame.Text = ((The.Sim.Mode == UWGame.SimSide.Sim.EngineMode.Edit) ? "SAVE MAP" : "SAVE GAME");
+		btSaveGame.Text = ((The.Sim.Mode == UWGame.SimSide.Sim.EngineMode.Edit) ? UWGame.Locale.Text("SAVE MAP") : UWGame.Locale.Text("SAVE GAME"));
 		base.ShowDialog(modal);
 	}
 }

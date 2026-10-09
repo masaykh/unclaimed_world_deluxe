@@ -42,14 +42,6 @@ public static partial class HudMod
     /// <summary>How far outside the list the pointer may stray before it closes, in pixels.</summary>
     public const int ListSlack = 8;
 
-    private static ModSetting labelList;
-
-    public static ModSetting LabelListSetting =>
-        labelList ?? (labelList = ModSettings.Toggle(
-            ModId, "labelList", "OVERLAPPING LABELS OPEN INTO A LIST", defaultValue: true,
-            toolTip: "Rest the pointer for a second on a label that other labels cover, and they " +
-                     "all line up in a list under it, each one clickable. Move away to close it."));
-
     private static MarkerWindow hoverCandidate;
     private static double hoverSince;
     private static readonly List<MarkerWindow> listed = new List<MarkerWindow>();

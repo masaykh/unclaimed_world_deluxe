@@ -169,6 +169,19 @@ The compiler is **pinned to a commit** (`UW_SHADOWDUSK_REF`) so an upstream forc
 silently change what your shaders compile to. Bump it deliberately, and re-run the render
 comparison when you do.
 
+## The translation template
+
+The English template in `translations/` lists every string the game asks `Locale` for: the menus and
+options (`Locale.Text` in the code), the mod settings' labels and tooltips, and item names and
+descriptions. It is generated, not edited:
+
+```sh
+bash tools/build/37-make-strings.sh            # rewrite it after adding or changing a Locale.Text
+bash tools/build/37-make-strings.sh --check    # what gate 80 (case 37) runs
+```
+
+How to translate, and what is translatable so far: `translations/README.md`.
+
 ## Fonts for translations
 
 The studio's fonts cover ASCII only. `tools/build/36-build-fonts.sh` rebuilds the five TrueType
