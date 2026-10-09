@@ -74,4 +74,19 @@ public static class DebugMod
     public static void ApplyOverlays()
     {
     }
+
+    /// <summary>Always false: there is no credits key, as the retail game had none.</summary>
+    public const bool CreditsKeyActive = false;
+
+    /// <summary>Kept because Client.HandleInput reads it inside a dead branch. Registered with nothing.</summary>
+    public static readonly ModSetting CreditsKey =
+        new ModSetting(ModId, "creditsKey", ModSettingKind.Key, Microsoft.Xna.Framework.Input.Keys.None.ToString());
+
+    /// <summary>Read inside the same dead branch.</summary>
+    public static decimal CreditsAmount => 0m;
+
+    /// <summary>Adds nothing: a replay's AddCredits from a modded build changes no credits here.</summary>
+    public static void AddCredits(UWGame.SimSide.Allegiances.Allegiance allegiance, decimal amount)
+    {
+    }
 }

@@ -739,6 +739,14 @@ public class Client : GameScreen
 		{
 			return;
 		}
+		// DEBUG MOD: the credits key (F9 unless rebound), when switched on. A command, so a replay
+		// carries it - the studio's own "Dev.Add credits" wrote TradeCredits from here directly.
+		if (UWGame.Mods.DebugMod.CreditsKeyActive && inputData.IsKeyTapped(UWGame.Mods.DebugMod.CreditsKey.KeyValue) && The.InGameUI.UIAllegiance != null)
+		{
+			decimal amount = UWGame.Mods.DebugMod.CreditsAmount;
+			base.Controller.StoreAndExecuteCommand(new UWGame.SimSide.Commands.AddCredits(The.InGameUI.UIAllegiance.ID, amount));
+			Log.AddLogEvent(Log.EconomicEvent, null, "Debug: " + amount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " trade credits added.");
+		}
 		if (inputData.IsKeyTapped(Keys.F2))
 		{
 			The.InGameUI.LogPanel.Hide();

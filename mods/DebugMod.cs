@@ -119,11 +119,55 @@ public static class DebugMod
         return RecordGameSetting.On || studioValue;
     }
 
+    // ---- credits for testing --------------------------------------------------------------------
+    //
+    // Kastuk, "Dogs and robots", 2026-10-09: "To Test GOPHER I need to buy it, but it so costly, I
+    // haven't savegame with such rich colony. Need to bring debug tool to change credits quantity."
+    // The studio had one on its developer panel ("Dev.Add credits", Client.AddCredits: +500). Here
+    // it is a key, through the AddCredits command so that a replay carries it.
+
+    private static ModSetting creditsKeyOn;
+    private static ModSetting creditsKey;
+    private static ModSetting creditsPerPress;
+
+    public static ModSetting CreditsKeyOnSetting =>
+        creditsKeyOn ?? (creditsKeyOn = ModSettings.Toggle(
+            ModId, "creditsKeyOn", "KEY ADDS TRADE CREDITS", defaultValue: false,
+            toolTip: "For testing. In a game, the ADD CREDITS key (F9 unless rebound in KEYS) gives "
+                   + "the colony CREDITS PER PRESS more trade credits. The log says so each time."));
+
+    public static ModSetting CreditsKey =>
+        creditsKey ?? (creditsKey = ModSettings.Key(
+            ModId, "creditsKey", "ADD CREDITS", Microsoft.Xna.Framework.Input.Keys.F9,
+            toolTip: "Adds trade credits, when KEY ADDS TRADE CREDITS is on in DEBUG."));
+
+    public static ModSetting CreditsPerPress =>
+        creditsPerPress ?? (creditsPerPress = ModSettings.Choice(
+            ModId, "creditsPerPress", "CREDITS PER PRESS", new[] { "500", "1000", "5000", "10000" }, "1000",
+            toolTip: "How many trade credits one press of ADD CREDITS gives."));
+
+    /// <summary>Asked by Client.HandleInput each frame: whether the key was the credits key, switched on.</summary>
+    public static bool CreditsKeyActive => CreditsKeyOnSetting.On;
+
+    /// <summary>The amount one press adds.</summary>
+    public static decimal CreditsAmount =>
+        decimal.TryParse(CreditsPerPress.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out decimal amount) && amount > 0m
+            ? amount : 1000m;
+
+    /// <summary>Called by the AddCredits command only.</summary>
+    public static void AddCredits(UWGame.SimSide.Allegiances.Allegiance allegiance, decimal amount)
+    {
+        allegiance.TradeCredits = (allegiance.TradeCredits ?? 0m) + amount;
+    }
+
     public static void RegisterSettings()
     {
         _ = TestScenario;
         _ = RecordGameSetting;
         _ = ShowMainMenuDevPanelSetting;
+        _ = CreditsKeyOnSetting;
+        _ = CreditsKey;
+        _ = CreditsPerPress;
         WriteScenarioList();
         if (overlaySettings != null)
         {

@@ -1576,6 +1576,28 @@ internal static partial class Program
               "...and the tooltip names the part of the day, not the clock");
         rough.Value = was;
 
+        // DebugMod's credits key, for testing purchases the colony cannot afford (Kastuk, "Dogs and
+        // robots": the GOPHER). It goes through a command so that replays carry it.
+        Check(UWGame.Mods.DebugMod.CreditsKeyOnSetting.DefaultValue == "false" && !UWGame.Mods.DebugMod.CreditsKeyOnSetting.AffectsSimulation,
+              "debug.creditsKeyOn is off by default");
+        Check(UWGame.Mods.DebugMod.CreditsKey.KeyValue == Microsoft.Xna.Framework.Input.Keys.F9 && UWGame.Mods.DebugMod.CreditsAmount == 1000m,
+              $"F9 adds 1000 unless changed (got {UWGame.Mods.DebugMod.CreditsKey.KeyValue}, {UWGame.Mods.DebugMod.CreditsAmount})");
+        var colony = new UWGame.SimSide.Allegiances.Allegiance { TradeCredits = 250m };
+        UWGame.Mods.DebugMod.AddCredits(colony, 1000m);
+        Check(colony.TradeCredits == 1250m, $"AddCredits adds to what the colony has (250 + 1000 = {colony.TradeCredits})");
+        var poor = new UWGame.SimSide.Allegiances.Allegiance();
+        UWGame.Mods.DebugMod.AddCredits(poor, 500m);
+        Check(poor.TradeCredits == 500m, "...and to a colony that has never had credits");
+        var creditsSerializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UWGame.Control.Commands.Command>));
+        var creditsWriter = new System.IO.StringWriter();
+        creditsSerializer.Serialize(creditsWriter, new List<UWGame.Control.Commands.Command>
+        {
+            new UWGame.SimSide.Commands.AddCredits((UWGame.SimSide.Allegiances.AllegianceID)3L, 5000m),
+        });
+        var creditsBack = (creditsSerializer.Deserialize(new System.IO.StringReader(creditsWriter.ToString())) as List<UWGame.Control.Commands.Command>)
+            ?.FirstOrDefault() as UWGame.SimSide.Commands.AddCredits;
+        Check(creditsBack != null && creditsBack.AllegianceID == 3L && creditsBack.Amount == 5000m, "AddCredits round-trips through the replay serializer");
+
         Console.WriteLine(failures == 0 ? "trade self-test OK" : $"trade self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
