@@ -151,11 +151,5 @@ namespace UWGame.SimSide.Entities
         public void PostDataCompleteValidate(ref List<string> listOfErrors)
         {
         }
-    }
-    /*
-    public class RandomParams
-    {
-        public float Mean;
-        public float StandardDeviation;
-    }*/
+    }   
 }
