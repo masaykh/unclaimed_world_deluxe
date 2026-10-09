@@ -1,101 +1,179 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UWGame.SimSide.Maps.MapEditor;
+using UWGame.SimSide.Overland;
 using UWGame.SimSide.Entities;
+using Microsoft.Xna.Framework;
+using UWGame.SimSide.InGameEvents.Actions;
+using UWGame.SimSide.Trade;
 using UWGame.SimSide.InGameEvents.Expressions;
 using UWGame.SimSide.Policies;
-using UWGame.SimSide.Trade;
 using UWGame.SimSide.XmlCollections;
 
-namespace UWGame.SimSide.Expeditions;
-
-public class ExpeditionData : IGameData
+namespace UWGame.SimSide.Expeditions
 {
-	public string AllegianceKey;
+    /// <summary>
+    /// defines the state of a non-player allegiance on startup - after that, the class is not used anymore.
+    /// 
+    /// </summary>
+    public class ExpeditionData : IGameData
+    {
+        public string KeyName { get; set; }
+        public string Name { get; set; }
 
-	public EvalNode Location;
+        public bool DeleteRecord
+        {
+            get;
+            set;
+        }
 
-	public float? SizeFactor;
+        /// <summary>
+        /// This variable only needs to be set for the CreateExpeditionAction
+        /// 
+        /// If ExpeditionData is used within the action that creates allegiances that allegiance will be used.
+        /// </summary>
+        public string AllegianceKey;
 
-	public string TradeProfile;
+        /// <summary>
+        /// only required for playsite expeditions
+        /// </summary>
+        public EvalNode Location;
 
-	public string PricesProfile;
+        /// <summary>
+        /// this can override the size factor set at the Site level
+        /// </summary>
+        public float? SizeFactor;
 
-	public string StructuresProfile;
+        /// <summary>
+        /// profile instead of inline TradeAmounts
+        /// </summary>
+        public string TradeProfile;
 
-	public string VehiclesProfile;
+        /// <summary>
+        /// the default prices to use
+        /// </summary>
+        public string PricesProfile;
 
-	public SerializableDictionary<string, TradeAmountType> AvailableForTrade;
 
-	public SerializableDictionary<string, VehiclesForHireType> VehiclesForHire;
+        /// <summary>
+        /// profile defines terminals and communication
+        /// </summary>
+        public string StructuresProfile;
 
-	public ExpeditionPolicyData PolicyData;
+        /// <summary>
+        /// profile defines vehicles for hire and their price
+        /// </summary>
+        public string VehiclesProfile;
 
-	public PopulationData PopulationData;
 
-	public string KeyName { get; set; }
+        //public TradeAmountTypes TradeAmounts;
 
-	public string Name { get; set; }
+        /// <summary>
+        /// for inline definition of trade, overrides any trade profile that has been set, on an entity type basis.
+        /// </summary>
+        public SerializableDictionary<string, TradeAmountType> AvailableForTrade;
 
-	public bool DeleteRecord { get; set; }
+        public SerializableDictionary<string, VehiclesForHireType> VehiclesForHire;
 
-	public void PostDataCompleteValidate(ref List<string> listOfErrors)
-	{
-		if (AvailableForTrade != null)
-		{
-			foreach (KeyValuePair<string, TradeAmountType> item in AvailableForTrade)
-			{
-				EntityType.ValidateEntityTypeKeyExists(ref listOfErrors, item.Key);
-			}
-		}
-		if (VehiclesForHire != null)
-		{
-			foreach (KeyValuePair<string, VehiclesForHireType> item2 in VehiclesForHire)
-			{
-				EntityType.ValidateEntityTypeKeyExists(ref listOfErrors, item2.Key);
-			}
-		}
-		if (PricesProfile != null)
-		{
-			EntityType.ValidateGameDataTypeExists(ref listOfErrors, PricesProfile, GameData.Instance.AllPricesProfiles, out var _);
-		}
-		if (StructuresProfile != null)
-		{
-			EntityType.ValidateGameDataTypeExists(ref listOfErrors, StructuresProfile, GameData.Instance.AllStructuresProfiles, out var _);
-		}
-		if (VehiclesProfile != null)
-		{
-			EntityType.ValidateGameDataTypeExists(ref listOfErrors, VehiclesProfile, GameData.Instance.AllVehiclesProfiles, out var _);
-			if (VehiclesForHire != null)
-			{
-				EntityType.CreateValidationError(ref listOfErrors, "VehiclesForHire and VehiclesProfile cannot both be specified");
-			}
-		}
-		if (PopulationData != null)
-		{
-			PopulationData.PostDataCompleteValidate(ref listOfErrors);
-		}
-		if (PolicyData != null)
-		{
-			PolicyData.PostDataCompleteValidate(ref listOfErrors);
-		}
-	}
 
-	public void PreInitValidate(ref List<string> errors)
-	{
-	}
+        public ExpeditionPolicyData PolicyData;
 
-	public void Initialize()
-	{
-	}
 
-	public void PostInitValidate(ref List<string> errors)
-	{
-	}
+        public PopulationData PopulationData;
 
-	public void PreDataCompleteValidate(ref List<string> listOfErrors)
-	{
-	}
+        /*
+        /// <summary>
+        /// ???
+        /// </summary>
+        public StringChance[] ExpeditionTemplates;
+        */
 
-	public void PostDataCompleteInitialize()
-	{
-	}
+        public void PostDataCompleteValidate(ref List<string> listOfErrors)
+        {
+            if (AvailableForTrade != null)
+            {
+                foreach (var item in AvailableForTrade)
+                {
+                    EntityType.ValidateEntityTypeKeyExists(ref listOfErrors, item.Key);
+                }
+            }
+
+            if (VehiclesForHire != null)
+            {
+                foreach (var item in VehiclesForHire)
+                {
+                    EntityType.ValidateEntityTypeKeyExists(ref listOfErrors, item.Key);
+                }
+            }
+
+            if (PricesProfile != null)
+            {
+                PricesProfile profile;
+                EntityType.ValidateGameDataTypeExists(ref listOfErrors, PricesProfile, GameData.Instance.AllPricesProfiles, out profile);
+            }
+
+            if (StructuresProfile != null)
+            {
+                StructuresProfile profile;
+                EntityType.ValidateGameDataTypeExists(ref listOfErrors, StructuresProfile, GameData.Instance.AllStructuresProfiles, out profile);
+            }
+
+            if (VehiclesProfile != null)
+            {
+                VehiclesProfile profile;
+                EntityType.ValidateGameDataTypeExists(ref listOfErrors, VehiclesProfile, GameData.Instance.AllVehiclesProfiles, out profile);
+
+                if (VehiclesForHire != null)
+                {
+                    EntityType.CreateValidationError(ref listOfErrors, "VehiclesForHire and VehiclesProfile cannot both be specified");
+                }
+            }
+
+            /*
+            if (TradeAmounts != null)
+            {
+                TradeAmounts.PostDataCompleteValidate(ref listOfErrors);
+            }*/
+
+            if (PopulationData != null)
+            {
+                PopulationData.PostDataCompleteValidate(ref listOfErrors);
+            }
+
+            if (PolicyData != null)
+            {
+                PolicyData.PostDataCompleteValidate(ref listOfErrors);
+            }
+        }
+
+
+
+        public void PreInitValidate(ref List<string> errors)
+        {
+
+        }
+
+        public void Initialize()
+        {
+
+        }
+
+        public void PostInitValidate(ref List<string> errors)
+        {
+
+        }
+
+        public void PreDataCompleteValidate(ref List<string> listOfErrors)
+        {
+
+        }
+
+        public void PostDataCompleteInitialize()
+        {
+
+        }
+
+    }
 }
