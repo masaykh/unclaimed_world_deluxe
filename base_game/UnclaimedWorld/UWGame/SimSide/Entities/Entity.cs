@@ -7388,7 +7388,7 @@ namespace UWGame.SimSide.Entities
 
                 }
 
-#if DEBUG || PROFILE
+#if DEBUG
 
                 if (Locomotor.RotateSlowly == true
                     && (Intelligence == null || Intelligence.DisableAI == true))
