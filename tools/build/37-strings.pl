@@ -3,6 +3,8 @@
 #
 #   perl 37-strings.pl compare TEMPLATE TRANSLATION   what a translation lacks, has extra, or left English
 #   perl 37-strings.pl pseudo  TEMPLATE OUT            a pseudo-language: every value marked and lengthened
+#   perl 37-strings.pl group   TABLE WHERE            order the template by source file, mod and table
+#   perl 37-strings.pl merge   TEMPLATE TRANSLATION OUT  the translation, brought up to date with the template
 #   perl 37-strings.pl unrouted FILE...                interface text not yet through Locale, per file
 use strict;
 use warnings;
@@ -83,6 +85,128 @@ sub without_holes {
     my ($s) = @_;
     $s =~ s/\{[^\}]*\}//g;
     return $s;
+}
+
+# The <String> entries of a table, raw (still XML-escaped, line endings as written), in file order.
+sub read_entries {
+    my ($path) = @_;
+    open my $fh, '<:encoding(UTF-8)', $path or die "cannot read $path: $!\n";
+    local $/;
+    my $xml = <$fh>;
+    close $fh;
+    my @entries;
+    while ($xml =~ m{<Key>(.*?)</Key>\s*<Value>(.*?)</Value>}gs) { push @entries, [$1, $2] }
+    return @entries;
+}
+
+sub write_entries {
+    my ($path, @blocks) = @_;
+    open my $fh, '>:encoding(UTF-8)', $path or die "cannot write $path: $!\n";
+    print $fh qq{<?xml version="1.0" encoding="utf-8"?>\r\n<ArrayOfString>\r\n};
+    for my $b (@blocks) {
+        if (!ref $b) { print $fh "  <!-- $b -->\r\n"; next }
+        print $fh "  <String>\r\n    <Key>$b->[0]</Key>\r\n    <Value>$b->[1]</Value>\r\n  </String>\r\n";
+    }
+    print $fh "</ArrayOfString>\r\n";
+    close $fh;
+}
+
+sub normal { my $s = shift; $s =~ s/\r\n/\n/g; return $s }
+
+# GROUP: put the template in an order a translator can work through (Kastuk: "sort Strings ... by
+# their classes in source code, so all related strings will be nearby"). The interface by the
+# source file that asks for it, in the order the file asks; the mod settings by mod, each setting's
+# label, tooltip and choices together; the data by table, each entry's name, plural and
+# descriptions together. An XML comment heads each group - the game's reader skips comments.
+if ($mode eq 'group') {
+    my ($table, $where) = @ARGV;
+    my @entries = read_entries($table);
+    # Where each Locale.Text literal is: file, line, the literal as written in C#.
+    my %first;    # key => [file, order]
+    my $order = 0;
+    open my $wh, '<:encoding(UTF-8)', $where or die "cannot read $where: $!\n";
+    my %unescape = (n => "\n", t => "\t", r => "\r", '0' => "\0");
+    while (my $line = <$wh>) {
+        chomp $line;
+        my ($file, $lineno, $lit) = split /\t/, $line, 3;
+        next unless defined $lit;
+        (my $text = $lit) =~ s/\\(.)/exists $unescape{$1} ? $unescape{$1} : $1/ge;
+        $text =~ s/&/&amp;/g; $text =~ s/</&lt;/g; $text =~ s/>/&gt;/g;
+        my $key = normal("(GUI)$text");
+        $file =~ s{^base_game/UnclaimedWorld/UWGame/}{}; $file =~ s{^base_game/}{};
+        my $rank = sprintf '%s %08d', $file, $lineno;
+        $first{$key} = [$file, $rank] if !$first{$key} || $rank lt $first{$key}[1];
+    }
+    close $wh;
+    my (%gui, @gui_elsewhere, @counts, %settings, %data);
+    for my $e (@entries) {
+        my $k = normal($e->[0]);
+        if ($k =~ /^\(GUI\)/) {
+            if ($first{$k}) { push @{ $gui{$first{$k}[0]} }, [$first{$k}[1], $e] } else { push @gui_elsewhere, $e }
+        }
+        elsif ($k =~ /^\(COUNT\)/) { push @counts, $e }
+        elsif ($k =~ /^\(SETTING( TIP| GROUP| CHOICE)?\)([^.=]*)(?:\.([^=]*))?(?:=(.*))?$/s) {
+            my ($kind, $mod, $id, $choice) = ($1 // '', $2, $3 // '', $4 // '');
+            my $rank = { '' => 1, ' TIP' => 2, ' CHOICE' => 3, ' GROUP' => 0 }->{$kind};
+            push @{ $settings{$mod} }, [join("\t", $id, $rank, $choice), $e];
+        }
+        elsif ($k =~ /^\(([^ )]+)(?: [^)]*)?\)([^\/@]*)/s) {
+            # The entry's own key, so its name, plural and descriptions stand together; its plain
+            # (name) entry first, then the rest by key.
+            my ($area, $entry) = ($1, $2);
+            my $plain = $k =~ /^\([^ )]+\)[^\/@]*$/s ? 0 : 1;
+            push @{ $data{$area} }, [join("\t", $entry, $plain, $k), $e];
+        }
+        else { push @gui_elsewhere, $e }
+    }
+    my @blocks;
+    for my $file (sort keys %gui) {
+        push @blocks, $file, map { $_->[1] } sort { $a->[0] cmp $b->[0] } @{ $gui{$file} };
+    }
+    push @blocks, 'interface text from elsewhere', @gui_elsewhere if @gui_elsewhere;
+    push @blocks, 'numbers with their nouns: forms separated by |', @counts if @counts;
+    for my $mod (sort keys %settings) {
+        push @blocks, "settings: $mod", map { $_->[1] } sort { $a->[0] cmp $b->[0] } @{ $settings{$mod} };
+    }
+    for my $area (sort keys %data) {
+        push @blocks, "data: $area", map { $_->[1] } sort { $a->[0] cmp $b->[0] } @{ $data{$area} };
+    }
+    die "group lost entries\n" unless grep({ ref } @blocks) == @entries;
+    write_entries($table, @blocks);
+    exit 0;
+}
+
+# MERGE: bring a translation up to date with the template (Kastuk: "a script to merge translation
+# xml files, to add new untranslated lines from English (US).xml into partially translated file").
+# The result is the template - its order and its group comments - with this translation's values
+# wherever it has one; what it lacks comes in as English. Entries the game no longer asks for are
+# kept at the end, so nothing translated is ever lost.
+if ($mode eq 'merge') {
+    my ($template, $translation, $out) = @ARGV;
+    my (%mine, @mine_order);
+    for my $e (read_entries($translation)) {
+        my $k = normal($e->[0]);
+        push @mine_order, $e unless exists $mine{$k};
+        $mine{$k} = $e->[1];
+    }
+    open my $fh, '<:encoding(UTF-8)', $template or die "cannot read $template: $!\n";
+    local $/;
+    my $xml = <$fh>;
+    close $fh;
+    my (@blocks, %used, $added);
+    while ($xml =~ m{<!--\s*(.*?)\s*-->|<Key>(.*?)</Key>\s*<Value>(.*?)</Value>}gs) {
+        if (defined $1) { push @blocks, $1; next }
+        my ($k, $v) = ($2, $3);
+        my $nk = normal($k);
+        if (exists $mine{$nk}) { push @blocks, [$k, $mine{$nk}]; $used{$nk} = 1 }
+        else { push @blocks, [$k, $v]; $added++ }
+    }
+    my @old = grep { !$used{normal($_->[0])} } @mine_order;
+    push @blocks, 'no longer in the game - kept so nothing is lost, safe to delete', @old if @old;
+    write_entries($out, @blocks);
+    printf "==> %s: %d entries, %d new (in English until translated), %d no longer in the game (kept at the end)\n",
+        $out, grep({ ref } @blocks) - @old, $added // 0, scalar @old;
+    exit 0;
 }
 
 # ---- interface text not yet routed through Locale ----------------------------------------------

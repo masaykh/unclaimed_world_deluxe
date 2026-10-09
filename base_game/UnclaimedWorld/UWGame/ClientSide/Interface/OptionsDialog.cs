@@ -78,21 +78,14 @@ public class OptionsDialog : Panel
 		};
 		surfaceGrid.AddEntry("surfaceKey", uIComponent);
 		Label label = AddSectionHeader(6, uIComponent, UWGame.Locale.Text("GRAPHICS"));
-		Label label2 = new Label(Interface.gui);
-		uIComponent.Add(label2);
-		label2.Init(Label.LabelType.LCDNormal);
-		label2.NormalColor = UIComponent.errorColor;
-		label2.Text = UWGame.Locale.Text("Restart the game to apply Graphics changes!");
-		label2.FitToText();
-		label2.X = 6;
-		label2.Y = label.Bottom + 6;
+		int warningBottom = AddWarning(uIComponent, UWGame.Locale.Text("Restart the game to apply Graphics changes!"), label.Bottom + 6);
 		cbFullscreen = new CheckBox(Interface.gui);
 		uIComponent.Add(cbFullscreen);
 		cbFullscreen.Init(CheckBoxType.LCD, CheckBoxFlavor.Blue);
 		cbFullscreen.Text = UWGame.Locale.Text("FULL SCREEN");
 		cbFullscreen.FitToText();
 		cbFullscreen.X = 6;
-		cbFullscreen.Y = label2.Bottom + 6;
+		cbFullscreen.Y = warningBottom + 6;
 		cbFullscreen.Click += cbFullscreen_Click;
 		int y = cbFullscreen.Bottom + 6;
 		cbHardwareModeSwitch = new CheckBox(Interface.gui);
@@ -140,6 +133,12 @@ public class OptionsDialog : Panel
 		rbCustom.FitToText();
 		rbCustom.CenterThisVertically(yPosToCenterTo);
 		rbCustom.X = 6;
+		// PORT: the column starts after the longer of FIXED: and CUSTOM: in whatever language they
+		// are in, and the list takes the rest of the line - "Width: 1366 Height: 768" is longer in
+		// most languages than in English (Kastuk, Russian: the height was cut off).
+		int column = System.Math.Max(x, System.Math.Max(rbFixed.Right, rbCustom.Right) + 6);
+		cbResolution.X = column;
+		cbResolution.Width = System.Math.Max(200, uIComponent.Width - column - 6);
 		rbCustom.ToolTip = UWGame.Locale.Text("Select this option to enter a custom window size. Not available in fullscreen.");
 		Label label4 = new Label(Interface.gui);
 		uIComponent.Add(label4);
@@ -343,6 +342,41 @@ public class OptionsDialog : Panel
 	/// The surface grows and shrinks with the categories; it is inside a scrolling grid, which
 	/// re-lays itself out when an entry changes height (Grid.item_Resize), so a long list scrolls.
 	/// </summary>
+	/// <summary>
+	/// PORT: a red warning in as many lines as the surface needs; returns its bottom. A Label is
+	/// one line and is clipped at the panel edge, and a translation is often longer than the
+	/// English (Kastuk, Russian: both restart warnings were cut off).
+	/// </summary>
+	private int AddWarning(UIComponent parent, string text, int y)
+	{
+		int width = parent.Width - 12;
+		Label line = AddWarningLine(parent, y);
+		foreach (string word in text.Split(' '))
+		{
+			string longer = string.IsNullOrEmpty(line.Text) ? word : line.Text + " " + word;
+			if (!string.IsNullOrEmpty(line.Text) && line.GetTextWidth(longer) > width)
+			{
+				line.FitToText();
+				line = AddWarningLine(parent, line.Bottom);
+				longer = word;
+			}
+			line.Text = longer;
+		}
+		line.FitToText();
+		return line.Bottom;
+	}
+
+	private Label AddWarningLine(UIComponent parent, int y)
+	{
+		Label line = new Label(Interface.gui);
+		parent.Add(line);
+		line.Init(Label.LabelType.LCDNormal);
+		line.NormalColor = UIComponent.errorColor;
+		line.X = 6;
+		line.Y = y;
+		return line;
+	}
+
 	private void BuildModsSection(UIComponent panel, int y)
 	{
 		modControls.Clear();
@@ -360,18 +394,7 @@ public class OptionsDialog : Panel
 		bool anyNeedsReload = ModSettings.All.Any((ModSetting m) => m.TakesEffectOnNextLoad);
 		if (anyNeedsReload)
 		{
-			Label note = new Label(Interface.gui);
-			panel.Add(note);
-			note.Init(Label.LabelType.LCDNormal);
-			note.NormalColor = UIComponent.errorColor;
-			// Kept to the width of the studio's own warning above ("Restart the game to apply
-			// Graphics changes!"): the surface is about 340px and a longer line is simply clipped
-			// at the panel edge, which is how the first version shipped.
-			note.Text = UWGame.Locale.Text("Content changes apply at the next game start!");
-			note.FitToText();
-			note.X = 6;
-			note.Y = lineY;
-			lineY = note.Bottom + 6;
+			lineY = AddWarning(panel, UWGame.Locale.Text("Content changes apply at the next game start!"), lineY) + 6;
 		}
 
 		// Categories in the order their first setting was registered, so the menu keeps the order

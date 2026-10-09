@@ -64,8 +64,21 @@ write twice uses the last one. A file that cannot be read is reported and the ga
 follow the Russian/Ukrainian rule - 1, 21, 31... / 2-4, 22-24... / the rest, with 11-14 in the third:
 `{0} день|{0} дня|{0} дней`.
 
-**Keeping up with the game.** The template grows as more of the game is routed. To see what your
-file lacks, has that the game no longer uses, still has in English, or has a broken `{0}` in:
+**Finding your way.** The template is in groups, each headed by a comment: the interface by the
+source file that shows it (`<!-- ClientSide/Interface/OptionsDialog.cs -->`, in the order the file
+shows it), then the numbers, the settings mod by mod, and the data table by table with each entry's
+name, plural and descriptions together. The game skips the comments.
+
+**Keeping up with the game.** The template grows as more of the game is routed. To bring your file
+up to date - the template's order and groups, your values wherever you have one, English for the
+new entries, and anything the game no longer uses kept at the end:
+
+```sh
+bash tools/build/37-make-strings.sh --merge <your file>.xml
+```
+
+It keeps the file as it was in `<your file>.xml.bak`. To see what your file lacks, has that the game
+no longer uses, still has in English, or has a broken `{0}` in:
 
 ```sh
 bash tools/build/37-make-strings.sh --compare <your file>.xml

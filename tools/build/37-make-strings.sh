@@ -6,6 +6,10 @@
 #   bash tools/build/37-make-strings.sh --check            fail if either is out of date (gate 80)
 #   bash tools/build/37-make-strings.sh --compare FILE     what a translation lacks, has extra, or
 #                                                          left in English; fails on a broken {0}
+#   bash tools/build/37-make-strings.sh --merge FILE       bring a translation up to date: the
+#                                                          template's order, its values where it has
+#                                                          them, English for the new ones (FILE.bak
+#                                                          keeps the old one)
 #   bash tools/build/37-make-strings.sh --pseudo [OUT]     a pseudo-language, for finding text not
 #                                                          yet translatable and text that does not
 #                                                          fit (default artifacts/strings/Pseudo.xml)
@@ -40,6 +44,12 @@ case "${1:-}" in
   --compare)
     [ -n "${2:-}" ] || { echo "usage: $0 --compare <translation.xml>" >&2; exit 2; }
     exec perl "$HELPER" compare "$TEMPLATE" "$2" ;;
+  --merge)
+    [ -n "${2:-}" ] || { echo "usage: $0 --merge <translation.xml>" >&2; exit 2; }
+    cp "$2" "$2.bak"
+    perl "$HELPER" merge "$TEMPLATE" "$2.bak" "$2"
+    echo "    the file as it was is $2.bak; --compare lists what is still English"
+    exit 0 ;;
   --pseudo)
     out=${2:-artifacts/strings/Pseudo.xml}
     mkdir -p "$(dirname "$out")"
@@ -81,6 +91,9 @@ fi
 # One literal per line, as written in C#; DataExport reads the escapes.
 sources | xargs -0 perl -ne 'while (/Locale\.Text\(\s*"((?:[^"\\]|\\.)*)"\s*\)/g) { print "$1\n" }' | sort -u > "$WORK/literals.txt"
 
+# Where each one is asked for, so the template can be read file by file (37-strings.pl group).
+sources | xargs -0 perl -ne 'while (/Locale\.Text\(\s*"((?:[^"\\]|\\.)*)"\s*\)/g) { print "$ARGV\t$.\t$1\n" } close ARGV if eof' > "$WORK/where.txt"
+
 # Counts: Locale.Count(n, "one", "other"), one tab-separated pair per line. Both must be literals.
 bad=$(sources | xargs -0 perl -ne 'next unless /Locale\.Count\(/; print "$ARGV:$.: $_" unless /Locale\.Count\([^,]+,\s*"(?:[^"\\]|\\.)*"\s*,\s*"(?:[^"\\]|\\.)*"\s*\)/; close ARGV if eof' || true)
 if [ -n "$bad" ]; then
@@ -99,6 +112,7 @@ fi
 # A fresh folder: no user/ModSettings.xml, so English and every setting at its default.
 "$EXPORT" "$WORK/game" --strings-literals="$WORK/literals.txt" --strings-counts="$WORK/counts.txt" --strings-out="$WORK/strings.xml" | grep '^==> strings' || {
   echo "FAIL  DataExport did not write the strings" >&2; exit 1; }
+perl "$HELPER" group "$WORK/strings.xml" "$WORK/where.txt"
 
 # The interface's and the simulation's unrouted text, per file, against the ratchet. Not the data
 # loaders: their text is the tables', translated by key (Locale.DataTexts).
