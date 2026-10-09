@@ -58,16 +58,85 @@ public class Locale
 		return Text("(GUI)" + english, english);
 	}
 
-	/// <summary>The chosen language's value for <paramref name="key"/>, or <paramref name="english"/>.</summary>
+	/// <summary>
+	/// A count with its noun: <c>Count(3, "{0} day", "{0} days")</c> is "3 days". Keyed "(COUNT)"
+	/// and the plural English; the template's value is "one|other". A translation lists its own
+	/// forms in the same way, as many as its language has, and the number picks one: two forms are
+	/// one and the rest; three are East Slavic - 1, 21, 31 / 2-4, 22-24 / the rest, with 11-14 in
+	/// the third ("1 день|2 дня|5 дней"). <c>{0}</c> is the number.
+	/// </summary>
+	public static string Count(int n, string one, string other)
+	{
+		string forms = Text(CountKey(other), null);
+		string chosen;
+		if (forms == null)
+		{
+			chosen = n == 1 ? one : other;
+		}
+		else
+		{
+			string[] f = forms.Split('|');
+			int i = f.Length switch
+			{
+				1 => 0,
+				2 => n == 1 ? 0 : 1,
+				_ => (n % 10 == 1 && n % 100 != 11) ? 0 : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2,
+			};
+			chosen = f[i];
+			if (!SamePlaceholders(other, chosen))
+			{
+				chosen = n == 1 ? one : other;
+			}
+		}
+		return string.Format(chosen, n);
+	}
+
+	/// <summary>A count's key: "(COUNT)" and the plural English.</summary>
+	public static string CountKey(string other) => "(COUNT)" + other;
+
+	/// <summary>
+	/// The chosen language's value for <paramref name="key"/>, or <paramref name="english"/>. A
+	/// value whose {0}, {1} differ from the English is not used - string.Format would throw on a
+	/// {1} the code does not pass - and is reported once.
+	/// </summary>
 	public static string Text(string key, string english)
 	{
 		UseChosenCulture();
 		if (currentCulture != InvariantCulture && CurrentStrings != null
 			&& CurrentStrings.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
 		{
-			return value;
+			if (english == null || SamePlaceholders(english, value))
+			{
+				return value;
+			}
+			if (reportedPlaceholders.Add(key))
+			{
+				GameStateManagement.UnclaimedWorld.LogError("Strings/" + currentCulture + ".xml: \"" + key + "\" has different {0}/{1} from the English, so the English is shown.", "LANGUAGE");
+			}
 		}
 		return english;
+	}
+
+	private static readonly HashSet<string> reportedPlaceholders = new HashSet<string>();
+
+	/// <summary>Whether two texts use the same {n} placeholders (which ones, not how often).</summary>
+	public static bool SamePlaceholders(string english, string translated)
+	{
+		if (english.IndexOf('{') < 0 && translated.IndexOf('{') < 0)
+		{
+			return true;
+		}
+		return PlaceholderSet(english) == PlaceholderSet(translated);
+	}
+
+	private static string PlaceholderSet(string text)
+	{
+		var found = new SortedSet<string>(System.StringComparer.Ordinal);
+		foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(text, @"\{(\d+)(?:[,:][^}]*)?\}"))
+		{
+			found.Add(m.Groups[1].Value);
+		}
+		return string.Join(",", found);
 	}
 
 	/// <summary>The language PORT -> LANGUAGE names, loaded when it changes. A missing or broken file is English.</summary>
@@ -293,4 +362,7 @@ public class Locale
 
 	/// <summary>A heading in the MODS section, keyed by its mod id.</summary>
 	public static string SettingGroupKey(string modId) => "(SETTING GROUP)" + modId;
+
+	/// <summary>A dropdown choice in the MODS section: "(SETTING CHOICE)hud.example=VALUE".</summary>
+	public static string SettingChoiceKey(string id, string value) => "(SETTING CHOICE)" + id + "=" + value;
 }

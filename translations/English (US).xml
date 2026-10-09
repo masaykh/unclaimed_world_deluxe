@@ -105,6 +105,10 @@
     <Value>WEAPONS</Value>
   </String>
   <String>
+    <Key>(COUNT){0} CHANGED</Key>
+    <Value>{0} CHANGED|{0} CHANGED</Value>
+  </String>
+  <String>
     <Key>(CREATURE DESCRIPTION)entity:bajingan</Key>
     <Value>
  FEEDING CLASSIFICATION: Omnivore.
@@ -914,10 +918,6 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <String>
     <Key>(GUI)CANCEL</Key>
     <Value>CANCEL</Value>
-  </String>
-  <String>
-    <Key>(GUI)CHANGED</Key>
-    <Value>CHANGED</Value>
   </String>
   <String>
     <Key>(GUI)CREDITS</Key>
@@ -7751,6 +7751,94 @@ The storehouse also has a space for storage of items that are not intended for s
   <String>
     <Key>(RESOURCE)webWing</Key>
     <Value>Web wing</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)homeraid.sightFromHome=ALL THE WAY</Key>
+    <Value>ALL THE WAY</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)hud.talkPanel=always</Key>
+    <Value>always</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)hud.talkPanel=hidden</Key>
+    <Value>hidden</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)hud.talkPanel=when someone speaks</Key>
+    <Value>when someone speaks</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)pests.sensitivity=high</Key>
+    <Value>high</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)pests.sensitivity=low</Key>
+    <Value>low</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)pests.sensitivity=normal</Key>
+    <Value>normal</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)selfpreservation.unorderedThreats=normal</Key>
+    <Value>normal</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)selfpreservation.unorderedThreats=reluctant</Key>
+    <Value>reluctant</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)selfpreservation.unorderedThreats=very reluctant</Key>
+    <Value>very reluctant</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.lookAfter=ALL TOOLS AND WEAPONS</Key>
+    <Value>ALL TOOLS AND WEAPONS</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.lookAfter=WEAPONS AND GOOD TOOLS</Key>
+    <Value>WEAPONS AND GOOD TOOLS</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.placement=BACK WHERE IT CAME FROM</Key>
+    <Value>BACK WHERE IT CAME FROM</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.placement=NOWHERE - DROP IT</Key>
+    <Value>NOWHERE - DROP IT</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.placement=TO CAMP</Key>
+    <Value>TO CAMP</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHungry=OFF</Key>
+    <Value>OFF</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHungry=WHEN HUNGRY</Key>
+    <Value>WHEN HUNGRY</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHungry=WHEN STARVING</Key>
+    <Value>WHEN STARVING</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHurt=25% HEALTH</Key>
+    <Value>25% HEALTH</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHurt=50% HEALTH</Key>
+    <Value>50% HEALTH</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHurt=75% HEALTH</Key>
+    <Value>75% HEALTH</Value>
+  </String>
+  <String>
+    <Key>(SETTING CHOICE)toolcare.whenHurt=OFF</Key>
+    <Value>OFF</Value>
   </String>
   <String>
     <Key>(SETTING GROUP)agent</Key>

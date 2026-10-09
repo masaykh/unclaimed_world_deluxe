@@ -85,6 +85,9 @@ public static class PortSettings
         _ = AskAboutModsOnLoad;
         _ = RenderTrace;
         _ = Language;
+        // A date pattern and a language's file name are shown as they are, in every language.
+        SaveDateFormat.ChoicesAreText = false;
+        Language.ChoicesAreText = false;
     }
 
     private static ModSetting language;

@@ -472,7 +472,7 @@ public class OptionsDialog : Panel
 			categorySwitch.IsChecked = changed > 0;
 			// The category's state first: STABLE only when every switch in it is confirmed in play.
 			string stability = ModSettings.AllStable(settings) ? UWGame.Locale.Text("STABLE") : UWGame.Locale.Text("TESTING");
-			cp.Summary = changed > 0 ? stability + " - " + changed + " " + UWGame.Locale.Text("CHANGED") : stability;
+			cp.Summary = changed > 0 ? stability + " - " + UWGame.Locale.Count(changed, "{0} CHANGED", "{0} CHANGED") : stability;
 		}
 
 		categorySwitch.Click += delegate
@@ -813,7 +813,7 @@ public class OptionsDialog : Panel
 					probe = new TextButton(Interface.gui);
 					probe.Init(TextButton.TextButtonType.LCDCombo);
 				}
-				probe.Text = choice ?? "";
+				probe.Text = s.DisplayChoice(choice) ?? "";
 				probe.ScaleWidthToFitText();
 				// A few pixels of air, so the last letter does not touch the arrow.
 				own = Math.Max(own, probe.Width + 4);
@@ -908,7 +908,7 @@ public class OptionsDialog : Panel
 			comboBox.TooltipExpires = false;
 			foreach (string choice in setting.Choices ?? new string[0])
 			{
-				comboBox.AddEntry(choice, choice);
+				comboBox.AddEntry(choice, setting.DisplayChoice(choice));
 			}
 			if (comboBox.EntriesByKey.ContainsKey(setting.Value))
 			{

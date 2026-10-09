@@ -238,6 +238,7 @@ public static class UnhiddenMod
         _ = StringAlternatives;
         _ = CapResourceRespawn;
         _ = Culture;
+        Culture.ChoicesAreText = false;   // culture codes, shown as they are
         _ = Experimental;
         _ = ShadowsKey;
         _ = MapEditorButtons;

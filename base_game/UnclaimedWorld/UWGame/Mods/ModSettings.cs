@@ -103,6 +103,38 @@ public sealed class ModSetting
     public string[] Choices { get; internal set; }
 
     /// <summary>
+    /// Whether the choices are words a player reads ("ALL THE WAY"), rather than names or patterns
+    /// that must stay as they are - a language's file name, a date format. On unless the
+    /// registration says otherwise.
+    /// </summary>
+    public bool ChoicesAreText { get; internal set; } = true;
+
+    /// <summary>
+    /// A choice as the dropdown shows it, in the chosen language ("(SETTING CHOICE)" and
+    /// "id=value"). The value stored stays <paramref name="value"/>. A choice without a word in it
+    /// - "1/3", "500", "x0.25" - is shown as it is.
+    /// </summary>
+    public string DisplayChoice(string value) =>
+        ChoiceIsText(value) ? UWGame.Locale.Text(UWGame.Locale.SettingChoiceKey(Id, value), value) : value;
+
+    /// <summary>Whether <paramref name="value"/> is a choice the template offers: one with two letters in a row.</summary>
+    public bool ChoiceIsText(string value)
+    {
+        if (!ChoicesAreText || string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+        for (int i = 1; i < value.Length; i++)
+        {
+            if (char.IsLetter(value[i - 1]) && char.IsLetter(value[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Whether changing this changes the data tables or the simulation - which is to say, whether
     /// a save made with it on can be loaded with it off. These are the settings recorded in the
     /// save header, and the only ones a load-time mismatch can be raised about.

@@ -23,7 +23,7 @@ namespace UW.Tools.DataExport;
 /// </summary>
 internal static partial class Program
 {
-    private static int WriteStrings(string literalsPath, string outPath)
+    private static int WriteStrings(string literalsPath, string countsPath, string outPath)
     {
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
@@ -35,6 +35,16 @@ internal static partial class Program
             string english = UnescapeCSharp(line);
             entries["(GUI)" + english] = english;
         }
+        // Locale.Count's two forms, "one" TAB "other": the value is "one|other", the forms in order.
+        if (countsPath != null)
+        {
+            foreach (string line in File.ReadAllLines(countsPath))
+            {
+                string[] pair = line.Split('\t');
+                if (pair.Length != 2) continue;
+                entries[Locale.CountKey(UnescapeCSharp(pair[1]))] = UnescapeCSharp(pair[0]) + "|" + UnescapeCSharp(pair[1]);
+            }
+        }
         var modIds = new SortedSet<string>(StringComparer.Ordinal);
         foreach (UWGame.Mods.ModSetting setting in UWGame.Mods.ModSettings.All)
         {
@@ -42,6 +52,13 @@ internal static partial class Program
             if (!string.IsNullOrEmpty(setting.ToolTip))
             {
                 entries[Locale.SettingTipKey(setting.Id)] = setting.ToolTip;
+            }
+            foreach (string choice in setting.Choices ?? new string[0])
+            {
+                if (setting.ChoiceIsText(choice))
+                {
+                    entries[Locale.SettingChoiceKey(setting.Id, choice)] = choice;
+                }
             }
             modIds.Add(setting.ModId);
         }
@@ -95,6 +112,9 @@ internal static partial class Program
             "  <String><Key>(ITEM)item:acetylene</Key><Value>Ацетилен</Value></String>\r\n" +
             "  <String><Key>(PROCESS)activateSnare</Key><Value>Перезарядка ловушки</Value></String>\r\n" +
             "  <String><Key>(SOIL)soil:clay</Key><Value>Глина</Value></String>\r\n" +
+            "  <String><Key>(COUNT){0} CHANGED</Key><Value>{0} ИЗМЕНЕНИЕ|{0} ИЗМЕНЕНИЯ|{0} ИЗМЕНЕНИЙ</Value></String>\r\n" +
+            "  <String><Key>(SETTING CHOICE)toolcare.lookAfter=WEAPONS AND GOOD TOOLS</Key><Value>ОРУЖИЕ И ХОРОШИЕ ИНСТРУМЕНТЫ</Value></String>\r\n" +
+            "  <String><Key>(GUI)Illegal height entered. {0} is maximum.</Key><Value>Высота не больше {1}.</Value></String>\r\n" +
             "</ArrayOfString>\r\n", new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(folder, "Broken.xml"), "<ArrayOfString><String><Key>", new UTF8Encoding(false));
 
@@ -112,6 +132,17 @@ internal static partial class Program
         Check(UWGame.Mods.HudMod.LabelListSetting.DisplayLabel == "СПИСОК МЕТОК"
               && UWGame.Mods.HudMod.LabelListSetting.Label == "OVERLAPPING LABELS OPEN INTO A LIST",
               "a mod setting's label is shown translated, and kept in English for the settings file");
+        string counts = string.Join(", ", new[] { 1, 3, 5, 11, 21, 22 }.Select(n => Locale.Count(n, "{0} CHANGED", "{0} CHANGED")));
+        Check(counts == "1 ИЗМЕНЕНИЕ, 3 ИЗМЕНЕНИЯ, 5 ИЗМЕНЕНИЙ, 11 ИЗМЕНЕНИЙ, 21 ИЗМЕНЕНИЕ, 22 ИЗМЕНЕНИЯ",
+              $"a count takes the language's form for its number - three forms, East Slavic ({counts})");
+        var lookAfter = UWGame.Mods.ModSettings.Find("toolcare.lookAfter");
+        Check(lookAfter == null || lookAfter.DisplayChoice("WEAPONS AND GOOD TOOLS") == "ОРУЖИЕ И ХОРОШИЕ ИНСТРУМЕНТЫ"
+              && lookAfter.Choices.Contains("WEAPONS AND GOOD TOOLS"),
+              "a dropdown shows its choice translated, and keeps the English value to store");
+        Check(UWGame.Mods.ModSettings.Find("hud.labelList") != null && UWGame.Mods.PortSettings.Language.DisplayChoice("Test") == "Test",
+              "a language's name is shown as it is, never looked up");
+        Check(string.Format(Locale.Text("Illegal height entered. {0} is maximum."), 1080) == "Illegal height entered. 1080 is maximum.",
+              "a translation with a {1} the code does not pass is not used - English, instead of a crash in string.Format");
 
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
@@ -126,6 +157,30 @@ internal static partial class Program
               && !GameData.Instance.AllEntityTypes["item:advancedCookingPot"].Name.StartsWith("(ITEM)", StringComparison.Ordinal),
               "an item the file leaves out keeps its English name");
 
+        // The simulation cannot tell which language is chosen. Every number, flag and enum in all
+        // the tables is the same after every data text is translated as before - and nothing in the
+        // simulation compares a name with English (37-make-strings.sh refuses that).
+        rc = Run(Sim.SerializeMode.NoSerialize, "base tables again, for the fingerprint");
+        if (rc != 0) return rc;
+        string before = Fingerprint(GameData.Instance);
+        List<Locale.DataText> texts = Locale.DataTexts(GameData.Instance);
+        var everything = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<ArrayOfString>\r\n");
+        foreach (Locale.DataText text in texts)
+        {
+            everything.Append("<String><Key>").Append(System.Security.SecurityElement.Escape(text.Key)).Append("</Key><Value>")
+                      .Append(System.Security.SecurityElement.Escape("Ψ" + text.English)).Append("</Value></String>\r\n");
+        }
+        everything.Append("</ArrayOfString>\r\n");
+        File.WriteAllText(Path.Combine(folder, "Everything.xml"), everything.ToString(), new UTF8Encoding(false));
+        UWGame.Mods.PortSettings.RefreshLanguageChoices();
+        language.Value = "Everything";
+        Locale.TranslateData(GameData.Instance);
+        int translated = Locale.DataTexts(GameData.Instance).Count(t => t.English.StartsWith("Ψ", StringComparison.Ordinal));
+        Check(translated == texts.Count, $"every data text translates: {translated} of {texts.Count}");
+        string after = Fingerprint(GameData.Instance);
+        Check(before == after, $"and nothing else in the tables changes - {before.Length} characters of numbers, flags and enums, identical"
+              + (before == after ? "" : $" (first difference at {Enumerable.Range(0, Math.Min(before.Length, after.Length)).FirstOrDefault(i => before[i] != after[i])})"));
+
         language.Value = "Broken";
         Check(Locale.Text("SAVE GAME") == "SAVE GAME", "a file that cannot be read: English, no crash");
         language.Value = Locale.InvariantCulture;
@@ -133,6 +188,45 @@ internal static partial class Program
 
         Console.WriteLine(failures == 0 ? "locale self-test OK" : $"locale self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Every public number, flag and enum of every entry in every table, as text - what the
+    /// simulation could read. Strings are left out: they are what translation changes, and the
+    /// simulation does not compare them (37-make-strings.sh).
+    /// </summary>
+    private static string Fingerprint(GameData data)
+    {
+        var sb = new StringBuilder();
+        foreach (var collection in data.AllGameDataCollections.OrderBy(c => c.Key.FullName, StringComparer.Ordinal))
+        {
+            if (!(collection.Value is System.Collections.IDictionary entries)) continue;
+            foreach (string key in entries.Keys.Cast<string>().OrderBy(k => k, StringComparer.Ordinal))
+            {
+                object entry = entries[key];
+                Type t = entry.GetType();
+                sb.Append(collection.Key.Name).Append('/').Append(key).Append(':');
+                foreach (var f in t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).OrderBy(f => f.Name, StringComparer.Ordinal))
+                {
+                    if (IsPlain(f.FieldType)) sb.Append(f.Name).Append('=').Append(Convert.ToString(f.GetValue(entry), System.Globalization.CultureInfo.InvariantCulture)).Append(';');
+                }
+                foreach (var p in t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).OrderBy(p => p.Name, StringComparer.Ordinal))
+                {
+                    if (!IsPlain(p.PropertyType) || p.GetIndexParameters().Length > 0 || !p.CanRead) continue;
+                    object v;
+                    try { v = p.GetValue(entry); } catch (Exception) { v = "<throws>"; }
+                    sb.Append(p.Name).Append('=').Append(Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture)).Append(';');
+                }
+                sb.Append('\n');
+            }
+        }
+        return sb.ToString();
+
+        static bool IsPlain(Type type)
+        {
+            Type u = Nullable.GetUnderlyingType(type) ?? type;
+            return u.IsPrimitive || u.IsEnum || u == typeof(decimal);
+        }
     }
 
     /// <summary>A C# regular string literal's contents, as the compiler reads them.</summary>

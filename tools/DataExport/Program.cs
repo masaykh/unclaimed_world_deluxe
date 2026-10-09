@@ -205,9 +205,10 @@ internal static partial class Program
 
         string stringsLiterals = args.FirstOrDefault(a => a.StartsWith("--strings-literals=", StringComparison.Ordinal))?.Substring("--strings-literals=".Length);
         string stringsOut = args.FirstOrDefault(a => a.StartsWith("--strings-out=", StringComparison.Ordinal))?.Substring("--strings-out=".Length);
+        string stringsCounts = args.FirstOrDefault(a => a.StartsWith("--strings-counts=", StringComparison.Ordinal))?.Substring("--strings-counts=".Length);
         if (stringsLiterals != null && stringsOut != null)
         {
-            return WriteStrings(stringsLiterals, stringsOut);
+            return WriteStrings(stringsLiterals, stringsCounts, stringsOut);
         }
 
         if (disassemblyReport)
