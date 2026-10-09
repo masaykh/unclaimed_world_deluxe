@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -6,9 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Xna.Framework;
 using UWGame;
+using UWGame.ClientSide.Interface.Editor.MapTools;
 using UWGame.SimSide;
 using UWGame.SimSide.Maps;
 using UWGame.SimSide.Maps.MapEditor;
+using UWGame.SimSide.Soil;
+using UWGame.SimSide.Vegetation;
 
 namespace UW.Tools.DataExport;
 
@@ -71,6 +75,12 @@ internal static partial class Program
 
         Console.WriteLine("==> Map Editor: SAVE under a new name takes the map's pictures (MapManager.CopyMapPictures)");
         CheckCopyMapPictures(Check);
+
+        Console.WriteLine("==> Map Editor: Paintbrush and Eraser (MapTool.SoftDisc)");
+        CheckSoftEdgedTools(Check);
+
+        Console.WriteLine("==> Map Editor: painted soil and vegetation written as the loader reads them (MapManager.SoilTexels, VegetationTexels)");
+        CheckPaintTexels(Check);
 
         Console.WriteLine(failures == 0 ? "mapedit self-test OK" : $"mapedit self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
@@ -286,6 +296,112 @@ internal static partial class Program
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    /// <summary>
+    /// Kastuk, 2026-10-07: erasing was fast and hard-edged, raising slow and "unstable", and he
+    /// asked for the Eraser to get the Brush's soft edge. The studio's Brush had the edge
+    /// backwards (none of its strength at the centre, all of it at the rim), and both tools left
+    /// the disc's right and bottom rows out. The Eraser started at 60 on a 0..1 slider.
+    /// </summary>
+    private static void CheckSoftEdgedTools(Action<bool, string> check)
+    {
+        MapManager map = NewEditMap(10, 10);
+        map.mapSubtileWidth = 30;
+        map.mapSubtileHeight = 30;
+        The.Map = map;
+        var centre = new SubtilePos(15, 15);
+        List<MapTool.SubTileAndChange> brush = new Paintbrush().GetAffectedSubtiles(centre);
+        List<MapTool.SubTileAndChange> eraser = new Eraser().GetAffectedSubtiles(centre);
+        float ChangeAt(List<MapTool.SubTileAndChange> list, int dx, int dy)
+            => list.Where(s => s.SubtilePos.X == centre.X + dx && s.SubtilePos.Y == centre.Y + dy).Select(s => s.Change).DefaultIfEmpty(0f).First();
+
+        check(ChangeAt(brush, 0, 0) == 1f, $"the Brush puts its whole strength under the cursor (got {ChangeAt(brush, 0, 0)})");
+        check(ChangeAt(brush, 1, 0) > ChangeAt(brush, 2, 0) && ChangeAt(brush, 2, 0) > ChangeAt(brush, 3, 0) && ChangeAt(brush, 3, 0) > 0f,
+            $"  and less further out, fading towards its rim (got {ChangeAt(brush, 1, 0)}, {ChangeAt(brush, 2, 0)}, {ChangeAt(brush, 3, 0)})");
+        bool symmetric = brush.All(s => ChangeAt(brush, centre.X - s.SubtilePos.X, centre.Y - s.SubtilePos.Y) == s.Change);
+        check(symmetric && ChangeAt(brush, 3, 0) == ChangeAt(brush, -3, 0) && ChangeAt(brush, 0, 3) == ChangeAt(brush, 0, -3),
+            "  the same on every side of the cursor - the right and bottom rows are in");
+        check(ChangeAt(eraser, 0, 0) == -1f, $"the Eraser starts at its slider's full strength, -1, not -60 (got {ChangeAt(eraser, 0, 0)})");
+        check(eraser.Count == brush.Count && eraser.All(s => s.Change == -ChangeAt(brush, s.SubtilePos.X - centre.X, s.SubtilePos.Y - centre.Y)),
+            "  and takes away with the Brush's soft edge, subtile for subtile");
+    }
+
+    /// <summary>
+    /// Kastuk, 2026-10-07: painted soil and vegetation were not saved, only the map's old pictures
+    /// copied over. The pictures written must give back each subtile's amount when read the
+    /// studio's way (MapLoader.ReadColor's arithmetic, restated here). Split and merged tiles, as
+    /// in CheckTerrainHeightsTexels; a merged tile's amount is spread over its nine subtiles.
+    /// </summary>
+    private static void CheckPaintTexels(Action<bool, string> check)
+    {
+        const int width = 7, height = 5;
+        // MapLoader.LoadSoilTexture: a level of red is this much of a subtile.
+        const float perLevel = 0.00043572986f;
+        MapManager map = NewEditMap(width, height);
+        The.Map = map;
+        var clay = new SoilComponentType { KeyName = "soil:clay" };
+        var sand = new SoilComponentType { KeyName = "soil:sand" };
+        var grass = new LowVegetationType("veg:grass");
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                var tile = new TerrainTile { TilePos = new TilePos(x, y) };
+                if ((x + y) % 2 == 0)
+                {
+                    tile.Terrain = new Terrain(tile);
+                    tile.Terrain.AddSoilComponent(clay, 9f * ExpectedDepth(x, y, 0, 0) * perLevel);
+                    tile.Terrain.AddVegetation(grass, 9f * ExpectedDepth(y, x, 0, 0) * perLevel);
+                }
+                else
+                {
+                    tile.TerrainSubtiles = new Terrain[3][];
+                    for (int j = 0; j < 3; j++)
+                    {
+                        tile.TerrainSubtiles[j] = new Terrain[3];
+                        for (int k = 0; k < 3; k++)
+                        {
+                            tile.TerrainSubtiles[j][k] = new Terrain(tile);
+                            tile.TerrainSubtiles[j][k].AddSoilComponent(clay, ExpectedDepth(x, y, j, k) * perLevel);
+                            tile.TerrainSubtiles[j][k].AddVegetation(grass, ExpectedDepth(y, x, j, k) * perLevel);
+                        }
+                    }
+                }
+                map.TileMap[x][y] = tile;
+            }
+        }
+
+        Color[] soil = map.SoilTexels(clay, out int textureWidth, out int textureHeight);
+        Color[] vegetation = map.VegetationTexels(grass, out _, out _);
+        int wrong = 0;
+        string firstWrong = null;
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                bool split = (x + y) % 2 != 0;
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        float x2 = (float)x + (float)j * 0.33f;
+                        float y2 = (float)y + (float)k * 0.33f;
+                        int index = (int)(x2 / (float)width * (float)textureWidth) + (int)(y2 / (float)height * (float)(textureHeight - 1)) * textureWidth;
+                        int soilLevel = split ? ExpectedDepth(x, y, j, k) : ExpectedDepth(x, y, 0, 0);
+                        int vegetationLevel = split ? ExpectedDepth(y, x, j, k) : ExpectedDepth(y, x, 0, 0);
+                        if (soil[index].R != soilLevel || vegetation[index].R != vegetationLevel)
+                        {
+                            wrong++;
+                            firstWrong ??= $"tile ({x},{y}) subtile ({j},{k}) reads {soil[index].R}/{vegetation[index].R}, not {soilLevel}/{vegetationLevel}";
+                        }
+                    }
+                }
+            }
+        }
+        check(wrong == 0, "every subtile reads back its own soil and vegetation" + (wrong == 0 ? "" : $" - {wrong} do not, e.g. {firstWrong}"));
+        check(soil.All(t => t.A == 255), "  every texel of the picture is filled");
+        check(map.SoilTexels(sand, out _, out _) == null, "a soil type the map has none of gets no picture, so SAVE removes the old one");
     }
 
     private static MapManager NewEditMap(int width, int height)

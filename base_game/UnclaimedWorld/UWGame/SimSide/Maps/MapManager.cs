@@ -18,9 +18,11 @@ using UWGame.SimSide.Maps.MapEditor;
 using UWGame.SimSide.Maps.Regions;
 using UWGame.SimSide.Processes;
 using UWGame.SimSide.Snapshots;
+using UWGame.SimSide.Soil;
 using UWGame.SimSide.Systems;
 using UWGame.SimSide.Systems.TimeSlicing;
 using UWGame.SimSide.Trees;
+using UWGame.SimSide.Vegetation;
 
 namespace UWGame.SimSide.Maps;
 
@@ -131,6 +133,12 @@ public class MapManager : ISnapshot
 	/// (MapLoader.ChangeTerrainDepth), so SaveMap writes terrainHeights.png.
 	/// </summary>
 	public bool TerrainHeightsEdited;
+
+	/// <summary>
+	/// PORT: the Map Editor painted soil or vegetation since the map was loaded
+	/// (SidePanelEditorSoil.AffectMap), so SaveMap writes the Soil and Vegetation pictures.
+	/// </summary>
+	public bool TerrainPaintEdited;
 
 	public int mapSubtileWidth;
 
@@ -885,13 +893,26 @@ public class MapManager : ISnapshot
 		if (TerrainHeightsEdited || !File.Exists(terrainHeightsPath))
 		{
 			Color[] texels = TerrainHeightsTexels(out int width, out int height);
-			using Texture2D texture = new Texture2D(The.Client.GraphicsDevice, width, height);
-			texture.SetData(texels);
-			using (Stream stream = File.Create(terrainHeightsPath))
-			{
-				texture.SaveAsPng(stream, width, height);
-			}
+			SavePicture(terrainHeightsPath, texels, width, height);
 			TerrainHeightsEdited = false;
+		}
+		// PORT: painted soil and vegetation, which were only ever copied over from the map's old
+		// pictures (Kastuk, 2026-10-07: "painted terrain is not saving changes yet"). One picture a
+		// type, named for its key without the prefix, as LoadSoilTexture / LoadVegetationTexture read
+		// them; a type the map no longer has loses its picture.
+		if (TerrainPaintEdited)
+		{
+			foreach (KeyValuePair<string, SoilComponentType> soilType in GameData.Instance.AllSoilComponentTypes)
+			{
+				Color[] texels = SoilTexels(soilType.Value, out int width, out int height);
+				SavePaintPicture(Path.Combine(fullFolderPath, "Soil"), soilType.Key, "soil:", texels, width, height);
+			}
+			foreach (KeyValuePair<string, LowVegetationType> vegetationType in GameData.Instance.AllLowVegetationTypes)
+			{
+				Color[] texels = VegetationTexels(vegetationType.Value, out int width, out int height);
+				SavePaintPicture(Path.Combine(fullFolderPath, "Vegetation"), vegetationType.Key, "veg:", texels, width, height);
+			}
+			TerrainPaintEdited = false;
 		}
 		// The map's current pictures are now the ones in this folder, for the next SAVE elsewhere.
 		LoadedMapFolderPath = fullFolderPath;
@@ -949,6 +970,81 @@ public class MapManager : ISnapshot
 	/// </summary>
 	public Color[] TerrainHeightsTexels(out int width, out int height)
 	{
+		return SubtileTexels((Terrain terrain) => (byte)Math.Round(MathHelper.Clamp(terrain.TerrainDepth, 0f, MapLoader.MaxTerrainDepth)), out width, out height);
+	}
+
+	/// <summary>
+	/// PORT: how much of <paramref name="type"/> each subtile has, as the texels of its picture in
+	/// the map's Soil folder; null when the map has none of it.
+	/// </summary>
+	public Color[] SoilTexels(SoilComponentType type, out int width, out int height)
+	{
+		return PaintTexels((Terrain terrain) => (terrain.SoilComponents != null && terrain.SoilComponents.TryGetValue(type, out var component)) ? component.Amount : 0f, out width, out height);
+	}
+
+	/// <summary>
+	/// PORT: as SoilTexels, for a picture in the map's Vegetation folder.
+	/// </summary>
+	public Color[] VegetationTexels(LowVegetationType type, out int width, out int height)
+	{
+		return PaintTexels((Terrain terrain) => (terrain.Vegetation != null && terrain.Vegetation.TryGetValue(type, out var vegetation)) ? vegetation.Amount : 0f, out width, out height);
+	}
+
+	/// <summary>
+	/// An amount is a subtile's own, or a whole tile's when the tile is not divided - a ninth of
+	/// which is each subtile's. A level is MapLoader.PictureAmountPerLevel of a subtile.
+	/// </summary>
+	private Color[] PaintTexels(Func<Terrain, float> amountOf, out int width, out int height)
+	{
+		bool any = false;
+		Color[] texels = SubtileTexels(delegate(Terrain terrain)
+		{
+			float amount = amountOf(terrain);
+			if (!terrain.IsSubtileTerrain())
+			{
+				amount /= 9f;
+			}
+			byte level = (byte)Math.Round(MathHelper.Clamp(amount / MapLoader.PictureAmountPerLevel, 0f, 255f));
+			any |= level > 0;
+			return level;
+		}, out width, out height);
+		return any ? texels : null;
+	}
+
+	private static void SavePicture(string path, Color[] texels, int width, int height)
+	{
+		using Texture2D texture = new Texture2D(The.Client.GraphicsDevice, width, height);
+		texture.SetData(texels);
+		using Stream stream = File.Create(path);
+		texture.SaveAsPng(stream, width, height);
+	}
+
+	/// <summary>
+	/// Writes the picture of the type <paramref name="key"/> into <paramref name="folder"/>, or
+	/// deletes it when <paramref name="texels"/> is null.
+	/// </summary>
+	private static void SavePaintPicture(string folder, string key, string prefix, Color[] texels, int width, int height)
+	{
+		string name = (key.StartsWith(prefix, StringComparison.Ordinal) ? key.Substring(prefix.Length) : key);
+		string path = Path.Combine(folder, name + ".png");
+		if (texels == null)
+		{
+			if (File.Exists(path))
+			{
+				File.Delete(path);
+			}
+			return;
+		}
+		Directory.CreateDirectory(folder);
+		SavePicture(path, texels, width, height);
+	}
+
+	/// <summary>
+	/// PORT: a picture of the map, a level per subtile from <paramref name="levelOf"/>, written
+	/// where the loader reads it - see TerrainHeightsTexels.
+	/// </summary>
+	private Color[] SubtileTexels(Func<Terrain, byte> levelOf, out int width, out int height)
+	{
 		width = mapTileWidth * 6;
 		height = mapTileHeight * 6 + 1;
 		Color[] texels = new Color[width * height];
@@ -963,9 +1059,9 @@ public class MapManager : ISnapshot
 					for (int k = 0; k < 3; k++)
 					{
 						Terrain terrain = tile.GetTerrain(new Point(j, k));
-						byte depth = (byte)Math.Round(MathHelper.Clamp(terrain.TerrainDepth, 0f, MapLoader.MaxTerrainDepth));
+						byte level = levelOf(terrain);
 						int index = MapLoader.TerrainHeightTexelIndex(x, y, j, k, width, height);
-						texels[index] = new Color(depth, depth, depth, (byte)255);
+						texels[index] = new Color(level, level, level, (byte)255);
 						written[index] = true;
 					}
 				}

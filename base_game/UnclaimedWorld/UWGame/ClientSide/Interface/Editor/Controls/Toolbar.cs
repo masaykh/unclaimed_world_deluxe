@@ -119,9 +119,24 @@ public class Toolbar : UIComponent
 		The.InGameUI.InterfaceMode = InGameInterface.InterfaceState.None;
 	}
 
-	private void UseTool(TilePos tilePos)
+	/// <summary>
+	/// PORT: every editor panel's Toolbar listens to the map's clicks for as long as the game
+	/// runs, and kept using its chosen tool after its panel was closed. Once a soil type had been
+	/// painted in Paint terrain properties, each click to place a plant, draw a zone or change a
+	/// height painted it again (Kastuk, 2026-10-07). A tool is used only while its panel shows.
+	/// </summary>
+	private bool IsInUse()
 	{
 		if (selectedTool != null)
+		{
+			return The.InGameUI.RosterIsDisplayed((RosterPanel)parent);
+		}
+		return false;
+	}
+
+	private void UseTool(TilePos tilePos)
+	{
+		if (IsInUse())
 		{
 			List<MapTool.TileAndChange> affectedTiles = selectedTool.GetAffectedTiles(tilePos);
 			parent.AffectMap(affectedTiles);
@@ -130,7 +145,7 @@ public class Toolbar : UIComponent
 
 	private void UseTool(SubtilePos subtilePos)
 	{
-		if (selectedTool != null)
+		if (IsInUse())
 		{
 			List<MapTool.SubTileAndChange> affectedSubtiles = selectedTool.GetAffectedSubtiles(subtilePos);
 			parent.AffectMap(affectedSubtiles);

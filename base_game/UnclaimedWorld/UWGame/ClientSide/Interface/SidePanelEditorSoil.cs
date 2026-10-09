@@ -50,6 +50,14 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 
 	public void AffectMap(List<MapTool.SubTileAndChange> affectedSubtiles)
 	{
+		// PORT: with no soil or vegetation type chosen yet, the studio painted vegetation of type
+		// null, which a Dictionary refuses as a key.
+		if (SelectedType == null)
+		{
+			return;
+		}
+		// PORT: for SAVE, which writes the Soil and Vegetation pictures (MapManager.SaveMap).
+		The.Map.TerrainPaintEdited = true;
 		foreach (MapTool.SubTileAndChange affectedSubtile in affectedSubtiles)
 		{
 			MapManager map = The.Map;

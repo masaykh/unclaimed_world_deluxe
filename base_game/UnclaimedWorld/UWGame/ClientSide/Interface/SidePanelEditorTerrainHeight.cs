@@ -49,7 +49,8 @@ public class SidePanelEditorTerrainHeight : RosterPanel, IEditorPanel
 			MapManager map = The.Map;
 			SubtilePos subtilePos = affectedTile.SubtilePos;
 			Terrain terrain = map.GetTerrain(subtilePos.ToPoint());
-			float num = 0f - affectedTile.Change;
+			// PORT: times MapLoader.EditorHeightStep - a tool's change is its ALPHA, 0..1.
+			float num = (0f - affectedTile.Change) * MapLoader.EditorHeightStep;
 			// PORT: clamped to the depths terrainHeights.png can hold (MapLoader.ChangeTerrainDepth).
 			MapLoader.ChangeTerrainDepth(waterLevelBelowTerrain, terrain, num);
 			MapManager map2 = The.Map;

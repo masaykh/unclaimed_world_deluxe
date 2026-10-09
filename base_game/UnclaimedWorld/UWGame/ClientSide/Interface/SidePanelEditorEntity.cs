@@ -492,6 +492,14 @@ public class SidePanelEditorEntity : RosterPanel
 
 	private void saveButton_Click(UIComponent sender, EventArgs e)
 	{
+		ShowSaveMapDialog();
+	}
+
+	/// <summary>
+	/// PORT: also what the menu's SAVE MAP opens in the Map Editor (InGameMenuDialog).
+	/// </summary>
+	public void ShowSaveMapDialog()
+	{
 		saveDialog.ShowDialog(modal: true);
 	}
 

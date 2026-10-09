@@ -910,7 +910,9 @@ fi
 # 2026-10-03) in MapLoader.ReduceSubdivisionScanVertically: RecomputeSubdivision was a whole-map
 # pass made into an area pass, and two limits kept the area's size where they needed its far edge.
 # Right only at the map's corner, which is where the loader's area sits - so the same edit, on a
-# map built in memory, at the corner and at four places away from it.
+# map built in memory, at the corner and at four places away from it. The same self-test covers the
+# editor's later fixes: heights clamped and saved, pictures copied on SAVE, the Brush's and Eraser's
+# soft edge (MapTool.SoftDisc), and painted soil and vegetation written as the loader reads them.
 say "==> 33. a terrain height edit away from the map's corner completes and keeps the coast's subtiles"
 out=$( cd "$(new_install case33)" && "$EXPORT" . --mapedit-selftest 2>&1 ) || true
 if echo "$out" | grep -q "mapedit self-test OK" && echo "$out" | grep -q "^  ok    "; then

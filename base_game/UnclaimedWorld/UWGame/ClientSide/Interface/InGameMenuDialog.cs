@@ -20,6 +20,8 @@ public class InGameMenuDialog : Panel
 
 	private SaveLoadGamePanel loadDialog;
 
+	private TextButton btSaveGame;
+
 	public InGameMenuDialog()
 		: base(The.InGameUI, "MENU", new Point(400, 280), new Vector2(260f, 290f), Level.Menu, PanelType.RegularEdges)
 	{
@@ -61,6 +63,7 @@ public class InGameMenuDialog : Panel
 		textButton5.Text = "SAVE GAME";
 		textButton5.Click += btSaveGame_Click;
 		textButton5.Width = num;
+		btSaveGame = textButton5;
 		TextButton textButton6 = new TextButton(Interface.gui);
 		Window.Add(textButton6);
 		textButton6.Init(TextButton.TextButtonType.White);
@@ -154,6 +157,14 @@ public class InGameMenuDialog : Panel
 	private void btSaveGame_Click(UIComponent sender, EventArgs e)
 	{
 		The.InGameUI.HideInGameMenu();
+		// PORT: in the Map Editor this saves the map. Saving a game of the editor crashed (Kastuk,
+		// 2026-10-08: "Save game during map editing is crashing the game ... Can that button be
+		// linked to Saving map instead?").
+		if (The.Sim.Mode == UWGame.SimSide.Sim.EngineMode.Edit)
+		{
+			The.InGameUI.SidePanelEditorEntity.ShowSaveMapDialog();
+			return;
+		}
 		saveDialog.ShowDialog(modal: true);
 	}
 
@@ -192,6 +203,9 @@ public class InGameMenuDialog : Panel
 
 	public override void ShowDialog(bool modal)
 	{
+		// PORT: decided here, not when the menu is made: that is before the Sim knows it is the Map
+		// Editor (the Client's constructor runs ahead of Sim.StartGamePreLoadMap).
+		btSaveGame.Text = ((The.Sim.Mode == UWGame.SimSide.Sim.EngineMode.Edit) ? "SAVE MAP" : "SAVE GAME");
 		base.ShowDialog(modal);
 	}
 }

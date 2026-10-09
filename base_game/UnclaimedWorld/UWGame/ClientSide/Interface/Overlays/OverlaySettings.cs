@@ -116,6 +116,24 @@ public class OverlaySettings : ISnapshot
 		}
 	}
 
+	/// <summary>
+	/// PORT: the Map Editor shows every resource it places. A game starts showing FOOD only
+	/// (GUIConstants.OverlayDefaultResourceCategoryDisplaySettings), and the editor took the same
+	/// defaults, so resources painted with SetTileResourcesWindow were marked on the map for FOOD
+	/// and not for RAW MATERIALS (Kastuk, 2026-10-07). The markers menu still switches them.
+	/// </summary>
+	public void DisplayAllResources()
+	{
+		foreach (ResourceCategory category in ResourceCategoriesToDisplay.Keys.ToList())
+		{
+			ResourceCategoriesToDisplay[category] = true;
+		}
+		foreach (ResourceType resourceType in ResourceTypesToDisplay.Keys.ToList())
+		{
+			ResourceTypesToDisplay[resourceType] = true;
+		}
+	}
+
 	public bool EntityCategoryHasDifferentItemSetting(bool categorySetting, EntityGrouping grouping)
 	{
 		RecomputeEntityCategoryHasItemSettings(grouping);

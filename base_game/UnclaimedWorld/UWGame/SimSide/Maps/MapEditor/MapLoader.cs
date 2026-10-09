@@ -71,7 +71,7 @@ public class MapLoader
 
 	private HashSet<TerrainTile> grownTilesFromWaterEdge;
 
-	private float bitmapToSubtileAmountConversionFactor = 0.00043572986f;
+	private float bitmapToSubtileAmountConversionFactor = PictureAmountPerLevel;
 
 	public MapLoader(string mapFolderName)
 	{
@@ -118,6 +118,7 @@ public class MapLoader
 			// them to a map saved under a new name (MapManager.SaveMap).
 			The.Map.LoadedMapFolderPath = mapFolderPath;
 			The.Map.TerrainHeightsEdited = false;
+			The.Map.TerrainPaintEdited = false;
 			The.Map.SetDimensions(mapData.Dimensions);
 			The.MapUI.SetSize();
 			queueState = QueueStateLoad.InitCollisionTrees;
@@ -655,6 +656,22 @@ public class MapLoader
 	/// The deepest a terrain can be: terrainHeights.png holds a depth per texel in one byte, 0..255.
 	/// </summary>
 	public const float MaxTerrainDepth = 255f;
+
+	/// <summary>
+	/// PORT: how far one step of a terrain height tool at full ALPHA raises or lowers the ground,
+	/// in the depths terrainHeights.png holds. The studio used ALPHA (0..1) as the depth itself,
+	/// so Pencil and Brush raised by at most 1 of 255 a step while the Eraser, which started at
+	/// 60, lowered by 60 (Kastuk, 2026-10-07: "I can reduce heights fast, but raising them back is
+	/// so slow"). Now all three move the ground the same distance at the same ALPHA.
+	/// </summary>
+	public const float EditorHeightStep = 8f;
+
+	/// <summary>
+	/// PORT: the amount of a soil or vegetation type that one level of red in its picture stands
+	/// for, in a subtile - 255 levels make 1/9, a subtile's whole share (LoadSoilTexture,
+	/// LoadVegetationTexture). MapManager.SaveMap writes painted soil back with it.
+	/// </summary>
+	public const float PictureAmountPerLevel = 0.00043572986f;
 
 	/// <summary>
 	/// PORT: a Map Editor terrain height change, kept within what terrainHeights.png can hold.

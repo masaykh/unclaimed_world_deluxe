@@ -1117,6 +1117,8 @@ public class InGameInterface : CommonInterface
 			SidePanelEditorSoil = new SidePanelEditorSoil();
 			SidePanelEditorTerrainHeight = new SidePanelEditorTerrainHeight();
 			SetTileResources = new SetTileResourcesWindow();
+			// PORT: made in Initialize with a game's defaults, before the Sim was the editor.
+			OverlaySettings?.DisplayAllResources();
 		}
 		RosterAccessPanel = new RosterAccessPanel();
 		MainPanel = new MainPanel();
@@ -1341,6 +1343,14 @@ public class InGameInterface : CommonInterface
 	private bool IsDisplayed(RosterPanel rosterPanel)
 	{
 		return rosterPanel == displayedRosterPanel;
+	}
+
+	/// <summary>
+	/// PORT: the studio's own, restored for the Map Editor's Toolbar.IsInUse.
+	/// </summary>
+	public bool RosterIsDisplayed(RosterPanel roster)
+	{
+		return IsDisplayed(roster);
 	}
 
 	public void ChangeRosterPanel(RosterPanel panel, bool refreshCurrentPanelWithNewContent)
