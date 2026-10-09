@@ -580,6 +580,26 @@ internal static class Program
         /// the sheets are block-compressed: decoding happens on the GPU, and going through the
         /// same path the game uses is the only way to measure what the game will see.
         /// </summary>
+        /// <summary>
+        /// Where the capitals' ink sits - Latin 'A' against Cyrillic 'А' - from the top of the line.
+        /// For a hand-drawn font with a supplement merged in (UWGame.Port.FontSupplement) the two
+        /// should match: the same bottom (baseline) and about the same height. How the supplement
+        /// sizes in tools/build/36-build-fonts.sh are chosen.
+        /// </summary>
+        private static string DescribeInk(SpriteFont font)
+        {
+            var latin = UWGame.Port.FontSupplement.Ink(font, 'A');
+            var cyrillic = UWGame.Port.FontSupplement.Ink(font, 'А');
+            if (!latin.HasValue)
+            {
+                return "";
+            }
+            string Rows((int top, int bottom) ink) => $"{ink.top}..{ink.bottom} ({ink.bottom - ink.top}px)";
+            var glyphs = font.GetGlyphs();
+            return $", ink A={Rows(latin.Value)}" + (cyrillic.HasValue ? $" А={Rows(cyrillic.Value)}" : "")
+                + (glyphs.TryGetValue('а', out var a1) && glyphs.TryGetValue('А', out var a2) && a1.BoundsInTexture == a2.BoundsInTexture ? ", а drawn as А" : "");
+        }
+
         private string DescribeTextureContent(Texture2D texture)
         {
             if (texture == null)
@@ -767,7 +787,8 @@ internal static class Program
             // difference between a font rebuilt by tools/build/36-build-fonts.sh and the shipped one.
             SpriteFont f => $"SpriteFont, lineSpacing={f.LineSpacing}, {f.Characters.Count} glyphs, " +
                 $"fallback={(f.DefaultCharacter.HasValue ? "'" + f.DefaultCharacter.Value + "'" : "none")}, " +
-                $"cyrillic={(f.Characters.Contains('Ж') ? "yes" : "no")}, greek={(f.Characters.Contains('Ω') ? "yes" : "no")}",
+                $"cyrillic={(f.Characters.Contains('Ж') ? "yes" : "no")}, greek={(f.Characters.Contains('Ω') ? "yes" : "no")}" +
+                DescribeInk(f),
             Texture2D t => $"Texture2D {t.Width}x{t.Height} {t.Format}" + DescribeTextureContent(t),
             _ => o.GetType().Name,
         };

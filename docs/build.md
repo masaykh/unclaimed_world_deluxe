@@ -194,6 +194,15 @@ UW_FONT_FACE_LCD=Play sh tools/build/36-build-fonts.sh   # Play replaces Electro
 UW_FONT_FACE_LCD=Jura sh tools/build/36-build-fonts.sh   # or Jura
 ```
 
+**The three hand-drawn fonts** - `newtown_8pt` (the text on buttons), `CRTGlow` and `CRT_18pt`
+(the status screen) - are bitmaps with no face to rebuild them from. The same run writes a
+`<font>.supplement.xnb` for each: PT Sans Narrow Bold and PT Mono (SIL OFL, fetched), at sizes
+whose capitals stand as tall as the studio's, holding only the letters beyond ASCII. The game
+merges a supplement into its font when loading it (`UWGame.Port.FontSupplement`), lined up on the
+studio's baseline, so English text keeps the studio's pixels exactly. `UW_FONT_FACE_BUTTON`,
+`UW_FONT_FACE_CRT` and `UW_FONT_SIZE_BUTTON` / `_CRTGLOW` / `_CRT18` change them; the probe's
+`ink A=... А=...` for those fonts shows whether the capitals match.
+
 Copy the **contents** of `artifacts/content/fonts/gl` (DesktopGL) or `…/dx` (DirectX) into the
 game's `port-content\` - the folder beside `Content\` - so that it holds
 `port-content\Arial.xnb` and `port-content\Fonts\LCDandHUDBody.xnb` (a `port-content\dx\` folder

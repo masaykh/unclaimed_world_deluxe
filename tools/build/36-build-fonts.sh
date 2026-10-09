@@ -169,6 +169,43 @@ echo "$FONTS" | while IFS='|' read -r source asset face; do
   say "    $asset  <- $faceName  [$regions]"
 done
 
+# ---- supplements for the hand-drawn fonts ---------------------------------------------------
+# newtown_8pt (button faces), CRTGlow and CRT_18pt are bitmaps with ASCII only and no face to
+# rebuild them from. Each gets "<font>.supplement": a TrueType face at a size whose capitals stand
+# as tall as the studio's, holding only the letters beyond ASCII. The game merges it into the
+# studio font when loading it (UWGame.Port.FontSupplement), so ASCII stays the studio's pixels.
+# TextureFormat=Color, because the merge copies pixels. Faces are SIL OFL, fetched like Play.
+#
+#   asset | face | size (points) - the sizes match capital heights, measured with ContentProbe
+FACE_BUTTON=${UW_FONT_FACE_BUTTON:-PTSansNarrowBold}
+FACE_CRT=${UW_FONT_FACE_CRT:-PTMono}
+case "$FACE_BUTTON" in PTSansNarrowBold) FACE_BUTTON=$(fetch_face ptsansnarrow PT_Sans-Narrow-Web-Bold.ttf PT_Sans-Narrow-Web-Bold.ttf) || exit 2 ;; esac
+case "$FACE_CRT" in PTMono) FACE_CRT=$(fetch_face ptmono PTM55FT.ttf PTM55FT.ttf) || exit 2 ;; esac
+SUPPLEMENTS="Fonts/newtown_8pt|$FACE_BUTTON|${UW_FONT_SIZE_BUTTON:-7}
+Fonts/CRTGlow|$FACE_CRT|${UW_FONT_SIZE_CRTGLOW:-20}
+Fonts/CRT_18pt|$FACE_CRT|${UW_FONT_SIZE_CRT18:-16}"
+mkdir -p "$WORK/supp/Fonts"
+echo "$SUPPLEMENTS" | while IFS='|' read -r asset face size; do
+  [ -f "$face" ] || { echo "FATAL: no font file at $face" >&2; exit 2; }
+  faceName=$(basename "$face")
+  cp -p "$face" "$WORK/supp/Fonts/$faceName"
+  # Beyond ASCII only: the studio's own glyphs are kept for 32-126.
+  regions=$("$COVERAGE" "$face" $RANGES | tr ' ' '\n' | awk -F- '$2 > 126' | tr '\n' ' ')
+  [ -n "$regions" ] || { echo "FATAL: $face covers none of $RANGES beyond ASCII" >&2; exit 1; }
+  {
+    printf '<?xml version="1.0" encoding="utf-8"?>\n'
+    printf '<XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">\n'
+    printf '  <Asset Type="Graphics:FontDescription">\n'
+    printf '    <FontName>%s</FontName>\n    <Size>%s</Size>\n    <Spacing>0</Spacing>\n' "$faceName" "$size"
+    printf '    <UseKerning>true</UseKerning>\n    <Style>Regular</Style>\n    <CharacterRegions>\n'
+    for r in $regions; do
+      printf '      <CharacterRegion><Start>&#%s;</Start><End>&#%s;</End></CharacterRegion>\n' "${r%-*}" "${r#*-}"
+    done
+    printf '    </CharacterRegions>\n  </Asset>\n</XnaContent>\n'
+  } > "$WORK/supp/$asset.supplement.spritefont"
+  say "    $asset.supplement  <- $faceName ${size}pt  [$regions]"
+done
+
 # ---- build --------------------------------------------------------------------------------
 for platform in Windows:dx DesktopGL:gl; do
   name=${platform%%:*}; sub=${platform#*:}
@@ -189,6 +226,13 @@ for platform in Windows:dx DesktopGL:gl; do
   ( cd "$WORK/src" && MSYS2_ARG_CONV_EXCL='*' "$MGCB" /platform:$name /profile:HiDef \
       "/outputDir:$outDir" "/intermediateDir:$objDir" "$@" ) || {
     echo "FATAL: mgcb failed for $name" >&2; exit 1; }
+  set --
+  for f in $(cd "$WORK/supp" && find . -name '*.spritefont' | sed 's:^\./::'); do
+    set -- "$@" "/build:$f"
+  done
+  ( cd "$WORK/supp" && MSYS2_ARG_CONV_EXCL='*' "$MGCB" /platform:$name /profile:HiDef \
+      "/outputDir:$outDir" "/intermediateDir:$objDir-supp" /processorParam:TextureFormat=Color "$@" ) || {
+    echo "FATAL: mgcb failed for the supplements on $name" >&2; exit 1; }
 done
 
 say ""

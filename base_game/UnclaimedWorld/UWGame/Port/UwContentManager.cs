@@ -107,6 +107,25 @@ public sealed class UwContentManager : ContentManager
     /// <c>D:\somewhere\Content</c> gets <c>D:\somewhere\port-content</c>, which is what lets
     /// tools/ContentProbe validate a packaged installation it is not running inside.
     /// </summary>
+    public override void Unload()
+    {
+        // The merged textures are this manager's own; the base disposes only what it loaded.
+        foreach (SpriteFont font in supplemented.Values)
+        {
+            font.Texture.Dispose();
+        }
+        supplemented.Clear();
+        base.Unload();
+    }
+
+    /// <summary>Whether an asset exists in the override folder or the content root, without loading it.</summary>
+    private bool HasAsset(string assetName)
+    {
+        string folder = OverrideFolder ?? OverrideFolderFor(RootDirectory);
+        return (folder != null && File.Exists(Path.Combine(folder, assetName) + ".xnb"))
+            || File.Exists(Path.Combine(RootDirectory ?? "", assetName) + ".xnb");
+    }
+
     public static string OverrideFolderFor(string contentRoot)
     {
         if (string.IsNullOrEmpty(contentRoot))
@@ -117,12 +136,37 @@ public sealed class UwContentManager : ContentManager
         return parent == null ? null : Path.Combine(parent, OverrideFolderName);
     }
 
+    /// <summary>Fonts with their supplement merged in, by asset name - the base cache holds the studio's.</summary>
+    private readonly System.Collections.Generic.Dictionary<string, SpriteFont> supplemented =
+        new System.Collections.Generic.Dictionary<string, SpriteFont>(StringComparer.OrdinalIgnoreCase);
+
     public override T Load<T>(string assetName)
     {
+        if (typeof(T) == typeof(SpriteFont) && supplemented.TryGetValue(assetName, out SpriteFont merged))
+        {
+            return (T)(object)merged;
+        }
+
         T asset = base.Load<T>(assetName);
 
         if (asset is SpriteFont font)
         {
+            // PORT: letters beyond the studio's, from "<font>.supplement" (FontSupplement).
+            if (!assetName.EndsWith(".supplement", StringComparison.OrdinalIgnoreCase) && HasAsset(FontSupplement.AssetName(assetName)))
+            {
+                try
+                {
+                    SpriteFont extra = base.Load<SpriteFont>(FontSupplement.AssetName(assetName));
+                    GraphicsDevice device = (ServiceProvider.GetService(typeof(IGraphicsDeviceService)) as IGraphicsDeviceService)?.GraphicsDevice;
+                    font = FontSupplement.Merge(font, extra, device);
+                    supplemented[assetName] = font;
+                    asset = (T)(object)font;
+                }
+                catch (ContentLoadException)
+                {
+                    // A broken supplement leaves the studio's font, which still draws ASCII.
+                }
+            }
             GiveFallbackCharacter(font);
         }
 
