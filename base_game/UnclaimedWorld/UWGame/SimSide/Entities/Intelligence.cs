@@ -1321,10 +1321,9 @@ namespace UWGame.SimSide.Entities
 
         private void UpdateCommonSystems(GameTime time)
         {
-            if (Parent.Name != null && Parent.Name.Contains("Tamara"))
-            {
-
-            }
+            // PORT: the studio's breakpoint hook (an empty body), kept as a comment: a translated name would
+            // never match, and 37-make-strings.sh refuses a name compared with English.
+            // if (Parent.Name != null && Parent.Name.Contains("Tamara")) { }
 
             if (GatherPolledStatistics)
             {
