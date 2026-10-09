@@ -2084,9 +2084,9 @@ public class GameData
 
 	public void PostDataCompleteInitialize()
 	{
-		// PORT: item names and descriptions in the chosen language (Locale.TranslateItems), before
+		// PORT: the tables' text in the chosen language (Locale.TranslateData), before
 		// anything is built from them.
-		Locale.TranslateItems(AllEntityTypes.Values);
+		Locale.TranslateData(this);
 		Dictionary<string, List<string>> dictionary = new Dictionary<string, List<string>>();
 		List<KeyValuePair<Type, IGameDataCollection>> list = AllGameDataCollections.OrderBy((KeyValuePair<Type, IGameDataCollection> k) => k.Value.Order).ToList();
 		foreach (KeyValuePair<Type, IGameDataCollection> item in list)

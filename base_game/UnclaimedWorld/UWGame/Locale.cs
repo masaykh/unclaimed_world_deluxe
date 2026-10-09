@@ -133,28 +133,157 @@ public class Locale
 		}
 	}
 
+	/// <summary>The data tables' members that hold text a player reads, by name.</summary>
+	private static readonly string[] TextMembers = { "Name", "Description", "ShortDescription", "Text", "Tooltip", "ToolTip", "DisplayName", "Heading" };
+
 	/// <summary>
-	/// PORT: item names and descriptions in the chosen language, keyed "(ITEM)" and
-	/// "(ITEM DESCRIPTION)" and the item's KeyName. Called at the start of
-	/// GameData.PostDataCompleteInitialize, so whatever is built from the names afterwards uses the
-	/// translated ones. Only what is shown changes: the game identifies items by KeyName.
+	/// The data tables whose text is translated: a table's type, and the area its keys carry. Not
+	/// every table with a Name: some names are identifiers (sounds, icons, renderables), and the
+	/// map's own entities (EntityData) are people and places.
 	/// </summary>
-	public static void TranslateItems(IEnumerable<UWGame.SimSide.Entities.EntityType> types)
+	private static readonly Dictionary<System.Type, string> TranslatedTables = new Dictionary<System.Type, string>
 	{
-		foreach (UWGame.SimSide.Entities.EntityType type in types)
+		// EntityType is split by what the entity is - see AreaOf. Terrain features are left out:
+		// their names are asset names ("sulfurrock", "S: Bird 1, single") nobody is shown.
+		{ typeof(UWGame.SimSide.Entities.EntityType), null },
+		{ typeof(UWGame.SimSide.Processes.ProcessType), "PROCESS" },
+		{ typeof(UWGame.SimSide.Resources.ResourceType), "RESOURCE" },
+		{ typeof(UWGame.SimSide.Resources.ResourceCategory), "RESOURCE CATEGORY" },
+		{ typeof(UWGame.SimSide.Entities.SkillType), "SKILL" },
+		{ typeof(UWGame.SimSide.Entities.SkillCategory), "SKILL CATEGORY" },
+		{ typeof(UWGame.SimSide.Entities.Skills.ProfessionType), "PROFESSION" },
+		{ typeof(UWGame.SimSide.Entities.EntityCategory), "CATEGORY" },
+		{ typeof(UWGame.SimSide.Items.DegradeType), "DEGRADE" },
+		{ typeof(UWGame.SimSide.Items.FoodNutrientType), "NUTRIENT" },
+		{ typeof(UWGame.SimSide.Entities.Containers.UpgradeCategory), "UPGRADE" },
+		{ typeof(UWGame.SimSide.Entities.Containers.StorageCondition), "STORAGE" },
+		{ typeof(UWGame.SimSide.Entities.Containers.DefaultStorageSettings), "STORAGE SETTINGS" },
+		{ typeof(UWGame.SimSide.Tiers.TierType), "TIER" },
+		{ typeof(UWGame.SimSide.Tiers.TierArea), "TIER AREA" },
+		{ typeof(UWGame.SimSide.Entities.Biological.BioOrderType), "ORDER" },
+		{ typeof(UWGame.SimSide.SimEffects.EffectProfileType), "EFFECT PROFILE" },
+		{ typeof(UWGame.SimSide.SimEffects.EffectType), "EFFECT" },
+		{ typeof(UWGame.SimSide.Entities.Substances.SubstanceType), "SUBSTANCE" },
+		{ typeof(UWGame.SimSide.Entities.Body.BodyLayerType), "BODY LAYER" },
+		{ typeof(UWGame.ClientSide.PropertyPresentation.PresentationTypeCategory), "PROPERTY GROUP" },
+		{ typeof(UWGame.SimSide.Vegetation.LowVegetationType), "VEGETATION" },
+		{ typeof(UWGame.SimSide.Soil.SoilComponentType), "SOIL" },
+		{ typeof(UWGame.SimSide.Expeditions.ExpeditionData), "EXPEDITION" },
+		{ typeof(UWGame.SimSide.Overland.SiteData), "SITE" },
+		{ typeof(UWGame.SimSide.Overland.Templates.SiteTemplate), "SITE TEMPLATE" },
+		{ typeof(UWGame.SimSide.Allegiances.AllegianceData), "ALLEGIANCE" },
+	};
+
+	/// <summary>
+	/// One piece of a data table's text: the key it is translated under, where it lives, and the
+	/// English the tables were built with.
+	/// </summary>
+	public struct DataText
+	{
+		public string Key;
+		public object Owner;
+		public System.Reflection.MemberInfo Member;
+		public string English;
+	}
+
+	/// <summary>
+	/// PORT: every translatable text in the data tables, keyed "(TABLE)" + KeyName for a Name and
+	/// "(TABLE FIELD)" + KeyName for the rest - "(ITEM)item:knife", "(PROCESS DESCRIPTION)cook".
+	/// The one list both <see cref="TranslateData"/> and the template (tools/build/37-make-strings.sh)
+	/// read, so the template has exactly what the game asks for.
+	/// </summary>
+	public static List<DataText> DataTexts(UWGame.SimSide.GameData data)
+	{
+		var texts = new List<DataText>();
+		foreach (KeyValuePair<System.Type, UWGame.SimSide.IGameDataCollection> collection in data.AllGameDataCollections)
 		{
-			if (type.ItemType == null)
+			if (!TranslatedTables.TryGetValue(collection.Key, out string table))
 			{
 				continue;
 			}
-			type.Name = Text(ItemNameKey(type.KeyName), type.Name);
-			type.Description = Text(ItemDescriptionKey(type.KeyName), type.Description);
+			var members = new List<System.Reflection.MemberInfo>();
+			foreach (string name in TextMembers)
+			{
+				// A field first: SoilComponentType hides the base Name property with a field of its own.
+				System.Reflection.MemberInfo member = (System.Reflection.MemberInfo)collection.Key.GetField(name)
+					?? collection.Key.GetProperty(name, typeof(string));
+				if (member is System.Reflection.PropertyInfo p && p.CanWrite && p.GetSetMethod() != null
+					|| member is System.Reflection.FieldInfo f && f.FieldType == typeof(string) && !f.IsInitOnly)
+				{
+					members.Add(member);
+				}
+			}
+			if (!(collection.Value is System.Collections.IDictionary entries))
+			{
+				continue;
+			}
+			foreach (object entry in entries.Values)
+			{
+				if (!(entry is UWGame.SimSide.IGameData record) || string.IsNullOrEmpty(record.KeyName))
+				{
+					continue;
+				}
+				string area = table ?? AreaOf((UWGame.SimSide.Entities.EntityType)entry);
+				if (area == null)
+				{
+					continue;
+				}
+				foreach (System.Reflection.MemberInfo member in members)
+				{
+					string english = member is System.Reflection.PropertyInfo p ? (string)p.GetValue(entry) : (string)((System.Reflection.FieldInfo)member).GetValue(entry);
+					if (string.IsNullOrWhiteSpace(english))
+					{
+						continue;
+					}
+					string field = member.Name == "Name" ? "" : " " + member.Name.ToUpperInvariant();
+					texts.Add(new DataText { Key = "(" + area + field + ")" + record.KeyName, Owner = entry, Member = member, English = english });
+				}
+			}
 		}
+		return texts;
 	}
 
-	public static string ItemNameKey(string keyName) => "(ITEM)" + keyName;
+	/// <summary>An entity type's area, by what it is; null for a terrain feature, which is not translated.</summary>
+	private static string AreaOf(UWGame.SimSide.Entities.EntityType type)
+	{
+		if (type.ItemType != null) return "ITEM";
+		if (type.StructureType != null) return "STRUCTURE";
+		if (type.TreeType != null) return "TREE";
+		if (type.TerrainType != null) return null;
+		if (type.BiologicalType != null) return "CREATURE";
+		return "ENTITY";
+	}
 
-	public static string ItemDescriptionKey(string keyName) => "(ITEM DESCRIPTION)" + keyName;
+	/// <summary>
+	/// PORT: the data tables' text in the chosen language. Called at the start of
+	/// GameData.PostDataCompleteInitialize, so whatever is built from the names afterwards uses the
+	/// translated ones. Only what is shown changes: the game identifies everything by KeyName, and
+	/// --export-data writes the tables before this runs, so an export stays English.
+	/// </summary>
+	public static void TranslateData(UWGame.SimSide.GameData data)
+	{
+		UseChosenCulture();
+		if (currentCulture == InvariantCulture)
+		{
+			return;
+		}
+		foreach (DataText text in DataTexts(data))
+		{
+			string translated = Text(text.Key, text.English);
+			if (ReferenceEquals(translated, text.English))
+			{
+				continue;
+			}
+			if (text.Member is System.Reflection.PropertyInfo p)
+			{
+				p.SetValue(text.Owner, translated);
+			}
+			else
+			{
+				((System.Reflection.FieldInfo)text.Member).SetValue(text.Owner, translated);
+			}
+		}
+	}
 
 	/// <summary>A mod setting's label, keyed "(SETTING)" and its id ("hud.labelList").</summary>
 	public static string SettingKey(string id) => "(SETTING)" + id;

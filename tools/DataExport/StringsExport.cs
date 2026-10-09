@@ -49,13 +49,10 @@ internal static partial class Program
         {
             entries[Locale.SettingGroupKey(modId)] = UWGame.Mods.ModSettings.CategoryLabel(modId);
         }
-        foreach (var type in GameData.Instance.AllEntityTypes.Values.Where(t => t.ItemType != null))
+        // The same list the game translates from (Locale.DataTexts).
+        foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))
         {
-            entries[Locale.ItemNameKey(type.KeyName)] = type.Name;
-            if (!string.IsNullOrEmpty(type.Description))
-            {
-                entries[Locale.ItemDescriptionKey(type.KeyName)] = type.Description;
-            }
+            entries[text.Key] = text.English;
         }
 
         var list = entries.Select(e => new UWGame.String { Key = e.Key, Value = e.Value }).ToList();
@@ -68,7 +65,7 @@ internal static partial class Program
         }
         Console.WriteLine($"==> strings: {list.Count} entries ({list.Count(e => e.Key.StartsWith("(GUI)", StringComparison.Ordinal))} interface, "
                           + $"{list.Count(e => e.Key.StartsWith("(SETTING", StringComparison.Ordinal))} settings, "
-                          + $"{list.Count(e => e.Key.StartsWith("(ITEM", StringComparison.Ordinal))} items) -> {outPath}");
+                          + $"{list.Count - list.Count(e => e.Key.StartsWith("(GUI)", StringComparison.Ordinal) || e.Key.StartsWith("(SETTING", StringComparison.Ordinal))} data) -> {outPath}");
         return 0;
     }
 
@@ -96,6 +93,8 @@ internal static partial class Program
             "  <String><Key>(GUI)Illegal width entered. {0} is maximum.</Key><Value>Ширина не больше {0}.</Value></String>\r\n" +
             "  <String><Key>(SETTING)hud.labelList</Key><Value>СПИСОК МЕТОК</Value></String>\r\n" +
             "  <String><Key>(ITEM)item:acetylene</Key><Value>Ацетилен</Value></String>\r\n" +
+            "  <String><Key>(PROCESS)activateSnare</Key><Value>Перезарядка ловушки</Value></String>\r\n" +
+            "  <String><Key>(SOIL)soil:clay</Key><Value>Глина</Value></String>\r\n" +
             "</ArrayOfString>\r\n", new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(folder, "Broken.xml"), "<ArrayOfString><String><Key>", new UTF8Encoding(false));
 
@@ -118,6 +117,11 @@ internal static partial class Program
         if (rc != 0) return rc;
         if (!ValidateDataComplete()) return 1;
         Check(GameData.Instance.AllEntityTypes["item:acetylene"].Name == "Ацетилен", "an item's name is translated when the tables are completed");
+        Check(GameData.Instance.AllProcessTypes["activateSnare"].Name == "Перезарядка ловушки", "...and a recipe's, from another table (Locale.DataTexts)");
+        Check(!GameData.Instance.AllSoilComponentTypes.TryGetValue("soil:clay", out var clay) || clay.Name == "Глина",
+              "...and a soil's, whose Name is a field hiding the base property");
+        Check(Locale.DataTexts(GameData.Instance).All(t => !t.Key.StartsWith("(TERRAIN", StringComparison.Ordinal)),
+              "terrain features, named for their assets, are not in the template");
         Check(GameData.Instance.AllEntityTypes["item:advancedCookingPot"].Name != null
               && !GameData.Instance.AllEntityTypes["item:advancedCookingPot"].Name.StartsWith("(ITEM)", StringComparison.Ordinal),
               "an item the file leaves out keeps its English name");

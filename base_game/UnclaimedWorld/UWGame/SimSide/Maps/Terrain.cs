@@ -260,14 +260,10 @@ public class Terrain : ILookUp<Terrain, TerrainID>, ISnapshot
 		snapshotParent = sn.SnapshotID<TerrainTile, TerrainTileID>(Parent).Value;
 		if (sn.mode != Snapshotter.Mode.Load)
 		{
-			if (SurfaceType.Name.Contains("Water"))
-			{
-				snapshotSurfaceTypeIsPlains = false;
-			}
-			else
-			{
-				snapshotSurfaceTypeIsPlains = true;
-			}
+			// PORT: was SurfaceType.Name.Contains("Water") (the studio's "HACK!!"). A display name
+			// is not an identity: a translated one would save every water tile as plains. The
+			// type itself, which is what LoadPostProcess turns the flag back into.
+			snapshotSurfaceTypeIsPlains = !(SurfaceType is WaterType);
 		}
 		snapshotSurfaceTypeIsPlains = sn.DoBool(snapshotSurfaceTypeIsPlains);
 		sn.Ignore(SurfaceType);

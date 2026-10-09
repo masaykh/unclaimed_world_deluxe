@@ -17,10 +17,11 @@ in-game menu, options. Then to names and descriptions of items." So, today:
 | `(GUI)<English>` | the main menu, the in-game menu, the save/load window, OPTIONS | every `Locale.Text("...")` in the code |
 | `(SETTING)<id>`, `(SETTING TIP)<id>` | each mod setting's label and tooltip in OPTIONS → MODS | the setting registry |
 | `(SETTING GROUP)<mod id>` | the headings in OPTIONS → MODS | the setting registry |
-| `(ITEM)<key>`, `(ITEM DESCRIPTION)<key>` | item names and descriptions | the item tables (`ItemLoader`) |
+| `(AREA)<key>`, `(AREA DESCRIPTION)<key>`, ... | the name, description and other text of everything in the data tables: `ITEM`, `STRUCTURE`, `TREE`, `CREATURE`, `ENTITY` (vehicles, robots), `PROCESS` (recipes and jobs), `RESOURCE`, `SKILL`, `PROFESSION`, `CATEGORY`, `DEGRADE`, `UPGRADE`, `STORAGE`, `TIER`, `ORDER`, `EFFECT`, `SUBSTANCE`, `SOIL`, `VEGETATION`, `SITE`, `EXPEDITION` and a few more | `Locale.DataTexts`: the tables listed there, their `Name`, `Description`, `ShortDescription`, `Text`, `Tooltip`, `DisplayName` and `Heading` |
 
-Everything else - the side panels, the HUD, other creatures and structures, help texts, events - is
-still written straight into the code or the data, and stays English until it is routed the same way.
+Terrain features (rocks, moss, hills) are left out: their names are the names of their art
+("sulfurrock", "S: Bird 1, single") and are not shown. Still written straight into the code - and
+English until routed the same way - are the side panels, the HUD, help texts and events.
 The choices inside a dropdown (`ALL THE WAY`, `1/3`) are stored values and are not translated yet.
 
 ## Adding a language
