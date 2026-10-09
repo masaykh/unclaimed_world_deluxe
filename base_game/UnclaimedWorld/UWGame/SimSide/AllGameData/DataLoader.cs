@@ -79,6 +79,8 @@ public abstract class DataLoader
 
 	public bool QueueInitGameData(Scenario scenario)
 	{
+		// PORT: which scenario's text the tables hold, for its own translations (Locale.TranslateData).
+		Locale.CurrentScenario = scenario?.Name;
 		bool flag = scenario?.ScenarioData.EnableMissions ?? true;
 		switch (queueState)
 		{

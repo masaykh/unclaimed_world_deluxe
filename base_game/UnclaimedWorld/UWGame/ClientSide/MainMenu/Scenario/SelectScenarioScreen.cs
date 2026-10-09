@@ -75,6 +75,8 @@ public class SelectScenarioScreen : GameScreen
 	public void SelectScenario(UWGame.SimSide.Scenarios.Scenario scenario)
 	{
 		scenario.ScenarioData = AllScenarioLoader.LoadScenarioData(scenario);
+		// PORT: its difficulties and options in the chosen language, for the next screen.
+		Locale.TranslateScenario(scenario);
 		ExitScreen();
 		base.Controller.AddScreen(new CustomizeScenarioScreen(base.Controller, scenario));
 	}

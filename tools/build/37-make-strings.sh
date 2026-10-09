@@ -69,8 +69,9 @@ fi
 # Terrain's save did ("SurfaceType.Name.Contains("Water")", the studio's HACK) and would have saved
 # every water tile as plains under a translation. KeyName is the identity. The simulation and the
 # mods only: a control's Name in the interface is an identifier. Model bone names are
-# not display text, and comments are not code.
-named=$(git -c core.quotePath=false ls-files -z "base_game/UnclaimedWorld/UWGame/SimSide/*.cs" "mods/*.cs" | xargs -0 perl -ne 'next if m{^\s*(//|/\*|\*)}; next if /[Bb]one\.Name/; print "$ARGV:$.: $_" if /\.Name\s*(==|!=)\s*"[^"]+"|\.Name\.(Contains|StartsWith|EndsWith|Equals|IndexOf)\(\s*"/; close ARGV if eof' || true)
+# not display text, and comments are not code. The same for every other member Locale.DataTexts
+# translates (Description, PluralName, Term, DefaultText...).
+named=$(git -c core.quotePath=false ls-files -z "base_game/UnclaimedWorld/UWGame/SimSide/*.cs" "mods/*.cs" | xargs -0 perl -ne 'next if m{^\s*(//|/\*|\*)}; next if /[Bb]one\.Name/; my $m = q{(?:Name|PluralName|Description|SummaryDescription|ShortDescription|DisplayName|Heading|Text|Tooltip|ToolTip|DefaultText|LoseScreenText|UserCannotCancelReason|SpecialActionCaption|Term|TermTooltip|StaticString|TextWithPlaceholders)}; print "$ARGV:$.: $_" if /\.$m\s*(==|!=)\s*"[^"]+"|\.$m\.(Contains|StartsWith|EndsWith|Equals|IndexOf)\(\s*"/; close ARGV if eof' || true)
 if [ -n "$named" ]; then
   echo "FAIL  a display name compared with English text - translated, it stops matching; compare KeyName:" >&2
   echo "$named" >&2

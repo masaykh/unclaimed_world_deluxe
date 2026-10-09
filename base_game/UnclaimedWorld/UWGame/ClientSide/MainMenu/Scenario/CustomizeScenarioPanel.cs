@@ -311,7 +311,7 @@ public class CustomizeScenarioPanel : Panel
 	{
 		string description = screen.Scenario.Description;
 		string text = screen.Scenario.Image;
-		string text2 = screen.Scenario.Name.ToUpper(Config.Culture);
+		string text2 = (screen.Scenario.DisplayName ?? screen.Scenario.Name).ToUpper(Config.Culture);   // PORT: the shown name, which is translated; Name is the scenario's identity
 		if (text != null)
 		{
 			Window.Add(image);

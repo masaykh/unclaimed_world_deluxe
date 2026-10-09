@@ -19,11 +19,22 @@ in-game menu, options. Then to names and descriptions of items." So, today:
 | `(SETTING GROUP)<mod id>` | the headings in OPTIONS → MODS | the setting registry |
 | `(SETTING CHOICE)<id>=<value>` | a dropdown's choices (`WEAPONS AND GOOD TOOLS`) - not numbers like `1/3`, date patterns or language names | the setting registry |
 | `(COUNT)<plural English>` | a number with its noun - see "Numbers" below | every `Locale.Count(n, "...", "...")` |
-| `(AREA)<key>`, `(AREA DESCRIPTION)<key>`, ... | the name, description and other text of everything in the data tables: `ITEM`, `STRUCTURE`, `TREE`, `CREATURE`, `ENTITY` (vehicles, robots), `PROCESS` (recipes and jobs), `RESOURCE`, `SKILL`, `PROFESSION`, `CATEGORY`, `DEGRADE`, `UPGRADE`, `STORAGE`, `TIER`, `ORDER`, `EFFECT`, `SUBSTANCE`, `SOIL`, `VEGETATION`, `SITE`, `EXPEDITION` and a few more | `Locale.DataTexts`: the tables listed there, their `Name`, `Description`, `ShortDescription`, `Text`, `Tooltip`, `DisplayName` and `Heading` |
+| `(AREA)<key>`, `(AREA DESCRIPTION)<key>`, `(AREA PLURALNAME)<key>`, ... | the name, plural, descriptions and other text of everything in the data tables: `ITEM`, `STRUCTURE`, `TREE`, `CREATURE`, `ENTITY` (vehicles, robots), `PROCESS` (recipes and jobs), `RESOURCE`, `SKILL`, `PROFESSION`, `CATEGORY`, `DEGRADE`, `UPGRADE`, `STORAGE`, `TIER`, `ORDER`, `EFFECT`, `SUBSTANCE`, `SOIL`, `VEGETATION`, `SITE`, `EXPEDITION` and more | `Locale.DataTexts` |
+| `(HELP)<key>`, `(TUTORIAL)<key>`, `(HELP)<key>/FlowElements[2].Text.Text` | help and tutorial topics: titles and pages (keep the `§L#COLORHEADER¤...§` colour marks) | the help and tutorial tables, and each scenario's tutorials |
+| `(TALKACTION DEFAULTTEXT)<id>` | what colonists and others say, line by line | every scenario's action sets |
+| `(EVENTACTIONDIALOG ...)`, `(WINGAMEACTION)<id>/...` | event dialogs, the win and lose screens | every scenario's events |
+| `(PRESENTATIONTYPE)<key>/...Term`, `...TermTooltip` | the words for a condition, a level, a quality ("Signs of decay", "Low") | the property presentations |
+| `(SCENARIO DISPLAYNAME)<name>`, `(SCENARIO DESCRIPTION)<name>`, `(SCENARIO)<name>/...` | the New Game screens: a scenario's name and description, its difficulties and options | the scenario headers |
+| `<key>@<scenario>` | a text one scenario words differently from the base game or from another scenario: that scenario's own | each scenario's tables |
+
+Text deep inside an entry is keyed by the path to it (`(PROCESS)cook/Thresholds[2].Term`) or by the
+nearest object with an id of its own (a spoken line's). A translation is used only while the text is
+still the English the template has for its key, so a scenario's own wording is never replaced by the
+base game's translation.
 
 Terrain features (rocks, moss, hills) are left out: their names are the names of their art
 ("sulfurrock", "S: Bird 1, single") and are not shown. Still written straight into the code - and
-English until routed the same way - are the side panels, the HUD, help texts and events.
+English until routed the same way - are the side panels, the HUD and the log.
 `tools/build/37-unrouted.txt` counts what is left, file by file.
 
 ## Adding a language

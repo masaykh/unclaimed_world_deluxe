@@ -49,13 +49,17 @@ public class SelectScenarioPanel : Panel
 		// UNHIDDEN MOD: RGScenarioLoader lists only the built-in scenarios. AllScenarioLoader
 		// adds the ones in user/Scenarios, which is what makes user-authored scenarios show up
 		// in this picker at all.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
+		List<UWGame.SimSide.Scenarios.Scenario> scenarios = UWGame.Mods.UnhiddenMod.Enabled
+			? UWGame.Mods.UnhiddenMod.AllScenarioHeaders()
+			: (from s in RGScenarioLoader.LoadAllScenarioHeaders()
+				orderby s.SortOrder
+				select s).ToList();
+		// PORT: their names and descriptions in the chosen language (Locale.TranslateScenario).
+		foreach (UWGame.SimSide.Scenarios.Scenario scenario in scenarios)
 		{
-			return UWGame.Mods.UnhiddenMod.AllScenarioHeaders();
+			Locale.TranslateScenario(scenario);
 		}
-		return (from s in RGScenarioLoader.LoadAllScenarioHeaders()
-			orderby s.SortOrder
-			select s).ToList();
+		return scenarios;
 	}
 
 	private void AddItemRow(UWGame.SimSide.Scenarios.Scenario scenario)

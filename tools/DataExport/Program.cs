@@ -2514,6 +2514,7 @@ internal static partial class Program
             }
         }
 
+        LastRunFailures = failures.Count;
         Console.WriteLine($"    {steps} step(s) in {sw.ElapsedMilliseconds} ms, " +
                           $"{failures.Count} table(s) failed");
 
@@ -2530,6 +2531,9 @@ internal static partial class Program
         // plain export and read-back to that (docs/modding.md, "What actually round-trips today").
         return steps > 1 ? 0 : 1;
     }
+
+    /// <summary>How many tables the last RunLoader could not build - for callers that need all of them.</summary>
+    private static int LastRunFailures;
 
     private static string Truncate(string s, int max) =>
         s == null ? "" : (s.Length <= max ? s : s.Substring(0, max - 3) + "...");

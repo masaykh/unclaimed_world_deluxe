@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
@@ -66,10 +67,55 @@ internal static partial class Program
         {
             entries[Locale.SettingGroupKey(modId)] = UWGame.Mods.ModSettings.CategoryLabel(modId);
         }
-        // The same list the game translates from (Locale.DataTexts).
+        // The same list the game translates from (Locale.DataTexts) - the base game's tables, then
+        // each built-in scenario's.
+        var baseTexts = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))
         {
+            baseTexts[text.Key] = text.English;
             entries[text.Key] = text.English;
+        }
+        var scenarioTexts = new SortedDictionary<string, SortedDictionary<string, string>>(StringComparer.Ordinal);
+        foreach (var loader in BuiltInScenarios())
+        {
+            var header = loader.GetScenarioHeader();
+            // What the New Game screens show of it (Locale.TranslateScenario).
+            header.ScenarioData = loader.GetScenarioData();
+            foreach (Locale.DataText text in Locale.ScenarioTexts(header))
+            {
+                entries[text.Key] = text.English;
+            }
+            if (!LoadScenarioTables(loader))
+            {
+                Console.Error.WriteLine($"FATAL: scenario {header.Name} did not load completely, so its text cannot be listed.");
+                return 1;
+            }
+            foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))
+            {
+                if (baseTexts.TryGetValue(text.Key, out string same) && same == text.English)
+                {
+                    continue;
+                }
+                if (!scenarioTexts.TryGetValue(text.Key, out var byScenario))
+                {
+                    scenarioTexts[text.Key] = byScenario = new SortedDictionary<string, string>(StringComparer.Ordinal);
+                }
+                byScenario[header.Name] = text.English;
+            }
+        }
+        // A scenario's text under the shared key when the base game has none and every scenario
+        // that has it agrees; under "key@scenario" where it differs (Locale.TranslatedData).
+        foreach (var pair in scenarioTexts)
+        {
+            if (!baseTexts.ContainsKey(pair.Key) && pair.Value.Values.Distinct(StringComparer.Ordinal).Count() == 1)
+            {
+                entries[pair.Key] = pair.Value.Values.First();
+                continue;
+            }
+            foreach (var byScenario in pair.Value)
+            {
+                entries[pair.Key + "@" + byScenario.Key] = byScenario.Value;
+            }
         }
 
         var list = entries.Select(e => new UWGame.String { Key = e.Key, Value = e.Value }).ToList();
@@ -144,6 +190,57 @@ internal static partial class Program
         Check(string.Format(Locale.Text("Illegal height entered. {0} is maximum."), 1080) == "Illegal height entered. 1080 is maximum.",
               "a translation with a {1} the code does not pass is not used - English, instead of a crash in string.Format");
 
+        // Scenarios. A text two scenarios word differently is two keys, "key@scenario" each. One
+        // scenario's translation lands in that scenario only; in the other the English stays - even
+        // with the plain key translated too, because that is not the English the template holds.
+        // The key is taken from the template, so the test follows the data.
+        string template = File.ReadAllText(Path.Combine(folder, Locale.InvariantCulture + ".xml"));
+        var variants = System.Text.RegularExpressions.Regex.Matches(template, "<Key>([^<@]+)@([^<]+)</Key>")
+            .Cast<System.Text.RegularExpressions.Match>()
+            .GroupBy(m => System.Net.WebUtility.HtmlDecode(m.Groups[1].Value), m => System.Net.WebUtility.HtmlDecode(m.Groups[2].Value))
+            .FirstOrDefault(g => g.Count() >= 2 && BuiltInScenarios().Count(l => g.Contains(l.GetScenarioHeader().Name)) >= 2);
+        Check(variants != null, "the template has a text two scenarios word differently" + (variants == null ? "" : $" ({variants.Key})"));
+        if (variants == null) return 1;
+        string shared = variants.Key, first = variants.ElementAt(0), second = variants.ElementAt(1);
+        bool LoadScenario(string name)
+        {
+            var loader = BuiltInScenarios().FirstOrDefault(l => l.GetScenarioHeader().Name == name);
+            return loader != null && LoadScenarioTables(loader);
+        }
+        string Now(string key) => Locale.DataTexts(GameData.Instance).Where(t => t.Key == key).Select(t => t.English).FirstOrDefault();
+
+        language.Value = Locale.InvariantCulture;
+        if (!LoadScenario(first)) { Check(false, "scenario " + first + " loads completely"); return 1; }
+        string talk = Locale.DataTexts(GameData.Instance).Select(t => t.Key).FirstOrDefault(k => k.StartsWith("(TALKACTION", StringComparison.Ordinal));
+        File.WriteAllText(Path.Combine(folder, "Scenes.xml"),
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<ArrayOfString>\r\n" +
+            $"  <String><Key>{System.Security.SecurityElement.Escape(shared)}</Key><Value>ОБЩЕЕ</Value></String>\r\n" +
+            $"  <String><Key>{System.Security.SecurityElement.Escape(shared + "@" + first)}</Key><Value>СВОЁ</Value></String>\r\n" +
+            $"  <String><Key>{System.Security.SecurityElement.Escape(talk)}</Key><Value>РЕПЛИКА</Value></String>\r\n" +
+            "  <String><Key>(HELP)introduction</Key><Value>0: Введение</Value></String>\r\n" +
+            $"  <String><Key>{System.Security.SecurityElement.Escape("(SCENARIO DISPLAYNAME)" + first)}</Key><Value>СЦЕНАРИЙ</Value></String>\r\n" +
+            "</ArrayOfString>\r\n", new UTF8Encoding(false));
+        UWGame.Mods.PortSettings.RefreshLanguageChoices();
+        language.Value = "Scenes";
+        Locale.TranslateData(GameData.Instance);
+        Check(Now(shared) == "СВОЁ", $"in {first}, its own translation of its own wording of {shared}");
+        Check(talk != null && Now(talk) == "РЕПЛИКА", $"a colonist's spoken line, inline in an action set, translates ({talk})");
+        Check(GameData.Instance.AllHelpTopics.TryGetValue("introduction", out var intro) && intro.Name == "0: Введение", "a help topic's title translates");
+        var header = BuiltInScenarios().First(l => l.GetScenarioHeader().Name == first).GetScenarioHeader();
+        Locale.TranslateScenario(header);
+        Check(header.DisplayName == "СЦЕНАРИЙ" && header.Name == first, "a scenario's shown name translates on the New Game screen, and its Name - its identity - does not");
+
+        language.Value = Locale.InvariantCulture;
+        if (!LoadScenario(second)) { Check(false, "scenario " + second + " loads completely"); return 1; }
+        string secondEnglish = Now(shared);
+        language.Value = "Scenes";
+        Locale.TranslateData(GameData.Instance);
+        Check(secondEnglish != null && Now(shared) == secondEnglish,
+              $"in {second}, which words it differently and has no translation, the English stays - not another scenario's, not the plain key's");
+
+        GameData.UnloadAllData();
+        language.Value = "Test";
+
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
         if (!ValidateDataComplete()) return 1;
@@ -160,6 +257,7 @@ internal static partial class Program
         // The simulation cannot tell which language is chosen. Every number, flag and enum in all
         // the tables is the same after every data text is translated as before - and nothing in the
         // simulation compares a name with English (37-make-strings.sh refuses that).
+        GameData.UnloadAllData();
         rc = Run(Sim.SerializeMode.NoSerialize, "base tables again, for the fingerprint");
         if (rc != 0) return rc;
         string before = Fingerprint(GameData.Instance);
@@ -191,42 +289,98 @@ internal static partial class Program
     }
 
     /// <summary>
-    /// Every public number, flag and enum of every entry in every table, as text - what the
-    /// simulation could read. Strings are left out: they are what translation changes, and the
-    /// simulation does not compare them (37-make-strings.sh).
+    /// Every public number, flag and enum in the tables, as text - what the simulation could read:
+    /// every entry, and everything inside it, walked as Locale.DataTexts walks it (a spoken line's
+    /// Duration, a recipe's thresholds). Strings are left out: they are what translation changes,
+    /// and the simulation does not compare them (37-make-strings.sh).
     /// </summary>
     private static string Fingerprint(GameData data)
     {
         var sb = new StringBuilder();
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        var members = new Dictionary<Type, MemberInfo[]>();
         foreach (var collection in data.AllGameDataCollections.OrderBy(c => c.Key.FullName, StringComparer.Ordinal))
         {
             if (!(collection.Value is System.Collections.IDictionary entries)) continue;
             foreach (string key in entries.Keys.Cast<string>().OrderBy(k => k, StringComparer.Ordinal))
             {
-                object entry = entries[key];
-                Type t = entry.GetType();
                 sb.Append(collection.Key.Name).Append('/').Append(key).Append(':');
-                foreach (var f in t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).OrderBy(f => f.Name, StringComparer.Ordinal))
-                {
-                    if (IsPlain(f.FieldType)) sb.Append(f.Name).Append('=').Append(Convert.ToString(f.GetValue(entry), System.Globalization.CultureInfo.InvariantCulture)).Append(';');
-                }
-                foreach (var p in t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).OrderBy(p => p.Name, StringComparer.Ordinal))
-                {
-                    if (!IsPlain(p.PropertyType) || p.GetIndexParameters().Length > 0 || !p.CanRead) continue;
-                    object v;
-                    try { v = p.GetValue(entry); } catch (Exception) { v = "<throws>"; }
-                    sb.Append(p.Name).Append('=').Append(Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture)).Append(';');
-                }
+                Walk(entries[key], 0);
                 sb.Append('\n');
             }
         }
         return sb.ToString();
+
+        void Walk(object o, int depth)
+        {
+            if (o == null || depth > 12) return;
+            Type t = o.GetType();
+            if (IsPlain(t))
+            {
+                sb.Append(Convert.ToString(o, System.Globalization.CultureInfo.InvariantCulture)).Append(';');
+                return;
+            }
+            if (o is string || !seen.Add(o)) return;
+            if (o is System.Collections.IDictionary d)
+            {
+                foreach (object k in d.Keys.Cast<object>().OrderBy(k => Convert.ToString(k, System.Globalization.CultureInfo.InvariantCulture), StringComparer.Ordinal))
+                {
+                    Walk(d[k], depth + 1);
+                }
+                return;
+            }
+            if (o is System.Collections.IEnumerable list)
+            {
+                foreach (object item in list) Walk(item, depth + 1);
+                return;
+            }
+            if (t.Namespace == null || !t.Namespace.StartsWith("UWGame", StringComparison.Ordinal)) return;
+            if (!members.TryGetValue(t, out MemberInfo[] ms))
+            {
+                members[t] = ms = t.GetFields(BindingFlags.Public | BindingFlags.Instance).Cast<MemberInfo>()
+                    .Concat(t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead && p.GetIndexParameters().Length == 0))
+                    .OrderBy(m => m.Name, StringComparer.Ordinal).ToArray();
+            }
+            foreach (MemberInfo m in ms)
+            {
+                object v;
+                try { v = m is FieldInfo f ? f.GetValue(o) : ((PropertyInfo)m).GetValue(o); } catch (Exception) { continue; }
+                sb.Append(m.Name).Append('=');
+                Walk(v, depth + 1);
+            }
+        }
 
         static bool IsPlain(Type type)
         {
             Type u = Nullable.GetUnderlyingType(type) ?? type;
             return u.IsPrimitive || u.IsEnum || u == typeof(decimal);
         }
+    }
+
+    /// <summary>The built-in scenarios, in the game's order (RGScenarioLoader).</summary>
+    private static List<UWGame.SimSide.AllGameData.Scenarios.ScenarioLoader> BuiltInScenarios()
+    {
+        FieldInfo field = typeof(UWGame.SimSide.AllGameData.Scenarios.RGScenarioLoader)
+            .GetField("rgScenarioLoaders", BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("RGScenarioLoader.rgScenarioLoaders not found; the field was renamed.");
+        return ((System.Collections.IEnumerable)field.GetValue(null)).Cast<UWGame.SimSide.AllGameData.Scenarios.ScenarioLoader>().ToList();
+    }
+
+    /// <summary>
+    /// A scenario's tables, loaded as the game loads them (Sim.QueueGameDataAndSimInit): the old
+    /// tables gone, then the base loader and then the scenario's, both told the scenario - a
+    /// scenario's loaders read the base tables. False if any table did not build.
+    /// </summary>
+    private static bool LoadScenarioTables(UWGame.SimSide.AllGameData.Scenarios.ScenarioLoader loader)
+    {
+        GameData.UnloadAllData();
+        var header = loader.GetScenarioHeader();
+        header.ScenarioData = loader.GetScenarioData();
+        if (RunLoader(new UWGame.SimSide.AllGameData.BaseDataLoader(), header, Sim.SerializeMode.NoSerialize, "base tables for " + header.Name) != 0 || LastRunFailures > 0)
+        {
+            return false;
+        }
+        return RunLoader(loader.GetDataLoader(), header, Sim.SerializeMode.NoSerialize, "tables of " + header.Name) == 0 && LastRunFailures == 0;
     }
 
     /// <summary>A C# regular string literal's contents, as the compiler reads them.</summary>
