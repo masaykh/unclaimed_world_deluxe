@@ -1226,7 +1226,7 @@ namespace UWGame.SimSide.Entities
         /// <param name="attacker"></param>
         public void LogInjuryStatistics(Entity attacker)
         {
-            string description = "Injured by " + attacker.ToString();
+            string description = string.Format(UWGame.Locale.Text("Injured by {0}"), attacker.ToString());
 
             LogInjuryDescription(description);
         }
@@ -6369,17 +6369,17 @@ namespace UWGame.SimSide.Entities
             switch (causeOfDeathToLog.Value)
             {
                 case CauseOfDeath.Starvation:
-                    causeOfDeath = "starvation";
+                    causeOfDeath = UWGame.Locale.Text("starvation");
                     break;
                 case CauseOfDeath.Wounds:
-                    causeOfDeath = HisHerOrIts() + " wounds";
+                    causeOfDeath = HisHerOrIts() switch { "his" => UWGame.Locale.Text("his wounds"), "her" => UWGame.Locale.Text("her wounds"), _ => UWGame.Locale.Text("its wounds") };
                     break;
                 default:
-                    causeOfDeath = "unknown causes";
+                    causeOfDeath = UWGame.Locale.Text("unknown causes");
                     break;
             }
 
-            The.Client.AddLogEvent(Intelligence.Allegiance, The.Client.Log.GeneralEvent, this, "has died from " + causeOfDeath + ".");
+            The.Client.AddLogEvent(Intelligence.Allegiance, The.Client.Log.GeneralEvent, this, string.Format(UWGame.Locale.Text("has died from {0}."), causeOfDeath));
             return causeOfDeath;
         }
 
@@ -6394,7 +6394,7 @@ namespace UWGame.SimSide.Entities
                         && causeOfDeathToLog.Value == CauseOfDeath.Wounds)
                     {
                         SecurityStatisticsForAllegiance securityStat = (SecurityStatisticsForAllegiance)stat.Value;
-                        securityStat.AddViolentEvent(this, "Died from " + causeOfDeath + ".", ViolentEventType.Death);
+                        securityStat.AddViolentEvent(this, string.Format(UWGame.Locale.Text("Died from {0}."), causeOfDeath), ViolentEventType.Death);
                     }
 
                     if (stat.Key == RatingTypes.Food
@@ -9807,7 +9807,7 @@ namespace UWGame.SimSide.Entities
                     float capacity = terminal.TotalTradeItemStorageCapacity;
 
                     var conditions = terminal.GetStorageSpaces();
-                    PropertyResult result = FormatStorageTooltip("Trade storage", conditions, stored, capacity);
+                    PropertyResult result = FormatStorageTooltip(UWGame.Locale.Text("Trade storage"), conditions, stored, capacity);
                     return result;
                 }
             }
@@ -9828,7 +9828,7 @@ namespace UWGame.SimSide.Entities
                 if (storage != null)
                 {
                     var conditions = storage.GetStorageSpaces();
-                    PropertyResult result = FormatStorageTooltip( "Item storage", conditions, storage.TotalStored, storage.TotalItemStorageCapacity);
+                    PropertyResult result = FormatStorageTooltip(UWGame.Locale.Text("Item storage"), conditions, storage.TotalStored, storage.TotalItemStorageCapacity);
                     return result;
                 }
             }
@@ -9851,7 +9851,7 @@ namespace UWGame.SimSide.Entities
             }
 
             Common.AppendDivider(text);
-            Common.Append(text, "Used percentage: ");
+            Common.Append(text, UWGame.Locale.Text("Used percentage: "));
             Common.ValueTint valueTint;
             double percentage = stored / capacity;
             if (percentage > 0.98f)
@@ -9867,7 +9867,7 @@ namespace UWGame.SimSide.Entities
                 percentage, true, valueTint);
 
             Common.AppendLine(text);
-            Common.Append(text, "Total: ");
+            Common.Append(text, UWGame.Locale.Text("Total: "));
             Common.Append(text, Common.ValueToDecimalString(stored, true, valueTint));
             Common.Append(text, " / ");
             Common.Append(text, Common.ValueToDecimalString(capacity, true, valueTint));
@@ -10269,11 +10269,11 @@ namespace UWGame.SimSide.Entities
                 if (canBeReplenished == false)
                 {
                     StringBuilder text = new StringBuilder();
-                    Common.Append(text, "Not enough suitable fuel is available within a certain range to complete any of the tasks.");
+                    Common.Append(text, UWGame.Locale.Text("Not enough suitable fuel is available within a certain range to complete any of the tasks."));
                     if (requiredAmount.HasValue)
                     {
                         Common.AppendLine(text);
-                        Common.Append(text, " The minimum required fuel is: ");
+                        Common.Append(text, UWGame.Locale.Text(" The minimum required fuel is: "));
                         Common.AppendFormat(text, "{0:N2} BLK", true, requiredAmount.Value);
                     }
 
@@ -10712,8 +10712,8 @@ namespace UWGame.SimSide.Entities
                 // return condition + principle
                 StringBuilder text = new StringBuilder();
 
-                Common.AppendLine(text, "The bar shows the relation between the person's");
-                text.Append("PRINCIPLES (Vertical marker): ");
+                Common.AppendLine(text, UWGame.Locale.Text("The bar shows the relation between the person's"));
+                text.Append(UWGame.Locale.Text("PRINCIPLES (Vertical marker): "));
                 text.Append(Common.PercentageToString(PersonEntity.Personality.Principles[statType]));
 
                 Common.AppendLine(text);
@@ -11111,7 +11111,7 @@ namespace UWGame.SimSide.Entities
               
                 PropertyResult result = new PropertyResult();
                 StringBuilder text = new StringBuilder();
-                Common.AppendHeaderOnLightBG(text, "Condition");
+                Common.AppendHeaderOnLightBG(text, UWGame.Locale.Text("Condition"));
                 Common.AppendDivider(text);
 
                 Entity entity = entityData as Entity;
@@ -11142,16 +11142,16 @@ namespace UWGame.SimSide.Entities
                        // }
                     }
 
-                    Common.Append(text, "Storage: ");
+                    Common.Append(text, UWGame.Locale.Text("Storage: "));
                     Common.Append(text, storageCondition.Name, true);
                     Common.AppendLine(text);
                 }
              
-                Common.Append(text, "Durability profile: ");
+                Common.Append(text, UWGame.Locale.Text("Durability profile: "));
                 Common.Append(text, entityData.EntityType.NonLivingType.FinalDegradeType.Name, true);
                 Common.AppendLine(text);
 
-                Common.Append(text, "Current condition: ");
+                Common.Append(text, UWGame.Locale.Text("Current condition: "));
                 Common.ValueTint valueTint;
                 double percentage = entityData.Condition ?? 1d;
                /* if (percentage > 0.98f)
@@ -11171,7 +11171,7 @@ namespace UWGame.SimSide.Entities
                     double timeInDaysUntilSpoiling = NonLivingEntity.GetDaysLeftUntilBreakdown(entityData.Condition.Value, entityData.ConditionChangeSpeed.Value);
 
                     Common.AppendLine(text);
-                    Common.Append(text, "Days left: ");
+                    Common.Append(text, UWGame.Locale.Text("Days left: "));
                     Common.Append(text, Common.ValueToDecimalString((float)timeInDaysUntilSpoiling, true, Common.ValueTint.Neutral));                   
                 }
 

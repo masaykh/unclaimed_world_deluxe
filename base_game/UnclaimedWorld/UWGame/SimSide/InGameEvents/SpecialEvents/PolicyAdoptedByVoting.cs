@@ -39,22 +39,18 @@ public class PolicyAdoptedByVoting
 		StringBuilder stringBuilder = new StringBuilder();
 		Common.AppendLine(stringBuilder);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "MINUTES");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("MINUTES"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "Adopting " + tierArea.ToString().ToUpper(Config.Culture));
-		Common.Append(stringBuilder, "Vote for: ");
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("Adopting {0}"), tierArea.ToString().ToUpper(Config.Culture)));
+		Common.Append(stringBuilder, UWGame.Locale.Text("Vote for: "));
 		Common.AppendLine(stringBuilder, Common.ListToCommaSeparatedString(personsFor, (Entity e) => SubstituteValue.FormatAllegianceMember(e)));
-		Common.Append(stringBuilder, "Vote against: ");
+		Common.Append(stringBuilder, UWGame.Locale.Text("Vote against: "));
 		string line = Common.ListToCommaSeparatedString(personsAgainst, (Entity e) => SubstituteValue.FormatAllegianceMember(e));
 		Common.AppendLine(stringBuilder, line);
-		Common.Append(stringBuilder, "Not present: ");
+		Common.Append(stringBuilder, UWGame.Locale.Text("Not present: "));
 		Common.AppendLine(stringBuilder, Common.ListToCommaSeparatedString(personsNotParticipating, (Entity e) => SubstituteValue.FormatAllegianceMember(e)));
 		Common.AppendLine(stringBuilder);
-		Common.Append(stringBuilder, "The following members now have ");
-		Statistic.AppendRatingsTypeToStringAndIcon(stringBuilder, tierArea.Area);
-		Common.Append(stringBuilder, " principles raised to ");
-		Common.AppendPercentage(stringBuilder, tierArea.TierType.GetTierEdgeBelow(), useColoring: true, null);
-		Common.AppendLine(stringBuilder, ": ");
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("The following members now have {0} principles raised to {1}: "), Statistic.AppendRatingsTypeToStringAndIcon(tierArea.Area), Common.PercentageToString(tierArea.TierType.GetTierEdgeBelow(), includePlusPrefix: false, useColoring: true, null)));
 		Common.AppendLine(stringBuilder, line);
 		return stringBuilder.ToString();
 	}

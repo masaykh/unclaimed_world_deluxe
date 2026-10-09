@@ -107,7 +107,7 @@ public class TravelAction : MissionAction
 		Allegiance allegiance2 = LookUp<Allegiance, AllegianceID>.FindByID((AllegianceID)parent.MissionTemplate.Allegiance);
 		if (allegiance != null && Communicates.IsInCommunicationRange(allegiance, allegiance2, out var _) && allegiance2 != null && parent.StartMissionStop.MissionStopTemplate.TravelLocation.ResolveLocation(allegiance2.SharedKnowledge, out var site, out var _, out var _, out var _))
 		{
-			The.Client.AddLogEvent(allegiance, The.Client.Log.GeneralEvent, null, "A transport from " + site.Name + " is on its way. ETA: " + text);
+			The.Client.AddLogEvent(allegiance, The.Client.Log.GeneralEvent, null, string.Format(UWGame.Locale.Text("A transport from {0} is on its way. ETA: {1}"), site.Name, text));
 		}
 	}
 

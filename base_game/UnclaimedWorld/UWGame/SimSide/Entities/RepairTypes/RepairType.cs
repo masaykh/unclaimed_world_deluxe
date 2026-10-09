@@ -87,12 +87,12 @@ namespace UWGame.SimSide.Entities.RepairTypes
             return null;
         }
 
-        public const string integrityProcessName = "Repairing integrity";
-        public const string integrityProcessSummary = "Fixing the integrity of the structure so it does not fall apart";
+        public static string integrityProcessName => UWGame.Locale.Text("Repairing integrity");
+        public static string integrityProcessSummary => UWGame.Locale.Text("Fixing the integrity of the structure so it does not fall apart");
 
-        public const string partsConditionProcessName = "Reconditioning";
-        public const string partsConditionProcessSummary = "Repairing a '{0}' part to improve its condition.";
-        public const string partsConditionProcessSummaryNoPlaceholder = "Repairing a part to improve its condition.";
+        public static string partsConditionProcessName => UWGame.Locale.Text("Reconditioning");
+        public static string partsConditionProcessSummary => UWGame.Locale.Text("Repairing a '{0}' part to improve its condition.");
+        public static string partsConditionProcessSummaryNoPlaceholder => UWGame.Locale.Text("Repairing a part to improve its condition.");
 
         private ProcessType CreateRepairProcess(RepairAction repairAction, EntityType parent, ProcessType productionProcess, EntityType part)
         {
@@ -101,7 +101,7 @@ namespace UWGame.SimSide.Entities.RepairTypes
            // ProcessType process = new ProcessType(productionProcess, );
             string key = "";
             string summary = "";
-            string processName = "Doing maintenance"; //mp was: "Repairing" which was confusing because it doesn't work on broken structures
+            string processName = UWGame.Locale.Text("Doing maintenance"); //mp was: "Repairing" which was confusing because it doesn't work on broken structures
             string keyName = "";
 
             switch (repairAction)

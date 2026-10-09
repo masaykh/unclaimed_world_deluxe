@@ -60,13 +60,13 @@ public class NumberEffectType : EffectType
 	{
 		return Affects switch
 		{
-			AffectsNumbers.AgentComfort => "Comfort", 
-			AffectsNumbers.OfferedComfort => "Offered comfort", 
-			AffectsNumbers.Stealth => "Stealth", 
-			AffectsNumbers.Need => "Need", 
-			AffectsNumbers.Morale => "Morale", 
-			AffectsNumbers.NightSensorRange => "Night sensor range", 
-			AffectsNumbers.Detection => "Detection", 
+			AffectsNumbers.AgentComfort => UWGame.Locale.Text("Comfort"), 
+			AffectsNumbers.OfferedComfort => UWGame.Locale.Text("Offered comfort"), 
+			AffectsNumbers.Stealth => UWGame.Locale.Text("Stealth"), 
+			AffectsNumbers.Need => UWGame.Locale.Text("Need"), 
+			AffectsNumbers.Morale => UWGame.Locale.Text("Morale"), 
+			AffectsNumbers.NightSensorRange => UWGame.Locale.Text("Night sensor range"), 
+			AffectsNumbers.Detection => UWGame.Locale.Text("Detection"), 
 			_ => null, 
 		};
 	}

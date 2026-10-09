@@ -53,7 +53,7 @@ internal class GoalChecking : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Checking progress";
+		return UWGame.Locale.Text("Checking progress");
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)

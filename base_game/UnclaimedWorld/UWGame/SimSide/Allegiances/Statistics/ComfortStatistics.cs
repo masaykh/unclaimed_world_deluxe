@@ -77,7 +77,7 @@ public abstract class ComfortStatistics : Rating
 			if (!flag)
 			{
 				Common.AppendLine(text);
-				Common.AppendLine(text, "COMFORT NEEDS MET");
+				Common.AppendLine(text, UWGame.Locale.Text("COMFORT NEEDS MET"));
 				flag = true;
 			}
 			NeedType needType = LookUp<NeedType, NeedTypeID>.FindByID(item.Key);
@@ -85,14 +85,14 @@ public abstract class ComfortStatistics : Rating
 			text.Append(": ");
 			if (includeMemberPercentage)
 			{
-				text.Append("Members ");
+				text.Append(UWGame.Locale.Text("Members "));
 				text.Append(Common.PercentageToString(item.Value));
 			}
 		}
 		if (flag)
 		{
 			Common.AppendLine(text);
-			text.Append("Subscore: +");
+			text.Append(UWGame.Locale.Text("Subscore: +"));
 			Common.AppendLine(text, Common.PercentageToString(needsScore, includePlusPrefix: false, useColoring: true));
 		}
 	}

@@ -963,7 +963,7 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Hauling";
+		return UWGame.Locale.Text("Hauling");
 	}
 
 	private void AbandonJob()

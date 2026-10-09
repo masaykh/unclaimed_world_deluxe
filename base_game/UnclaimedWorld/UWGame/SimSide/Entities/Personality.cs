@@ -111,30 +111,30 @@ public class Personality : ISnapshot
 	private string GetHappinessBreakdown()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendLine(stringBuilder, "The person's satisfaction with their living situation.");
-		stringBuilder.Append("Happiness: ");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("The person's satisfaction with their living situation."));
+		stringBuilder.Append(UWGame.Locale.Text("Happiness: "));
 		stringBuilder.Append(Common.PercentageToString(Happiness, includePlusPrefix: false, useColoring: true));
-		string arg = ((!Common.IsPositive(Common.ToPercent(Happiness))) ? "Unhappy" : "Happy");
+		string arg = ((!Common.IsPositive(Common.ToPercent(Happiness))) ? UWGame.Locale.Text("Unhappy") : UWGame.Locale.Text("Happy"));
 		Common.AppendLine(stringBuilder, $" ({arg})");
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
 		foreach (KeyValuePair<RatingTypes, float> principle in Principles)
 		{
 			float value = principle.Value;
 			Statistic.AppendRatingsTypeToStringAndIcon(stringBuilder, principle.Key);
 			Common.AppendLine(stringBuilder);
-			stringBuilder.Append("   Personal conditions: ");
+			stringBuilder.Append(UWGame.Locale.Text("   Personal conditions: "));
 			float rating = Parent.Intelligence.Statistics.GetRating(principle.Key);
 			stringBuilder.Append(Common.PercentageToString(rating));
 			Common.AppendLine(stringBuilder);
-			stringBuilder.Append("- Principles: ");
+			stringBuilder.Append(UWGame.Locale.Text("- Principles: "));
 			Common.AppendLine(stringBuilder, Common.PercentageToString(value));
-			stringBuilder.Append("   Difference: ");
+			stringBuilder.Append(UWGame.Locale.Text("   Difference: "));
 			Common.AppendLine(stringBuilder, Common.PercentageToString(rating - value, includePlusPrefix: false, useColoring: true));
 			Common.AppendLine(stringBuilder);
 		}
-		stringBuilder.Append("AVERAGE: ");
+		stringBuilder.Append(UWGame.Locale.Text("AVERAGE: "));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(happiness, includePlusPrefix: false, useColoring: true));
 		return stringBuilder.ToString();
 	}

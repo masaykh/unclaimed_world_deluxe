@@ -36,10 +36,16 @@ Terrain features (rocks, moss, hills) are left out: their names are the names of
 ("sulfurrock", "S: Bird 1, single") and are not shown.
 
 The interface - side panels, HUD windows, data sheets, the missions, trade, policy and tasks panels -
-goes through `Locale` too (`(GUI)...`, 907 entries). Still English: the simulation's own sentences
-(the log's "was injured", what a colonist is doing, why a task is blocked), the mods' messages, the
-loading screen's progress lines, and the developer panels (LOAD REPLAY, the debug overlays).
-`tools/build/37-unrouted.txt` counts any interface English that comes back, file by file.
+goes through `Locale` too (`(GUI)...`), and so do the simulation's own sentences: the log ("has died
+from {0}.", "hit {0} on the {1} for {2} damage."), what a colonist is doing ("Hauling"), the rating
+and storage tooltips, why a task cannot be cancelled, the mission planner's errors, the time of day,
+the season and the date. Still English: the mods' messages, the loading screen's progress lines, and
+the developer panels (LOAD REPLAY, the debug overlays, an event action's failure reason).
+`tools/build/37-unrouted.txt` counts any interface or simulation English that comes back, file by
+file.
+
+A log line is written after the colonist's name ("Ada Okafor" + " has died from starvation."), so
+translate it as the rest of a sentence that starts with the name.
 
 ## Adding a language
 

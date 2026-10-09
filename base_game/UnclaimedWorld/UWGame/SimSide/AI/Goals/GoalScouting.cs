@@ -71,7 +71,7 @@ internal class GoalScouting : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Scouting";
+		return UWGame.Locale.Text("Scouting");
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)

@@ -99,12 +99,18 @@ my %SINKS = map { $_ => 1 } qw(
     AddCollapsablePanelAndGrid AddZoneNameAndHeader AddTextButton AppendImpossibleActionText AppendPossibleActionText
     AddButton CreateGridAndHeader CreateCheckBox AddSpeedButton AddTabPage AppendIndentedLine AppendHeaderOnLightBG
     CreateImageButton CreateRadioButton DisplayCommunication ShowErrorDialog AddEntityAmountRow AddBlackTextButton
-    AddCRTCaptionAndLabel SetButtonText AddEntryRightJustifyValue ShowImageAndText SetHeaderText ToLabel);
-my %INTERFACE_SINKS = map { $_ => 1 } qw(Append AppendLine AppendFormat Format base Tuple);
+    AddCRTCaptionAndLabel SetButtonText AddEntryRightJustifyValue ShowImageAndText SetHeaderText ToLabel AppendComponent);
+my %INTERFACE_SINKS = map { $_ => 1 } qw(Append AppendLine AppendFormat Format base Tuple AddToList);
 # Sinks with a key among their arguments: only these positions are text. AddEntry(key, text) -
 # the key is how the grid finds the entry again, and must not change with the language.
-my %TEXT_ARGS = (AddEntry => [1], Format => [0]);
-my $interface_dir = qr{ClientSide/(?:Interface|MainMenu|Screens)/|Client/MainMenu/};
+my %TEXT_ARGS = (AddEntry => [1], Format => [0], AppendComponent => [1], AddToList => [1]);
+# The simulation's own text builders count as interface: the rating breakdowns, what a colonist
+# is doing, a job's or a mission's name, the date. Elsewhere in SimSide these helpers build keys and
+# debug output.
+my $interface_dir = qr{ClientSide/(?:Interface|MainMenu|Screens)/|Client/MainMenu/
+    |SimSide/(?:Allegiances/Statistics|AI/Goals|AI/StrategicDecisions|InGameEvents/SpecialEvents|Overland/Missions|Jobs/JobTypes|SimEffects)/
+    |SimSide/(?:DateAndTime|Buildings/Structure|Scenarios/Scenario|Communication/CommunicatorType|Entities/Personality
+      |Entities/Biological/BiologicalEntity|Jobs/(?:Job|AttackAreaJob|CheckProcessJob|FindPreyJob|HuntingJob|PatrolJob|ScoutingJob))\.cs}x;
 
 # A literal a player reads, rather than a key, an icon, a path or a format. "OK", "NAME", "Name of
 # food type" are text; "HUD_icon_sword", "itemKey", "item:knife", "Fonts/x", "#COLOR" are not.

@@ -61,15 +61,15 @@ public class DateAndTime : ISnapshot
 			string text = ((double)Day + TimeOfDay).ToString("F2");
 			if (Year > 0)
 			{
-				return $"{Year} years, {text} days";
+				return string.Format(UWGame.Locale.Text("{0} years, {1} days"), Year, text);
 			}
-			return $"{text} days";
+			return string.Format(UWGame.Locale.Text("{0} days"), text);
 		}
 
 		public override string ToString()
 		{
 			string arg = TimeOfDay.ToString("F1", The.Sim.DateAndTime.numberFormat).Replace("0.", "");
-			return $"DATE: {Year}.{Day}.{arg}";
+			return string.Format(UWGame.Locale.Text("DATE: {0}.{1}.{2}"), Year, Day, arg);
 		}
 
 		public void AddTime(double timeInDays)
@@ -94,7 +94,7 @@ public class DateAndTime : ISnapshot
 			int num2 = DateTime.DaysInMonth(year, month);
 			double num3 = num % 12.0;
 			int day = Common.Clamp((int)((double)num2 * num3), 1, num2);
-			return "EARTH DATE: " + new DateTime(year, month, day).ToShortDateString();
+			return string.Format(UWGame.Locale.Text("EARTH DATE: {0}"), new DateTime(year, month, day).ToShortDateString());
 		}
 
 		public int CompareTo(object obj)
@@ -345,7 +345,7 @@ public class DateAndTime : ISnapshot
 		if (displayDateRegulator.IsReady() && The.InGameUI != null)
 		{
 			string timeOfDayAsString = GetTimeOfDayAsString(TimeOfDay);
-			string season = seasonStrings[(int)(TimeOfYear * (double)seasonStrings.Length)];
+			string season = SeasonName(seasonStrings[(int)(TimeOfYear * (double)seasonStrings.Length)]);
 			The.InGameUI.SetTimeAndDate(timeOfDayAsString, season, CurrentTimeDateYear.ToString());
 		}
 	}
@@ -354,7 +354,42 @@ public class DateAndTime : ISnapshot
 	{
 		int num = 0;
 		num = Common.GetStairStepIndex((float)timeOfDay, timesOfDay);
-		return timeOfDayStrings[num];
+		return TimeOfDayName(timeOfDayStrings[num]);
+	}
+
+	// PORT: the names stay English in the arrays (the snapshot ignores them); these give the
+	// chosen language's, one literal each so the translation template finds them.
+	private static string TimeOfDayName(string english)
+	{
+		return english switch
+		{
+			"Night" => UWGame.Locale.Text("Night"),
+			"Morning" => UWGame.Locale.Text("Morning"),
+			"Noon" => UWGame.Locale.Text("Noon"),
+			"Afternoon" => UWGame.Locale.Text("Afternoon"),
+			"Evening" => UWGame.Locale.Text("Evening"),
+			_ => english,
+		};
+	}
+
+	private static string SeasonName(string english)
+	{
+		return english switch
+		{
+			"Late winter" => UWGame.Locale.Text("Late winter"),
+			"Start of spring" => UWGame.Locale.Text("Start of spring"),
+			"Spring" => UWGame.Locale.Text("Spring"),
+			"Late spring" => UWGame.Locale.Text("Late spring"),
+			"Start of summer" => UWGame.Locale.Text("Start of summer"),
+			"Mid summer" => UWGame.Locale.Text("Mid summer"),
+			"Late summer" => UWGame.Locale.Text("Late summer"),
+			"Start of autumn" => UWGame.Locale.Text("Start of autumn"),
+			"Mid autumn" => UWGame.Locale.Text("Mid autumn"),
+			"Late autumn" => UWGame.Locale.Text("Late autumn"),
+			"Start of winter" => UWGame.Locale.Text("Start of winter"),
+			"Mid winter" => UWGame.Locale.Text("Mid winter"),
+			_ => english,
+		};
 	}
 
 	public float GetLightLevel()

@@ -279,7 +279,7 @@ internal class GoalDoAttack : CompositeGoal
 			}
 			if (num > 0f && entity.DoDamage(num))
 			{
-				The.Client.AddLogEvent(entityIntelligence.Allegiance, The.Client.Log.CombatEvent, base.entity, string.Concat("A ", entity.EntityType.Name.ToLower(Config.Culture), " broke while ", base.entity, " was using it."));
+				The.Client.AddLogEvent(entityIntelligence.Allegiance, The.Client.Log.CombatEvent, base.entity, string.Format(UWGame.Locale.Text("A {0} broke while {1} was using it."), entity.EntityType.Name.ToLower(Config.Culture), base.entity));
 			}
 		}
 	}
@@ -301,7 +301,7 @@ internal class GoalDoAttack : CompositeGoal
 					base.Status = Status.Failed;
 					return;
 				}
-				The.Client.AddLogEvent(The.Client.Log.CombatEvent, base.entity, $"is attacking {entity.ToLink()}!", UWGame.ClientSide.Log.Priority.High);
+				The.Client.AddLogEvent(The.Client.Log.CombatEvent, base.entity, string.Format(UWGame.Locale.Text("is attacking {0}!"), entity.ToLink()), UWGame.ClientSide.Log.Priority.High);
 				if (targetDied)
 				{
 					base.Status = Status.Completed;

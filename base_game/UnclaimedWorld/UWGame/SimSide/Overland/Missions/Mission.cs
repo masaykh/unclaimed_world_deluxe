@@ -142,14 +142,14 @@ public class Mission : ISnapshot, ILookUp<Mission, MissionID>, ICommunicates
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		EntityType mainTransportation = GetMainTransportation();
-		stringBuilder.Append("Transportation: ");
+		stringBuilder.Append(UWGame.Locale.Text("Transportation: "));
 		if (mainTransportation != null)
 		{
 			Common.Append(stringBuilder, mainTransportation.Name);
 		}
 		else
 		{
-			Common.Append(stringBuilder, "On foot");
+			Common.Append(stringBuilder, UWGame.Locale.Text("On foot"));
 		}
 		return stringBuilder.ToString();
 	}

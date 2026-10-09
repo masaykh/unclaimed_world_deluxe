@@ -49,7 +49,7 @@ public class WinGameAction : EventActionType, IGameData
 			The.Client.PauseGame();
 			if (ModalDialogText != null && !string.IsNullOrEmpty(ModalDialogText.Text))
 			{
-				EventActionDialog.ShowAndSaveEventDialog(ModalDialogImage, "", ModalDialogText.GetSubstitutedText(action), modal: true, showOkButton: true, "EXIT SCENARIO", EndGameTooltip, null, AllowContinueGame, "CONTINUE PLAYING", ContinueGameTooltip).ButtonClicked += dialog_ButtonClicked;
+				EventActionDialog.ShowAndSaveEventDialog(ModalDialogImage, "", ModalDialogText.GetSubstitutedText(action), modal: true, showOkButton: true, UWGame.Locale.Text("EXIT SCENARIO"), EndGameTooltip, null, AllowContinueGame, UWGame.Locale.Text("CONTINUE PLAYING"), ContinueGameTooltip).ButtonClicked += dialog_ButtonClicked;
 			}
 			else
 			{

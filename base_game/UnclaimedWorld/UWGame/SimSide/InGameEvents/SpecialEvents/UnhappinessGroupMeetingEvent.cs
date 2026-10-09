@@ -219,18 +219,16 @@ public class UnhappinessGroupMeetingEvent : ISnapshot
 		StringBuilder stringBuilder = new StringBuilder();
 		Common.AppendLine(stringBuilder);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "MINUTES");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("MINUTES"));
 		Common.AppendLine(stringBuilder);
-		string value = "Complains about ";
+		string value = UWGame.Locale.Text("Complains about {0} conditions: ");
 		foreach (KeyValuePair<RatingTypes, List<Entity>> unhappyPerson in UnhappyPersons)
 		{
 			if (unhappyPerson.Value.Count <= 0)
 			{
 				continue;
 			}
-			stringBuilder.Append(value);
-			Statistic.AppendRatingsTypeToStringAndIcon(stringBuilder, unhappyPerson.Key);
-			stringBuilder.Append(" conditions: ");
+			stringBuilder.Append(string.Format(value, Statistic.AppendRatingsTypeToStringAndIcon(unhappyPerson.Key)));
 			string value2 = "";
 			foreach (Entity item in unhappyPerson.Value)
 			{
@@ -247,7 +245,7 @@ public class UnhappinessGroupMeetingEvent : ISnapshot
 					if (!flag)
 					{
 						Common.AppendLine(stringBuilder);
-						stringBuilder.Append("Thinking of leaving for this reason: ");
+						stringBuilder.Append(UWGame.Locale.Text("Thinking of leaving for this reason: "));
 					}
 					Common.AppendLine(stringBuilder);
 					stringBuilder.Append(SubstituteValue.FormatAllegianceMember(item2));
@@ -258,7 +256,7 @@ public class UnhappinessGroupMeetingEvent : ISnapshot
 			}
 			Common.AppendLine(stringBuilder);
 			Common.AppendLine(stringBuilder);
-			value = "Wants improvements to ";
+			value = UWGame.Locale.Text("Wants improvements to {0} conditions: ");
 		}
 		return stringBuilder.ToString();
 	}

@@ -58,7 +58,7 @@ internal class GoalDoSleep : CompositeGoal
 		base.Status = Status.Active;
 		if (entity.EntityType.Person != null)
 		{
-			The.Client.AddLogEvent(entityIntelligence.Allegiance, The.Client.Log.GeneralEvent, entity, "goes to sleep");
+			The.Client.AddLogEvent(entityIntelligence.Allegiance, The.Client.Log.GeneralEvent, entity, UWGame.Locale.Text("goes to sleep"));
 		}
 		entityIntelligence.IsAwakeAndActive = false;
 		DropAllCarriedItems();
@@ -129,7 +129,7 @@ internal class GoalDoSleep : CompositeGoal
 
 	public override string GetStatus()
 	{
-		return "Sleeping";
+		return UWGame.Locale.Text("Sleeping");
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)
@@ -167,7 +167,7 @@ internal class GoalDoSleep : CompositeGoal
 			base.Status = Status.Completed;
 			if (entity.PersonEntity != null)
 			{
-				The.Client.AddLogEvent(entityIntelligence.Allegiance, The.Client.Log.GeneralEvent, entity, "wakes up");
+				The.Client.AddLogEvent(entityIntelligence.Allegiance, The.Client.Log.GeneralEvent, entity, UWGame.Locale.Text("wakes up"));
 			}
 		}
 	}

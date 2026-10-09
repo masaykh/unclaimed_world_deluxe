@@ -6,7 +6,7 @@ public class UnloadActionTemplate : MissionActionTemplate
 {
 	public override string Name => TemplateName;
 
-	public static string TemplateName => "Unload";
+	public static string TemplateName => UWGame.Locale.Text("Unload");
 
 	public override ActionTypes ActionType => ActionTypes.Unload;
 

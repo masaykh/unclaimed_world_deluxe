@@ -17,7 +17,7 @@ public class PlainsType : SurfaceType
 		}
 	}
 
-	public override string Name => "Plains";
+	public override string Name => UWGame.Locale.Text("Plains");
 
 	private PlainsType()
 	{

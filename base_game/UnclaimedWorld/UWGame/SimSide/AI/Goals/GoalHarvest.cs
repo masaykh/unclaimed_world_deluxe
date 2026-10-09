@@ -221,7 +221,7 @@ public class GoalHarvest : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Harvesting";
+		return UWGame.Locale.Text("Harvesting");
 	}
 
 	public double ScoreGoal()

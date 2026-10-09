@@ -77,7 +77,7 @@ public class GoalIsDying : Goal
 
 	public override string GetStatus()
 	{
-		return "Dying";
+		return UWGame.Locale.Text("Dying");
 	}
 
 	protected override void CreateRegulators()

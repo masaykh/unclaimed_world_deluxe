@@ -104,6 +104,13 @@ public static class Common
 		}
 	}
 
+	// PORT: a value tinted the way Append(text, t, tintAsValue: true) tints it, for a format's
+	// placeholder - so a translated sentence can put the number where its language wants it.
+	public static string AsValue(string t)
+	{
+		return Label.ToLabel(t, GameData.Instance.GUIConstants.ValueTintHex);
+	}
+
 	public static void Append(StringBuilder text, string t, ValueTint tintValue)
 	{
 		text.Append(Label.ToLabel(t, GetTint(tintValue)));
@@ -689,7 +696,7 @@ public static class Common
 		string text;
 		if (value)
 		{
-			text = "True";
+			text = UWGame.Locale.Text("True");
 			if (useColor)
 			{
 				color = GameData.Instance.GUIConstants.PositiveTintHex;
@@ -697,7 +704,7 @@ public static class Common
 		}
 		else
 		{
-			text = "False";
+			text = UWGame.Locale.Text("False");
 			if (useColor)
 			{
 				color = GameData.Instance.GUIConstants.NegativeTintHex;

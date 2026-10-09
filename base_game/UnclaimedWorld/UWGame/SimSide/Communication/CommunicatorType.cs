@@ -19,10 +19,10 @@ public class CommunicatorType
 	{
 		return method switch
 		{
-			CommunicationMethod.Direct => "Direct", 
-			CommunicationMethod.Visual => "Visual", 
-			CommunicationMethod.Radio => "Radio", 
-			CommunicationMethod.Satellite => "Satellite", 
+			CommunicationMethod.Direct => UWGame.Locale.Text("Direct"), 
+			CommunicationMethod.Visual => UWGame.Locale.Text("Visual"), 
+			CommunicationMethod.Radio => UWGame.Locale.Text("Radio"), 
+			CommunicationMethod.Satellite => UWGame.Locale.Text("Satellite"), 
 			_ => "", 
 		};
 	}

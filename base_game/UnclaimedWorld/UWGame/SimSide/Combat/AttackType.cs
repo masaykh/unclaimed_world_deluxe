@@ -283,12 +283,12 @@ public class AttackType : IGameData, IXmlSerializable
 			damage = bodyPart.DoDamage(damage);
 			if (entity != null)
 			{
-				The.Client.AddLogEvent(The.Client.Log.CombatEvent, entity, $"hit {targetAsEntity.ToLink()} on the {bodyPart.BodyPartType.Name.ToLower(Config.Culture)} for {(int)damage} damage.{text}");
+				The.Client.AddLogEvent(The.Client.Log.CombatEvent, entity, string.Format(UWGame.Locale.Text("hit {0} on the {1} for {2} damage."), targetAsEntity.ToLink(), bodyPart.BodyPartType.Name.ToLower(Config.Culture), (int)damage) + text);
 			}
 		}
 		else if (reductionConstant > 0f && entity != null)
 		{
-			The.Client.AddLogEvent(The.Client.Log.CombatEvent, entity, $"hit {targetAsEntity.ToLink()} on the {bodyPart.BodyPartType.Name.ToLower(Config.Culture)} for 0 damage. {armorLayer.Name} gave protection.{text}");
+			The.Client.AddLogEvent(The.Client.Log.CombatEvent, entity, string.Format(UWGame.Locale.Text("hit {0} on the {1} for 0 damage. {2} gave protection."), targetAsEntity.ToLink(), bodyPart.BodyPartType.Name.ToLower(Config.Culture), armorLayer.Name) + text);
 		}
 		if (FinalEffectsOnVictim != null)
 		{

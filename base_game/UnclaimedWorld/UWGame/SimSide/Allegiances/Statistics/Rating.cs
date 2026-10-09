@@ -11,7 +11,7 @@ public abstract class Rating : Statistic
 
 	protected bool composeBreakdown;
 
-	protected string ratingsBreakdown = "Computing a new rating. (If paused, unpause the game)";
+	protected string ratingsBreakdown = UWGame.Locale.Text("Computing a new rating. (If paused, unpause the game)");
 
 	public List<DataPoint<float>> Ratings = new List<DataPoint<float>>();
 
@@ -51,7 +51,7 @@ public abstract class Rating : Statistic
 		});
 		if (!composeBreakdown)
 		{
-			ratingsBreakdown = "Computing a new rating. (If paused, unpause the game)";
+			ratingsBreakdown = UWGame.Locale.Text("Computing a new rating. (If paused, unpause the game)");
 		}
 	}
 

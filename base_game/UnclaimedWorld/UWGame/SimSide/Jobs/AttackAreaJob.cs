@@ -27,7 +27,7 @@ public class AttackAreaJob : CombatAreaJob
 
 	public override string GetName()
 	{
-		return "Attacking";
+		return UWGame.Locale.Text("Attacking");
 	}
 
 	public AttackAreaJob()

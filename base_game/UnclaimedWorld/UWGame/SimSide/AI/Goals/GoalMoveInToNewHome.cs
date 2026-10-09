@@ -74,7 +74,7 @@ internal class GoalMoveInToNewHome : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Moving home";
+		return UWGame.Locale.Text("Moving home");
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)

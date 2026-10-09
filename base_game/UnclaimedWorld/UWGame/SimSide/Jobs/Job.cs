@@ -82,10 +82,10 @@ public abstract class Job : ISnapshot, ILookUp<Job, JobID>
 	{
 		return priority switch
 		{
-			Priority.Low => "LOW", 
-			Priority.Normal => "NORMAL", 
-			Priority.High => "HIGH", 
-			Priority.Stopped => "STOP", 
+			Priority.Low => UWGame.Locale.Text("LOW"), 
+			Priority.Normal => UWGame.Locale.Text("NORMAL"), 
+			Priority.High => UWGame.Locale.Text("HIGH"), 
+			Priority.Stopped => UWGame.Locale.Text("STOP"), 
 			_ => null, 
 		};
 	}

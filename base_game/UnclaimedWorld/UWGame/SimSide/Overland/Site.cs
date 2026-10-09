@@ -289,10 +289,10 @@ public class Site : IHasExposedProperties, ISnapshot, ILookUp<Site, SiteID>
 		{
 			Entity randomPerson = Common.GetRandomListMember(list, The.Sim.GameplayRandomGenerator);
 			string text = Common.ListToCommaSeparatedString(list.FindAll((Entity e) => e != randomPerson), (Entity e) => SubstituteValue.FormatEntity(e));
-			string text2 = $"RECORDED BY: {SubstituteValue.FormatEntity(randomPerson)}";
+			string text2 = string.Format(UWGame.Locale.Text("RECORDED BY: {0}"), SubstituteValue.FormatEntity(randomPerson));
 			if (!string.IsNullOrEmpty(text))
 			{
-				text2 += $" \nPRESENT: {text}";
+				text2 += " \n" + string.Format(UWGame.Locale.Text("PRESENT: {0}"), text);
 			}
 			value.StringResult = text2;
 		}

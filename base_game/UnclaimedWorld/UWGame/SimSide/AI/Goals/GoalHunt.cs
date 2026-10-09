@@ -113,7 +113,7 @@ internal class GoalHunt : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Hunting";
+		return UWGame.Locale.Text("Hunting");
 	}
 
 	public double ScoreGoal()

@@ -50,16 +50,16 @@ public class FoodStatisticsForMembers : FoodStatistics
 	private void ComposeRatingBreakdown(Food food, float rating, int deaths, float deathsContribution, int noOfMembers, Dictionary<NeedTypeID, float> starvingMemberPercentages, float starvingScore, float sharedScore)
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendLine(stringBuilder, "and their personal experience of food conditions");
-		AppendComponent(stringBuilder, "PERSONAL FOOD CONDITIONS:", rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("and their personal experience of food conditions"));
+		AppendComponent(stringBuilder, UWGame.Locale.Text("PERSONAL FOOD CONDITIONS:"), rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "BASELINE");
-		stringBuilder.Append("Subscore: +");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("BASELINE"));
+		stringBuilder.Append(UWGame.Locale.Text("Subscore: +"));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(food.BaseScore, includePlusPrefix: false, useColoring: true));
 		Common.AppendLine(stringBuilder);
-		AppendComponent(stringBuilder, "COLONY FOOD CONDITIONS", sharedScore, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		AppendComponent(stringBuilder, UWGame.Locale.Text("COLONY FOOD CONDITIONS"), sharedScore, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		ComposeRatingBreakdownForNeedsAndDeaths(food, deaths, deathsContribution, starvingMemberPercentages, starvingScore, stringBuilder);
 		ratingsBreakdown = stringBuilder.ToString();
 	}

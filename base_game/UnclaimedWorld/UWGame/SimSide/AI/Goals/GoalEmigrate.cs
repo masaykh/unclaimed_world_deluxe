@@ -73,7 +73,7 @@ internal class GoalEmigrate : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Leaving site";
+		return UWGame.Locale.Text("Leaving site");
 	}
 
 	public double ScoreGoal()

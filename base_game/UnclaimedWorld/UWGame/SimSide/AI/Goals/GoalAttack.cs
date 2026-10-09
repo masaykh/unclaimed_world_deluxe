@@ -345,7 +345,7 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 			{
 				if (entityIntelligence.Allegiance.AllegianceType == AllegianceType.Player)
 				{
-					The.Client.Log.AddLogEvent(The.Client.Log.CombatEvent, entity, $"has given up chasing {arg}.");
+					The.Client.Log.AddLogEvent(The.Client.Log.CombatEvent, entity, string.Format(UWGame.Locale.Text("has given up chasing {0}."), arg));
 				}
 				if (attackType.RangeType == AttackType.RangeTypes.Melee && entityIntelligence.Allegiance.HumanActivities != null)
 				{
@@ -376,7 +376,7 @@ internal class GoalAttack : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Attacking";
+		return UWGame.Locale.Text("Attacking");
 	}
 
 	public double ScoreGoal()

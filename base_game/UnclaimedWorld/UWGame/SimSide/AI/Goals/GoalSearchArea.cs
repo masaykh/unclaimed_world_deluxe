@@ -156,7 +156,7 @@ internal class GoalSearchArea : CompositeGoal
 
 	public override string GetStatus()
 	{
-		return "Searching area";
+		return UWGame.Locale.Text("Searching area");
 	}
 
 	private bool LocationsAreLeft()

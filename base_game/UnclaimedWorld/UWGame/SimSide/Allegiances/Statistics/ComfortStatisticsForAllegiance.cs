@@ -58,13 +58,13 @@ public class ComfortStatisticsForAllegiance : ComfortStatistics
 	private void ComposeRatingBreakdown(float rating, float homeComfort, Dictionary<NeedTypeID, float> hasComfortNeedsMet, float needsRating)
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendLine(stringBuilder, "How well the colony provides comfort and luxuries:");
-		AppendComponent(stringBuilder, "COLONY COMFORT CONDITIONS", rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("How well the colony provides comfort and luxuries:"));
+		AppendComponent(stringBuilder, UWGame.Locale.Text("COLONY COMFORT CONDITIONS"), rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "HOUSING; AVG. COMFORT VALUE");
-		stringBuilder.Append("Subscore: ");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("HOUSING; AVG. COMFORT VALUE"));
+		stringBuilder.Append(UWGame.Locale.Text("Subscore: "));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(homeComfort, includePlusPrefix: false, useColoring: true));
 		ComposeRatingBreakdownForNeeds(hasComfortNeedsMet, needsRating, stringBuilder);
 		ratingsBreakdown = stringBuilder.ToString();

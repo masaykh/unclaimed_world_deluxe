@@ -94,9 +94,9 @@ internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 	{
 		if (hasSmallAreaToPatrol)
 		{
-			return "Guarding area";
+			return UWGame.Locale.Text("Guarding area");
 		}
-		return "Patrolling area";
+		return UWGame.Locale.Text("Patrolling area");
 	}
 
 	public override DetectionFactor GetDetectAgentsFactor(EntityType typeOfAgent, bool requiresExamineAction)

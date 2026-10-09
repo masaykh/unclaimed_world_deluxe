@@ -309,9 +309,9 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 	{
 		if (itemIsDrunk)
 		{
-			return "Drinking";
+			return UWGame.Locale.Text("Drinking");
 		}
-		return "Eating";
+		return UWGame.Locale.Text("Eating");
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)

@@ -111,7 +111,7 @@ internal class GoalBreakIn : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return atDoor ? "Breaking in" : "Stalking a building";
+		return atDoor ? UWGame.Locale.Text("Breaking in") : UWGame.Locale.Text("Stalking a building");
 	}
 
 	public override bool IsSame(UWGame.SimSide.Jobs.Job job)

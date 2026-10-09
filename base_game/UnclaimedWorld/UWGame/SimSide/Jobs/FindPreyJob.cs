@@ -175,7 +175,7 @@ public class FindPreyJob : Job, IRequiresWeapon
 
 	public override string GetName()
 	{
-		return "Finding prey";
+		return UWGame.Locale.Text("Finding prey");
 	}
 
 	public override void Destroy(bool removeTakers, Entity entityToExcludeFromCancel = null)

@@ -72,12 +72,12 @@ public class AllegianceRatings : ISnapshot, IScore, IEdge
 	private string GetBreakdown()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.Append("ATTRACTION: ");
+		stringBuilder.Append(UWGame.Locale.Text("ATTRACTION: "));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(Desirability, includePlusPrefix: false, useColoring: true));
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "COMPARISON OF COLONY CONDITIONS: ");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("COMPARISON OF COLONY CONDITIONS: "));
 		foreach (KeyValuePair<RatingTypes, Pair<float, float>> resultComponent in ResultComponents)
 		{
 			Pair<float, float> pair = Conditions[resultComponent.Key];
@@ -91,13 +91,13 @@ public class AllegianceRatings : ISnapshot, IScore, IEdge
 			Common.AppendLine(stringBuilder, Common.PercentageToString(resultComponent.Value.First, includePlusPrefix: false, useColoring: true));
 		}
 		Common.AppendLine(stringBuilder);
-		stringBuilder.Append("WEIGHTED TOTAL: ");
+		stringBuilder.Append(UWGame.Locale.Text("WEIGHTED TOTAL: "));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(TotalStatScore, includePlusPrefix: true, useColoring: true));
 		Common.AppendLine(stringBuilder);
-		stringBuilder.Append("PERSONAL CIRCUMSTANCES: ");
+		stringBuilder.Append(UWGame.Locale.Text("PERSONAL CIRCUMSTANCES: "));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(Personal, includePlusPrefix: true, useColoring: true));
 		Common.AppendLine(stringBuilder);
-		stringBuilder.Append("PERSONAL INTEREST: ");
+		stringBuilder.Append(UWGame.Locale.Text("PERSONAL INTEREST: "));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(Attraction, includePlusPrefix: true, useColoring: true));
 		return stringBuilder.ToString();
 	}

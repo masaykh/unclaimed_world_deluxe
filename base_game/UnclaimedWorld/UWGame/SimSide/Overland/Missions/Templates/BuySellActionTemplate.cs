@@ -32,9 +32,9 @@ public class BuySellActionTemplate : MissionActionTemplate
 		{
 			if (isSelling)
 			{
-				return "Sell";
+				return UWGame.Locale.Text("Sell");
 			}
-			return "Buy";
+			return UWGame.Locale.Text("Buy");
 		}
 	}
 
@@ -84,7 +84,7 @@ public class BuySellActionTemplate : MissionActionTemplate
 		}
 		if (terminalData.OwnedBy.HasValue && terminalData.OwnedBy == (OwnerID?)parent.OwnerID)
 		{
-			Common.AddToList(ref errors, "The terminal is owned by us.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("The terminal is owned by us."));
 			return false;
 		}
 		return true;
@@ -98,7 +98,7 @@ public class BuySellActionTemplate : MissionActionTemplate
 		}
 		if (!terminalData.OwnedBy.HasValue || terminalData.OwnedBy != (OwnerID?)parent.OwnerID)
 		{
-			Common.AddToList(ref errors, "The terminal is not owned by us.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("The terminal is not owned by us."));
 			return false;
 		}
 		return true;
@@ -108,7 +108,7 @@ public class BuySellActionTemplate : MissionActionTemplate
 	{
 		if (terminalData.EntityType.ContainerType == null || !(terminalData.EntityType.ContainerType is TerminalContainerType))
 		{
-			Common.AddToList(ref errors, "The terminal does not support trading.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("The terminal does not support trading."));
 			return false;
 		}
 		if (!MissionActionTemplate.ValidateWorkingTerminal(terminalData, ref errors))
@@ -177,7 +177,7 @@ public class BuySellActionTemplate : MissionActionTemplate
 
 	private static List<string> AddInvalidItemError(ref List<string> errors, Expedition expedition)
 	{
-		Common.AddToList(ref errors, $"Some of the items ordered at {expedition.Name} are no longer valid. Review the order.");
+		Common.AddToList(ref errors, string.Format(UWGame.Locale.Text("Some of the items ordered at {0} are no longer valid. Review the order."), expedition.Name));
 		return errors;
 	}
 

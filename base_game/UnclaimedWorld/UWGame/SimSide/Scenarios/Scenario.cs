@@ -38,9 +38,9 @@ public class Scenario
 	{
 		return size switch
 		{
-			MapSize.Small => "Small", 
-			MapSize.Medium => "Medium", 
-			MapSize.Large => "Large", 
+			MapSize.Small => UWGame.Locale.Text("Small"), 
+			MapSize.Medium => UWGame.Locale.Text("Medium"), 
+			MapSize.Large => UWGame.Locale.Text("Large"), 
 			_ => "", 
 		};
 	}

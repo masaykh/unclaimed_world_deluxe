@@ -13,7 +13,7 @@ public class PolicyAreaFilterSettingType : FilterSettingType
 
 	public override string GetDefaultDisplayName()
 	{
-		return "Policy area: " + Statistic.RatingsTypeToString(RatingType);
+		return string.Format(UWGame.Locale.Text("Policy area: {0}"), Statistic.RatingsTypeToString(RatingType));
 	}
 
 	public override HashSet<EntityType> GetData(Predicate<EntityType> filter)

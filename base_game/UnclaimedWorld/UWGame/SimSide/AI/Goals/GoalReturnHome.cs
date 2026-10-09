@@ -82,7 +82,7 @@ internal class GoalReturnHome : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Returning home";
+		return UWGame.Locale.Text("Returning home");
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)

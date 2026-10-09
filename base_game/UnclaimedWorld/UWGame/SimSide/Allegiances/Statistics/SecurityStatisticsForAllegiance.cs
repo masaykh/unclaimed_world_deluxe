@@ -342,42 +342,35 @@ public class SecurityStatisticsForAllegiance : SecurityStatistics
 		StringBuilder stringBuilder = new StringBuilder();
 		Security security = GameData.Instance.AIConstants.Ratings.Security;
 		int num = (int)(security.MaxHandWeaponsToScorePerMember * (float)noOfWeaponCarriers);
-		Common.AppendLine(stringBuilder, "How well the colony provides security:");
-		AppendComponent(stringBuilder, "COLONY SECURITY CONDITIONS", rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("How well the colony provides security:"));
+		AppendComponent(stringBuilder, UWGame.Locale.Text("COLONY SECURITY CONDITIONS"), rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "ASSETS (what needs protection)");
-		Common.Append(stringBuilder, "No. of colony members ");
-		Common.Append(stringBuilder, noOfMembers.ToString(), tintAsValue: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("ASSETS (what needs protection)"));
+		stringBuilder.Append(string.Format(UWGame.Locale.Text("No. of colony members {0}"), Common.AsValue(noOfMembers.ToString())));
 		Common.AppendLine(stringBuilder);
-		Common.Append(stringBuilder, "Total: ");
+		Common.Append(stringBuilder, UWGame.Locale.Text("Total: "));
 		Common.AppendFormat(stringBuilder, "{0:N2}", true, assets);
 		Common.AppendLine(stringBuilder);
 		Common.AppendLine(stringBuilder);
 		if (noOfDefensiveAgents > 0)
 		{
-			Common.AppendLine(stringBuilder, "DEFENDERS");
-			Common.Append(stringBuilder, "No. of defenders ");
-			Common.Append(stringBuilder, noOfDefensiveAgents.ToString(), tintAsValue: true);
-			Common.Append(stringBuilder, ", \ncombined Security rating ");
-			Common.AppendFormat(stringBuilder, "{0:N2}", true, totalAgentsRating);
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("DEFENDERS"));
+			Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("No. of defenders {0},"), Common.AsValue(noOfDefensiveAgents.ToString())));
+			stringBuilder.Append(string.Format(UWGame.Locale.Text("combined Security rating {0}"), Common.AsValue(totalAgentsRating.ToString("N2"))));
 			Common.AppendLine(stringBuilder);
 			AppendAssets(assets, finalAgentsRating, stringBuilder);
-			stringBuilder.Append("Subscore: +");
+			stringBuilder.Append(UWGame.Locale.Text("Subscore: +"));
 			Common.AppendLine(stringBuilder, Common.PercentageToString(finalAgentsRating, includePlusPrefix: false, useColoring: true));
 			Common.AppendLine(stringBuilder);
 		}
-		Common.AppendLine(stringBuilder, "HAND WEAPONS");
-		Common.Append(stringBuilder, "No. of usable hand weapons ");
-		Common.Append(stringBuilder, noOfWeapons.ToString(), tintAsValue: true);
-		Common.Append(stringBuilder, " (max ");
-		Common.Append(stringBuilder, num.ToString(), tintAsValue: true);
-		Common.Append(stringBuilder, "), \ncombined Security rating ");
-		Common.AppendFormat(stringBuilder, "{0:N2}", true, totalHandWeaponsScore);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("HAND WEAPONS"));
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("No. of usable hand weapons {0} (max {1}),"), Common.AsValue(noOfWeapons.ToString()), Common.AsValue(num.ToString())));
+		stringBuilder.Append(string.Format(UWGame.Locale.Text("combined Security rating {0}"), Common.AsValue(totalHandWeaponsScore.ToString("N2"))));
 		Common.AppendLine(stringBuilder);
 		AppendAssets(assets, finalHandWeaponsRating, stringBuilder);
-		stringBuilder.Append("Subscore: +");
+		stringBuilder.Append(UWGame.Locale.Text("Subscore: +"));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(finalHandWeaponsRating, includePlusPrefix: false, useColoring: true));
 		ComposeDeathsBreakdown(noOfMembers, injuries, deaths, injuryContribution, deathContribution, stringBuilder, security);
 		ratingsBreakdown = stringBuilder.ToString();
@@ -385,10 +378,7 @@ public class SecurityStatisticsForAllegiance : SecurityStatistics
 
 	private static void AppendAssets(float assets, float finalAgentsRating, StringBuilder text)
 	{
-		Common.Append(text, "Divided by assets (");
-		Common.AppendFormat(text, "{0:N2}", true, assets);
-		Common.Append(text, "): ");
-		Common.AppendFormat(text, "{0:N2}", true, finalAgentsRating);
+		text.Append(string.Format(UWGame.Locale.Text("Divided by assets ({0}): {1}"), Common.AsValue(assets.ToString("N2")), Common.AsValue(finalAgentsRating.ToString("N2"))));
 		Common.AppendLine(text);
 	}
 

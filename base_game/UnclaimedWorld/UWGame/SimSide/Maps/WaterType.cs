@@ -17,7 +17,7 @@ public class WaterType : SurfaceType
 		}
 	}
 
-	public override string Name => "Water";
+	public override string Name => UWGame.Locale.Text("Water");
 
 	private WaterType()
 	{

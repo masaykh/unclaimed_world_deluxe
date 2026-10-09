@@ -123,19 +123,19 @@ public class FoodStatisticsForAllegiance : FoodStatistics
 	private void ComposeRatingBreakdown(Food food, float rating, int deaths, float deathsContribution, int noOfMembers, Dictionary<NeedTypeID, float> starvingMemberPercentages, float starvingScore, int foodItems, float stockpileScore)
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendLine(stringBuilder, "How well the colony provides food:");
-		AppendComponent(stringBuilder, "COLONY FOOD CONDITIONS", rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("How well the colony provides food:"));
+		AppendComponent(stringBuilder, UWGame.Locale.Text("COLONY FOOD CONDITIONS"), rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "BASELINE");
-		stringBuilder.Append("Subscore: +");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("BASELINE"));
+		stringBuilder.Append(UWGame.Locale.Text("Subscore: +"));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(food.BaseScore, includePlusPrefix: false, useColoring: true));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "STOCKPILED FOOD");
-		Common.Append(stringBuilder, "Prepared food items ");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("STOCKPILED FOOD"));
+		Common.Append(stringBuilder, UWGame.Locale.Text("Prepared food items "));
 		Common.AppendLine(stringBuilder, Label.ToLabel(foodItems.ToString(), GameData.Instance.GUIConstants.ValueTintHex));
-		stringBuilder.Append("Subscore: +");
+		stringBuilder.Append(UWGame.Locale.Text("Subscore: +"));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(stockpileScore, includePlusPrefix: false, useColoring: true));
 		ComposeRatingBreakdownForNeedsAndDeaths(food, deaths, deathsContribution, starvingMemberPercentages, starvingScore, stringBuilder);
 		ratingsBreakdown = stringBuilder.ToString();

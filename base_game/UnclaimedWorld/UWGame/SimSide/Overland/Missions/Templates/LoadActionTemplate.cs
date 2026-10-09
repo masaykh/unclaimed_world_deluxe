@@ -11,7 +11,7 @@ public class LoadActionTemplate : MissionActionTemplate
 
 	public override string Name => TemplateName;
 
-	public static string TemplateName => "Load";
+	public static string TemplateName => UWGame.Locale.Text("Load");
 
 	public override ActionTypes ActionType => ActionTypes.Load;
 

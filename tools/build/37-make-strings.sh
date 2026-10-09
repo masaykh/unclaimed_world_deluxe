@@ -100,8 +100,10 @@ fi
 "$EXPORT" "$WORK/game" --strings-literals="$WORK/literals.txt" --strings-counts="$WORK/counts.txt" --strings-out="$WORK/strings.xml" | grep '^==> strings' || {
   echo "FAIL  DataExport did not write the strings" >&2; exit 1; }
 
-# The interface's unrouted text, per file, against the ratchet.
+# The interface's and the simulation's unrouted text, per file, against the ratchet. Not the data
+# loaders: their text is the tables', translated by key (Locale.DataTexts).
 git -c core.quotePath=false ls-files -z 'base_game/UnclaimedWorld/UWGame/ClientSide/*.cs' 'base_game/UnclaimedWorld/UWGame/Client/*.cs' \
+  'base_game/UnclaimedWorld/UWGame/SimSide/*.cs' ':(exclude)base_game/UnclaimedWorld/UWGame/SimSide/AllGameData/*' \
   'base_game/UnclaimedWorld/GameStateManagement/*.cs' 'mods/*.cs' \
   | xargs -0 perl "$HELPER" unrouted | sort -k2 > "$WORK/unrouted.txt"
 [ -f "$UNROUTED" ] || : > "$UNROUTED"

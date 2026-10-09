@@ -203,19 +203,19 @@ public class MissionTemplate : ISnapshot, ILookUp<MissionTemplate, MissionTempla
 	{
 		if (StartMissionStopTemplate == null)
 		{
-			Common.AddToList(ref errors, "A starting location has not been selected");
+			Common.AddToList(ref errors, UWGame.Locale.Text("A starting location has not been selected"));
 			errorFieldCode = FieldError.Start;
 			return false;
 		}
 		if (StartMissionStopTemplate.TravelAction == null)
 		{
-			Common.AddToList(ref errors, "A destination has not been selected");
+			Common.AddToList(ref errors, UWGame.Locale.Text("A destination has not been selected"));
 			errorFieldCode = FieldError.Destination;
 			return false;
 		}
 		if (TransportationType == null || TransportationType.Vehicles == null)
 		{
-			Common.AddToList(ref errors, "A vehicle has not been selected.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("A vehicle has not been selected."));
 			errorFieldCode = FieldError.Transport;
 			return false;
 		}
@@ -224,7 +224,7 @@ public class MissionTemplate : ISnapshot, ILookUp<MissionTemplate, MissionTempla
 		{
 			if (!hasMeaning)
 			{
-				Common.AddToList(ref errors, "The mission has no purpose, try adding some actions.");
+				Common.AddToList(ref errors, UWGame.Locale.Text("The mission has no purpose, try adding some actions."));
 			}
 			return false;
 		}
@@ -232,7 +232,7 @@ public class MissionTemplate : ISnapshot, ILookUp<MissionTemplate, MissionTempla
 		float totalCargoCapacity = GetTotalCargoCapacity();
 		if (num > totalCargoCapacity)
 		{
-			Common.AddToList(ref errors, "Too much cargo.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("Too much cargo."));
 			return false;
 		}
 		decimal transportCost;
@@ -243,7 +243,7 @@ public class MissionTemplate : ISnapshot, ILookUp<MissionTemplate, MissionTempla
 		decimal? tradeCredits = allegiance.TradeCredits;
 		if (num2 > tradeCredits.GetValueOrDefault() && tradeCredits.HasValue)
 		{
-			Common.AddToList(ref errors, "The total cost is more than we can afford.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("The total cost is more than we can afford."));
 			return false;
 		}
 		return true;

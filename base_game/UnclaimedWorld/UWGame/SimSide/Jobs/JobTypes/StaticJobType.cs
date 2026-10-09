@@ -164,15 +164,15 @@ public class StaticJobType : JobType
 	{
 		return StaticJobTypeSetting switch
 		{
-			StaticJobTypes.Patrol => "Patrolling", 
-			StaticJobTypes.AttackArea => "Attacking", 
-			StaticJobTypes.Hunt => "Hunting", 
-			StaticJobTypes.Examine => "Examining", 
-			StaticJobTypes.Scout => "Scouting", 
-			StaticJobTypes.HaulToStorage => "Hauling to storage", 
-			StaticJobTypes.Repairing => "Doing maintenance", 
-			StaticJobTypes.Salvaging => "Salvaging", 
-			StaticJobTypes.Upgrading => "Upgrading", 
+			StaticJobTypes.Patrol => UWGame.Locale.Text("Patrolling"), 
+			StaticJobTypes.AttackArea => UWGame.Locale.Text("Attacking"), 
+			StaticJobTypes.Hunt => UWGame.Locale.Text("Hunting"), 
+			StaticJobTypes.Examine => UWGame.Locale.Text("Examining"), 
+			StaticJobTypes.Scout => UWGame.Locale.Text("Scouting"), 
+			StaticJobTypes.HaulToStorage => UWGame.Locale.Text("Hauling to storage"), 
+			StaticJobTypes.Repairing => UWGame.Locale.Text("Doing maintenance"), 
+			StaticJobTypes.Salvaging => UWGame.Locale.Text("Salvaging"), 
+			StaticJobTypes.Upgrading => UWGame.Locale.Text("Upgrading"), 
 			_ => "No display string for:" + StaticJobTypeSetting, 
 		};
 	}

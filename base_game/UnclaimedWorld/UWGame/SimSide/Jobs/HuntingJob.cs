@@ -58,7 +58,7 @@ public class HuntingJob : AttackJob
 
 	public override string GetName()
 	{
-		return "Hunting";
+		return UWGame.Locale.Text("Hunting");
 	}
 
 	public override ISnapshot DoSnapshot(Snapshotter sn)

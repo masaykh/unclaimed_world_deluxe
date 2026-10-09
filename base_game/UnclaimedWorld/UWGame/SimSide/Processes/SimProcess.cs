@@ -1438,7 +1438,7 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 			{
 				if (producingEntity != null)
 				{
-					The.Client.AddLogEvent(producingEntity.Intelligence.Allegiance, The.Client.Log.EconomicEvent, producingEntity, string.Concat("A ", toolEntity.EntityType.Name.ToLower(Config.Culture), " broke while ", producingEntity, " was working with it."));
+					The.Client.AddLogEvent(producingEntity.Intelligence.Allegiance, The.Client.Log.EconomicEvent, producingEntity, string.Format(UWGame.Locale.Text("A {0} broke while {1} was working with it."), toolEntity.EntityType.Name.ToLower(Config.Culture), producingEntity));
 				}
 				return false;
 			}

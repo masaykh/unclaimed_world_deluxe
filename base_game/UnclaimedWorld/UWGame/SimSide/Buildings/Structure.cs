@@ -56,11 +56,11 @@ public class Structure : Component
 	{
 		return State switch
 		{
-			StructureStates.PlacedButNotStarted => "Planned", 
-			StructureStates.UnderConstruction => "Under construction", 
-			StructureStates.ConstructionPaused => "Construction started", 
+			StructureStates.PlacedButNotStarted => UWGame.Locale.Text("Planned"), 
+			StructureStates.UnderConstruction => UWGame.Locale.Text("Under construction"), 
+			StructureStates.ConstructionPaused => UWGame.Locale.Text("Construction started"), 
 			StructureStates.Operational => "", 
-			StructureStates.Mothballed => "Mothballed", 
+			StructureStates.Mothballed => UWGame.Locale.Text("Mothballed"), 
 			_ => "", 
 		};
 	}

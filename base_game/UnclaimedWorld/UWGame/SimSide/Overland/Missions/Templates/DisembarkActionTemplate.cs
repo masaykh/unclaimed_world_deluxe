@@ -6,7 +6,7 @@ public class DisembarkActionTemplate : MissionActionTemplate
 {
 	public override string Name => TemplateName;
 
-	public static string TemplateName => "Disembark";
+	public static string TemplateName => UWGame.Locale.Text("Disembark");
 
 	public override ActionTypes ActionType => ActionTypes.Disembark;
 

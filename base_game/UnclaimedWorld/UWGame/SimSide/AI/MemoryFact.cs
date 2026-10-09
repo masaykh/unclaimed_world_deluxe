@@ -1058,7 +1058,7 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 			IsDeprecated = true;
 			if (!PartOfID.HasValue && detectingEntity != null && (EntityType.ItemType == null || !EntityType.Category.IsWaste))
 			{
-				string format = ((EntityType.IntelligenceType == null) ? "cannot see {0} where it used to be" : "no longer has {0} in view");
+				string format = ((EntityType.IntelligenceType == null) ? UWGame.Locale.Text("cannot see {0} where it used to be") : UWGame.Locale.Text("no longer has {0} in view"));
 				The.Client.AddLogEvent(detectingEntity.Intelligence.Allegiance, The.Client.Log.GeneralEvent, detectingEntity, string.Format(format, EntityType.Name.ToLower(Config.Culture)));
 			}
 			return true;

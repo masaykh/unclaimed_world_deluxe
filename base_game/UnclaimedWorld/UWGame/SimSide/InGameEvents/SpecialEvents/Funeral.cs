@@ -76,8 +76,8 @@ public class Funeral : ISnapshot
 			{
 				newValue2 = playerEntityDeath.CauseOfDeath.Value switch
 				{
-					CauseOfDeath.Starvation => " who perished from starvation", 
-					CauseOfDeath.Wounds => " who died from " + playerEntityDeath.HisHerIts + " wounds", 
+					CauseOfDeath.Starvation => UWGame.Locale.Text(" who perished from starvation"), 
+					CauseOfDeath.Wounds => playerEntityDeath.HisHerIts switch { "his" => UWGame.Locale.Text(" who died from his wounds"), "her" => UWGame.Locale.Text(" who died from her wounds"), _ => UWGame.Locale.Text(" who died from its wounds") }, 
 					_ => "", 
 				};
 			}

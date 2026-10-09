@@ -29,7 +29,7 @@ public class PatrolJob : CombatAreaJob
 
 	public override string GetName()
 	{
-		return "Patrolling";
+		return UWGame.Locale.Text("Patrolling");
 	}
 
 	public override void Destroy(bool removeTakers, Entity entityToExcludeFromCancel = null)

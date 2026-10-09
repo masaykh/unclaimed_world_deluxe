@@ -2066,6 +2066,14 @@ Click to see the list</Value>
 </Value>
   </String>
   <String>
+    <Key>(GUI)   Difference: </Key>
+    <Value>   Difference: </Value>
+  </String>
+  <String>
+    <Key>(GUI)   Personal conditions: </Key>
+    <Value>   Personal conditions: </Value>
+  </String>
+  <String>
     <Key>(GUI) (HIRED)</Key>
     <Value> (HIRED)</Value>
   </String>
@@ -2080,6 +2088,14 @@ Click to see the list</Value>
   <String>
     <Key>(GUI) BLK</Key>
     <Value> BLK</Value>
+  </String>
+  <String>
+    <Key>(GUI) The minimum required fuel is: </Key>
+    <Value> The minimum required fuel is: </Value>
+  </String>
+  <String>
+    <Key>(GUI) from {0}.</Key>
+    <Value> from {0}.</Value>
   </String>
   <String>
     <Key>(GUI) is no longer functional. It has a broken part.</Key>
@@ -2110,6 +2126,22 @@ Click to see the list</Value>
     <Value> items in inventory.</Value>
   </String>
   <String>
+    <Key>(GUI) who died from her wounds</Key>
+    <Value> who died from her wounds</Value>
+  </String>
+  <String>
+    <Key>(GUI) who died from his wounds</Key>
+    <Value> who died from his wounds</Value>
+  </String>
+  <String>
+    <Key>(GUI) who died from its wounds</Key>
+    <Value> who died from its wounds</Value>
+  </String>
+  <String>
+    <Key>(GUI) who perished from starvation</Key>
+    <Value> who perished from starvation</Value>
+  </String>
+  <String>
     <Key>(GUI)'ATTAINABLE': Also lists objects that can be made in the future, based on the resource types that have been discovered.</Key>
     <Value>'ATTAINABLE': Also lists objects that can be made in the future, based on the resource types that have been discovered.</Value>
   </String>
@@ -2120,6 +2152,10 @@ Click to see the list</Value>
   <String>
     <Key>(GUI)'ENCYCLOPEDIA': Shows all known blueprints of every item/process currently stored in the PPU</Key>
     <Value>'ENCYCLOPEDIA': Shows all known blueprints of every item/process currently stored in the PPU</Value>
+  </String>
+  <String>
+    <Key>(GUI)'Gather' tasks can only be cancelled using the 'gather' window at the zone location</Key>
+    <Value>'Gather' tasks can only be cancelled using the 'gather' window at the zone location</Value>
   </String>
   <String>
     <Key>(GUI)(Missing)</Key>
@@ -2170,6 +2206,10 @@ Click to see the list</Value>
     <Value>, panelHasData: </Value>
   </String>
   <String>
+    <Key>(GUI)- Principles: </Key>
+    <Value>- Principles: </Value>
+  </String>
+  <String>
     <Key>(GUI). Colonists will not eat these and workshops will not use them, unless someone is starving. </Key>
     <Value>. Colonists will not eat these and workshops will not use them, unless someone is starving. </Value>
   </String>
@@ -2214,8 +2254,36 @@ Click to see the list</Value>
     <Value>600 KM</Value>
   </String>
   <String>
+    <Key>(GUI)A character can only leave if all of the below are {0}:</Key>
+    <Value>A character can only leave if all of the below are {0}:</Value>
+  </String>
+  <String>
+    <Key>(GUI)A destination has not been selected</Key>
+    <Value>A destination has not been selected</Value>
+  </String>
+  <String>
+    <Key>(GUI)A starting location has not been selected</Key>
+    <Value>A starting location has not been selected</Value>
+  </String>
+  <String>
+    <Key>(GUI)A transport from {0} is on its way. ETA: {1}</Key>
+    <Value>A transport from {0} is on its way. ETA: {1}</Value>
+  </String>
+  <String>
+    <Key>(GUI)A vehicle has not been selected.</Key>
+    <Value>A vehicle has not been selected.</Value>
+  </String>
+  <String>
     <Key>(GUI)A worker with '{0}' skill is needed</Key>
     <Value>A worker with '{0}' skill is needed</Value>
+  </String>
+  <String>
+    <Key>(GUI)A {0} broke while {1} was using it.</Key>
+    <Value>A {0} broke while {1} was using it.</Value>
+  </String>
+  <String>
+    <Key>(GUI)A {0} broke while {1} was working with it.</Key>
+    <Value>A {0} broke while {1} was working with it.</Value>
   </String>
   <String>
     <Key>(GUI)ABANDON</Key>
@@ -2266,8 +2334,16 @@ Click to see the list</Value>
     <Value>ANIMALS</Value>
   </String>
   <String>
+    <Key>(GUI)ASSETS (what needs protection)</Key>
+    <Value>ASSETS (what needs protection)</Value>
+  </String>
+  <String>
     <Key>(GUI)ATTACK</Key>
     <Value>ATTACK</Value>
+  </String>
+  <String>
+    <Key>(GUI)ATTRACTION: </Key>
+    <Value>ATTRACTION: </Value>
   </String>
   <String>
     <Key>(GUI)ATTRIBUTES</Key>
@@ -2276,6 +2352,10 @@ Click to see the list</Value>
   <String>
     <Key>(GUI)AVAILABLE</Key>
     <Value>AVAILABLE</Value>
+  </String>
+  <String>
+    <Key>(GUI)AVERAGE: </Key>
+    <Value>AVERAGE: </Value>
   </String>
   <String>
     <Key>(GUI)Accepts the changes and closes the dialog.</Key>
@@ -2298,6 +2378,10 @@ Click to see the list</Value>
     <Value>Add Filter:</Value>
   </String>
   <String>
+    <Key>(GUI)Adopting {0}</Key>
+    <Value>Adopting {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)Affects comfort rating</Key>
     <Value>Affects comfort rating</Value>
   </String>
@@ -2312,6 +2396,10 @@ Click to see the list</Value>
   <String>
     <Key>(GUI)After increasing {0} to {1} the estimated time to reach majority is: {2}</Key>
     <Value>After increasing {0} to {1} the estimated time to reach majority is: {2}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Afternoon</Key>
+    <Value>Afternoon</Value>
   </String>
   <String>
     <Key>(GUI)All</Key>
@@ -2362,6 +2450,10 @@ Click to see the list</Value>
     <Value>Attack vermin</Value>
   </String>
   <String>
+    <Key>(GUI)Attacking</Key>
+    <Value>Attacking</Value>
+  </String>
+  <String>
     <Key>(GUI)Attainable from salvaging items or structures</Key>
     <Value>Attainable from salvaging items or structures</Value>
   </String>
@@ -2386,6 +2478,10 @@ Click to see the list</Value>
     <Value>Available: </Value>
   </String>
   <String>
+    <Key>(GUI)BASELINE</Key>
+    <Value>BASELINE</Value>
+  </String>
+  <String>
     <Key>(GUI)BEGIN</Key>
     <Value>BEGIN</Value>
   </String>
@@ -2406,6 +2502,10 @@ Click to see the list</Value>
     <Value>BULK</Value>
   </String>
   <String>
+    <Key>(GUI)Based on:</Key>
+    <Value>Based on:</Value>
+  </String>
+  <String>
     <Key>(GUI)Being tracked</Key>
     <Value>Being tracked</Value>
   </String>
@@ -2418,12 +2518,20 @@ Click to see the list</Value>
     <Value>Both width and height is required.</Value>
   </String>
   <String>
+    <Key>(GUI)Breaking in</Key>
+    <Value>Breaking in</Value>
+  </String>
+  <String>
     <Key>(GUI)Build: Click the button, then place the structure on the terrain</Key>
     <Value>Build: Click the button, then place the structure on the terrain</Value>
   </String>
   <String>
     <Key>(GUI)Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made</Key>
     <Value>Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made</Value>
+  </String>
+  <String>
+    <Key>(GUI)Buy</Key>
+    <Value>Buy</Value>
   </String>
   <String>
     <Key>(GUI)Buy is unavailable here:</Key>
@@ -2486,8 +2594,20 @@ Click to see the list</Value>
     <Value>CM</Value>
   </String>
   <String>
+    <Key>(GUI)COLONY COMFORT CONDITIONS</Key>
+    <Value>COLONY COMFORT CONDITIONS</Value>
+  </String>
+  <String>
+    <Key>(GUI)COLONY FOOD CONDITIONS</Key>
+    <Value>COLONY FOOD CONDITIONS</Value>
+  </String>
+  <String>
     <Key>(GUI)COLONY MEMBERS</Key>
     <Value>COLONY MEMBERS</Value>
+  </String>
+  <String>
+    <Key>(GUI)COLONY SECURITY CONDITIONS</Key>
+    <Value>COLONY SECURITY CONDITIONS</Value>
   </String>
   <String>
     <Key>(GUI)COMBAT</Key>
@@ -2502,12 +2622,20 @@ Click to see the list</Value>
     <Value>COMFORT LEVEL: {0}</Value>
   </String>
   <String>
+    <Key>(GUI)COMFORT NEEDS MET</Key>
+    <Value>COMFORT NEEDS MET</Value>
+  </String>
+  <String>
     <Key>(GUI)COMFORT:</Key>
     <Value>COMFORT:</Value>
   </String>
   <String>
     <Key>(GUI)COMMUNICATION</Key>
     <Value>COMMUNICATION</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMPARISON OF COLONY CONDITIONS: </Key>
+    <Value>COMPARISON OF COLONY CONDITIONS: </Value>
   </String>
   <String>
     <Key>(GUI)COMPLETION</Key>
@@ -2536,6 +2664,10 @@ Click to see the list</Value>
   <String>
     <Key>(GUI)CONTINUE</Key>
     <Value>CONTINUE</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONTINUE PLAYING</Key>
+    <Value>CONTINUE PLAYING</Value>
   </String>
   <String>
     <Key>(GUI)CONTINUE RUN</Key>
@@ -2578,6 +2710,18 @@ Click to see the list</Value>
     <Value>CUSTOM:</Value>
   </String>
   <String>
+    <Key>(GUI)Can complain</Key>
+    <Value>Can complain</Value>
+  </String>
+  <String>
+    <Key>(GUI)Can emigrate</Key>
+    <Value>Can emigrate</Value>
+  </String>
+  <String>
+    <Key>(GUI)Can emigrate.</Key>
+    <Value>Can emigrate.</Value>
+  </String>
+  <String>
     <Key>(GUI)Can only be built at a special location, by using its action menu</Key>
     <Value>Can only be built at a special location, by using its action menu</Value>
   </String>
@@ -2606,6 +2750,10 @@ Click to see the list</Value>
     <Value>Cannot cancel this ongoing task.</Value>
   </String>
   <String>
+    <Key>(GUI)Cannot emigrate.</Key>
+    <Value>Cannot emigrate.</Value>
+  </String>
+  <String>
     <Key>(GUI)Category view</Key>
     <Value>Category view</Value>
   </String>
@@ -2618,8 +2766,20 @@ Click to see the list</Value>
     <Value>Changes what a save contains: saves made with it on are marked MODDED.</Value>
   </String>
   <String>
+    <Key>(GUI)Character joined some time ago: </Key>
+    <Value>Character joined some time ago: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Character type can emigrate: </Key>
+    <Value>Character type can emigrate: </Value>
+  </String>
+  <String>
     <Key>(GUI)Check the box to allow the item to be stockpiled. This will override the category setting.</Key>
     <Value>Check the box to allow the item to be stockpiled. This will override the category setting.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Checking progress</Key>
+    <Value>Checking progress</Value>
   </String>
   <String>
     <Key>(GUI)Choose improvements for the structure</Key>
@@ -2798,12 +2958,36 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Colony {0} conditions</Value>
   </String>
   <String>
+    <Key>(GUI)Comfort</Key>
+    <Value>Comfort</Value>
+  </String>
+  <String>
     <Key>(GUI)Communication is established with this location.</Key>
     <Value>Communication is established with this location.</Value>
   </String>
   <String>
+    <Key>(GUI)Complains about {0} conditions: </Key>
+    <Value>Complains about {0} conditions: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Computing a new rating. (If paused, unpause the game)</Key>
+    <Value>Computing a new rating. (If paused, unpause the game)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Condition</Key>
+    <Value>Condition</Value>
+  </String>
+  <String>
+    <Key>(GUI)Constructing</Key>
+    <Value>Constructing</Value>
+  </String>
+  <String>
     <Key>(GUI)Construction of this upgrade was started but not finished. It cannot be used.</Key>
     <Value>Construction of this upgrade was started but not finished. It cannot be used.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Construction started</Key>
+    <Value>Construction started</Value>
   </String>
   <String>
     <Key>(GUI)Consumed</Key>
@@ -2840,6 +3024,10 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)Crop</Key>
     <Value>Crop</Value>
+  </String>
+  <String>
+    <Key>(GUI)Current condition: </Key>
+    <Value>Current condition: </Value>
   </String>
   <String>
     <Key>(GUI)Current demand: The amount of goods this site is willing to buy right now. This number may gradually rise.</Key>
@@ -2884,6 +3072,10 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>DATA:</Value>
   </String>
   <String>
+    <Key>(GUI)DATE: {0}.{1}.{2}</Key>
+    <Value>DATE: {0}.{1}.{2}</Value>
+  </String>
+  <String>
     <Key>(GUI)DAYS</Key>
     <Value>DAYS</Value>
   </String>
@@ -2894,6 +3086,10 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)DEFAULT KEYS</Key>
     <Value>DEFAULT KEYS</Value>
+  </String>
+  <String>
+    <Key>(GUI)DEFENDERS</Key>
+    <Value>DEFENDERS</Value>
   </String>
   <String>
     <Key>(GUI)DEGR.</Key>
@@ -2948,6 +3144,10 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>DURABILITY:</Value>
   </String>
   <String>
+    <Key>(GUI)Daily emigration risk: {0}</Key>
+    <Value>Daily emigration risk: {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)Dangerous area</Key>
     <Value>Dangerous area</Value>
   </String>
@@ -2962,6 +3162,10 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)Days left</Key>
     <Value>Days left</Value>
+  </String>
+  <String>
+    <Key>(GUI)Days left: </Key>
+    <Value>Days left: </Value>
   </String>
   <String>
     <Key>(GUI)Debug: {0} trade credits added.</Key>
@@ -2988,6 +3192,18 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Deletes this saved game file</Value>
   </String>
   <String>
+    <Key>(GUI)Detection</Key>
+    <Value>Detection</Value>
+  </String>
+  <String>
+    <Key>(GUI)Died from {0}.</Key>
+    <Value>Died from {0}.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Direct</Key>
+    <Value>Direct</Value>
+  </String>
+  <String>
     <Key>(GUI)Disappeared</Key>
     <Value>Disappeared</Value>
   </String>
@@ -3002,6 +3218,10 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)Discard the object</Key>
     <Value>Discard the object</Value>
+  </String>
+  <String>
+    <Key>(GUI)Disembark</Key>
+    <Value>Disembark</Value>
   </String>
   <String>
     <Key>(GUI)Display event archive</Key>
@@ -3028,6 +3248,10 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Distance: </Value>
   </String>
   <String>
+    <Key>(GUI)Divided by assets ({0}): {1}</Key>
+    <Value>Divided by assets ({0}): {1}</Value>
+  </String>
+  <String>
     <Key>(GUI)Do a combat sweep of the area, attacking any entities of the specified type (Required stance: Fearless)</Key>
     <Value>Do a combat sweep of the area, attacking any entities of the specified type (Required stance: Fearless)</Value>
   </String>
@@ -3036,12 +3260,32 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Do one or both of the following:</Value>
   </String>
   <String>
+    <Key>(GUI)Doing maintenance</Key>
+    <Value>Doing maintenance</Value>
+  </String>
+  <String>
     <Key>(GUI)Drag slider to specify amount to order.</Key>
     <Value>Drag slider to specify amount to order.</Value>
   </String>
   <String>
     <Key>(GUI)Drag slider to specify amount to produce.</Key>
     <Value>Drag slider to specify amount to produce.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Drinking</Key>
+    <Value>Drinking</Value>
+  </String>
+  <String>
+    <Key>(GUI)Durability profile: </Key>
+    <Value>Durability profile: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Dying</Key>
+    <Value>Dying</Value>
+  </String>
+  <String>
+    <Key>(GUI)EARTH DATE: {0}</Key>
+    <Value>EARTH DATE: {0}</Value>
   </String>
   <String>
     <Key>(GUI)EDIBLE BY HUMANS:</Key>
@@ -3092,6 +3336,10 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>EXIT</Value>
   </String>
   <String>
+    <Key>(GUI)EXIT SCENARIO</Key>
+    <Value>EXIT SCENARIO</Value>
+  </String>
+  <String>
     <Key>(GUI)EXPEDITION</Key>
     <Value>EXPEDITION</Value>
   </String>
@@ -3102,6 +3350,14 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)Eaten by creatures</Key>
     <Value>Eaten by creatures</Value>
+  </String>
+  <String>
+    <Key>(GUI)Eating</Key>
+    <Value>Eating</Value>
+  </String>
+  <String>
+    <Key>(GUI)Embark</Key>
+    <Value>Embark</Value>
   </String>
   <String>
     <Key>(GUI)Embark is unavailable here:</Key>
@@ -3120,8 +3376,24 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Estimated time of arrival at {0}{1}.</Value>
   </String>
   <String>
+    <Key>(GUI)Evening</Key>
+    <Value>Evening</Value>
+  </String>
+  <String>
     <Key>(GUI)Every key back to its default. Nothing is applied until OK.</Key>
     <Value>Every key back to its default. Nothing is applied until OK.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Examining</Key>
+    <Value>Examining</Value>
+  </String>
+  <String>
+    <Key>(GUI)Examining area</Key>
+    <Value>Examining area</Value>
+  </String>
+  <String>
+    <Key>(GUI)Exceeds max population! We do not accept that many newcomers!</Key>
+    <Value>Exceeds max population! We do not accept that many newcomers!</Value>
   </String>
   <String>
     <Key>(GUI)Expand all</Key>
@@ -3164,6 +3436,10 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>FULL SCREEN</Value>
   </String>
   <String>
+    <Key>(GUI)False</Key>
+    <Value>False</Value>
+  </String>
+  <String>
     <Key>(GUI)Female</Key>
     <Value>Female</Value>
   </String>
@@ -3180,12 +3456,28 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>File size:</Value>
   </String>
   <String>
+    <Key>(GUI)Finding prey</Key>
+    <Value>Finding prey</Value>
+  </String>
+  <String>
     <Key>(GUI)First select a transportation, then add actions to each stop.</Key>
     <Value>First select a transportation, then add actions to each stop.</Value>
   </String>
   <String>
+    <Key>(GUI)Fixing the integrity of the structure so it does not fall apart</Key>
+    <Value>Fixing the integrity of the structure so it does not fall apart</Value>
+  </String>
+  <String>
+    <Key>(GUI)Food</Key>
+    <Value>Food</Value>
+  </String>
+  <String>
     <Key>(GUI)Food production</Key>
     <Value>Food production</Value>
+  </String>
+  <String>
+    <Key>(GUI)For now, we can only embark passengers at other sites.</Key>
+    <Value>For now, we can only embark passengers at other sites.</Value>
   </String>
   <String>
     <Key>(GUI)For sale at </Key>
@@ -3240,8 +3532,16 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Gather all resources</Value>
   </String>
   <String>
+    <Key>(GUI)Guarding area</Key>
+    <Value>Guarding area</Value>
+  </String>
+  <String>
     <Key>(GUI)H:</Key>
     <Value>H:</Value>
+  </String>
+  <String>
+    <Key>(GUI)HAND WEAPONS</Key>
+    <Value>HAND WEAPONS</Value>
   </String>
   <String>
     <Key>(GUI)HARDWARE MODE SWITCH</Key>
@@ -3264,6 +3564,10 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>HIDE</Value>
   </String>
   <String>
+    <Key>(GUI)HIGH</Key>
+    <Value>HIGH</Value>
+  </String>
+  <String>
     <Key>(GUI)HISTORY</Key>
     <Value>HISTORY</Value>
   </String>
@@ -3276,8 +3580,36 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>HOUSEHOLD</Value>
   </String>
   <String>
+    <Key>(GUI)HOUSING: </Key>
+    <Value>HOUSING: </Value>
+  </String>
+  <String>
+    <Key>(GUI)HOUSING; AVG. COMFORT VALUE</Key>
+    <Value>HOUSING; AVG. COMFORT VALUE</Value>
+  </String>
+  <String>
     <Key>(GUI)HUNT</Key>
     <Value>HUNT</Value>
+  </String>
+  <String>
+    <Key>(GUI)Happiness: </Key>
+    <Value>Happiness: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Happy</Key>
+    <Value>Happy</Value>
+  </String>
+  <String>
+    <Key>(GUI)Harvesting</Key>
+    <Value>Harvesting</Value>
+  </String>
+  <String>
+    <Key>(GUI)Hauling</Key>
+    <Value>Hauling</Value>
+  </String>
+  <String>
+    <Key>(GUI)Hauling to storage</Key>
+    <Value>Hauling to storage</Value>
   </String>
   <String>
     <Key>(GUI)Hide search options</Key>
@@ -3304,8 +3636,24 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>How many days the current store will last</Value>
   </String>
   <String>
+    <Key>(GUI)How well the colony provides comfort and luxuries:</Key>
+    <Value>How well the colony provides comfort and luxuries:</Value>
+  </String>
+  <String>
+    <Key>(GUI)How well the colony provides food:</Key>
+    <Value>How well the colony provides food:</Value>
+  </String>
+  <String>
+    <Key>(GUI)How well the colony provides security:</Key>
+    <Value>How well the colony provides security:</Value>
+  </String>
+  <String>
     <Key>(GUI)Hunt this animal</Key>
     <Value>Hunt this animal</Value>
+  </String>
+  <String>
+    <Key>(GUI)Hunting</Key>
+    <Value>Hunting</Value>
   </String>
   <String>
     <Key>(GUI)IDs</Key>
@@ -3392,6 +3740,14 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>Info: </Value>
   </String>
   <String>
+    <Key>(GUI)Injured by {0}</Key>
+    <Value>Injured by {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Item storage</Key>
+    <Value>Item storage</Value>
+  </String>
+  <String>
     <Key>(GUI)Items</Key>
     <Value>Items</Value>
   </String>
@@ -3468,8 +3824,36 @@ NOTE: When adopting this policy, those who are against will have their principle
     <Value>LOCATION:</Value>
   </String>
   <String>
+    <Key>(GUI)LOW</Key>
+    <Value>LOW</Value>
+  </String>
+  <String>
+    <Key>(GUI)Large</Key>
+    <Value>Large</Value>
+  </String>
+  <String>
     <Key>(GUI)Last seen here</Key>
     <Value>Last seen here</Value>
+  </String>
+  <String>
+    <Key>(GUI)Late autumn</Key>
+    <Value>Late autumn</Value>
+  </String>
+  <String>
+    <Key>(GUI)Late spring</Key>
+    <Value>Late spring</Value>
+  </String>
+  <String>
+    <Key>(GUI)Late summer</Key>
+    <Value>Late summer</Value>
+  </String>
+  <String>
+    <Key>(GUI)Late winter</Key>
+    <Value>Late winter</Value>
+  </String>
+  <String>
+    <Key>(GUI)Leaving site</Key>
+    <Value>Leaving site</Value>
   </String>
   <String>
     <Key>(GUI)Left click to center on the selected entity. Right click to track the entity.</Key>
@@ -3478,6 +3862,10 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)List view</Key>
     <Value>List view</Value>
+  </String>
+  <String>
+    <Key>(GUI)Load</Key>
+    <Value>Load</Value>
   </String>
   <String>
     <Key>(GUI)Load replay</Key>
@@ -3510,6 +3898,10 @@ NOTE: When adopting this policy, those who are against will have their principle
   <String>
     <Key>(GUI)Locate and hunt prey in the zone.</Key>
     <Value>Locate and hunt prey in the zone.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Locating prey</Key>
+    <Value>Locating prey</Value>
   </String>
   <String>
     <Key>(GUI)Low</Key>
@@ -3644,6 +4036,10 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>MIGRTE FACTOR</Value>
   </String>
   <String>
+    <Key>(GUI)MINUTES</Key>
+    <Value>MINUTES</Value>
+  </String>
+  <String>
     <Key>(GUI)MISSIONS</Key>
     <Value>MISSIONS</Value>
   </String>
@@ -3670,6 +4066,10 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>(GUI)Made with modded content</Key>
     <Value>Made with modded content</Value>
+  </String>
+  <String>
+    <Key>(GUI)Maintenance tasks cannot be cancelled. Use Abandon on items or structures that are not needed.</Key>
+    <Value>Maintenance tasks cannot be cancelled. Use Abandon on items or structures that are not needed.</Value>
   </String>
   <String>
     <Key>(GUI)Make a thorough examination of the area to uncover hidden resources</Key>
@@ -3716,12 +4116,32 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Mean productivity</Value>
   </String>
   <String>
+    <Key>(GUI)Medium</Key>
+    <Value>Medium</Value>
+  </String>
+  <String>
+    <Key>(GUI)Members </Key>
+    <Value>Members </Value>
+  </String>
+  <String>
     <Key>(GUI)Members against:</Key>
     <Value>Members against:</Value>
   </String>
   <String>
     <Key>(GUI)Members for:</Key>
     <Value>Members for:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Mid autumn</Key>
+    <Value>Mid autumn</Value>
+  </String>
+  <String>
+    <Key>(GUI)Mid summer</Key>
+    <Value>Mid summer</Value>
+  </String>
+  <String>
+    <Key>(GUI)Mid winter</Key>
+    <Value>Mid winter</Value>
   </String>
   <String>
     <Key>(GUI)Middle</Key>
@@ -3742,6 +4162,22 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>(GUI)Modifier: </Key>
     <Value>Modifier: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Morale</Key>
+    <Value>Morale</Value>
+  </String>
+  <String>
+    <Key>(GUI)Morning</Key>
+    <Value>Morning</Value>
+  </String>
+  <String>
+    <Key>(GUI)Mothballed</Key>
+    <Value>Mothballed</Value>
+  </String>
+  <String>
+    <Key>(GUI)Moving home</Key>
+    <Value>Moving home</Value>
   </String>
   <String>
     <Key>(GUI)NAME</Key>
@@ -3784,6 +4220,10 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>NONE</Value>
   </String>
   <String>
+    <Key>(GUI)NORMAL</Key>
+    <Value>NORMAL</Value>
+  </String>
+  <String>
     <Key>(GUI)NOT READY</Key>
     <Value>NOT READY</Value>
   </String>
@@ -3808,6 +4248,10 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Name of product</Value>
   </String>
   <String>
+    <Key>(GUI)Need</Key>
+    <Value>Need</Value>
+  </String>
+  <String>
     <Key>(GUI)Needed amount</Key>
     <Value>Needed amount</Value>
   </String>
@@ -3822,6 +4266,14 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>(GUI)Next event</Key>
     <Value>Next event</Value>
+  </String>
+  <String>
+    <Key>(GUI)Night</Key>
+    <Value>Night</Value>
+  </String>
+  <String>
+    <Key>(GUI)Night sensor range</Key>
+    <Value>Night sensor range</Value>
   </String>
   <String>
     <Key>(GUI)No camp members can do this dangerous task (Required stance: Fearless)</Key>
@@ -3900,6 +4352,14 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>No terminal</Value>
   </String>
   <String>
+    <Key>(GUI)No transportation selected.</Key>
+    <Value>No transportation selected.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No valid route exists.</Key>
+    <Value>No valid route exists.</Value>
+  </String>
+  <String>
     <Key>(GUI)No vehicle available.</Key>
     <Value>No vehicle available.</Value>
   </String>
@@ -3920,8 +4380,20 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>No. of attackers:</Value>
   </String>
   <String>
+    <Key>(GUI)No. of colony members {0}</Key>
+    <Value>No. of colony members {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)No. of defenders {0},</Key>
+    <Value>No. of defenders {0},</Value>
+  </String>
+  <String>
     <Key>(GUI)No. of patrollers:</Key>
     <Value>No. of patrollers:</Value>
+  </String>
+  <String>
+    <Key>(GUI)No. of usable hand weapons {0} (max {1}),</Key>
+    <Value>No. of usable hand weapons {0} (max {1}),</Value>
   </String>
   <String>
     <Key>(GUI)None</Key>
@@ -3980,6 +4452,10 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Not available. The following policy needs to be enacted first: </Value>
   </String>
   <String>
+    <Key>(GUI)Not enough suitable fuel is available within a certain range to complete any of the tasks.</Key>
+    <Value>Not enough suitable fuel is available within a certain range to complete any of the tasks.</Value>
+  </String>
+  <String>
     <Key>(GUI)Not in inventory</Key>
     <Value>Not in inventory</Value>
   </String>
@@ -3988,12 +4464,28 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Not possible to set default priority for this task type</Value>
   </String>
   <String>
+    <Key>(GUI)Not present: </Key>
+    <Value>Not present: </Value>
+  </String>
+  <String>
     <Key>(GUI)Nothing can be sold here.</Key>
     <Value>Nothing can be sold here.</Value>
   </String>
   <String>
     <Key>(GUI)Nothing is available to buy.</Key>
     <Value>Nothing is available to buy.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Number of deaths: {0} in last {1}</Key>
+    <Value>Number of deaths: {0} in last {1}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Number of deaths: {0} in last {1} days</Key>
+    <Value>Number of deaths: {0} in last {1} days</Value>
+  </String>
+  <String>
+    <Key>(GUI)Number of injuries: {0} in last {1} days</Key>
+    <Value>Number of injuries: {0} in last {1} days</Value>
   </String>
   <String>
     <Key>(GUI)Nutrients</Key>
@@ -4028,6 +4520,10 @@ turns this off.</Value>
     <Value>OR</Value>
   </String>
   <String>
+    <Key>(GUI)ORDER: {0}</Key>
+    <Value>ORDER: {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)OTHER</Key>
     <Value>OTHER</Value>
   </String>
@@ -4050,6 +4546,10 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Offer | Demand</Key>
     <Value>Offer | Demand</Value>
+  </String>
+  <String>
+    <Key>(GUI)Offered comfort</Key>
+    <Value>Offered comfort</Value>
   </String>
   <String>
     <Key>(GUI)On foot</Key>
@@ -4104,6 +4604,10 @@ turns this off.</Value>
     <Value>Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.</Value>
   </String>
   <String>
+    <Key>(GUI)Our colony has more than one member: </Key>
+    <Value>Our colony has more than one member: </Value>
+  </String>
+  <String>
     <Key>(GUI)Overconsumed</Key>
     <Value>Overconsumed</Value>
   </String>
@@ -4122,6 +4626,26 @@ turns this off.</Value>
   <String>
     <Key>(GUI)PERSON DATA</Key>
     <Value>PERSON DATA</Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONAL CIRCUMSTANCES: </Key>
+    <Value>PERSONAL CIRCUMSTANCES: </Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONAL COMFORT CONDITIONS:</Key>
+    <Value>PERSONAL COMFORT CONDITIONS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONAL FOOD CONDITIONS:</Key>
+    <Value>PERSONAL FOOD CONDITIONS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONAL INTEREST: </Key>
+    <Value>PERSONAL INTEREST: </Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONAL SECURITY CONDITIONS:</Key>
+    <Value>PERSONAL SECURITY CONDITIONS:</Value>
   </String>
   <String>
     <Key>(GUI)PERSONNEL</Key>
@@ -4152,12 +4676,20 @@ turns this off.</Value>
     <Value>PRDCTIV.</Value>
   </String>
   <String>
+    <Key>(GUI)PRESENT: {0}</Key>
+    <Value>PRESENT: {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)PRESS A KEY...</Key>
     <Value>PRESS A KEY...</Value>
   </String>
   <String>
     <Key>(GUI)PRICE</Key>
     <Value>PRICE</Value>
+  </String>
+  <String>
+    <Key>(GUI)PRINCIPLES (Vertical marker): </Key>
+    <Value>PRINCIPLES (Vertical marker): </Value>
   </String>
   <String>
     <Key>(GUI)PRIORITY</Key>
@@ -4188,6 +4720,14 @@ turns this off.</Value>
     <Value>Patrol the zone continously and engage any threats that appear (Required stance: Fearless)</Value>
   </String>
   <String>
+    <Key>(GUI)Patrolling</Key>
+    <Value>Patrolling</Value>
+  </String>
+  <String>
+    <Key>(GUI)Patrolling area</Key>
+    <Value>Patrolling area</Value>
+  </String>
+  <String>
     <Key>(GUI)Pause the game</Key>
     <Value>Pause the game</Value>
   </String>
@@ -4204,8 +4744,28 @@ turns this off.</Value>
     <Value>Place map assets</Value>
   </String>
   <String>
+    <Key>(GUI)Plains</Key>
+    <Value>Plains</Value>
+  </String>
+  <String>
+    <Key>(GUI)Planned</Key>
+    <Value>Planned</Value>
+  </String>
+  <String>
     <Key>(GUI)Please enter a name for the new save file.</Key>
     <Value>Please enter a name for the new save file.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Policy area: {0}</Key>
+    <Value>Policy area: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Preferred migration target:  {0}</Key>
+    <Value>Preferred migration target:  {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Prepared food items </Key>
+    <Value>Prepared food items </Value>
   </String>
   <String>
     <Key>(GUI)Previous event</Key>
@@ -4226,6 +4786,10 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Production</Key>
     <Value>Production</Value>
+  </String>
+  <String>
+    <Key>(GUI)Production tasks can only be cancelled in the production manager panel</Key>
+    <Value>Production tasks can only be cancelled in the production manager panel</Value>
   </String>
   <String>
     <Key>(GUI)Productivity</Key>
@@ -4256,6 +4820,22 @@ turns this off.</Value>
     <Value>RANGE:</Value>
   </String>
   <String>
+    <Key>(GUI)RECENT DEATHS</Key>
+    <Value>RECENT DEATHS</Value>
+  </String>
+  <String>
+    <Key>(GUI)RECENT HUNGER DEATHS</Key>
+    <Value>RECENT HUNGER DEATHS</Value>
+  </String>
+  <String>
+    <Key>(GUI)RECENT INJURIES</Key>
+    <Value>RECENT INJURIES</Value>
+  </String>
+  <String>
+    <Key>(GUI)RECORDED BY: {0}</Key>
+    <Value>RECORDED BY: {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)REQUIRED SKILL:</Key>
     <Value>REQUIRED SKILL:</Value>
   </String>
@@ -4280,6 +4860,10 @@ turns this off.</Value>
     <Value>ROBOTS</Value>
   </String>
   <String>
+    <Key>(GUI)Radio</Key>
+    <Value>Radio</Value>
+  </String>
+  <String>
     <Key>(GUI)Ranged weapon needed</Key>
     <Value>Ranged weapon needed</Value>
   </String>
@@ -4290,6 +4874,10 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Rating of the number and quality of hand weapons available (in proportion to the colony size), the number and quality of defenders, and the occurrance of attacks by wildlife.</Key>
     <Value>Rating of the number and quality of hand weapons available (in proportion to the colony size), the number and quality of defenders, and the occurrance of attacks by wildlife.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Reconditioning</Key>
+    <Value>Reconditioning</Value>
   </String>
   <String>
     <Key>(GUI)Regrowth</Key>
@@ -4310,6 +4898,26 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Remove the stockpile</Key>
     <Value>Remove the stockpile</Value>
+  </String>
+  <String>
+    <Key>(GUI)Repairing a '{0}' part to improve its condition.</Key>
+    <Value>Repairing a '{0}' part to improve its condition.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Repairing a part to improve its condition.</Key>
+    <Value>Repairing a part to improve its condition.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Repairing integrity</Key>
+    <Value>Repairing integrity</Value>
+  </String>
+  <String>
+    <Key>(GUI)Replenish tasks cannot be cancelled. Use Abandon on items or structures that are not needed.</Key>
+    <Value>Replenish tasks cannot be cancelled. Use Abandon on items or structures that are not needed.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Represents basic needs such as shelter against the environment, prevention of disease as well as other needs like entertainment and luxury items.</Key>
+    <Value>Represents basic needs such as shelter against the environment, prevention of disease as well as other needs like entertainment and luxury items.</Value>
   </String>
   <String>
     <Key>(GUI)Requires 64 bit, not available under 32 bit.</Key>
@@ -4338,6 +4946,10 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Return to the main menu</Key>
     <Value>Return to the main menu</Value>
+  </String>
+  <String>
+    <Key>(GUI)Returning home</Key>
+    <Value>Returning home</Value>
   </String>
   <String>
     <Key>(GUI)S BRUSH</Key>
@@ -4388,6 +5000,14 @@ turns this off.</Value>
     <Value>SEX:</Value>
   </String>
   <String>
+    <Key>(GUI)SEX: Female</Key>
+    <Value>SEX: Female</Value>
+  </String>
+  <String>
+    <Key>(GUI)SEX: Male</Key>
+    <Value>SEX: Male</Value>
+  </String>
+  <String>
     <Key>(GUI)SHOW</Key>
     <Value>SHOW</Value>
   </String>
@@ -4420,6 +5040,10 @@ turns this off.</Value>
     <Value>SPECIAL LOCATION:</Value>
   </String>
   <String>
+    <Key>(GUI)SPECIES: {0}</Key>
+    <Value>SPECIES: {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)SPEED:</Key>
     <Value>SPEED:</Value>
   </String>
@@ -4448,6 +5072,10 @@ turns this off.</Value>
     <Value>START:</Value>
   </String>
   <String>
+    <Key>(GUI)STARVING</Key>
+    <Value>STARVING</Value>
+  </String>
+  <String>
     <Key>(GUI)STATS</Key>
     <Value>STATS</Value>
   </String>
@@ -4466,6 +5094,14 @@ turns this off.</Value>
   <String>
     <Key>(GUI)STOCKPILE</Key>
     <Value>STOCKPILE</Value>
+  </String>
+  <String>
+    <Key>(GUI)STOCKPILED FOOD</Key>
+    <Value>STOCKPILED FOOD</Value>
+  </String>
+  <String>
+    <Key>(GUI)STOP</Key>
+    <Value>STOP</Value>
   </String>
   <String>
     <Key>(GUI)STORAGE:</Key>
@@ -4494,6 +5130,14 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.</Key>
     <Value>Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Salvaging</Key>
+    <Value>Salvaging</Value>
+  </String>
+  <String>
+    <Key>(GUI)Satellite</Key>
+    <Value>Satellite</Value>
   </String>
   <String>
     <Key>(GUI)Save</Key>
@@ -4540,6 +5184,10 @@ turns this off.</Value>
     <Value>Scenario:</Value>
   </String>
   <String>
+    <Key>(GUI)Scouting</Key>
+    <Value>Scouting</Value>
+  </String>
+  <String>
     <Key>(GUI)Screenbounds is null</Key>
     <Value>Screenbounds is null</Value>
   </String>
@@ -4554,6 +5202,14 @@ turns this off.</Value>
   <String>
     <Key>(GUI)Search term: '{0}' The search text cannot be changed when the search button is active.</Key>
     <Value>Search term: '{0}' The search text cannot be changed when the search button is active.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Searching area</Key>
+    <Value>Searching area</Value>
+  </String>
+  <String>
+    <Key>(GUI)Security</Key>
+    <Value>Security</Value>
   </String>
   <String>
     <Key>(GUI)See general data/info about this</Key>
@@ -4678,6 +5334,10 @@ When all threats are eliminated, the task will be canceled automatically</Value>
   <String>
     <Key>(GUI)Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.</Key>
     <Value>Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Sell</Key>
+    <Value>Sell</Value>
   </String>
   <String>
     <Key>(GUI)Sell at </Key>
@@ -4862,6 +5522,14 @@ Structures can have their lifespan extended with regular maintenance. Items CANN
     <Value>Skill: </Value>
   </String>
   <String>
+    <Key>(GUI)Sleeping</Key>
+    <Value>Sleeping</Value>
+  </String>
+  <String>
+    <Key>(GUI)Small</Key>
+    <Value>Small</Value>
+  </String>
+  <String>
     <Key>(GUI)Soil</Key>
     <Value>Soil</Value>
   </String>
@@ -4882,6 +5550,10 @@ Structures can have their lifespan extended with regular maintenance. Items CANN
     <Value>Some members are busy or sleeping. Everyone must be able to participate in the vote.</Value>
   </String>
   <String>
+    <Key>(GUI)Some of the items ordered at {0} are no longer valid. Review the order.</Key>
+    <Value>Some of the items ordered at {0} are no longer valid. Review the order.</Value>
+  </String>
+  <String>
     <Key>(GUI)Sort by:</Key>
     <Value>Sort by:</Value>
   </String>
@@ -4898,14 +5570,34 @@ Structures can have their lifespan extended with regular maintenance. Items CANN
     <Value>Spoiled/degraded into waste</Value>
   </String>
   <String>
+    <Key>(GUI)Spring</Key>
+    <Value>Spring</Value>
+  </String>
+  <String>
+    <Key>(GUI)Stalking a building</Key>
+    <Value>Stalking a building</Value>
+  </String>
+  <String>
     <Key>(GUI)Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. 
 Click to switch back to direct order mode.</Key>
     <Value>Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. 
 Click to switch back to direct order mode.</Value>
   </String>
   <String>
+    <Key>(GUI)Start of autumn</Key>
+    <Value>Start of autumn</Value>
+  </String>
+  <String>
     <Key>(GUI)Start of spring</Key>
     <Value>Start of spring</Value>
+  </String>
+  <String>
+    <Key>(GUI)Start of summer</Key>
+    <Value>Start of summer</Value>
+  </String>
+  <String>
+    <Key>(GUI)Start of winter</Key>
+    <Value>Start of winter</Value>
   </String>
   <String>
     <Key>(GUI)Start the game</Key>
@@ -4918,6 +5610,10 @@ Click to switch back to direct order mode.</Value>
   <String>
     <Key>(GUI)Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.</Key>
     <Value>Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Stealth</Key>
+    <Value>Stealth</Value>
   </String>
   <String>
     <Key>(GUI)Stockpile everything in this category</Key>
@@ -4940,12 +5636,28 @@ Click to switch back to direct order mode.</Value>
     <Value>Storage </Value>
   </String>
   <String>
+    <Key>(GUI)Storage: </Key>
+    <Value>Storage: </Value>
+  </String>
+  <String>
     <Key>(GUI)Stored</Key>
     <Value>Stored</Value>
   </String>
   <String>
     <Key>(GUI)Structures</Key>
     <Value>Structures</Value>
+  </String>
+  <String>
+    <Key>(GUI)Subscore: </Key>
+    <Value>Subscore: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Subscore: +</Key>
+    <Value>Subscore: +</Value>
+  </String>
+  <String>
+    <Key>(GUI)Subscore: -</Key>
+    <Value>Subscore: -</Value>
   </String>
   <String>
     <Key>(GUI)Switch to standing order mode.</Key>
@@ -5158,8 +5870,16 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>The area overlaps with an existing stockpile</Value>
   </String>
   <String>
+    <Key>(GUI)The bar shows the relation between the person's</Key>
+    <Value>The bar shows the relation between the person's</Value>
+  </String>
+  <String>
     <Key>(GUI)The base comfort level when in perfect condition, and without upgrades</Key>
     <Value>The base comfort level when in perfect condition, and without upgrades</Value>
+  </String>
+  <String>
+    <Key>(GUI)The colony has room for more: </Key>
+    <Value>The colony has room for more: </Value>
   </String>
   <String>
     <Key>(GUI)The colony rating has to reach </Key>
@@ -5178,6 +5898,10 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>The cost of transportation / km</Value>
   </String>
   <String>
+    <Key>(GUI)The display is out of date. Please try again.</Key>
+    <Value>The display is out of date. Please try again.</Value>
+  </String>
+  <String>
     <Key>(GUI)The following ammunition type is required. 
 NOTE: A ranged weapon will not count in the colony Security rating unless it has ammunition available.</Key>
     <Value>The following ammunition type is required. 
@@ -5186,6 +5910,14 @@ NOTE: A ranged weapon will not count in the colony Security rating unless it has
   <String>
     <Key>(GUI)The following members are not ready to vote right now:</Key>
     <Value>The following members are not ready to vote right now:</Value>
+  </String>
+  <String>
+    <Key>(GUI)The following members now have {0} principles raised to {1}: </Key>
+    <Value>The following members now have {0} principles raised to {1}: </Value>
+  </String>
+  <String>
+    <Key>(GUI)The following policy needs to be enacted first: {0}</Key>
+    <Value>The following policy needs to be enacted first: {0}</Value>
   </String>
   <String>
     <Key>(GUI)The following structures can be upgraded with this item (using the UPGRADE action)</Key>
@@ -5202,6 +5934,10 @@ NOTE: A ranged weapon will not count in the colony Security rating unless it has
   <String>
     <Key>(GUI)The mission can be reached with the communication equipment ({0}) that is currently deployed</Key>
     <Value>The mission can be reached with the communication equipment ({0}) that is currently deployed</Value>
+  </String>
+  <String>
+    <Key>(GUI)The mission has no purpose, try adding some actions.</Key>
+    <Value>The mission has no purpose, try adding some actions.</Value>
   </String>
   <String>
     <Key>(GUI)The number of days the object will last when exposed to this condition. 
@@ -5222,6 +5958,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>The person's rating of our colony.</Value>
   </String>
   <String>
+    <Key>(GUI)The person's satisfaction with their living situation.</Key>
+    <Value>The person's satisfaction with their living situation.</Value>
+  </String>
+  <String>
     <Key>(GUI)The person's willingness to join our colony. 
 </Key>
     <Value>The person's willingness to join our colony. 
@@ -5238,6 +5978,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>(GUI)The resulting effects</Key>
     <Value>The resulting effects</Value>
+  </String>
+  <String>
+    <Key>(GUI)The safety of the colony or individual against living threats, human or alien.</Key>
+    <Value>The safety of the colony or individual against living threats, human or alien.</Value>
   </String>
   <String>
     <Key>(GUI)The slider sets the reserve. Click the button again to go back to ordering.</Key>
@@ -5276,8 +6020,28 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>The task is located in a dangerous spot. Suggestion: First secure the area with PATROL/ATTACK zones. Use the THREAT overlay (next to the minimap) to highlight dangerous areas.</Value>
   </String>
   <String>
+    <Key>(GUI)The terminal does not support trading.</Key>
+    <Value>The terminal does not support trading.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The terminal is not in a working state.</Key>
+    <Value>The terminal is not in a working state.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The terminal is not owned by us.</Key>
+    <Value>The terminal is not owned by us.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The terminal is owned by us.</Key>
+    <Value>The terminal is owned by us.</Value>
+  </String>
+  <String>
     <Key>(GUI)The terminal no longer exists. It is not possible to continue browsing the items.</Key>
     <Value>The terminal no longer exists. It is not possible to continue browsing the items.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The total cost is more than we can afford.</Key>
+    <Value>The total cost is more than we can afford.</Value>
   </String>
   <String>
     <Key>(GUI)The total cost of the mission.</Key>
@@ -5342,6 +6106,14 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>(GUI)They will slowly change their principles above the rating.</Key>
     <Value>They will slowly change their principles above the rating.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Thinking of leaving for this reason: </Key>
+    <Value>Thinking of leaving for this reason: </Value>
+  </String>
+  <String>
+    <Key>(GUI)This area covers food availability, stock size, hunger risk and variety.</Key>
+    <Value>This area covers food availability, stock size, hunger risk and variety.</Value>
   </String>
   <String>
     <Key>(GUI)This cannot be selected as a starting location since there is no transportation currently available from this site.</Key>
@@ -5428,6 +6200,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Too far away from camp</Value>
   </String>
   <String>
+    <Key>(GUI)Too much cargo.</Key>
+    <Value>Too much cargo.</Value>
+  </String>
+  <String>
     <Key>(GUI)Tools are broken and unusable</Key>
     <Value>Tools are broken and unusable</Value>
   </String>
@@ -5472,6 +6248,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Total productivity: </Value>
   </String>
   <String>
+    <Key>(GUI)Total: </Key>
+    <Value>Total: </Value>
+  </String>
+  <String>
     <Key>(GUI)Track TOOLS that can be USED TO CREATE this object</Key>
     <Value>Track TOOLS that can be USED TO CREATE this object</Value>
   </String>
@@ -5488,8 +6268,20 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Track this item/structure</Value>
   </String>
   <String>
+    <Key>(GUI)Trade storage</Key>
+    <Value>Trade storage</Value>
+  </String>
+  <String>
     <Key>(GUI)Transport cost: </Key>
     <Value>Transport cost: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Transportation: </Key>
+    <Value>Transportation: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Travel</Key>
+    <Value>Travel</Value>
   </String>
   <String>
     <Key>(GUI)Travelling</Key>
@@ -5498,6 +6290,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>(GUI)Trees</Key>
     <Value>Trees</Value>
+  </String>
+  <String>
+    <Key>(GUI)True</Key>
+    <Value>True</Value>
   </String>
   <String>
     <Key>(GUI)Type</Key>
@@ -5544,12 +6340,32 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Unable to do this, because the zone is not continuous</Value>
   </String>
   <String>
+    <Key>(GUI)Under construction</Key>
+    <Value>Under construction</Value>
+  </String>
+  <String>
+    <Key>(GUI)Unhappy</Key>
+    <Value>Unhappy</Value>
+  </String>
+  <String>
+    <Key>(GUI)Unload</Key>
+    <Value>Unload</Value>
+  </String>
+  <String>
     <Key>(GUI)Unpin this window so it will be hidden as normal</Key>
     <Value>Unpin this window so it will be hidden as normal</Value>
   </String>
   <String>
     <Key>(GUI)Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK.</Key>
     <Value>Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Upgrade tasks can only be cancelled in the upgrade window (accessed from the structure's 'UPGRADE' button)</Key>
+    <Value>Upgrade tasks can only be cancelled in the upgrade window (accessed from the structure's 'UPGRADE' button)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Upgrading</Key>
+    <Value>Upgrading</Value>
   </String>
   <String>
     <Key>(GUI)Usable as weapon</Key>
@@ -5578,6 +6394,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>(GUI)Used in production</Key>
     <Value>Used in production</Value>
+  </String>
+  <String>
+    <Key>(GUI)Used percentage: </Key>
+    <Value>Used percentage: </Value>
   </String>
   <String>
     <Key>(GUI)VERMIN</Key>
@@ -5628,6 +6448,18 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>View the world map</Value>
   </String>
   <String>
+    <Key>(GUI)Visual</Key>
+    <Value>Visual</Value>
+  </String>
+  <String>
+    <Key>(GUI)Vote against: </Key>
+    <Value>Vote against: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Vote for: </Key>
+    <Value>Vote for: </Value>
+  </String>
+  <String>
     <Key>(GUI)W:</Key>
     <Value>W:</Value>
   </String>
@@ -5660,6 +6492,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>WEIGHT:</Value>
   </String>
   <String>
+    <Key>(GUI)WEIGHTED TOTAL: </Key>
+    <Value>WEIGHTED TOTAL: </Value>
+  </String>
+  <String>
     <Key>(GUI)WITR</Key>
     <Value>WITR</Value>
   </String>
@@ -5672,8 +6508,20 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>WORLD MAP</Value>
   </String>
   <String>
+    <Key>(GUI)Wants improvements to {0} conditions: </Key>
+    <Value>Wants improvements to {0} conditions: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Warning: Slowdown detected. Average agent waiting time: {0:N1}s</Key>
+    <Value>Warning: Slowdown detected. Average agent waiting time: {0:N1}s</Value>
+  </String>
+  <String>
     <Key>(GUI)Warning: Steam has not initialized correctly. Achievements cannot be unlocked in this session!</Key>
     <Value>Warning: Steam has not initialized correctly. Achievements cannot be unlocked in this session!</Value>
+  </String>
+  <String>
+    <Key>(GUI)Water</Key>
+    <Value>Water</Value>
   </String>
   <String>
     <Key>(GUI)We are not in communication with the mission.</Key>
@@ -5780,6 +6628,26 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Zone is null</Value>
   </String>
   <String>
+    <Key>(GUI)and their personal experience of comfort</Key>
+    <Value>and their personal experience of comfort</Value>
+  </String>
+  <String>
+    <Key>(GUI)and their personal experience of food conditions</Key>
+    <Value>and their personal experience of food conditions</Value>
+  </String>
+  <String>
+    <Key>(GUI)and their personal experience of security conditions</Key>
+    <Value>and their personal experience of security conditions</Value>
+  </String>
+  <String>
+    <Key>(GUI)cannot see {0} where it used to be</Key>
+    <Value>cannot see {0} where it used to be</Value>
+  </String>
+  <String>
+    <Key>(GUI)combined Security rating {0}</Key>
+    <Value>combined Security rating {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)customPanel.Category name: </Key>
     <Value>customPanel.Category name: </Value>
   </String>
@@ -5788,8 +6656,48 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()</Value>
   </String>
   <String>
+    <Key>(GUI)finished producing {0}</Key>
+    <Value>finished producing {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)goes to sleep</Key>
+    <Value>goes to sleep</Value>
+  </String>
+  <String>
+    <Key>(GUI)has died from {0}.</Key>
+    <Value>has died from {0}.</Value>
+  </String>
+  <String>
+    <Key>(GUI)has given up chasing {0}.</Key>
+    <Value>has given up chasing {0}.</Value>
+  </String>
+  <String>
     <Key>(GUI)has spotted {0}</Key>
     <Value>has spotted {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)her wounds</Key>
+    <Value>her wounds</Value>
+  </String>
+  <String>
+    <Key>(GUI)his wounds</Key>
+    <Value>his wounds</Value>
+  </String>
+  <String>
+    <Key>(GUI)hit {0} on the {1} for 0 damage. {2} gave protection.</Key>
+    <Value>hit {0} on the {1} for 0 damage. {2} gave protection.</Value>
+  </String>
+  <String>
+    <Key>(GUI)hit {0} on the {1} for {2} damage.</Key>
+    <Value>hit {0} on the {1} for {2} damage.</Value>
+  </String>
+  <String>
+    <Key>(GUI)is attacking {0}!</Key>
+    <Value>is attacking {0}!</Value>
+  </String>
+  <String>
+    <Key>(GUI)its wounds</Key>
+    <Value>its wounds</Value>
   </String>
   <String>
     <Key>(GUI)max.</Key>
@@ -5798,6 +6706,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>(GUI)mb</Key>
     <Value>mb</Value>
+  </String>
+  <String>
+    <Key>(GUI)no longer has {0} in view</Key>
+    <Value>no longer has {0} in view</Value>
   </String>
   <String>
     <Key>(GUI)not installed</Key>
@@ -5812,8 +6724,20 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>nothing - a stock save</Value>
   </String>
   <String>
+    <Key>(GUI)starvation</Key>
+    <Value>starvation</Value>
+  </String>
+  <String>
     <Key>(GUI)stops chasing vermin: {0} threatens the colony.</Key>
     <Value>stops chasing vermin: {0} threatens the colony.</Value>
+  </String>
+  <String>
+    <Key>(GUI)unknown causes</Key>
+    <Value>unknown causes</Value>
+  </String>
+  <String>
+    <Key>(GUI)wakes up</Key>
+    <Value>wakes up</Value>
   </String>
   <String>
     <Key>(GUI)was killed by {0}.</Key>
@@ -5832,8 +6756,28 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>{0:N1} km</Value>
   </String>
   <String>
+    <Key>(GUI){0} days</Key>
+    <Value>{0} days</Value>
+  </String>
+  <String>
+    <Key>(GUI){0} is not willing to embark now.</Key>
+    <Value>{0} is not willing to embark now.</Value>
+  </String>
+  <String>
+    <Key>(GUI){0} is the wrong terminal type for this vehicle.</Key>
+    <Value>{0} is the wrong terminal type for this vehicle.</Value>
+  </String>
+  <String>
     <Key>(GUI){0} must first be selected, then the item can be built from the action menu</Key>
     <Value>{0} must first be selected, then the item can be built from the action menu</Value>
+  </String>
+  <String>
+    <Key>(GUI){0} tier (any area)</Key>
+    <Value>{0} tier (any area)</Value>
+  </String>
+  <String>
+    <Key>(GUI){0} years, {1} days</Key>
+    <Value>{0} years, {1} days</Value>
   </String>
   <String>
     <Key>(GUI){0}: Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.</Key>

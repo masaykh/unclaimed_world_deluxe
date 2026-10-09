@@ -84,14 +84,14 @@ public class EmigrateDecider : StrategyDecider, ISnapshot
 	public string GetMigrateRiskTooltip()
 	{
 		string text = null;
-		text = "Daily emigration risk: " + Common.PercentageToString(MigrationRisk);
+		text = string.Format(UWGame.Locale.Text("Daily emigration risk: {0}"), Common.PercentageToString(MigrationRisk));
 		if (PreferredMigrationTarget.HasValue)
 		{
 			Allegiance allegiance = LookUp<Allegiance, AllegianceID>.FindByID(PreferredMigrationTarget);
 			if (allegiance != null)
 			{
 				AllegianceRatings ratingsForAllegiance = parent.Intelligence.GetRatingsForAllegiance(allegiance.ID);
-				text = text + " \nPreferred migration target:  " + allegiance.Site.Name;
+				text = text + " \n" + string.Format(UWGame.Locale.Text("Preferred migration target:  {0}"), allegiance.Site.Name);
 				text = text + " \n" + ratingsForAllegiance.Breakdown;
 			}
 		}
@@ -114,29 +114,29 @@ public class EmigrateDecider : StrategyDecider, ISnapshot
 		StringBuilder stringBuilder = new StringBuilder();
 		if (num)
 		{
-			Common.AppendLine(stringBuilder, "Can emigrate.");
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("Can emigrate."));
 		}
 		else
 		{
-			Common.AppendLine(stringBuilder, "Cannot emigrate.");
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("Cannot emigrate."));
 		}
 		Common.AppendLine(stringBuilder);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "A character can only leave if all of the below are " + Common.BoolToString(value: true, useColor: true) + ":");
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("A character can only leave if all of the below are {0}:"), Common.BoolToString(value: true, useColor: true)));
 		Common.AppendLine(stringBuilder);
 		if (!typeCanEmigrate)
 		{
-			stringBuilder.Append("Character type can emigrate: ");
+			stringBuilder.Append(UWGame.Locale.Text("Character type can emigrate: "));
 			Common.AppendLine(stringBuilder, Common.BoolToString(typeCanEmigrate, useColor: true));
 		}
 		if (isOverTargetPopCap)
 		{
-			stringBuilder.Append("The colony has room for more: ");
+			stringBuilder.Append(UWGame.Locale.Text("The colony has room for more: "));
 			Common.AppendLine(stringBuilder, Common.BoolToString(!isOverTargetPopCap, useColor: true));
 		}
-		stringBuilder.Append("Our colony has more than one member: ");
+		stringBuilder.Append(UWGame.Locale.Text("Our colony has more than one member: "));
 		Common.AppendLine(stringBuilder, Common.BoolToString(!isOnlyMember, useColor: true));
-		stringBuilder.Append("Character joined some time ago: ");
+		stringBuilder.Append(UWGame.Locale.Text("Character joined some time ago: "));
 		Common.AppendLine(stringBuilder, Common.BoolToString(!recentlyJoined, useColor: true));
 		foreach (Tuple<string, bool> item in list)
 		{

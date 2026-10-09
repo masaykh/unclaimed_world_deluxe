@@ -1470,7 +1470,7 @@ public class Sim : GameScreen, ISnapshot
 			double num = The.Sim.WaitingAgents.Average((KeyValuePair<EntityID, Tuple<WaitingFor, double>> a) => TotalUnPausedGameTimeInSeconds - a.Value.Item2);
 			if (num > (double)GameData.Instance.Constants.AverageAgentWatingTimeToTriggerAlert && base.Controller.Options.ShowPerformanceWarning)
 			{
-				The.Client.AddLogEvent(The.Client.Log.GeneralEvent, null, $"Warning: Slowdown detected. Average agent waiting time: {num:N1}s", UWGame.ClientSide.Log.Priority.High);
+				The.Client.AddLogEvent(The.Client.Log.GeneralEvent, null, string.Format(UWGame.Locale.Text("Warning: Slowdown detected. Average agent waiting time: {0:N1}s"), num), UWGame.ClientSide.Log.Priority.High);
 			}
 		}
 	}

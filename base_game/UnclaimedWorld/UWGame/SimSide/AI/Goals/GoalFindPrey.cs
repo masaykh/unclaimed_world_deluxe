@@ -77,7 +77,7 @@ internal class GoalFindPrey : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Locating prey";
+		return UWGame.Locale.Text("Locating prey");
 	}
 
 	public override DetectionFactor GetDetectAgentsFactor(EntityType typeOfAgent, bool requiresExamineAction)

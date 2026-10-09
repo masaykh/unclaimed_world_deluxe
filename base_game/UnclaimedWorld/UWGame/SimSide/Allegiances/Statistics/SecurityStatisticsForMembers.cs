@@ -46,12 +46,12 @@ public class SecurityStatisticsForMembers : SecurityStatistics
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		Security security = GameData.Instance.AIConstants.Ratings.Security;
-		Common.AppendLine(stringBuilder, "and their personal experience of security conditions");
-		AppendComponent(stringBuilder, "PERSONAL SECURITY CONDITIONS:", rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("and their personal experience of security conditions"));
+		AppendComponent(stringBuilder, UWGame.Locale.Text("PERSONAL SECURITY CONDITIONS:"), rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		AppendComponent(stringBuilder, "COLONY SECURITY CONDITIONS", sharedSecurity, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		AppendComponent(stringBuilder, UWGame.Locale.Text("COLONY SECURITY CONDITIONS"), sharedSecurity, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		ComposeDeathsBreakdown(noOfMembers, injuries, deaths, finalInjuryContribution, finalDeathsContribution, stringBuilder, security);
 		ratingsBreakdown = stringBuilder.ToString();
 	}

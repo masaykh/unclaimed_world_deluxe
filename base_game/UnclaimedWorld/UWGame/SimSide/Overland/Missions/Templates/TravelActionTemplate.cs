@@ -24,7 +24,7 @@ public class TravelActionTemplate : MissionActionTemplate
 
 	public override string Name => TemplateName;
 
-	public static string TemplateName => "Travel";
+	public static string TemplateName => UWGame.Locale.Text("Travel");
 
 	public override ActionTypes ActionType => ActionTypes.Travel;
 
@@ -101,7 +101,7 @@ public class TravelActionTemplate : MissionActionTemplate
 		}
 		if (!flag)
 		{
-			Common.AddToList(ref errors, "No valid route exists.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("No valid route exists."));
 			return false;
 		}
 		return true;
@@ -119,7 +119,7 @@ public class TravelActionTemplate : MissionActionTemplate
 			}
 			return CanUseTerminal(parent, ToMissionStop.TravelLocation, vehicle, ref errors);
 		}
-		Common.AddToList(ref errors, "No transportation selected.");
+		Common.AddToList(ref errors, UWGame.Locale.Text("No transportation selected."));
 		return false;
 	}
 
@@ -140,7 +140,7 @@ public class TravelActionTemplate : MissionActionTemplate
 
 	public static string GetWrongTerminalError(IKnownEntityData terminal)
 	{
-		return terminal.EntityType.Name + " is the wrong terminal type for this vehicle.";
+		return string.Format(UWGame.Locale.Text("{0} is the wrong terminal type for this vehicle."), terminal.EntityType.Name);
 	}
 
 	public DateAndTime.TimeDateYear GetTravelTime(MissionTemplate parent)

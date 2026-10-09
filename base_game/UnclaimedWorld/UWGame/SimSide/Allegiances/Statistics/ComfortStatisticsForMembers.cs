@@ -58,9 +58,9 @@ public class ComfortStatisticsForMembers : ComfortStatistics
 	{
 		StringBuilder stringBuilder = ComposeSharedRatingBreakdown(rating, sharedScore);
 		Common.AppendLine(stringBuilder);
-		stringBuilder.Append("HOUSING: ");
+		stringBuilder.Append(UWGame.Locale.Text("HOUSING: "));
 		Common.AppendLine(stringBuilder, homeName);
-		stringBuilder.Append("Subscore: +");
+		stringBuilder.Append(UWGame.Locale.Text("Subscore: +"));
 		Common.AppendLine(stringBuilder, Common.PercentageToString(homeComfort, includePlusPrefix: false, useColoring: true));
 		ComposeRatingBreakdownForNeeds(hasComfortNeedsMet, needsRating, stringBuilder, includeMemberPercentage: false);
 		ratingsBreakdown = stringBuilder.ToString();
@@ -69,12 +69,12 @@ public class ComfortStatisticsForMembers : ComfortStatistics
 	private StringBuilder ComposeSharedRatingBreakdown(float rating, float sharedScore)
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendLine(stringBuilder, "and their personal experience of comfort");
-		AppendComponent(stringBuilder, "PERSONAL COMFORT CONDITIONS:", rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("and their personal experience of comfort"));
+		AppendComponent(stringBuilder, UWGame.Locale.Text("PERSONAL COMFORT CONDITIONS:"), rating, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		Common.AppendDivider(stringBuilder);
-		Common.AppendLine(stringBuilder, "Based on:");
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Based on:"));
 		Common.AppendLine(stringBuilder);
-		AppendComponent(stringBuilder, "COLONY COMFORT CONDITIONS", sharedScore, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
+		AppendComponent(stringBuilder, UWGame.Locale.Text("COLONY COMFORT CONDITIONS"), sharedScore, null, null, indent: false, omitIfZero: false, formatAsPercentage: true);
 		return stringBuilder;
 	}
 

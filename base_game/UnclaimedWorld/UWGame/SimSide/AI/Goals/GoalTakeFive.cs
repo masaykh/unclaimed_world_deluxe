@@ -243,6 +243,6 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Idling";
+		return UWGame.Locale.Text("Idling");
 	}
 }

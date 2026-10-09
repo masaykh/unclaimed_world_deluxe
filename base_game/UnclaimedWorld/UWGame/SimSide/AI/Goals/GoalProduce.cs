@@ -270,7 +270,7 @@ internal class GoalProduce : CompositeGoal, ITopLevelGoal
 	{
 		if (ProcessType.IsSalvageProcess)
 		{
-			return "Salvaging";
+			return UWGame.Locale.Text("Salvaging");
 		}
 		return ProcessType.Name;
 	}

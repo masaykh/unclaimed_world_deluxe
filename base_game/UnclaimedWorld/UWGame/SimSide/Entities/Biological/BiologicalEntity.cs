@@ -1049,13 +1049,13 @@ namespace UWGame.SimSide.Entities.Biological
                 orderDescription = "";
                 if (Parent.EntityType.BiologicalType.OrderType != null)
                 {
-                    orderDescription += "ORDER: " + Parent.EntityType.BiologicalType.OrderType.Name + " \n"; 
+                    orderDescription += string.Format(UWGame.Locale.Text("ORDER: {0}"), Parent.EntityType.BiologicalType.OrderType.Name) + " \n"; 
                 }
                
 
                 if (Parent.EntityType.Name != null)
                 {
-                    speciesDescription = "SPECIES: " + Parent.EntityType.Name + " \n";
+                    speciesDescription = string.Format(UWGame.Locale.Text("SPECIES: {0}"), Parent.EntityType.Name) + " \n";
                 }
 
               /*  if (RaceType != null && RaceType.Name != null) // skip the race...
@@ -1067,14 +1067,14 @@ namespace UWGame.SimSide.Entities.Biological
             string sexDescription = "";
             if (CasteType.Reproduction == Reproduction.Female)
             {
-                sexDescription = "SEX: Female \n";
+                sexDescription = UWGame.Locale.Text("SEX: Female") + " \n";
             }
             else if (CasteType.Reproduction == Reproduction.Male)
             {
-                sexDescription = "SEX: Male \n";
+                sexDescription = UWGame.Locale.Text("SEX: Male") + " \n";
             }
 
-            string ageDescription = "AGE: " + AgeGroup.AgeGroupType.Name;
+            string ageDescription = string.Format(UWGame.Locale.Text("AGE: {0}"), AgeGroup.AgeGroupType.Name);
 
             generatedData.Description = orderDescription + speciesDescription + sexDescription + ageDescription;
 

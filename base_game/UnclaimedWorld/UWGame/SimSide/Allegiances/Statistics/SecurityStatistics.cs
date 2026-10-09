@@ -67,28 +67,20 @@ public abstract class SecurityStatistics : Rating
 		if (injuries > 0)
 		{
 			Common.AppendLine(text);
-			Common.AppendLine(text, "RECENT INJURIES");
-			text.Append("Number of injuries: ");
-			Common.Append(text, injuries.ToString(), tintAsValue: true);
-			Common.Append(text, " in last ");
-			Common.AppendFormat(text, "{0:N1}", true, sec.DaysForInjuriesToAffect);
-			Common.Append(text, " days");
+			Common.AppendLine(text, UWGame.Locale.Text("RECENT INJURIES"));
+			text.Append(string.Format(UWGame.Locale.Text("Number of injuries: {0} in last {1} days"), Common.AsValue(injuries.ToString()), Common.AsValue(sec.DaysForInjuriesToAffect.ToString("N1"))));
 			Common.AppendLine(text);
-			Common.Append(text, "Subscore: -");
+			Common.Append(text, UWGame.Locale.Text("Subscore: -"));
 			Common.AppendPercentage(text, injuryRating, useColoring: true, Common.ValueTint.Negative);
 			Common.AppendLine(text);
 		}
 		if (deaths > 0)
 		{
 			Common.AppendLine(text);
-			Common.AppendLine(text, "RECENT DEATHS");
-			Common.Append(text, "Number of deaths: ");
-			Common.Append(text, deaths.ToString(), tintAsValue: true);
-			Common.Append(text, " in last ");
-			Common.AppendFormat(text, "{0:N1}", true, sec.DaysForDeathsToAffect);
-			Common.Append(text, " days");
+			Common.AppendLine(text, UWGame.Locale.Text("RECENT DEATHS"));
+			text.Append(string.Format(UWGame.Locale.Text("Number of deaths: {0} in last {1} days"), Common.AsValue(deaths.ToString()), Common.AsValue(sec.DaysForDeathsToAffect.ToString("N1"))));
 			Common.AppendLine(text);
-			Common.Append(text, "Subscore: -");
+			Common.Append(text, UWGame.Locale.Text("Subscore: -"));
 			Common.AppendPercentage(text, deathRating, useColoring: true, Common.ValueTint.Negative);
 			Common.AppendLine(text);
 		}

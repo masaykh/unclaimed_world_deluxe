@@ -105,7 +105,7 @@ internal class GoalConstruct : CompositeGoal, ITopLevelGoal
 
 	public override string GetStatus()
 	{
-		return "Constructing";
+		return UWGame.Locale.Text("Constructing");
 	}
 
 	public double ScoreGoal()

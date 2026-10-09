@@ -68,9 +68,9 @@ public abstract class Statistic : ISnapshot
 	{
 		return rating switch
 		{
-			RatingTypes.Comfort => "Comfort", 
-			RatingTypes.Food => "Food", 
-			RatingTypes.Security => "Security", 
+			RatingTypes.Comfort => UWGame.Locale.Text("Comfort"), 
+			RatingTypes.Food => UWGame.Locale.Text("Food"), 
+			RatingTypes.Security => UWGame.Locale.Text("Security"), 
 			_ => "", 
 		};
 	}
@@ -79,9 +79,9 @@ public abstract class Statistic : ISnapshot
 	{
 		return rating switch
 		{
-			RatingTypes.Comfort => "Represents basic needs such as shelter against the environment, prevention of disease as well as other needs like entertainment and luxury items.", 
-			RatingTypes.Food => "This area covers food availability, stock size, hunger risk and variety.", 
-			RatingTypes.Security => "The safety of the colony or individual against living threats, human or alien.", 
+			RatingTypes.Comfort => UWGame.Locale.Text("Represents basic needs such as shelter against the environment, prevention of disease as well as other needs like entertainment and luxury items."), 
+			RatingTypes.Food => UWGame.Locale.Text("This area covers food availability, stock size, hunger risk and variety."), 
+			RatingTypes.Security => UWGame.Locale.Text("The safety of the colony or individual against living threats, human or alien."), 
 			_ => "", 
 		};
 	}

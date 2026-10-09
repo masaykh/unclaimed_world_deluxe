@@ -89,7 +89,7 @@ public class CheckProcessJob : Job
 
 	public override string GetName()
 	{
-		return "Checking progress";
+		return UWGame.Locale.Text("Checking progress");
 	}
 
 	public override Snapshotter.Version DoVersion(Snapshotter sn)

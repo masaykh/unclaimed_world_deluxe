@@ -1338,9 +1338,9 @@ public class ProcessJob : Job, IIDEventSubscriber
 					text += item.Key.Name.ToLower(Config.Culture);
 					text2 = ", ";
 				}
-				arg = " from " + text + ".";
+				arg = string.Format(UWGame.Locale.Text(" from {0}."), text);
 			}
-			The.Client.AddLogEvent(entity.Intelligence.Allegiance, The.Client.Log.EconomicEvent, entity, $"finished producing {entity2.EntityType.Name.ToLower(Config.Culture)}{arg}");
+			The.Client.AddLogEvent(entity.Intelligence.Allegiance, The.Client.Log.EconomicEvent, entity, string.Format(UWGame.Locale.Text("finished producing {0}"), entity2.EntityType.Name.ToLower(Config.Culture)) + arg);
 		}
 	}
 
@@ -1588,27 +1588,27 @@ public class ProcessJob : Job, IIDEventSubscriber
 		}
 		if (HarvestJob != null)
 		{
-			reason = "'Gather' tasks can only be cancelled using the 'gather' window at the zone location";
+			reason = UWGame.Locale.Text("'Gather' tasks can only be cancelled using the 'gather' window at the zone location");
 			return false;
 		}
 		if (ProcessType.IsUpgrade)
 		{
-			reason = "Upgrade tasks can only be cancelled in the upgrade window (accessed from the structure's 'UPGRADE' button)";
+			reason = UWGame.Locale.Text("Upgrade tasks can only be cancelled in the upgrade window (accessed from the structure's 'UPGRADE' button)");
 			return false;
 		}
 		if (RepairJob != null)
 		{
-			reason = "Maintenance tasks cannot be cancelled. Use Abandon on items or structures that are not needed.";
+			reason = UWGame.Locale.Text("Maintenance tasks cannot be cancelled. Use Abandon on items or structures that are not needed.");
 			return false;
 		}
 		if (ReplenishJob != null)
 		{
-			reason = "Replenish tasks cannot be cancelled. Use Abandon on items or structures that are not needed.";
+			reason = UWGame.Locale.Text("Replenish tasks cannot be cancelled. Use Abandon on items or structures that are not needed.");
 			return false;
 		}
 		if (ProcessType.GetProductionUI() == ProcessType.ProductionUI.Slider)
 		{
-			reason = "Production tasks can only be cancelled in the production manager panel";
+			reason = UWGame.Locale.Text("Production tasks can only be cancelled in the production manager panel");
 			return false;
 		}
 		return true;

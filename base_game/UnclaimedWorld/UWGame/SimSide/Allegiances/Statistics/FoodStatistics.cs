@@ -114,7 +114,7 @@ public abstract class FoodStatistics : Rating
 					if (!flag)
 					{
 						Common.AppendLine(text);
-						Common.AppendLine(text, "STARVING");
+						Common.AppendLine(text, UWGame.Locale.Text("STARVING"));
 						flag = true;
 					}
 					NeedType needType = LookUp<NeedType, NeedTypeID>.FindByID(starvingMemberPercentage.Key);
@@ -123,20 +123,17 @@ public abstract class FoodStatistics : Rating
 			}
 			if (flag)
 			{
-				text.Append("Subscore: -");
+				text.Append(UWGame.Locale.Text("Subscore: -"));
 				Common.AppendLine(text, Common.PercentageToString(starvingScore, includePlusPrefix: false, useColoring: true, Common.ValueTint.Negative));
 			}
 		}
 		if (deaths > 0)
 		{
 			Common.AppendLine(text);
-			Common.AppendLine(text, "RECENT HUNGER DEATHS");
-			Common.Append(text, "Number of deaths: ");
-			Common.Append(text, deaths.ToString(), tintAsValue: true);
-			Common.Append(text, " in last ");
-			Common.AppendFormat(text, "{0:N1}", true, food.DaysForHungerDeathsToAffect);
+			Common.AppendLine(text, UWGame.Locale.Text("RECENT HUNGER DEATHS"));
+			text.Append(string.Format(UWGame.Locale.Text("Number of deaths: {0} in last {1}"), Common.AsValue(deaths.ToString()), Common.AsValue(food.DaysForHungerDeathsToAffect.ToString("N1"))));
 			Common.AppendLine(text);
-			text.Append("Subscore: -");
+			text.Append(UWGame.Locale.Text("Subscore: -"));
 			Common.AppendLine(text, Common.PercentageToString(deathsContribution, includePlusPrefix: false, useColoring: true, Common.ValueTint.Negative));
 			Common.AppendLine(text);
 		}

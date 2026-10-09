@@ -78,12 +78,12 @@ public abstract class MissionActionTemplate : ISnapshot, ILookUp<MissionActionTe
 	{
 		return action switch
 		{
-			ActionTypes.Buy => "Buy", 
+			ActionTypes.Buy => UWGame.Locale.Text("Buy"), 
 			ActionTypes.Load => LoadActionTemplate.TemplateName, 
 			ActionTypes.Unload => UnloadActionTemplate.TemplateName, 
 			ActionTypes.Embark => EmbarkActionTemplate.TemplateName, 
 			ActionTypes.Disembark => DisembarkActionTemplate.TemplateName, 
-			ActionTypes.Sell => "Sell", 
+			ActionTypes.Sell => UWGame.Locale.Text("Sell"), 
 			_ => null, 
 		};
 	}
@@ -102,7 +102,7 @@ public abstract class MissionActionTemplate : ISnapshot, ILookUp<MissionActionTe
 	{
 		if (!terminalData.IsCompleted() || !Entity.IsFunctional(terminalData))
 		{
-			Common.AddToList(ref errors, "The terminal is not in a working state.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("The terminal is not in a working state."));
 			return false;
 		}
 		return true;

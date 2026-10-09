@@ -21,8 +21,8 @@ public class FlagEffectType : EffectType
 	{
 		return Affects switch
 		{
-			AffectsFlags.CanEmigrate => "Can emigrate", 
-			AffectsFlags.CanComplain => "Can complain", 
+			AffectsFlags.CanEmigrate => UWGame.Locale.Text("Can emigrate"), 
+			AffectsFlags.CanComplain => UWGame.Locale.Text("Can complain"), 
 			_ => null, 
 		};
 	}

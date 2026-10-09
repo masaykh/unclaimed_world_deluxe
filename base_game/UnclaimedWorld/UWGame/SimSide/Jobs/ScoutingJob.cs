@@ -73,9 +73,9 @@ public class ScoutingJob : Job
 	{
 		if (Examine)
 		{
-			return "Examining area";
+			return UWGame.Locale.Text("Examining area");
 		}
-		return "Scouting";
+		return UWGame.Locale.Text("Scouting");
 	}
 
 	public override Snapshotter.Version DoVersion(Snapshotter sn)

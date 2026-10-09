@@ -13,7 +13,7 @@ public class EmbarkActionTemplate : MissionActionTemplate
 
 	public override string Name => TemplateName;
 
-	public static string TemplateName => "Embark";
+	public static string TemplateName => UWGame.Locale.Text("Embark");
 
 	public override ActionTypes ActionType => ActionTypes.Embark;
 
@@ -48,7 +48,7 @@ public class EmbarkActionTemplate : MissionActionTemplate
 		}
 		if (thisAllegiance == allegiance)
 		{
-			Common.AddToList(ref errors, "For now, we can only embark passengers at other sites.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("For now, we can only embark passengers at other sites."));
 			return false;
 		}
 		return true;

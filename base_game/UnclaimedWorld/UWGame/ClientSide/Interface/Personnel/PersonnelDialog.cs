@@ -84,19 +84,19 @@ public class PersonnelDialog : Panel
 				{
 					if (!knownDataAsEntity.Intelligence.IsReadyForEmbark(The.InGameUI.UIAllegiance))
 					{
-						Common.AddToList(ref errors, knownDataAsEntity.Name + " is not willing to embark now.");
+						Common.AddToList(ref errors, string.Format(UWGame.Locale.Text("{0} is not willing to embark now."), knownDataAsEntity.Name));
 					}
 					num++;
 				}
 				else
 				{
-					Common.AddToList(ref errors, "The display is out of date. Please try again.");
+					Common.AddToList(ref errors, UWGame.Locale.Text("The display is out of date. Please try again."));
 				}
 			}
 		}
 		if (errors == null && !The.InGameUI.UIAllegiance.IsWithinPopulationCap(num))
 		{
-			Common.AddToList(ref errors, "Exceeds max population! We do not accept that many newcomers!");
+			Common.AddToList(ref errors, UWGame.Locale.Text("Exceeds max population! We do not accept that many newcomers!"));
 		}
 		if (errors != null && errors.Count > 0)
 		{

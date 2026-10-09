@@ -56,7 +56,7 @@ public class TierOrAreaType
 
 	public string GetNotAvailableTooltip()
 	{
-		return "The following policy needs to be enacted first: " + ToString();
+		return string.Format(UWGame.Locale.Text("The following policy needs to be enacted first: {0}"), ToString());
 	}
 
 	public override string ToString()
@@ -65,6 +65,6 @@ public class TierOrAreaType
 		{
 			return TierArea.ToString();
 		}
-		return TierType.Name + " tier (any area)";
+		return string.Format(UWGame.Locale.Text("{0} tier (any area)"), TierType.Name);
 	}
 }
