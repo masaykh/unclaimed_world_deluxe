@@ -2161,7 +2161,8 @@ namespace UWGame.SimSide.Entities
             return score;
         }
 
-        private double ScoreSurvivalImportance(/*EntityGroup owner,*/ bool isEatable) // EntityType mainOutput)
+        /*
+        private double ScoreSurvivalImportance(bool isEatable) // EntityType mainOutput)
         {
             if (isEatable) // owner.GetAllegiance().FoodExtraction.IsEatable(mainOutput))
             {
@@ -2170,7 +2171,7 @@ namespace UWGame.SimSide.Entities
 
             return 0d;
         }
-
+        */
 
         private double ScoreHowLongStocksWillLast(EntityType entityType, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems)
         {
@@ -2240,7 +2241,7 @@ namespace UWGame.SimSide.Entities
             return consumedRate;
         }
 
-
+        /*
         private void ComputeProductionRate(EntityType entityType, out int currentStockAmount, out int stockpiledAndProduced, out float productionRate, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems)
         {
             currentStockAmount = GetCurrentStockAmount(entityType, allAvailableItems);
@@ -2259,6 +2260,7 @@ namespace UWGame.SimSide.Entities
 
             productionRate = totalOutstandingOutput * averageSpeed;
         }
+        */
 
         private int GetCurrentStockAmount(EntityType entityType, Dictionary<EntityType, InventoryPanel.Availability> allAvailableItems)
         {
