@@ -154,10 +154,10 @@ public static class MagnificationMod
         {
             return null;
         }
-        return $"The interface is laid out for at least {MinimumUsableWidth}x{MinimumUsableHeight}"
-            + $" and this session has {drawWidth}x{drawHeight}"
-            + (Common.IsZero(magnification - 1f) ? "" : $" (magnification {magnification:0.00})")
-            + ". Panels wider than that are cut off at the screen edge rather than rearranged."
-            + " Raise the resolution, or lower the magnification in the options.";
+        return Common.IsZero(magnification - 1f)
+            ? string.Format(UWGame.Locale.Text("The interface is laid out for at least {0}x{1} and this session has {2}x{3}. Panels wider than that are cut off at the screen edge rather than rearranged. Raise the resolution, or lower the magnification in the options."),
+                MinimumUsableWidth, MinimumUsableHeight, drawWidth, drawHeight)
+            : string.Format(UWGame.Locale.Text("The interface is laid out for at least {0}x{1} and this session has {2}x{3} (magnification {4:0.00}). Panels wider than that are cut off at the screen edge rather than rearranged. Raise the resolution, or lower the magnification in the options."),
+                MinimumUsableWidth, MinimumUsableHeight, drawWidth, drawHeight, magnification);
     }
 }

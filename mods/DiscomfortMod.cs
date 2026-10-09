@@ -136,8 +136,9 @@ public static class DiscomfortMod
     private static int complaintsToday;
     public const int ComplaintsPerDay = 2;
 
-    private static readonly string[] StinkLines = { "What is this smell!?", "It's hard to even breathe here." };
-    private static readonly string[] NoiseLines = { "Can you be quiet please...", "How is anyone supposed to sleep with that racket?" };
+    // Properties, not fields: a line is in the chosen language when it is said.
+    private static string[] StinkLines => new[] { UWGame.Locale.Text("What is this smell!?"), UWGame.Locale.Text("It's hard to even breathe here.") };
+    private static string[] NoiseLines => new[] { UWGame.Locale.Text("Can you be quiet please..."), UWGame.Locale.Text("How is anyone supposed to sleep with that racket?") };
 
     /// <summary>Whether an item stinks.</summary>
     public static bool IsFilthy(EntityType type)

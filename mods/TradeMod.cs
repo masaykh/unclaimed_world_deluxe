@@ -99,16 +99,17 @@ public static class TradeMod
     /// <summary>When it arrives, for the ETA's tooltip, after "arrival at &lt;site&gt;".</summary>
     public static string ArrivalAt(DateAndTime.TimeDateYear eta)
     {
-        string partOfDay = DateAndTime.GetTimeOfDayAsString(eta.TimeOfDay);
         if (!RoughEtaSetting.On)
         {
-            return " on " + eta.ToString() + ", " + partOfDay;
+            return string.Format(UWGame.Locale.Text(" on {0}, {1}"), eta.ToString(), DateAndTime.GetTimeOfDayAsString(eta.TimeOfDay));
         }
-        return partOfDay switch
+        return DateAndTime.GetTimeOfDayKey(eta.TimeOfDay) switch
         {
-            "Night" => " at night",
-            "Noon" => " around noon",
-            _ => " in the " + partOfDay.ToLowerInvariant()
+            "Night" => UWGame.Locale.Text(" at night"),
+            "Noon" => UWGame.Locale.Text(" around noon"),
+            "Morning" => UWGame.Locale.Text(" in the morning"),
+            "Afternoon" => UWGame.Locale.Text(" in the afternoon"),
+            _ => UWGame.Locale.Text(" in the evening")
         };
     }
 
@@ -116,15 +117,15 @@ public static class TradeMod
     public static string RoughInterval(double daysLeft)
     {
         double hours = daysLeft * 24.0;
-        if (hours < 1.0) return "within the hour";
-        if (hours < 3.0) return "a couple of hours";
-        if (hours < 8.0) return "a few hours";
-        if (hours < 16.0) return "half a day";
-        if (hours < 30.0) return "about a day";
-        if (daysLeft < 2.5) return "a day or two";
-        if (daysLeft < 6.0) return "a few days";
-        if (daysLeft < 10.0) return "about a week";
-        return "over a week";
+        if (hours < 1.0) return UWGame.Locale.Text("within the hour");
+        if (hours < 3.0) return UWGame.Locale.Text("a couple of hours");
+        if (hours < 8.0) return UWGame.Locale.Text("a few hours");
+        if (hours < 16.0) return UWGame.Locale.Text("half a day");
+        if (hours < 30.0) return UWGame.Locale.Text("about a day");
+        if (daysLeft < 2.5) return UWGame.Locale.Text("a day or two");
+        if (daysLeft < 6.0) return UWGame.Locale.Text("a few days");
+        if (daysLeft < 10.0) return UWGame.Locale.Text("about a week");
+        return UWGame.Locale.Text("over a week");
     }
 
     /// <summary>The prefix of a sale's entry in the selling expedition's custom fields.</summary>

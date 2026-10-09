@@ -189,8 +189,8 @@ public static class BalancedDietMod
         }
         var text = new System.Text.StringBuilder();
         Common.AppendLine(text);
-        Common.AppendLine(text, "MONOTONOUS DIET");
-        text.Append("Subscore: -");
+        Common.AppendLine(text, UWGame.Locale.Text("MONOTONOUS DIET"));
+        text.Append(UWGame.Locale.Text("Subscore: -"));
         Common.AppendLine(text, Common.PercentageToString(penalty, includePlusPrefix: false, useColoring: true));
         return text.ToString();
     }
@@ -238,7 +238,7 @@ public static class BalancedDietMod
             // Once, on the first serving that fills less - so a player can see why food is going
             // faster, and which dish to vary.
             The.Client.AddLogEvent(eater.Intelligence.Allegiance, The.Client.Log.GeneralEvent, eater,
-                "is tired of eating " + (food.Name ?? food.KeyName).ToLowerInvariant() + ".");
+                string.Format(UWGame.Locale.Text("is tired of eating {0}."), (food.Name ?? food.KeyName).ToLower(Config.Culture)));
         }
         return 1f;
     }

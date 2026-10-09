@@ -87,8 +87,6 @@ public static partial class HudMod
 
     private static readonly string[] markerLabels = { "HIDE NAMES ON THE MAP", "HIDE LABELS ON THE MAP", "HIDE STATUS ICONS ON THE MAP", "HIDE ZONES ON THE MAP" };
 
-    private static readonly string[] markerRows = { "NAMES", "LABELS", "STATUS ICONS", "ZONES" };
-
     private static readonly string[] markerTips =
     {
         "Colonist and creature names on the map. A selected one always shows its name.",
@@ -103,9 +101,21 @@ public static partial class HudMod
 
     public const int MarkerRowCount = 4;
 
-    public static string MarkerRowLabel(int i) => markerRows[i];
+    public static string MarkerRowLabel(int i) => i switch
+    {
+        0 => UWGame.Locale.Text("NAMES"),
+        1 => UWGame.Locale.Text("LABELS"),
+        2 => UWGame.Locale.Text("STATUS ICONS"),
+        _ => UWGame.Locale.Text("ZONES"),
+    };
 
-    public static string MarkerRowToolTip(int i) => "Show " + markerTips[i].Substring(0, 1).ToLowerInvariant() + markerTips[i].Substring(1);
+    public static string MarkerRowToolTip(int i) => i switch
+    {
+        0 => UWGame.Locale.Text("Show colonist and creature names on the map. A selected one always shows its name."),
+        1 => UWGame.Locale.Text("Show point-of-interest labels on the map: fishing spots, arable plots, the port location."),
+        2 => UWGame.Locale.Text("Show status icons on the map - problems and what is being made."),
+        _ => UWGame.Locale.Text("Show zones on the map - their area and their label. A selected zone always shows."),
+    };
 
     public static bool MarkerRowIsOn(int i) => !HideMarker(i).On;
 
@@ -247,11 +257,11 @@ public static partial class HudMod
     /// <summary>The menu's name for an item layer, or null for the studio's groupings.</summary>
     public static string ItemGroupingName(EntityGrouping grouping) => grouping switch
     {
-        EntityGrouping.Tools => "TOOLS",
-        EntityGrouping.Weapons => "WEAPONS",
-        EntityGrouping.PreparedFood => "PREPARED FOOD",
-        EntityGrouping.Ingredients => "INGREDIENTS",
-        EntityGrouping.Materials => "MATERIALS",
+        EntityGrouping.Tools => UWGame.Locale.Text("TOOLS"),
+        EntityGrouping.Weapons => UWGame.Locale.Text("WEAPONS"),
+        EntityGrouping.PreparedFood => UWGame.Locale.Text("PREPARED FOOD"),
+        EntityGrouping.Ingredients => UWGame.Locale.Text("INGREDIENTS"),
+        EntityGrouping.Materials => UWGame.Locale.Text("MATERIALS"),
         _ => null,
     };
 

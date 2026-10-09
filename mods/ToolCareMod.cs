@@ -385,21 +385,21 @@ public static class ToolCareMod
                 if (space != null && !container.IsTradeOfferStorage(origin.Storage) && space.HasCapacityForItem(item.Bulk))
                 {
                     storage = new StorageTarget(container.EntityID, origin.Storage);
-                    where = "the " + NameOf(container.EntityType);
+                    where = NameOf(container.EntityType);
                     return true;
                 }
             }
             else if (IsOnStockpile(carrier, origin.Location))
             {
                 location = origin.Location;
-                where = "the stockpile";
+                where = StockpileMarker;
                 return true;
             }
             else if (!IsOutOfCamp(carrier, origin.Location) && IsOutOfCamp(carrier, carrier.PlaySiteLocation))
             {
                 // It lay loose in camp: back to that spot. Already in camp, it is simply dropped here.
                 location = origin.Location;
-                where = "camp";
+                where = CampMarker;
                 return true;
             }
         }
@@ -408,7 +408,7 @@ public static class ToolCareMod
             return false;
         }
         location = DropSpotInCamp(carrier);
-        where = "camp";
+        where = CampMarker;
         return location.HasValue;
     }
 
@@ -443,7 +443,13 @@ public static class ToolCareMod
         return MapManager.SubTileToWorldPos(new Point(influence.TopLeftSubtilePositionOfMap.X + best.X, influence.TopLeftSubtilePositionOfMap.Y + best.Y)).ToVector3();
     }
 
-    private static string NameOf(EntityType type) => (type.Name ?? type.KeyName).ToLowerInvariant();
+    private static string NameOf(EntityType type) => (type.Name ?? type.KeyName).ToLower(Config.Culture);
+
+    // Where PlaceToTakeItTo takes an item when it is not a storage, for LogTakenBack to say in a
+    // sentence of its own - "back to the stockpile" and "back to camp" are not "back to the <name>"
+    // in every language. A storage's name never starts with '#'.
+    private const string StockpileMarker = "#stockpile";
+    private const string CampMarker = "#camp";
 
     /// <summary>The log line tripleacoder asked for: "takes the steel axe back to the stockpile before going on."</summary>
     public static void LogTakenBack(Entity carrier, Entity item, string where)
@@ -453,6 +459,11 @@ public static class ToolCareMod
             return;
         }
         The.Client.AddLogEvent(carrier.Intelligence.Allegiance, The.Client.Log.GeneralEvent, carrier,
-            "takes the " + NameOf(item.EntityType) + " back to " + where + " before going on.");
+            where switch
+            {
+                StockpileMarker => string.Format(UWGame.Locale.Text("takes the {0} back to the stockpile before going on."), NameOf(item.EntityType)),
+                CampMarker => string.Format(UWGame.Locale.Text("takes the {0} back to camp before going on."), NameOf(item.EntityType)),
+                _ => string.Format(UWGame.Locale.Text("takes the {0} back to the {1} before going on."), NameOf(item.EntityType), where),
+            });
     }
 }

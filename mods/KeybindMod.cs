@@ -43,20 +43,20 @@ public static class KeybindMod
     }
 
     /// <summary>Readable names for the studio's fields, in the order the section lists them.</summary>
-    public static readonly (string Field, string Label)[] Labels =
+    public static (string Field, string Label)[] Labels => new[]
     {
-        ("KeyScrollUp", "SCROLL UP"),
-        ("KeyScrollDown", "SCROLL DOWN"),
-        ("KeyScrollLeft", "SCROLL LEFT"),
-        ("KeyScrollRight", "SCROLL RIGHT"),
-        ("KeyPause1", "PAUSE"),
-        ("KeyPause2", "PAUSE (2ND KEY)"),
-        ("KeyPause3", "PAUSE (3RD KEY)"),
-        ("KeyGameSpeed1", "NORMAL SPEED"),
-        ("KeyGameSpeed2", "DOUBLE SPEED"),
-        ("KeyGameSpeed3", "FOUR TIMES SPEED"),
-        ("ToggleIngameMenu", "GAME MENU"),
-        ("CloseRosterPanel", "CLOSE ROSTER PANEL"),
+        ("KeyScrollUp", UWGame.Locale.Text("SCROLL UP")),
+        ("KeyScrollDown", UWGame.Locale.Text("SCROLL DOWN")),
+        ("KeyScrollLeft", UWGame.Locale.Text("SCROLL LEFT")),
+        ("KeyScrollRight", UWGame.Locale.Text("SCROLL RIGHT")),
+        ("KeyPause1", UWGame.Locale.Text("PAUSE")),
+        ("KeyPause2", UWGame.Locale.Text("PAUSE (2ND KEY)")),
+        ("KeyPause3", UWGame.Locale.Text("PAUSE (3RD KEY)")),
+        ("KeyGameSpeed1", UWGame.Locale.Text("NORMAL SPEED")),
+        ("KeyGameSpeed2", UWGame.Locale.Text("DOUBLE SPEED")),
+        ("KeyGameSpeed3", UWGame.Locale.Text("FOUR TIMES SPEED")),
+        ("ToggleIngameMenu", UWGame.Locale.Text("GAME MENU")),
+        ("CloseRosterPanel", UWGame.Locale.Text("CLOSE ROSTER PANEL")),
     };
 
     /// <summary>Every public Keys field on Options, labelled ones first in their order.</summary>

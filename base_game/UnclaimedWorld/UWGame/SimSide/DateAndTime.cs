@@ -352,9 +352,19 @@ public class DateAndTime : ISnapshot
 
 	public static string GetTimeOfDayAsString(double timeOfDay)
 	{
+		return TimeOfDayName(GetTimeOfDayKey(timeOfDay));
+	}
+
+	/// <summary>
+	/// PORT: the part of the day in English - "Night", "Morning", "Noon", "Afternoon", "Evening" -
+	/// for code that decides something by it (TradeMod.ArrivalAt). GetTimeOfDayAsString is the
+	/// shown one, in the chosen language, and must not be compared with English.
+	/// </summary>
+	public static string GetTimeOfDayKey(double timeOfDay)
+	{
 		int num = 0;
 		num = Common.GetStairStepIndex((float)timeOfDay, timesOfDay);
-		return TimeOfDayName(timeOfDayStrings[num]);
+		return timeOfDayStrings[num];
 	}
 
 	// PORT: the names stay English in the arrays (the snapshot ignores them); these give the

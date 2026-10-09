@@ -39,8 +39,13 @@ The interface - side panels, HUD windows, data sheets, the missions, trade, poli
 goes through `Locale` too (`(GUI)...`), and so do the simulation's own sentences: the log ("has died
 from {0}.", "hit {0} on the {1} for {2} damage."), what a colonist is doing ("Hauling"), the rating
 and storage tooltips, why a task cannot be cancelled, the mission planner's errors, the time of day,
-the season and the date. Still English: the mods' messages, the loading screen's progress lines, and
-the developer panels (LOAD REPLAY, the debug overlays, an event action's failure reason).
+the season and the date. The mods' own text too: their settings (`(SETTING...)`), their log lines
+("is tired of eating {0}.", "takes the {0} back to the stockpile before going on."), the trade
+mod's rough arrival times, the overlay panel's rows, the KEYS section's names, the discomfort
+mod's complaints. Still English, on purpose: what is written for programs and for bug reports
+rather than for a player (the agent channel's files, the state dump, Errors.txt, the self-tests),
+the loading screen's progress lines, and the developer panels (LOAD REPLAY, the debug overlays, an
+event action's failure reason).
 `tools/build/37-unrouted.txt` counts any interface or simulation English that comes back, file by
 file.
 

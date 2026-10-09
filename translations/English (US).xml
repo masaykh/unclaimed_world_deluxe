@@ -3841,6 +3841,11 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Key>(GUI)False</Key>
     <Value>False</Value>
   </String>
+  <!-- Mods/TradeMod.Absent.cs -->
+  <String>
+    <Key>(GUI) on {0}, {1}</Key>
+    <Value> on {0}, {1}</Value>
+  </String>
   <!-- SimSide/AI/Goals/GoalAttack.cs -->
   <String>
     <Key>(GUI)has given up chasing {0}.</Key>
@@ -4850,71 +4855,265 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   </String>
   <!-- UnclaimedWorld/GameStateManagement/TimelinePanel.cs -->
   <String>
-    <Key>(GUI)TIMELINE: 
- 
-2034 
-Telescopes detect animal life on Tau Ceti b, a nearby extrasolar planet. Plans for an exploration mission are drawn up, but are soon abandoned because of the immense cost. 
- 
- 
-2080 
+    <Key>(GUI)TIMELINE:</Key>
+    <Value>TIMELINE:</Value>
+  </String>
+  <String>
+    <Key>(GUI)2034 
+Telescopes detect animal life on Tau Ceti b, a nearby extrasolar planet. Plans for an exploration mission are drawn up, but are soon abandoned because of the immense cost.</Key>
+    <Value>2034 
+Telescopes detect animal life on Tau Ceti b, a nearby extrasolar planet. Plans for an exploration mission are drawn up, but are soon abandoned because of the immense cost.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2080 
 A comet strikes the Atlantic Ocean, killing around 500 million in the subsequent natural disasters. 
-After rebuilding, Earth's nations agree to prevent a possible extermination of humankind in the future. They decide to preserve the human species by starting a colony on Tau Ceti b, which has been dubbed Antheia. 
- 
- 
-2080-2129 
-Earth's nations collaborate to construct a starship and develop new technologies such as hibernation and self-replicating machines. 
- 
- 
-2130 
-Building of the starship Exigence is complete. The Earth celebrates its space pioneers: 2100 of the best and brightest have been chosen. They board the ship and enter hibernation as they begin a century long journey. 
- 
- 
-2130-2238 
-To eliminate risks of natural or man-made disasters, Earth gradually develops a high surveillance society. The Solar system is intensely monitored as well as each individual's thoughts and actions. The concept of labor loses its meaning as robots fulfil people's needs so they can live a life of leisure. 
- 
- 
-2238 
-The Exigence reaches Antheia. However, news of its arrival is received with indifference on Earth. During the long voyage the mission has lost its relevance and Earth's populations are immersed in virtual worlds. The pioneers realize that they are alone in facing the tasks ahead. 
- 
- 
- 
-The PRECOL mission: 
+After rebuilding, Earth's nations agree to prevent a possible extermination of humankind in the future. They decide to preserve the human species by starting a colony on Tau Ceti b, which has been dubbed Antheia.</Key>
+    <Value>2080 
+A comet strikes the Atlantic Ocean, killing around 500 million in the subsequent natural disasters. 
+After rebuilding, Earth's nations agree to prevent a possible extermination of humankind in the future. They decide to preserve the human species by starting a colony on Tau Ceti b, which has been dubbed Antheia.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2080-2129 
+Earth's nations collaborate to construct a starship and develop new technologies such as hibernation and self-replicating machines.</Key>
+    <Value>2080-2129 
+Earth's nations collaborate to construct a starship and develop new technologies such as hibernation and self-replicating machines.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2130 
+Building of the starship Exigence is complete. The Earth celebrates its space pioneers: 2100 of the best and brightest have been chosen. They board the ship and enter hibernation as they begin a century long journey.</Key>
+    <Value>2130 
+Building of the starship Exigence is complete. The Earth celebrates its space pioneers: 2100 of the best and brightest have been chosen. They board the ship and enter hibernation as they begin a century long journey.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2130-2238 
+To eliminate risks of natural or man-made disasters, Earth gradually develops a high surveillance society. The Solar system is intensely monitored as well as each individual's thoughts and actions. The concept of labor loses its meaning as robots fulfil people's needs so they can live a life of leisure.</Key>
+    <Value>2130-2238 
+To eliminate risks of natural or man-made disasters, Earth gradually develops a high surveillance society. The Solar system is intensely monitored as well as each individual's thoughts and actions. The concept of labor loses its meaning as robots fulfil people's needs so they can live a life of leisure.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2238 
+The Exigence reaches Antheia. However, news of its arrival is received with indifference on Earth. During the long voyage the mission has lost its relevance and Earth's populations are immersed in virtual worlds. The pioneers realize that they are alone in facing the tasks ahead.</Key>
+    <Value>2238 
+The Exigence reaches Antheia. However, news of its arrival is received with indifference on Earth. During the long voyage the mission has lost its relevance and Earth's populations are immersed in virtual worlds. The pioneers realize that they are alone in facing the tasks ahead.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The PRECOL mission: 
 An exploration mission that took place before the main landing operation. A select group of 60 specialists examined the planet to find the most suitable place for the first colony. After they decided on a location, the 2040 remaining colonists were awakened to come down from orbit. But during the landing, the ground team was caught in the swarming event of a highly dangerous predator species. They were overwhelmed and either lost or scattered in the surroundings. Meanwhile, the arriving colonists were forced to land on a separate continent.</Key>
-    <Value>TIMELINE: 
- 
-2034 
-Telescopes detect animal life on Tau Ceti b, a nearby extrasolar planet. Plans for an exploration mission are drawn up, but are soon abandoned because of the immense cost. 
- 
- 
-2080 
-A comet strikes the Atlantic Ocean, killing around 500 million in the subsequent natural disasters. 
-After rebuilding, Earth's nations agree to prevent a possible extermination of humankind in the future. They decide to preserve the human species by starting a colony on Tau Ceti b, which has been dubbed Antheia. 
- 
- 
-2080-2129 
-Earth's nations collaborate to construct a starship and develop new technologies such as hibernation and self-replicating machines. 
- 
- 
-2130 
-Building of the starship Exigence is complete. The Earth celebrates its space pioneers: 2100 of the best and brightest have been chosen. They board the ship and enter hibernation as they begin a century long journey. 
- 
- 
-2130-2238 
-To eliminate risks of natural or man-made disasters, Earth gradually develops a high surveillance society. The Solar system is intensely monitored as well as each individual's thoughts and actions. The concept of labor loses its meaning as robots fulfil people's needs so they can live a life of leisure. 
- 
- 
-2238 
-The Exigence reaches Antheia. However, news of its arrival is received with indifference on Earth. During the long voyage the mission has lost its relevance and Earth's populations are immersed in virtual worlds. The pioneers realize that they are alone in facing the tasks ahead. 
- 
- 
- 
-The PRECOL mission: 
+    <Value>The PRECOL mission: 
 An exploration mission that took place before the main landing operation. A select group of 60 specialists examined the planet to find the most suitable place for the first colony. After they decided on a location, the 2040 remaining colonists were awakened to come down from orbit. But during the landing, the ground team was caught in the swarming event of a highly dangerous predator species. They were overwhelmed and either lost or scattered in the surroundings. Meanwhile, the arriving colonists were forced to land on a separate continent.</Value>
+  </String>
+  <!-- mods/BalancedDietMod.cs -->
+  <String>
+    <Key>(GUI)MONOTONOUS DIET</Key>
+    <Value>MONOTONOUS DIET</Value>
+  </String>
+  <String>
+    <Key>(GUI)is tired of eating {0}.</Key>
+    <Value>is tired of eating {0}.</Value>
+  </String>
+  <!-- mods/DiscomfortMod.cs -->
+  <String>
+    <Key>(GUI)It's hard to even breathe here.</Key>
+    <Value>It's hard to even breathe here.</Value>
+  </String>
+  <String>
+    <Key>(GUI)What is this smell!?</Key>
+    <Value>What is this smell!?</Value>
+  </String>
+  <String>
+    <Key>(GUI)Can you be quiet please...</Key>
+    <Value>Can you be quiet please...</Value>
+  </String>
+  <String>
+    <Key>(GUI)How is anyone supposed to sleep with that racket?</Key>
+    <Value>How is anyone supposed to sleep with that racket?</Value>
+  </String>
+  <!-- mods/HudMod.cs -->
+  <String>
+    <Key>(GUI)NAMES</Key>
+    <Value>NAMES</Value>
+  </String>
+  <String>
+    <Key>(GUI)LABELS</Key>
+    <Value>LABELS</Value>
+  </String>
+  <String>
+    <Key>(GUI)STATUS ICONS</Key>
+    <Value>STATUS ICONS</Value>
+  </String>
+  <String>
+    <Key>(GUI)ZONES</Key>
+    <Value>ZONES</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show colonist and creature names on the map. A selected one always shows its name.</Key>
+    <Value>Show colonist and creature names on the map. A selected one always shows its name.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show point-of-interest labels on the map: fishing spots, arable plots, the port location.</Key>
+    <Value>Show point-of-interest labels on the map: fishing spots, arable plots, the port location.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show status icons on the map - problems and what is being made.</Key>
+    <Value>Show status icons on the map - problems and what is being made.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show zones on the map - their area and their label. A selected zone always shows.</Key>
+    <Value>Show zones on the map - their area and their label. A selected zone always shows.</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEAPONS</Key>
+    <Value>WEAPONS</Value>
+  </String>
+  <String>
+    <Key>(GUI)PREPARED FOOD</Key>
+    <Value>PREPARED FOOD</Value>
+  </String>
+  <String>
+    <Key>(GUI)INGREDIENTS</Key>
+    <Value>INGREDIENTS</Value>
+  </String>
+  <!-- mods/KeybindMod.cs -->
+  <String>
+    <Key>(GUI)SCROLL UP</Key>
+    <Value>SCROLL UP</Value>
+  </String>
+  <String>
+    <Key>(GUI)SCROLL DOWN</Key>
+    <Value>SCROLL DOWN</Value>
+  </String>
+  <String>
+    <Key>(GUI)SCROLL LEFT</Key>
+    <Value>SCROLL LEFT</Value>
+  </String>
+  <String>
+    <Key>(GUI)SCROLL RIGHT</Key>
+    <Value>SCROLL RIGHT</Value>
+  </String>
+  <String>
+    <Key>(GUI)PAUSE</Key>
+    <Value>PAUSE</Value>
+  </String>
+  <String>
+    <Key>(GUI)PAUSE (2ND KEY)</Key>
+    <Value>PAUSE (2ND KEY)</Value>
+  </String>
+  <String>
+    <Key>(GUI)PAUSE (3RD KEY)</Key>
+    <Value>PAUSE (3RD KEY)</Value>
+  </String>
+  <String>
+    <Key>(GUI)NORMAL SPEED</Key>
+    <Value>NORMAL SPEED</Value>
+  </String>
+  <String>
+    <Key>(GUI)DOUBLE SPEED</Key>
+    <Value>DOUBLE SPEED</Value>
+  </String>
+  <String>
+    <Key>(GUI)FOUR TIMES SPEED</Key>
+    <Value>FOUR TIMES SPEED</Value>
+  </String>
+  <String>
+    <Key>(GUI)GAME MENU</Key>
+    <Value>GAME MENU</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLOSE ROSTER PANEL</Key>
+    <Value>CLOSE ROSTER PANEL</Value>
+  </String>
+  <!-- mods/MagnificationMod.cs -->
+  <String>
+    <Key>(GUI)The interface is laid out for at least {0}x{1} and this session has {2}x{3}. Panels wider than that are cut off at the screen edge rather than rearranged. Raise the resolution, or lower the magnification in the options.</Key>
+    <Value>The interface is laid out for at least {0}x{1} and this session has {2}x{3}. Panels wider than that are cut off at the screen edge rather than rearranged. Raise the resolution, or lower the magnification in the options.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The interface is laid out for at least {0}x{1} and this session has {2}x{3} (magnification {4:0.00}). Panels wider than that are cut off at the screen edge rather than rearranged. Raise the resolution, or lower the magnification in the options.</Key>
+    <Value>The interface is laid out for at least {0}x{1} and this session has {2}x{3} (magnification {4:0.00}). Panels wider than that are cut off at the screen edge rather than rearranged. Raise the resolution, or lower the magnification in the options.</Value>
+  </String>
+  <!-- mods/RegrowthMod.cs -->
+  <String>
+    <Key>(GUI)The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast, firewood to 80% (GATHERED-DOWN PLANTS REGROW SLOWLY).</Key>
+    <Value>The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast, firewood to 80% (GATHERED-DOWN PLANTS REGROW SLOWLY).</Value>
+  </String>
+  <String>
+    <Key>(GUI)The column shows current regrowth, rounded down. This resource is not slowed by gathering it down.</Key>
+    <Value>The column shows current regrowth, rounded down. This resource is not slowed by gathering it down.</Value>
   </String>
   <!-- mods/SelfPreservationMod.cs -->
   <String>
     <Key>(GUI)stops chasing vermin: {0} threatens the colony.</Key>
     <Value>stops chasing vermin: {0} threatens the colony.</Value>
+  </String>
+  <!-- mods/ToolCareMod.cs -->
+  <String>
+    <Key>(GUI)takes the {0} back to the stockpile before going on.</Key>
+    <Value>takes the {0} back to the stockpile before going on.</Value>
+  </String>
+  <String>
+    <Key>(GUI)takes the {0} back to camp before going on.</Key>
+    <Value>takes the {0} back to camp before going on.</Value>
+  </String>
+  <String>
+    <Key>(GUI)takes the {0} back to the {1} before going on.</Key>
+    <Value>takes the {0} back to the {1} before going on.</Value>
+  </String>
+  <!-- mods/TradeMod.cs -->
+  <String>
+    <Key>(GUI) at night</Key>
+    <Value> at night</Value>
+  </String>
+  <String>
+    <Key>(GUI) around noon</Key>
+    <Value> around noon</Value>
+  </String>
+  <String>
+    <Key>(GUI) in the morning</Key>
+    <Value> in the morning</Value>
+  </String>
+  <String>
+    <Key>(GUI) in the afternoon</Key>
+    <Value> in the afternoon</Value>
+  </String>
+  <String>
+    <Key>(GUI) in the evening</Key>
+    <Value> in the evening</Value>
+  </String>
+  <String>
+    <Key>(GUI)within the hour</Key>
+    <Value>within the hour</Value>
+  </String>
+  <String>
+    <Key>(GUI)a couple of hours</Key>
+    <Value>a couple of hours</Value>
+  </String>
+  <String>
+    <Key>(GUI)a few hours</Key>
+    <Value>a few hours</Value>
+  </String>
+  <String>
+    <Key>(GUI)half a day</Key>
+    <Value>half a day</Value>
+  </String>
+  <String>
+    <Key>(GUI)about a day</Key>
+    <Value>about a day</Value>
+  </String>
+  <String>
+    <Key>(GUI)a day or two</Key>
+    <Value>a day or two</Value>
+  </String>
+  <String>
+    <Key>(GUI)a few days</Key>
+    <Value>a few days</Value>
+  </String>
+  <String>
+    <Key>(GUI)about a week</Key>
+    <Value>about a week</Value>
+  </String>
+  <String>
+    <Key>(GUI)over a week</Key>
+    <Value>over a week</Value>
   </String>
   <!-- numbers with their nouns: forms separated by | -->
   <String>

@@ -43,5 +43,5 @@ public static class TradeMod
 
     /// <summary>The arrival date and the part of the day.</summary>
     public static string ArrivalAt(UWGame.SimSide.DateAndTime.TimeDateYear eta) =>
-        " on " + eta.ToString() + ", " + UWGame.SimSide.DateAndTime.GetTimeOfDayAsString(eta.TimeOfDay);
+        string.Format(UWGame.Locale.Text(" on {0}, {1}"), eta.ToString(), UWGame.SimSide.DateAndTime.GetTimeOfDayAsString(eta.TimeOfDay));
 }

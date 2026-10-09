@@ -125,8 +125,8 @@ public static class RegrowthMod
             return null;
         }
         return Array.IndexOf(PlantKeys, type.KeyName) >= 0
-            ? "The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast, firewood to 80% (GATHERED-DOWN PLANTS REGROW SLOWLY)."
-            : "The column shows current regrowth, rounded down. This resource is not slowed by gathering it down.";
+            ? UWGame.Locale.Text("The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast, firewood to 80% (GATHERED-DOWN PLANTS REGROW SLOWLY).")
+            : UWGame.Locale.Text("The column shows current regrowth, rounded down. This resource is not slowed by gathering it down.");
     }
 
     /// <summary>
