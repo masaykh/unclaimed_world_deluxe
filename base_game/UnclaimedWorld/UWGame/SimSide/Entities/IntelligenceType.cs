@@ -1,378 +1,679 @@
+﻿//// MIGRATED FROM ORIGINAL SOURCE
+using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
-using UWGame.SimSide.AllGameData;
-using UWGame.SimSide.Combat;
+using System.Linq;
+using System.Text;
+using UWGame.SimSide.AI.Needs;
 using UWGame.SimSide.Entities.Body;
-using UWGame.SimSide.InGameEvents.Actions;
-using UWGame.SimSide.Resources;
+using System.Xml.Serialization;
+using System.Collections;
+using UWGame.SimSide.Systems;
 using UWGame.SimSide.Systems.Triggers;
+using UWGame.SimSide.InGameEvents.Actions;
+using UWGame.SimSide.AllGameData;
+using UWGame.SimSide.Resources;
+using UWGame.SimSide.Combat;
 using UWGame.SimSide.XmlCollections;
+using UWGame.ClientSide.Renderables;
+using Xclna.Xna.Animation;
+using UWGame.SimSide.Communication;
 
-namespace UWGame.SimSide.Entities;
-
-public class IntelligenceType : IXmlSerializable
+namespace UWGame.SimSide.Entities
 {
-	public bool IsMobile;
+    /// <summary>
+    /// a ranking of strength of the mature entity of a species
+    /// perhaps make this a class instead of enum.
+    /// </summary>
+    public enum StrengthRating { None, VeryWeak, WeakerThanHumans, LikeHumans, StrongerThanHumans, VeryStrong}
+
+   
+   // public enum Boldness { Cautious, Normal, Careless }
+
+   
+
+    public class IntelligenceType: IXmlSerializable
+    {
+        public bool IsMobile;
+        
+        public string[] Attacks;
+
+        public string[] IntrinsicTools;
+        public string[] IntrinsicWeapons;
+
+
+        /// <summary>
+        /// we can communicate for short distances beyond the site...
+        /// </summary>
+      //  public CommunicatorType[] IntrinsicCommunicators;
+      
+
+        /// <summary>
+        /// tools as Entity? would make the combos easier in EvaluateJob. Tools should be parts also.
+        /// 
+        /// what about bios..? 
+        /// bioweapons with ammo? made as entities, but not parts...
+        /// </summary>
+        [XmlIgnore]
+        public List<EntityType> IntrinsicToolTypes;
+
+        [XmlIgnore]
+        public List<EntityType> IntrinsicWeaponTypes;
+
+
+        [XmlIgnore]
+        public List<AttackType> AttackTypes;
+        public DefendActionType[] DefendActionTypes;
+        public ScareActionType[] ScareActionTypes;
+
+      
+        /// <summary>
+        /// this tag can group together similar entity types to handle their ability to transact with containers
+        /// </summary>
+        public string ContainerTransactTag;
+
+        /// <summary>
+        /// for efficiency(?), the string tags are replaced with an int...
+        /// </summary>
+        [XmlIgnore]
+        public int? ContainerTransactValue;
 
-	public string[] Attacks;
+
+       
+        public float IdleChanceToTalk;
 
-	public string[] IntrinsicTools;
+        /// <summary>
+        /// placeholder - delete this
+        /// 
+        /// seems too simplistic because it does not account for the place in the food chain
+        /// </summary>
+        public bool IsPredator = false;
 
-	public string[] IntrinsicWeapons;
+       
 
-	[XmlIgnore]
-	public List<EntityType> IntrinsicToolTypes;
+        /// <summary>
+        /// will attack nearby vermin on its own (like the dog)
+        /// </summary>
+        public bool HuntsVermin = false;
 
-	[XmlIgnore]
-	public List<EntityType> IntrinsicWeaponTypes;
+        /// <summary>
+        /// some critters are ornery and will attack other critters that get too close, even if they pose no threat to them. 
+        /// Needed when we have IsTerritorial????
+        /// </summary>
+        public bool WillAttackNonThreatsNearby = false;
 
-	[XmlIgnore]
-	public List<AttackType> AttackTypes;
+        public bool OtherAgentsNearExpeditionCenterAreConsideredThreats = false;
 
-	public DefendActionType[] DefendActionTypes;
+        /// <summary>
+        /// How far away from expeditions do we generate vermin threat jobs.
+        /// Patrol zones can override this.
+        /// Only the Allegiance's RepresentativeEntity property is used
+        /// </summary>
+        public float? MaxDistanceFromExpeditionsToHuntVermin;
 
-	public ScareActionType[] ScareActionTypes;
+        public StrengthRating StrengthRating = StrengthRating.LikeHumans;
 
-	public string ContainerTransactTag;
+        /// <summary>
+        /// 0-1 - is the species bold (= 1) or does it try to avoid enemies (= 0)
+        /// 
+        /// This can not become a bio property, since the threat map is shared...
+        /// </summary>
+        public float Boldness = 0.5f;
 
-	[XmlIgnore]
-	public int? ContainerTransactValue;
+        /// <summary>
+        /// 0 - 1: courage = 1 means the species is never affected by morale.
+        /// </summary>
+        public float Courage = 0.5f;
 
-	public float IdleChanceToTalk;
+        /// <summary>
+        /// how likely are we to attack entities that come near us?
+        /// </summary>
+      //  public float Aggressiveness = 0f;
 
-	public bool IsPredator;
+        /// <summary>
+        /// Make sure you want to access this one directly and not use the
+        /// function to get this variable in Allegiance.
+        /// </summary>
+        public int ForageAndHuntingRadius = 500;
+        public float MembersScoutingFraction = 1f;
 
-	public bool HuntsVermin;
 
-	public bool WillAttackNonThreatsNearby;
+      
 
-	public bool OtherAgentsNearExpeditionCenterAreConsideredThreats;
+        #region Pickup Anim durations
+        // from file AnimDurations.txt
 
-	public float? MaxDistanceFromExpeditionsToHuntVermin;
+        /*
+man_pickupHeavy 18 (17*0,04)   =0,68    ......actionpoint(with bindpose=0): 9 (8 = 0,32)
+man_pickupLight 31 = 1,2		......actionpoint(with bindpose=0): 15 (14 = 0,56)
+man_pickupLightSame 32 = 1,24		......actionpoint(with bindpose=0): 15 (0,56)
+man_pickupEquipped 44 1,72		......actionpoint(with bindpose=0): 13 (12 = 0,48)
+man_pickupMounted 25 = 0,96		...actionpoint(with bindpose=0): 13 (12 = 0,48)
 
-	public StrengthRating StrengthRating = StrengthRating.LikeHumans;
 
-	public float Boldness = 0.5f;
+man_dropHeavy 24 (23*0,04)= 0,92     	...actionpoint(with bindpose=0): 12 (11 = 0,44)
+man_dropEquipped 34 = 1,32		...actionpoint(with bindpose=0): 21 (20 = 0,8)
+man_dropLight 31 = 1,2			...actionpoint(with bindpose=0): 17 (16 = 0,64)
+man_dropMounted 25  (24*0,04) = 0,96	...actionpoint(with bindpose=0): 10 (9  = 0,36)
+*/
 
-	public float Courage = 0.5f;
+        public float DropLightDuration = 1.2f;
+        public float DropLightActionPointDuration = 0.64f;
 
-	public int ForageAndHuntingRadius = 500;
+        public float DropHeavyDuration = 0.92f;
+        public float DropHeavyActionPointDuration = 0.44f;
 
-	public float MembersScoutingFraction = 1f;
+        public float pickupMountedEquippedDuration = 1.72f;
+        public float pickupMountedEquippedActionPointDuration = 0.48f;
 
-	public float DropLightDuration = 1.2f;
+        public float pickupEquipDuration = 1.72f;
+        public float pickupEquipActionPointDuration = 0.48f;
 
-	public float DropLightActionPointDuration = 0.64f;
 
-	public float DropHeavyDuration = 0.92f;
+        public float PickupLightDuration = 1.2f;
+        public float PickupLightActionPointDuration = 0.56f;
 
-	public float DropHeavyActionPointDuration = 0.44f;
+        public float PickupHeavyDuration = 0.68f;
+        public float PickupHeavyActionPointDuration = 0.32f;
 
-	public float pickupMountedEquippedDuration = 1.72f;
+        public float pickupMountDuration = 0.96f;
+        public float pickupMountActionPointDuration = 0.48f;
 
-	public float pickupMountedEquippedActionPointDuration = 0.48f;
+        public float SwitchLightToLightDuration = 2.4f; // 1.24f;
+        public float SwitchLightToLightActionPointDuration = 1.2f; // 0.56f;
 
-	public float pickupEquipDuration = 1.72f;
+        #endregion
 
-	public float pickupEquipActionPointDuration = 0.48f;
+        #region Drop Anim durations
 
-	public float PickupLightDuration = 1.2f;
+        public float dropEquippedDuration = 1.32f;
+        public float dropEquippedActionPointDuration = 0.8f;
 
-	public float PickupLightActionPointDuration = 0.56f;
+        public float dropMountedDuration = 0.96f;
+        public float dropMountedActionPointDuration = 0.36f;
 
-	public float PickupHeavyDuration = 0.68f;
+        public float DropLightToLightActionPointDuration = 0.6f;
+        public float DropLightToLightDuration = 1.24f; // 
 
-	public float PickupHeavyActionPointDuration = 0.32f;
+        public float dropMountToMountActionPointDuration = 0.5f; // TODO
+        public float dropMountToMountDuration = 1f; // TODO
 
-	public float pickupMountDuration = 0.96f;
+        #endregion
 
-	public float pickupMountActionPointDuration = 0.48f;
+        /// <summary>
+        /// how likely will we flee when attacked/injured
+        /// 1 = never flee
+        /// 0 = always flee
+        /// </summary>
+        public float FightOverFleeProbability = 0.5f;
+                
+        /// <summary>
+        /// how quickly do we recover from fleeing in panic
+        /// </summary>
+        public float MoraleIncreasePerDay = 60f; //MP 2014 oct 10. was: 60f but they still did not recover for more than half a day and stayed in panic!!...because of coupled to hitpoints..     MP 2014 sep.  was: 8f 
+        
+      
 
-	public float SwitchLightToLightDuration = 2.4f;
+        /// <summary>
+        /// only from the representative entity type
+        /// </summary>
+        public string[] ExpeditionPolledEvents; 
 
-	public float SwitchLightToLightActionPointDuration = 1.2f;
+        #region Event hooks
 
-	public float dropEquippedDuration = 1.32f;
 
-	public float dropEquippedActionPointDuration = 0.8f;
+        [XmlIgnore]
+        public Dictionary<AgentActionHooks, List<ActionSets>> EventActions = new Dictionary<AgentActionHooks,List<ActionSets>>();
 
-	public float dropMountedDuration = 0.96f;
+        [XmlIgnore]
+        public Dictionary<EntityType, List<ActionSets>> DetectEntityTypeEvents = new Dictionary<EntityType,List<ActionSets>>();
 
-	public float dropMountedActionPointDuration = 0.36f;
+        [XmlIgnore]
+        public Dictionary<ResourceType, List<ActionSets>> DetectResourceTypeEvents = new Dictionary<ResourceType,List<ActionSets>>();
 
-	public float DropLightToLightActionPointDuration = 0.6f;
 
-	public float DropLightToLightDuration = 1.24f;
+        /// <summary>
+        /// actions to fire when this entity triggers a trigger
+        /// key is TriggerType keyname
+        /// 
+        /// TODO: move to EntityType and refactor to use the same pattern as the event hooks
+        /// </summary>
+      //  public SerializableDictionary<string, ActionSets> TriggerEventActions;
 
-	public float dropMountToMountActionPointDuration = 0.5f;
+        #endregion
 
-	public float dropMountToMountDuration = 1f;
+        /// <summary>
+        /// 0-1
+        /// the chance that the agent may rest for a bit after an attack
+        /// can be overridden in AttackType
+        /// </summary>
+        public double? ChanceToRestAfterMeleeAttack;
+        public double? ChanceToRestAfterRangedAttack;
 
-	public float FightOverFleeProbability = 0.5f;
 
-	public float MoraleIncreasePerDay = 60f;
+        /// <summary>
+        /// the rest time will be computed using a random normal distribution limited by these values
+        /// can be overridden in AttackType
+        /// </summary>
+        public float? MaxRestTimeAfterAttackingInSeconds;
+        public float? MinRestTimeAfterAttackingInSeconds;
 
-	public string[] ExpeditionPolledEvents;
+        [XmlIgnore]
+        public float? RestTimeAfterAttackingMean;
+        [XmlIgnore]
+        public float? RestTimeAfterAttackingStandardDeviation;
 
-	[XmlIgnore]
-	public Dictionary<AgentActionHooks, List<ActionSets>> EventActions = new Dictionary<AgentActionHooks, List<ActionSets>>();
+        
+        /// <summary>
+        /// the number of days that memory facts are stored
+        /// </summary>
+        public float MemoryInDays = 6f;
 
-	[XmlIgnore]
-	public Dictionary<EntityType, List<ActionSets>> DetectEntityTypeEvents = new Dictionary<EntityType, List<ActionSets>>();
+        /// <summary>
+        /// only affects mobile entities, because
+        /// only mobile entities can panic per default.
+        /// </summary>
+        public bool CanPanic = true;
 
-	[XmlIgnore]
-	public Dictionary<ResourceType, List<ActionSets>> DetectResourceTypeEvents = new Dictionary<ResourceType, List<ActionSets>>();
+        /// <summary>
+        /// the range within which other entities are seen as a threat and triggers attack
+        /// 
+        /// can also be speicifed as a bio property
+        /// </summary>
+        public float? AggroRange;
 
-	public double? ChanceToRestAfterMeleeAttack;
+        /// <summary>
+        /// the max range that allegiance members will move towards a common threat.
+        /// It makes sense for assistance range to be much greater than aggro range and sensor range.
+        /// </summary>
+        public float? AssistanceRange;
 
-	public double? ChanceToRestAfterRangedAttack;
 
-	public float? MaxRestTimeAfterAttackingInSeconds;
+        public float? ChanceToIdleWalkShortDistanceAway;
+        public float? ShortIdleWalkMaxDistance;
+        public float? ShortIdleWalkMinDistance;
 
-	public float? MinRestTimeAfterAttackingInSeconds;
 
-	[XmlIgnore]
-	public float? RestTimeAfterAttackingMean;
+        public string[] InterestInTriggerTypes;
 
-	[XmlIgnore]
-	public float? RestTimeAfterAttackingStandardDeviation;
+        [XmlIgnore]
+        public Dictionary<TriggerType, bool> HasInterestInTriggers = new Dictionary<TriggerType,bool>();
 
-	public float MemoryInDays = 6f;
+        public bool? AllowEscapeFromTinyAreas;
+     
+        public bool? CanSpeak;
 
-	public bool CanPanic = true;
+        public bool? CanTradeAndCommunicate;
 
-	public float? AggroRange;
 
-	public float? AssistanceRange;
+        /// <summary>
+        /// if true, will add job evaluators to non-persons
+        /// </summary>
+        public bool? CanScout;
 
-	public float? ChanceToIdleWalkShortDistanceAway;
 
-	public float? ShortIdleWalkMaxDistance;
+        public bool? CanExamine;
 
-	public float? ShortIdleWalkMinDistance;
 
-	public string[] InterestInTriggerTypes;
+        /// <summary>
+        /// also needs attacks
+        /// </summary>
+        public bool? CanPatrol;
 
-	[XmlIgnore]
-	public Dictionary<TriggerType, bool> HasInterestInTriggers = new Dictionary<TriggerType, bool>();
+        /// <summary>
+        /// also needs a locomotor
+        /// </summary>
+        public bool? CanDoJobs;
 
-	public bool? AllowEscapeFromTinyAreas;
 
-	public bool? CanSpeak;
+        public bool? CanProduce;        
+       
+        /// <summary>
+        /// also needs itemstorage
+        /// </summary>
+        public bool? CanHaul;
 
-	public bool? CanTradeAndCommunicate;
 
-	public bool? CanScout;
+        public bool? CanCheckProgress;
+       
+        /// <summary>
+        /// also needs attacks
+        /// </summary>
+        public bool? CanHunt;
+        
+        public bool? CanAttack;
 
-	public bool? CanExamine;
+        /// <summary>
+        /// if false, can only use intrinsic attacks.
+        /// if true, AgentStorage must also be defined.
+        /// </summary>
+        public bool? CanUseWeapons;
 
-	public bool? CanPatrol;
 
-	public bool? CanDoJobs;
+        public bool? CanUseGadgets;
+
+
+        public bool? CanEmigrate;
+
+        /// <summary>
+        /// if false, can only use intrinsic tools.
+        /// if true, AgentStorage must also be defined.
+        /// </summary>
+        public bool? CanMountTools;
 
-	public bool? CanProduce;
+        /// <summary>
+        /// true if the agent can replenish weapons, tools etc. Requires AgentStorage.
+        /// </summary>
+        public bool? CanReplenish;
 
-	public bool? CanHaul;
+        /// <summary>
+        /// true for people, false for others..?
+        /// The representative entity type for the whole allegiance controls this.
+        /// so for robots and dogs in the human allegiance, this setting does not matter..
+        /// </summary>
+        public bool RespectsOwnership = false;
 
-	public bool? CanCheckProgress;
+        /// <summary>
+        /// if false, the entity does not react to ratings and never migrates on its own
+        /// </summary>
+      //  public bool IsIndependent = true;
 
-	public bool? CanHunt;
+        public string[] Prey;
+
+        [XmlIgnore]
+        public HashSet<EntityType> PreyTypes;
+      //  public List<EntityType> PreyTypes;
+
 
-	public bool? CanAttack;
+        /// <summary>
+        /// if member of an allegiance as a servant, the entity does not react to ratings and never migrates on its own
+        /// </summary>
+        public string ServantForEntityTypeTag;
 
-	public bool? CanUseWeapons;
-
-	public bool? CanUseGadgets;
-
-	public bool? CanEmigrate;
-
-	public bool? CanMountTools;
-
-	public bool? CanReplenish;
-
-	public bool RespectsOwnership;
-
-	public string[] Prey;
-
-	[XmlIgnore]
-	public HashSet<EntityType> PreyTypes;
-
-	public string ServantForEntityTypeTag;
-
-	public string[] HasServantsTags;
-
-	[XmlIgnore]
-	public List<EntityType> HasServants;
-
-	public SerializableDictionary<string, float> Skills;
-
-	public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(IntelligenceType))
-	{
-		TypeMappings = DataLoader.GetListOfTypeMappings()
-	};
-
-	public void PostLoadContentInitialize(EntityType parent)
-	{
-		if (ContainerTransactTag != null && GameData.Instance.ContainerTags.TryGetValue(ContainerTransactTag, out var value))
-		{
-			ContainerTransactValue = value;
-		}
-		if (HasServantsTags != null)
-		{
-			HasServants = new List<EntityType>();
-			string[] hasServantsTags = HasServantsTags;
-			foreach (string key in hasServantsTags)
-			{
-				if (GameData.Instance.ServantEntityTypeByTag.TryGetValue(key, out var value2))
-				{
-					HasServants.AddRange(value2);
-				}
-			}
-		}
-		if (parent.IntelligenceType != null && parent.IntelligenceType.IsPredator)
-		{
-			HasInterestInTriggers.Add(GameData.Instance.AllTriggerTypes["prey"], value: true);
-		}
-		if (GameData.Instance.AgentActionHooksByEntityType.TryGetValue(parent, out var value3))
-		{
-			foreach (AgentActionHook item in value3)
-			{
-				Common.AddToMultiList(EventActions, item.Hook, GameData.Instance.AllActionSets[item.ActionSetsKey]);
-			}
-		}
-		if (GameData.Instance.DetectedEntityHooksByEntityType.TryGetValue(parent, out var value4))
-		{
-			foreach (DetectEntityTypeHook item2 in value4)
-			{
-				EntityType key2 = GameData.Instance.AllEntityTypes[item2.DetectedEntityKey];
-				Common.AddToMultiList(DetectEntityTypeEvents, key2, GameData.Instance.AllActionSets[item2.ActionSetsKey]);
-			}
-		}
-		if (GameData.Instance.DetectedResourceHooksByEntityType.TryGetValue(parent, out var value5))
-		{
-			foreach (DetectResourceTypeHook item3 in value5)
-			{
-				ResourceType key3 = GameData.Instance.AllResourceTypes[item3.DetectedResourceKey];
-				if (!DetectResourceTypeEvents.TryGetValue(key3, out var value6))
-				{
-					value6 = new List<ActionSets>();
-					DetectResourceTypeEvents.Add(key3, value6);
-				}
-				value6.Add(GameData.Instance.AllActionSets[item3.ActionSetsKey]);
-			}
-		}
-		if (IntrinsicTools != null)
-		{
-			IntrinsicToolTypes = new List<EntityType>();
-			string[] hasServantsTags = IntrinsicTools;
-			foreach (string key4 in hasServantsTags)
-			{
-				IntrinsicToolTypes.Add(GameData.Instance.AllEntityTypes[key4]);
-			}
-		}
-		if (IntrinsicWeapons != null)
-		{
-			IntrinsicWeaponTypes = new List<EntityType>();
-			string[] hasServantsTags = IntrinsicWeapons;
-			foreach (string key5 in hasServantsTags)
-			{
-				IntrinsicWeaponTypes.Add(GameData.Instance.AllEntityTypes[key5]);
-			}
-		}
-		if (Prey != null)
-		{
-			PreyTypes = new HashSet<EntityType>();
-			string[] hasServantsTags = Prey;
-			foreach (string key6 in hasServantsTags)
-			{
-				PreyTypes.Add(GameData.Instance.AllEntityTypes[key6]);
-			}
-		}
-	}
-
-	public static bool AttackTypeIsFunctional(UWGame.SimSide.Entities.Body.Body entityBody, AttackType attackType)
-	{
-		if (attackType.DependsOn == null || attackType.DependsOn.Length == 0)
-		{
-			return true;
-		}
-		return AreDependentBodyPartsFunctional(attackType.DependsOn, entityBody);
-	}
-
-	public static bool DefendActionTypeIsFunctional(UWGame.SimSide.Entities.Body.Body entityBody, DefendActionType defendType)
-	{
-		if (defendType.DependsOn == null || defendType.DependsOn.Length == 0)
-		{
-			return true;
-		}
-		return AreDependentBodyPartsFunctional(defendType.DependsOn, entityBody);
-	}
-
-	public bool CanMountToolsOrWeapons()
-	{
-		if (CanUseWeapons != true)
-		{
-			return CanMountTools == true;
-		}
-		return true;
-	}
-
-	private static bool AreDependentBodyPartsFunctional(BodyPartType[] dependentBodyParts, UWGame.SimSide.Entities.Body.Body entityBody)
-	{
-		foreach (BodyPartType bodyPartType in dependentBodyParts)
-		{
-			BodyPart bodyPart = entityBody.FindBodyPartOfType(bodyPartType);
-			if (bodyPart != null && !bodyPart.IsFunctional())
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public void Initialize(EntityType parent)
-	{
-		if (MinRestTimeAfterAttackingInSeconds.HasValue && MaxRestTimeAfterAttackingInSeconds.HasValue)
-		{
-			Common.GetNormalDistributionFromMinMaxValues(MinRestTimeAfterAttackingInSeconds.Value, MaxRestTimeAfterAttackingInSeconds.Value, out RestTimeAfterAttackingMean, out RestTimeAfterAttackingStandardDeviation);
-		}
-		if (InterestInTriggerTypes != null)
-		{
-			string[] interestInTriggerTypes = InterestInTriggerTypes;
-			foreach (string key in interestInTriggerTypes)
-			{
-				HasInterestInTriggers.Add(GameData.Instance.AllTriggerTypes[key], value: true);
-			}
-		}
-		if (Attacks != null)
-		{
-			AttackTypes = new List<AttackType>();
-			string[] interestInTriggerTypes = Attacks;
-			foreach (string key2 in interestInTriggerTypes)
-			{
-				AttackTypes.Add(GameData.Instance.AllAttackTypes[key2]);
-			}
-		}
-		if (!string.IsNullOrEmpty(ServantForEntityTypeTag))
-		{
-			DataLoader.AddToTagCollection(parent, ServantForEntityTypeTag, GameData.Instance.ServantEntityTypeByTag);
-		}
-	}
-
-	public XmlSchema GetSchema()
-	{
-		return null;
-	}
-
-	public void ReadXml(XmlReader reader)
-	{
-		CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
-	}
-
-	public void WriteXml(XmlWriter writer)
-	{
-		CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
-	}
+        /// <summary>
+        /// any entity with this tag that becomes a member of an allegiance which has this entity type as representative type, will be a servant...
+        /// </summary>
+        public string[] HasServantsTags;
+
+        [XmlIgnore]
+        public List<EntityType> HasServants;
+
+        /// <summary>
+        /// skills with default values
+        /// </summary>
+        public SerializableDictionary<string, float> Skills;
+
+
+        public void PostLoadContentInitialize(EntityType parent)
+        {
+            
+          //  canEnter = GameData.CreateBitArrayFromTags(GameData.Instance.EnterBuildingByTag, BuildingEntranceDesignerTags);
+            int enter;
+            if (ContainerTransactTag != null)
+            {
+                if (GameData.Instance.ContainerTags.TryGetValue(ContainerTransactTag, out enter)) // #TutorialBug!!!
+                {
+                    ContainerTransactValue = enter;
+                }
+            }
+
+            if (HasServantsTags != null)
+            {
+                HasServants = new List<EntityType>();
+                foreach (var item in HasServantsTags)
+                {
+                    List<EntityType> list;
+                    if (GameData.Instance.ServantEntityTypeByTag.TryGetValue(item, out list))
+                    {
+                        HasServants.AddRange(list);
+                    }
+                }
+            }
+
+
+            if (parent.IntelligenceType != null)
+            {
+                if (parent.IntelligenceType.IsPredator)
+                {
+                    HasInterestInTriggers.Add(GameData.Instance.AllTriggerTypes["prey"], true);
+                }
+            }
+
+            List<AgentActionHook> agentActionHooks;
+            if (GameData.Instance.AgentActionHooksByEntityType.TryGetValue(parent, out agentActionHooks))
+            {
+                // group actions by hook type:
+                foreach (var item in agentActionHooks)
+                {
+                   /* List<ActionSets> actions;
+                    if (!this.EventActions.TryGetValue(item.Hook, out actions))
+                    {
+                        actions = new List<ActionSets>();
+                        this.EventActions.Add(item.Hook, actions);
+                    }
+                    
+                    actions.Add(GameData.Instance.AllActionSets[item.ActionSetsKey]);*/
+
+                    if (item.Hook == AgentActionHooks.DecidedToLeaveAllegiance)
+                    {
+
+                    }
+
+
+                    Common.AddToMultiList(this.EventActions, item.Hook, GameData.Instance.AllActionSets[item.ActionSetsKey]);
+                }               
+            }
+
+
+            List<DetectEntityTypeHook> detectEntityTypeActions;
+            if (GameData.Instance.DetectedEntityHooksByEntityType.TryGetValue(parent, out detectEntityTypeActions))
+            {
+                // group actions by detected entity type: (I tried generalizing this code, but stumbled on the 'trigger' type)
+                foreach (var item in detectEntityTypeActions)
+                {
+                    EntityType detectedEntityType = GameData.Instance.AllEntityTypes[item.DetectedEntityKey];
+
+                  /*  List<ActionSets> actions;
+                    
+                    if (!this.DetectEntityTypeEvents.TryGetValue(detectedEntityType, out actions))
+                    {
+                        actions = new List<ActionSets>();
+                        this.DetectEntityTypeEvents.Add(detectedEntityType, actions);
+                    }
+
+                    actions.Add(GameData.Instance.AllActionSets[item.ActionSetsKey]);
+                    */
+
+                    Common.AddToMultiList(this.DetectEntityTypeEvents, detectedEntityType, GameData.Instance.AllActionSets[item.ActionSetsKey]);
+                }
+            }
+
+            List<DetectResourceTypeHook> detectResourceTypeActions;
+            if (GameData.Instance.DetectedResourceHooksByEntityType.TryGetValue(parent, out detectResourceTypeActions))
+            {
+                // group actions by detected resource type
+                foreach (var item in detectResourceTypeActions)
+                {
+                    List<ActionSets> actions;
+                    ResourceType detectedEntityType = GameData.Instance.AllResourceTypes[item.DetectedResourceKey];
+                    if (!this.DetectResourceTypeEvents.TryGetValue(detectedEntityType, out actions))
+                    {
+                        actions = new List<ActionSets>();
+                        this.DetectResourceTypeEvents.Add(detectedEntityType, actions);
+                    }
+
+                    actions.Add(GameData.Instance.AllActionSets[item.ActionSetsKey]);
+                }
+            }
+
+            if (IntrinsicTools != null)
+            {
+                IntrinsicToolTypes = new List<EntityType>();
+                foreach (var item in IntrinsicTools)
+                {
+                    IntrinsicToolTypes.Add(GameData.Instance.AllEntityTypes[item]);
+                }
+            }
+
+            if (IntrinsicWeapons != null)
+            {
+                IntrinsicWeaponTypes = new List<EntityType>();
+                foreach (var item in IntrinsicWeapons)
+                {
+                    IntrinsicWeaponTypes.Add(GameData.Instance.AllEntityTypes[item]);
+                }
+            }
+
+            if (Prey != null)
+            {
+                PreyTypes = new HashSet<EntityType>();
+                foreach (var item in Prey)
+                {
+                    PreyTypes.Add(GameData.Instance.AllEntityTypes[item]);
+                }
+
+            }
+
+            /*
+            if (parent.Person != null)
+            {
+                HasInterestInTriggers.Add(GameData.Instance.AllTriggerTypes["entityDied"], true);
+            }*/
+        }
+
+
+     
+
+
+
+        /// <summary>
+        /// see if all the body parts that we depend on for this attack are there.
+        /// </summary>
+        /// <param name="attackType"></param>
+        /// <returns></returns>
+        public static bool AttackTypeIsFunctional(/*Entity entity,*/ Body.Body entityBody, AttackType attackType)
+        {
+            if (attackType.DependsOn == null || attackType.DependsOn.Length == 0)
+            {
+                return true;
+            }
+
+            return AreDependentBodyPartsFunctional(attackType.DependsOn, entityBody);
+        }
+
+        public static bool DefendActionTypeIsFunctional(Body.Body entityBody, DefendActionType defendType)
+        {
+            if (defendType.DependsOn == null || defendType.DependsOn.Length == 0)
+            {
+                return true;
+            }
+
+            return AreDependentBodyPartsFunctional(defendType.DependsOn, entityBody);
+        }
+
+
+        public bool CanMountToolsOrWeapons()
+        {
+            return CanUseWeapons == true || CanMountTools == true;
+
+        }
+
+        private static bool AreDependentBodyPartsFunctional(BodyPartType[] dependentBodyParts, Body.Body entityBody) //, AttackType attackType)
+        {
+            BodyPart foundBodyPart;
+            foreach (BodyPartType bodyPartType in dependentBodyParts)
+            {
+                foundBodyPart = entityBody.FindBodyPartOfType(bodyPartType);
+                if (foundBodyPart != null)
+                {
+                    if (!foundBodyPart.IsFunctional())
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+       /* public bool CanEnterBuilding(EntityType buildingType)
+        {
+            if (CanAccess.HasValue)
+            {
+                if (buildingType.ContainerType != null)
+                {
+                    return buildingType.ContainerType.ContentsCanBeAccessedBy[CanAccess.Value];
+                }
+                else return true; // ??
+            }
+            else return false;
+        }*/
+       
+
+        public IntelligenceType()
+        {
+            
+        }
+
+        public void Initialize(EntityType parent) 
+        {
+            if (MinRestTimeAfterAttackingInSeconds.HasValue && MaxRestTimeAfterAttackingInSeconds.HasValue)
+            {
+                Common.GetNormalDistributionFromMinMaxValues(MinRestTimeAfterAttackingInSeconds.Value, MaxRestTimeAfterAttackingInSeconds.Value,
+                    out RestTimeAfterAttackingMean, out RestTimeAfterAttackingStandardDeviation);
+            }
+
+
+            if (InterestInTriggerTypes != null)
+            {
+                foreach (var item in InterestInTriggerTypes)
+                {
+                    HasInterestInTriggers.Add(GameData.Instance.AllTriggerTypes[item], true);
+                }
+            }
+
+            if (Attacks != null)
+            {
+                AttackTypes = new List<AttackType>(); // new AttackType[Attacks.Length];
+
+                foreach (var item in Attacks)
+                {
+                    AttackTypes.Add(GameData.Instance.AllAttackTypes[item]);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(ServantForEntityTypeTag))
+            {
+                BaseDataLoader.AddToTagCollection(parent,
+                    ServantForEntityTypeTag, GameData.Instance.ServantEntityTypeByTag);
+            }
+
+           
+        }
+
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            CustomXmlSerializer.ReadXmlDeserialize(this, reader, _proxyData);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            CustomXmlSerializer.WriteXmlSerialize(this, writer, _proxyData);
+        }
+
+        public static readonly CustomXmlSerializer.XmlProxyData _proxyData = new CustomXmlSerializer.XmlProxyData(typeof(IntelligenceType))
+        {
+            TypeMappings = BaseDataLoader.GetListOfTypeMappings()
+        };
+       
+
+
+        #endregion
+    }
 }
