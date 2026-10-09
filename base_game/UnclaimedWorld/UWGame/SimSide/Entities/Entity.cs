@@ -9742,6 +9742,7 @@ namespace UWGame.SimSide.Entities
             }
         }
 
+        /*
         private void GetInhabitants(ref List<IHasExposedProperties> listOfChildren)
         {
             if (EntityType.StructureType != null)
@@ -9760,6 +9761,7 @@ namespace UWGame.SimSide.Entities
                 }
             }
         }
+        */
 
         private static void GetContained(SharedKnowledge getterKnowledge, IHasExposedProperties hasProperties, ref List<IHasExposedProperties> listOfChildren)
         {
