@@ -6,100 +6,148 @@ namespace UWGame.SimSide.Expeditions;
 
 public class ProductionOrders : ISnapshot
 {
-	public Dictionary<EntityType, ProductionOrder> Orders = new Dictionary<EntityType, ProductionOrder>();
+    /// <summary>
+    /// contains an entry for all item types
+    /// </summary>
+    public Dictionary<EntityType, ProductionOrder> Orders = new Dictionary<EntityType, ProductionOrder>();
 
-	private bool ordersAreDirty = true;
+    /// <summary>
+    /// carcass orders also go into this smaller collection for iterating
+    /// </summary>
+    //  public Dictionary<EntityType, ProductionOrder> CarcassOrders = new Dictionary<EntityType, ProductionOrder>();
 
-	private int totalOrders;
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+    bool ordersAreDirty = true;
+    int totalOrders = 0;
 
-	public int TotalDirectOrders
-	{
-		get
-		{
-			if (ordersAreDirty)
-			{
-				totalOrders = 0;
-				foreach (KeyValuePair<EntityType, ProductionOrder> order in Orders)
-				{
-					ProductionOrder value = order.Value;
-					if (value.ProductionJobsToComplete.HasValue)
-					{
-						totalOrders += value.ProductionJobsToComplete.Value;
-					}
-				}
-				ordersAreDirty = false;
-			}
-			return totalOrders;
-		}
-	}
+    public ProductionOrders()
+    {
+        if (!Snapshotter.IsSnapshotting)
+        {
+            foreach (KeyValuePair<string, EntityType> kvp in GameData.Instance.AllItemTypes)
+            {
+                Orders.Add(kvp.Value, new ProductionOrder());
 
-	public bool IsSnapshotted { get; set; }
+                /* if (kvp.Value.ItemType.CarcassType != null)
+                 {
+                     CarcassOrders.Add(kvp.Value, new ProductionOrder());
+                 }*/
+            }
+        }
+    }
 
-	public ProductionOrders()
-	{
-		if (Snapshotter.IsSnapshotting)
-		{
-			return;
-		}
-		foreach (KeyValuePair<string, EntityType> allItemType in GameData.Instance.AllItemTypes)
-		{
-			Orders.Add(allItemType.Value, new ProductionOrder());
-		}
-	}
 
-	public void SetDirectOrder(EntityType entityType, int amount)
-	{
-		ProductionOrder productionOrder = Orders[entityType];
-		productionOrder.ProductionJobsToComplete = amount;
-		productionOrder.AmountToKeepInStore = null;
-		ordersAreDirty = true;
-	}
+    public void SetDirectOrder(EntityType entityType, int amount)
+    {
+        ProductionOrder order = Orders[entityType];
+        order.ProductionJobsToComplete = amount;
+        order.AmountToKeepInStore = null; // mutex
 
-	public void SetStandingOrder(EntityType entityType, int amount)
-	{
-		ProductionOrder productionOrder = Orders[entityType];
-		productionOrder.AmountToKeepInStore = amount;
-		productionOrder.ProductionJobsToComplete = null;
-	}
+        ordersAreDirty = true;
+    }
 
-	public bool OrdersExist(EntityType entityType)
-	{
-		if (Orders.TryGetValue(entityType, out var value))
-		{
-			if (value.ProductionJobsToComplete.HasValue && value.ProductionJobsToComplete.Value > 0)
-			{
-				return true;
-			}
-			if (value.AmountToKeepInStore.HasValue && value.AmountToKeepInStore.Value > 0)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+    public void SetStandingOrder(EntityType entityType, int amount)
+    {
+        ProductionOrder order = Orders[entityType];
+        order.AmountToKeepInStore = amount;
+        order.ProductionJobsToComplete = null; // mutex
 
-	public ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		Orders = sn.DoDictionary(Orders);
-		sn.Ignore(totalOrders);
-		sn.Ignore(ordersAreDirty);
-		return this;
-	}
+        //ordersAreDirty = true;
+    }
 
-	public void LoadPostProcess(Snapshotter sn)
-	{
-		sn.RegisterLoadPostProcessCall(this);
-		foreach (KeyValuePair<EntityType, ProductionOrder> order in Orders)
-		{
-			order.Value.LoadPostProcess(sn);
-		}
-	}
+    /// <summary>
+    /// direct orders are removed when the job starts, not when the job finishes :(
+    /// </summary>
+    /// <param name="entityType"></param>
+    /// <returns></returns>
+    public bool OrdersExist(EntityType entityType)
+    {
+        ProductionOrder orders;
+        if (Orders.TryGetValue(entityType, out orders))
+        {
+            if (orders.ProductionJobsToComplete.HasValue && orders.ProductionJobsToComplete.Value > 0)
+            {
+                return true;
+            }
+            else if (orders.AmountToKeepInStore.HasValue && orders.AmountToKeepInStore.Value > 0)
+            {
+                return true;
+            }
+        }
 
-	public Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
+        return false;
+    }
+
+
+
+
+
+    /// <summary>
+    /// should only count direct order jobs, not standing order jobs (which the JobManager is responsible for)
+    /// </summary>
+    public int TotalDirectOrders
+    {
+        get
+        {
+            if (ordersAreDirty)
+            {
+                totalOrders = 0;
+                EntityType entityType;
+
+                foreach (var item in Orders)
+                {
+                    entityType = item.Key;
+                    ProductionOrder order = item.Value;
+                    if (order.ProductionJobsToComplete.HasValue)
+                    {
+                        totalOrders += order.ProductionJobsToComplete.Value;
+                    }
+                }
+
+                //totalJobs += ProductionJobs.Sum(p => p.Value.Count);
+
+                ordersAreDirty = false;
+            }
+
+            return totalOrders;
+        }
+    }
+
+    #region ISnapshot
+
+    public ISnapshot DoSnapshot(Snapshotter sn)
+    {
+        Orders = sn.DoDictionary(Orders);
+
+        sn.Ignore(totalOrders);
+        sn.Ignore(ordersAreDirty);
+
+        return this;
+    }
+
+
+    public void LoadPostProcess(Snapshotter sn)
+    {
+        sn.RegisterLoadPostProcessCall(this);
+
+        foreach (var item in Orders)
+        {
+            item.Value.LoadPostProcess(sn);
+        }
+    }
+
+
+    /// <summary>
+    /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+    /// </summary>
+    Snapshotter.Version version = Snapshotter.Version.Original;
+    public Snapshotter.Version DoVersion(Snapshotter sn)
+    {
+        version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+        return version;
+    }
+
+    public bool IsSnapshotted { get; set; }
+
+    #endregion
 }
