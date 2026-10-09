@@ -1217,6 +1217,7 @@ namespace UWGame.SimSide.Expeditions
 
         }
 
+        /*
         private bool GiveFoodToHousehold(EntityType foodType, Household household)
         {
             // select a food item to give
@@ -1225,27 +1226,28 @@ namespace UWGame.SimSide.Expeditions
             return GiveFreeItemInList(household, items);
 
         }
+        */
 
-        /// <summary>
-        /// use this later???
-        /// </summary>
-        /// <param name="household"></param>
-        /// <param name="items"></param>
-        /// <returns></returns>
-        private static bool GiveFreeItemInList(Household household, List<EntityID> items)
-        {
-            /*  foreach (EntityID item in items)
-              {
-                  if (item.IsUnassigned())
-                  {
-                      item.ChangeOwnership(household.Ownership);
+        ///// <summary>
+        ///// use this later???
+        ///// </summary>
+        ///// <param name="household"></param>
+        ///// <param name="items"></param>
+        ///// <returns></returns>
+        //private static bool GiveFreeItemInList(Household household, List<EntityID> items)
+        //{
+        //    /*  foreach (EntityID item in items)
+        //      {
+        //          if (item.IsUnassigned())
+        //          {
+        //              item.ChangeOwnership(household.Ownership);
 
-                      return true;
-                  }
-              }*/
+        //              return true;
+        //          }
+        //      }*/
 
-            return false;
-        }
+        //    return false;
+        //}
 
 
 
