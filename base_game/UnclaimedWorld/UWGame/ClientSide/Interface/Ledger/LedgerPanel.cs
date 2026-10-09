@@ -17,13 +17,13 @@ public class LedgerPanel : RosterPanel
 	private TextArea taHelp;
 
 	public LedgerPanel()
-		: base("LEDGER", 740, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
+		: base(UWGame.Locale.Text("LEDGER"), 740, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
 	{
 		int yPosToCenterTo = 12;
 		Label label = new Label(Interface.gui);
 		lcdSurface.Add(label);
 		label.Init(Label.LabelType.LCDHeadingBlue);
-		label.Text = "DATA:";
+		label.Text = UWGame.Locale.Text("DATA:");
 		label.Position = new Point(0, 0);
 		label.FitToText();
 		label.CenterThisVertically(yPosToCenterTo);
@@ -38,7 +38,7 @@ public class LedgerPanel : RosterPanel
 		lblRange = new Label(Interface.gui);
 		lcdSurface.Add(lblRange);
 		lblRange.Init(Label.LabelType.LCDHeadingRed);
-		lblRange.Text = "RANGE:";
+		lblRange.Text = UWGame.Locale.Text("RANGE:");
 		lblRange.Position = new Point(280, 0);
 		lblRange.FitToText();
 		lblRange.CenterThisVertically(yPosToCenterTo);
@@ -112,10 +112,10 @@ public class LedgerPanel : RosterPanel
 
 	private void PopulateRangesCombo()
 	{
-		cbRange.AddEntry(GraphPanel.Ranges.OneDay, "One day");
-		cbRange.AddEntry(GraphPanel.Ranges.OneSeason, "One season");
-		cbRange.AddEntry(GraphPanel.Ranges.OneYear, "One year");
-		cbRange.AddEntry(GraphPanel.Ranges.TenYears, "Ten years");
+		cbRange.AddEntry(GraphPanel.Ranges.OneDay, UWGame.Locale.Text("One day"));
+		cbRange.AddEntry(GraphPanel.Ranges.OneSeason, UWGame.Locale.Text("One season"));
+		cbRange.AddEntry(GraphPanel.Ranges.OneYear, UWGame.Locale.Text("One year"));
+		cbRange.AddEntry(GraphPanel.Ranges.TenYears, UWGame.Locale.Text("Ten years"));
 		cbRange.SelectionChanged -= cbRange_SelectionChanged;
 		cbRange.SelectedKey = GraphPanel.Ranges.OneYear;
 		cbRange.SelectionChanged += cbRange_SelectionChanged;

@@ -11,7 +11,7 @@ public class PersonnelRosterPanel : RosterPanel
 	private PersonnelList PersonnelList;
 
 	public PersonnelRosterPanel()
-		: base("PERSONNEL", 615, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
+		: base(UWGame.Locale.Text("PERSONNEL"), 615, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
 	{
 		PersonnelList = new PersonnelList(intface, lcdSurface, showSelectors: false, 0, isRoster: true);
 	}

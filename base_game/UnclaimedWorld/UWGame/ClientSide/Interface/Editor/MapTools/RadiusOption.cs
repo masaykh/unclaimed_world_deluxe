@@ -17,7 +17,7 @@ public class RadiusOption : ToolOption
 		Label label = new Label(gui);
 		label.Init(Label.LabelType.LCDNormal);
 		Add(label);
-		label.Text = "SIZE";
+		label.Text = UWGame.Locale.Text("SIZE");
 		label.FitToText();
 		fbToolSize = new FillableBar(gui, FillableBar.FillableBarType.LCDSlider, canGrow: false);
 		Add(fbToolSize);

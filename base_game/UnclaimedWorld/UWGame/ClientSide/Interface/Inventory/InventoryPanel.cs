@@ -87,11 +87,11 @@ public class InventoryPanel : RosterPanel
 	private ImageButton ibCyclopedia;
 
 	private ImageButton btIncludeSalvage;
-	public const string TrackingLimitTooltip = "No more objects can be tracked, cancel some of the other tracked objects first.";
+	public static string TrackingLimitTooltip => UWGame.Locale.Text("No more objects can be tracked, cancel some of the other tracked objects first.");
 
-	public const string expandFilterTooltip = "Display search options";
+	public static string expandFilterTooltip => UWGame.Locale.Text("Display search options");
 
-	public const string collapseFilterTooltip = "Hide search options";
+	public static string collapseFilterTooltip => UWGame.Locale.Text("Hide search options");
 
 	private HashSet<EntityType> currentListData;
 
@@ -128,7 +128,7 @@ public class InventoryPanel : RosterPanel
 	private TextButton latestCheckedTextButton;
 
 	public InventoryPanel()
-		: base("PRODUCTION", 555, needBottomMarginForButtons: false)
+		: base(UWGame.Locale.Text("PRODUCTION"), 555, needBottomMarginForButtons: false)
 	{
 		encyclopediaTint = "#636D8C".ColorFromHex();
 		encyclopediaTint.A = 160;
@@ -164,7 +164,7 @@ public class InventoryPanel : RosterPanel
 		ibList.Click += tbListView_Click;
 		ibList.Y = 0;
 		ibList.X = 0;
-		ibList.ToolTip = "List view";
+		ibList.ToolTip = UWGame.Locale.Text("List view");
 		ibList.Width = 30;
 		ibList.Height = 30;
 		ibList.RecalculateIconPosition();
@@ -173,17 +173,17 @@ public class InventoryPanel : RosterPanel
 		ibCategory.InitWithIcon(ImageButtonType.LCD, "basic_icon_category", hasCheckedState: true);
 		ibCategory.CheckedMode = CheckedModes.CanBeChecked;
 		ibCategory.Click += tbCategoryView_Click;
-		ibCategory.ToolTip = "Category view";
+		ibCategory.ToolTip = UWGame.Locale.Text("Category view");
 		ibCategory.Width = 30;
 		ibCategory.Y = 0;
 		ibCategory.X = 30;
 		ibCategory.IsChecked = true;
 		ibCategory.Height = 30;
 		ibCategory.RecalculateIconPosition();
-		sortingButtons.CreateTextButton(0, 138, "NAME", InventorySettings.SortColumns.Name);
-		sortingButtons.CreateImageButton(134, 72, "IN STOCK", InventorySettings.SortColumns.InStock);
-		sortingButtons.CreateImageButton(202, 168, "CAN PRODUCE", InventorySettings.SortColumns.CanProduce);
-		sortingButtons.CreateImageButton(366, 72, "TRACKED", InventorySettings.SortColumns.Tracking);
+		sortingButtons.CreateTextButton(0, 138, UWGame.Locale.Text("NAME"), InventorySettings.SortColumns.Name);
+		sortingButtons.CreateImageButton(134, 72, UWGame.Locale.Text("IN STOCK"), InventorySettings.SortColumns.InStock);
+		sortingButtons.CreateImageButton(202, 168, UWGame.Locale.Text("CAN PRODUCE"), InventorySettings.SortColumns.CanProduce);
+		sortingButtons.CreateImageButton(366, 72, UWGame.Locale.Text("TRACKED"), InventorySettings.SortColumns.Tracking);
 	}
 
 	private Grid CreateOuterGrid(bool fixedItemHeight)
@@ -224,20 +224,20 @@ public class InventoryPanel : RosterPanel
 		filterAndTrackingPanel.VerticalContentPadding = 5;
 		filterAndTrackingPanel.ContentHeight = 150;
 		lcdSurface.Add(filterAndTrackingPanel.Panel);
-		tbExpand = CreateTextButton(Interface.gui, 4, 5, 30, "MORE", Expand_Click);
+		tbExpand = CreateTextButton(Interface.gui, 4, 5, 30, UWGame.Locale.Text("MORE"), Expand_Click);
 		tbExpand.ScaleWidthToFitText();
 		filterAndTrackingPanel.AddContent(tbExpand);
 		tbExpand.X = 4;
 		tbExpand.Y = 5;
-		tbExpand.ToolTip = "Hide search options";
+		tbExpand.ToolTip = UWGame.Locale.Text("Hide search options");
 		RadioGroup radioGroup = new RadioGroup(Interface.gui);
 		radioGroup.Width = 500;
 		radioGroup.Height = 300;
 		radioGroup.Position = new Point(0, 0);
-		rbOr = CreateRadioButton(60, 5, 50, "OR", "Display only the items that are in AT LEAST ONE of the selected filters", CheckBoxType.LCDRadioBanner, rgOrAnd_Click);
+		rbOr = CreateRadioButton(60, 5, 50, UWGame.Locale.Text("OR"), UWGame.Locale.Text("Display only the items that are in AT LEAST ONE of the selected filters"), CheckBoxType.LCDRadioBanner, rgOrAnd_Click);
 		rbOr.IsChecked = true;
 		rbOr.Tag1 = InventorySettings.AndOr.Or;
-		rbAnd = CreateRadioButton(120, 5, 70, "AND", "Display only the items that are in ALL of the selected filters", CheckBoxType.LCDRadioBanner, rgOrAnd_Click);
+		rbAnd = CreateRadioButton(120, 5, 70, UWGame.Locale.Text("AND"), UWGame.Locale.Text("Display only the items that are in ALL of the selected filters"), CheckBoxType.LCDRadioBanner, rgOrAnd_Click);
 		rbAnd.IsChecked = false;
 		rbAnd.Tag1 = InventorySettings.AndOr.And;
 		radioGroup.Add(rbOr);
@@ -265,7 +265,7 @@ public class InventoryPanel : RosterPanel
 		ibNormalDistance.Width = 80;
 		ibNormalDistance.X = 0;
 		ibNormalDistance.Y = 0;
-		ibNormalDistance.ToolTip = "'AVAILABLE NOW': Lists only objects that are owned by the colony now or can be made in one step.";
+		ibNormalDistance.ToolTip = UWGame.Locale.Text("'AVAILABLE NOW': Lists only objects that are owned by the colony now or can be made in one step.");
 		ibNormalDistance.EventArgs = new DistanceArg
 		{
 			Availability = InventorySettings.Availability.AvailableNow
@@ -277,7 +277,7 @@ public class InventoryPanel : RosterPanel
 		ibAttainableDistance.Width = 80;
 		ibAttainableDistance.X = ibNormalDistance.Right + 6;
 		ibAttainableDistance.Y = ibNormalDistance.Y;
-		ibAttainableDistance.ToolTip = "'ATTAINABLE': Also lists objects that can be made in the future, based on the resource types that have been discovered.";
+		ibAttainableDistance.ToolTip = UWGame.Locale.Text("'ATTAINABLE': Also lists objects that can be made in the future, based on the resource types that have been discovered.");
 		ibAttainableDistance.EventArgs = new DistanceArg
 		{
 			Availability = InventorySettings.Availability.Attainable
@@ -289,7 +289,7 @@ public class InventoryPanel : RosterPanel
 		ibCyclopedia.Width = 40;
 		ibCyclopedia.X = ibAttainableDistance.Right + 6;
 		ibCyclopedia.Y = ibAttainableDistance.Y;
-		ibCyclopedia.ToolTip = "'ENCYCLOPEDIA': Shows all known blueprints of every item/process currently stored in the PPU";
+		ibCyclopedia.ToolTip = UWGame.Locale.Text("'ENCYCLOPEDIA': Shows all known blueprints of every item/process currently stored in the PPU");
 		ibCyclopedia.EventArgs = new DistanceArg
 		{
 			Availability = InventorySettings.Availability.AllKnownBlueprints
@@ -309,7 +309,7 @@ public class InventoryPanel : RosterPanel
 		btIncludeSalvage.Width = 30;
 		btIncludeSalvage.X = 450;
 		btIncludeSalvage.Y = rgDistance.Y;
-		btIncludeSalvage.ToolTip = "Include salvageable materials from items and structures when determining what is ATTAINABLE / NOT ATTAINABLE to produce";
+		btIncludeSalvage.ToolTip = UWGame.Locale.Text("Include salvageable materials from items and structures when determining what is ATTAINABLE / NOT ATTAINABLE to produce");
 		btIncludeSalvage.SetIconTint(GameData.Instance.GUIConstants.sidePanelTextColor);
 		rowDivider1 = new Image(Interface.gui);
 		filterAndTrackingPanel.AddContent(rowDivider1);
@@ -340,16 +340,16 @@ public class InventoryPanel : RosterPanel
 		PopulateEntityTrackingCombo();
 		cbEntityTracking.SelectedIndex = 0;
 		cbEntityTracking.SelectionChanged += cbTracking_SelectionChanged;
-		cbEntityTracking.ToolTip = "Select a tracked object to view its options";
+		cbEntityTracking.ToolTip = UWGame.Locale.Text("Select a tracked object to view its options");
 		The.InGameUI.InventorySettings.TrackTargetsChanged += InventorySettings_TrackTargetsChanged;
-		cbInputChain = CreateCheckBox(190, 123, 80, "IN", "Track objects that are NEEDED TO CREATE this object", CheckBoxType.LCDTinting);
-		cbOutputChain = CreateCheckBox(280, 123, 80, "OUT", "Track objects that can be CREATED FROM this object", CheckBoxType.LCDTinting);
-		cbToolsOption = CreateCheckBox(370, 123, 80, "TOOLS", "Track TOOLS that can be USED TO CREATE this object", CheckBoxType.LCDTinting);
+		cbInputChain = CreateCheckBox(190, 123, 80, UWGame.Locale.Text("IN"), UWGame.Locale.Text("Track objects that are NEEDED TO CREATE this object"), CheckBoxType.LCDTinting);
+		cbOutputChain = CreateCheckBox(280, 123, 80, UWGame.Locale.Text("OUT"), UWGame.Locale.Text("Track objects that can be CREATED FROM this object"), CheckBoxType.LCDTinting);
+		cbToolsOption = CreateCheckBox(370, 123, 80, UWGame.Locale.Text("TOOLS"), UWGame.Locale.Text("Track TOOLS that can be USED TO CREATE this object"), CheckBoxType.LCDTinting);
 		ImageButton imageButton = new ImageButton(Interface.gui);
 		filterAndTrackingPanel.AddContent(imageButton);
 		imageButton.InitWithIcon(ImageButtonType.LCD, "HUD_icon_trash", hasCheckedState: false);
 		imageButton.Click += tbStopTracking_Click;
-		imageButton.ToolTip = "Stop tracking this object";
+		imageButton.ToolTip = UWGame.Locale.Text("Stop tracking this object");
 		imageButton.X = 460;
 		imageButton.Y = 122;
 		imageButton.Height = 30;
@@ -548,16 +548,16 @@ public class InventoryPanel : RosterPanel
 		{
 			if (haveActiveTracking)
 			{
-				SetMinimizedOrExpandedContentProperties(150, 1, visible: true, "LESS", "Hide search options");
+				SetMinimizedOrExpandedContentProperties(150, 1, visible: true, UWGame.Locale.Text("LESS"), UWGame.Locale.Text("Hide search options"));
 			}
 			else
 			{
-				SetMinimizedOrExpandedContentProperties(112, 1, visible: true, "LESS", "Hide search options");
+				SetMinimizedOrExpandedContentProperties(112, 1, visible: true, UWGame.Locale.Text("LESS"), UWGame.Locale.Text("Hide search options"));
 			}
 		}
 		else
 		{
-			SetMinimizedOrExpandedContentProperties(34, 0, visible: false, "MORE", "Display search options");
+			SetMinimizedOrExpandedContentProperties(34, 0, visible: false, UWGame.Locale.Text("MORE"), UWGame.Locale.Text("Display search options"));
 		}
 		The.InGameUI.InventorySettings.IsExpanded = expand;
 	}
@@ -1007,12 +1007,12 @@ public class InventoryPanel : RosterPanel
 			imageButton.Visible = show;
 			if (The.InGameUI.InventorySettings.HasAvailableTrackingSlots())
 			{
-				imageButton.ToolTip = "Track this item/structure";
+				imageButton.ToolTip = UWGame.Locale.Text("Track this item/structure");
 				imageButton.Enabled = true;
 			}
 			else
 			{
-				imageButton.ToolTip = "No more objects can be tracked, cancel some of the other tracked objects first.";
+				imageButton.ToolTip = UWGame.Locale.Text("No more objects can be tracked, cancel some of the other tracked objects first.");
 				imageButton.Enabled = false;
 			}
 		}
@@ -1143,7 +1143,7 @@ public class InventoryPanel : RosterPanel
 			imageButton.EventArgs = eventArgs;
 			imageButton.Click += btTrack_Click;
 			imageButton.Visible = false;
-			imageButton.ToolTip = "Track this item/structure";
+			imageButton.ToolTip = UWGame.Locale.Text("Track this item/structure");
 			imageButton.Width = 36;
 			uIComponent.CenterChildVertically(imageButton);
 			imageButton.MouseOut += tbTracking_MouseOut;

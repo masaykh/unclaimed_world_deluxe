@@ -7,7 +7,7 @@ public class PolicyPanel : RosterPanel
 	private TabControl tab;
 
 	public PolicyPanel()
-		: base("POLICY", 622, needBottomMarginForButtons: false)
+		: base(UWGame.Locale.Text("POLICY"), 622, needBottomMarginForButtons: false)
 	{
 		GUIManager gui = Interface.gui;
 		tab = new TabControl(gui, lcdSurface);

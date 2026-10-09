@@ -129,7 +129,7 @@ public class EntityDataSheet : DataSheet
 			btTrack.X = btClose.X;
 			btTrack.Y = btClose.Bottom + 5;
 			btTrack.Click += btTrack_Click;
-			btTrack.ToolTip = "Toggle tracking this item";
+			btTrack.ToolTip = UWGame.Locale.Text("Toggle tracking this item");
 		}
 		btSelectProcess = new ImageButton(gui);
 		Add(btSelectProcess);
@@ -138,7 +138,7 @@ public class EntityDataSheet : DataSheet
 		btSelectProcess.X = DisplayWindow.Width - 12 - btSelectProcess.Width;
 		btSelectProcess.Y = expandedPanelHeadingY;
 		btSelectProcess.Click += btProcess_Click;
-		btSelectProcess.ToolTip = "Click to view the next production process";
+		btSelectProcess.ToolTip = UWGame.Locale.Text("Click to view the next production process");
 		btSelectProcess.DebugTag = "btProcess";
 		btSelectProcess.NormalColor = DataSheet.productionColor;
 		lblProcessIndex = new Label(gui);
@@ -241,18 +241,18 @@ public class EntityDataSheet : DataSheet
 
 	protected override void CreateGeneralPanelContents()
 	{
-		humanEdibleHeader = AddSubHeader(grdGeneralOuter, "EDIBLE BY HUMANS:", out lblHumanEdible, addToGrid: true, foodColorGreen);
+		humanEdibleHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("EDIBLE BY HUMANS:"), out lblHumanEdible, addToGrid: true, foodColorGreen);
 		humanEdibleHeader.OrderByTag1 = 10f;
-		nutritionHeader = AddSubHeader(grdGeneralOuter, "POTENTIAL NUTRITIONAL CONTENT:", out _, addToGrid: true, foodColorGreen);
+		nutritionHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("POTENTIAL NUTRITIONAL CONTENT:"), out _, addToGrid: true, foodColorGreen);
 		nutritionHeader.OrderByTag1 = 15f;
 		grdNutrition = CreateSubGrid();
 		grdNutrition.OrderByTag1 = 16f;
-		weaponHeader = AddSubHeader(grdGeneralOuter, "WEAPON DATA:", out _, addToGrid: true, securityColorBlue);
+		weaponHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("WEAPON DATA:"), out _, addToGrid: true, securityColorBlue);
 		weaponHeader.OrderByTag1 = 100f;
 		lblWeaponNotWieldable = new Label(gui);
 		lblWeaponNotWieldable.Init(Label.LabelType.EntityTypeTooltip);
-		lblWeaponNotWieldable.Text = "NOT WIELDABLE";
-		lblWeaponNotWieldable.ToolTip = "The weapon is a part of a structure/robot and cannot be used directly by characters.";
+		lblWeaponNotWieldable.Text = UWGame.Locale.Text("NOT WIELDABLE");
+		lblWeaponNotWieldable.ToolTip = UWGame.Locale.Text("The weapon is a part of a structure/robot and cannot be used directly by characters.");
 		lblWeaponNotWieldable.FitToText();
 		lblWeaponNotWieldable.X = SideMarginOutsideGrid();
 		lblWeaponNotWieldable.OrderByTag1 = 101f;
@@ -270,34 +270,34 @@ public class EntityDataSheet : DataSheet
 		taHighlyEffective.ScrollBarEnabled = false;
 		SetMarginAndWidth(taHighlyEffective);
 		taHighlyEffective.OrderByTag1 = 103f;
-		ammoHeader = AddSubHeader(grdGeneralOuter, "AMMUNITION:", out var lbl, addToGrid: true, securityColorBlue);
+		ammoHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("AMMUNITION:"), out var lbl, addToGrid: true, securityColorBlue);
 		ammoHeader.OrderByTag1 = 90f;
-		lbl.ToolTip = "The following ammunition type is required. \nNOTE: A ranged weapon will not count in the colony Security rating unless it has ammunition available.";
+		lbl.ToolTip = UWGame.Locale.Text("The following ammunition type is required. \nNOTE: A ranged weapon will not count in the colony Security rating unless it has ammunition available.");
 		grdAmmo = CreateFixedItemHeightGrid();
 		grdAmmo.OrderByTag1 = 91f;
-		storageHeader = AddSubHeader(grdGeneralOuter, "STORAGE:", out lbl, addToGrid: false, brown);
+		storageHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("STORAGE:"), out lbl, addToGrid: false, brown);
 		storageHeader.OrderByTag1 = 80f;
-		lbl.ToolTip = "The storage conditions and capacity offered by this object";
+		lbl.ToolTip = UWGame.Locale.Text("The storage conditions and capacity offered by this object");
 		grdStorage = CreateFixedItemHeightGrid(18);
 		grdStorage.OrderByTag1 = 81f;
 		replenishHeader = AddSubHeader(grdGeneralOuter, "FUEL/ENERGY:", out lbl, addToGrid: true, brown);
 		replenishHeader.OrderByTag1 = 30f;
-		lbl.ToolTip = "One of the following fuel or energy types is required";
+		lbl.ToolTip = UWGame.Locale.Text("One of the following fuel or energy types is required");
 		grdRequiresReplenish = CreateFixedItemHeightGrid();
 		grdRequiresReplenish.OrderByTag1 = 31f;
-		upgradeForHeader = AddSubHeader(grdGeneralOuter, "UPGRADE FOR:", out lbl, addToGrid: false);
+		upgradeForHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("UPGRADE FOR:"), out lbl, addToGrid: false);
 		upgradeForHeader.OrderByTag1 = 40f;
-		lbl.ToolTip = "The following structures can be upgraded with this item (using the UPGRADE action)";
+		lbl.ToolTip = UWGame.Locale.Text("The following structures can be upgraded with this item (using the UPGRADE action)");
 		grdUpgradeFor = CreateFixedItemHeightGrid();
 		grdUpgradeFor.OrderByTag1 = 41f;
-		possibleUpgradesHeader = AddSubHeader(grdGeneralOuter, "UPGRADE OPTIONS:", out lbl, addToGrid: false, lightgreen);
+		possibleUpgradesHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("UPGRADE OPTIONS:"), out lbl, addToGrid: false, lightgreen);
 		possibleUpgradesHeader.OrderByTag1 = 50f;
-		lbl.ToolTip = "The structure has these optional upgrades (using the UPGRADE action)";
+		lbl.ToolTip = UWGame.Locale.Text("The structure has these optional upgrades (using the UPGRADE action)");
 		grdPossibleUpgrades = CreateFixedItemHeightGrid();
 		grdPossibleUpgrades.OrderByTag1 = 51f;
-		durabilityHeader = AddSubHeader(grdGeneralOuter, "DURABILITY:", out lbl, addToGrid: false, blue);
+		durabilityHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("DURABILITY:"), out lbl, addToGrid: false, blue);
 		durabilityHeader.OrderByTag1 = 120f;
-		lbl.ToolTip = "Shows how long the object will last under different conditions. \nStructures can have their lifespan extended with regular maintenance. Items CANNOT.";
+		lbl.ToolTip = UWGame.Locale.Text("Shows how long the object will last under different conditions. \nStructures can have their lifespan extended with regular maintenance. Items CANNOT.");
 		lblDegradeType = new Label(gui);
 		lblDegradeType.Init(Label.LabelType.EntityTypeTooltip);
 		lblDegradeType.FitToText();
@@ -305,14 +305,14 @@ public class EntityDataSheet : DataSheet
 		lblDegradeType.OrderByTag1 = 121f;
 		grdDurability = CreateFixedItemHeightGrid(18);
 		grdDurability.OrderByTag1 = 122f;
-		effectsHeader = AddSubHeader(grdGeneralOuter, "EFFECTS:", out lbl, addToGrid: false, green);
+		effectsHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("EFFECTS:"), out lbl, addToGrid: false, green);
 		effectsHeader.OrderByTag1 = 60f;
-		lbl.ToolTip = "The resulting effects";
+		lbl.ToolTip = UWGame.Locale.Text("The resulting effects");
 		grdEffects = CreateFixedItemHeightGrid();
 		grdEffects.ItemHeight = 18;
 		grdEffects.OrderByTag1 = 61f;
-		comfortHeader = AddSubHeader(grdGeneralOuter, "COMFORT:", out lblComfort, addToGrid: true, comfortColorPink);
-		lblComfort.ToolTip = "The base comfort level when in perfect condition, and without upgrades";
+		comfortHeader = AddSubHeader(grdGeneralOuter, UWGame.Locale.Text("COMFORT:"), out lblComfort, addToGrid: true, comfortColorPink);
+		lblComfort.ToolTip = UWGame.Locale.Text("The base comfort level when in perfect condition, and without upgrades");
 		comfortHeader.OrderByTag1 = 20f;
 	}
 
@@ -366,13 +366,13 @@ public class EntityDataSheet : DataSheet
 
 	protected override void CreateProductionPanelContents()
 	{
-		settingsHeader = AddSubHeader(grdProductionOuter, "IN STOCK / ORDERS:", out lblSettings);
+		settingsHeader = AddSubHeader(grdProductionOuter, UWGame.Locale.Text("IN STOCK / ORDERS:"), out lblSettings);
 		settingsHeader.OrderByTag1 = 0f;
-		CreateGridAndHeader(grdProductionOuter, out usedInHeader, "USED IN:", "Used as a material in these objects", 80f, out grdUsedIn, out lblUsedIn);
-		CreateGridAndHeader(grdProductionOuter, out toolUsedForHeader, "USED FOR:", "Used as a tool for making these objects", 100f, out grdToolUsedFor, out _);
+		CreateGridAndHeader(grdProductionOuter, out usedInHeader, UWGame.Locale.Text("USED IN:"), UWGame.Locale.Text("Used as a material in these objects"), 80f, out grdUsedIn, out lblUsedIn);
+		CreateGridAndHeader(grdProductionOuter, out toolUsedForHeader, UWGame.Locale.Text("USED FOR:"), UWGame.Locale.Text("Used as a tool for making these objects"), 100f, out grdToolUsedFor, out _);
 		lbltoolUsedForCapNotice = new Label(gui);
 		lbltoolUsedForCapNotice.Init(Label.LabelType.HUDWindow);
-		lbltoolUsedForCapNotice.Text = "...Used for more objects than shown!";
+		lbltoolUsedForCapNotice.Text = UWGame.Locale.Text("...Used for more objects than shown!");
 		lbltoolUsedForCapNotice.FitToText();
 		lbltoolUsedForCapNotice.OrderByTag1 = 105f;
 		lbltoolUsedForCapNotice.X = 35;
@@ -453,12 +453,12 @@ public class EntityDataSheet : DataSheet
 		if (!The.InGameUI.InventorySettings.HasAvailableTrackingSlots())
 		{
 			btTrack.Enabled = false;
-			btTrack.ToolTip = "No more objects can be tracked, cancel some of the other tracked objects first.";
+			btTrack.ToolTip = UWGame.Locale.Text("No more objects can be tracked, cancel some of the other tracked objects first.");
 		}
 		else
 		{
 			btTrack.Enabled = true;
-			btTrack.ToolTip = "Toggle tracking this item";
+			btTrack.ToolTip = UWGame.Locale.Text("Toggle tracking this item");
 		}
 	}
 
@@ -542,7 +542,7 @@ public class EntityDataSheet : DataSheet
 		if (entityType.ContainerType != null && entityType.ContainerType is HomeContainerType { ResidenceType: not null } homeContainerType)
 		{
 			grdGeneralOuter.AddEntry(comfortHeader, comfortHeader);
-			lblComfort.Text = "COMFORT LEVEL: " + Common.PercentageToString(homeContainerType.ResidenceType.ComfortLevel);
+			lblComfort.Text = string.Format(UWGame.Locale.Text("COMFORT LEVEL: {0}"), Common.PercentageToString(homeContainerType.ResidenceType.ComfortLevel));
 		}
 	}
 
@@ -565,8 +565,8 @@ public class EntityDataSheet : DataSheet
 			}
 			float highestDefenseRating = weaponType.GetHighestDefenseRating();
 			float num = highestDefenseRating;
-			lblWeaponDefenseRating.Text = $"SECURITY RATING: {num:N2} ({DefenseRatingToString(highestDefenseRating)})";
-			lblWeaponDefenseRating.ToolTip = "This number is used in the colony's Security rating. The more highly rated weapons the colony has (up to 2 per person), the higher the colony's Security rating";
+			lblWeaponDefenseRating.Text = string.Format(UWGame.Locale.Text("SECURITY RATING: {0:N2} ({1})"), num, DefenseRatingToString(highestDefenseRating));
+			lblWeaponDefenseRating.ToolTip = UWGame.Locale.Text("This number is used in the colony's Security rating. The more highly rated weapons the colony has (up to 2 per person), the higher the colony's Security rating");
 			if (GetMagazineType() != null)
 			{
 				grdGeneralOuter.AddEntry(ammoHeader, ammoHeader);
@@ -574,7 +574,7 @@ public class EntityDataSheet : DataSheet
 				PopulateAmmo();
 			}
 			grdGeneralOuter.AddEntry(taHighlyEffective, taHighlyEffective);
-			taHighlyEffective.Text = "EFFECTIVE AGAINST: " + weaponType.HighlyEffectiveAgainst;
+			taHighlyEffective.Text = string.Format(UWGame.Locale.Text("EFFECTIVE AGAINST: {0}"), weaponType.HighlyEffectiveAgainst);
 		}
 	}
 
@@ -704,25 +704,25 @@ public class EntityDataSheet : DataSheet
 	{
 		if (rating == 0f)
 		{
-			return "None";
+			return UWGame.Locale.Text("None");
 		}
 		if (rating <= 0.05f)
 		{
-			return "Very low";
+			return UWGame.Locale.Text("Very low");
 		}
 		if (rating <= 0.15f)
 		{
-			return "Low";
+			return UWGame.Locale.Text("Low");
 		}
 		if (rating <= 0.25f)
 		{
-			return "Middle";
+			return UWGame.Locale.Text("Middle");
 		}
 		if (rating <= 0.55f)
 		{
-			return "High";
+			return UWGame.Locale.Text("High");
 		}
-		return "Highest";
+		return UWGame.Locale.Text("Highest");
 	}
 
 	private void PopulateDurationData()
@@ -835,9 +835,9 @@ public class EntityDataSheet : DataSheet
 		string text = storageCondition.Name;
 		if (isTrade)
 		{
-			text += " (trading)";
+			text += UWGame.Locale.Text(" (trading)");
 		}
-		UIComponent uIComponent = grdStorage.AddEntryRightJustifyValue(key, null, null, 5, text, 18, Common.DecimalToStringSignificant(storageType.Capacity), "The storage capacity in BLK", storageCondition.Description);
+		UIComponent uIComponent = grdStorage.AddEntryRightJustifyValue(key, null, null, 5, text, 18, Common.DecimalToStringSignificant(storageType.Capacity), UWGame.Locale.Text("The storage capacity in BLK"), storageCondition.Description);
 		uIComponent.OrderByTag1 = storageCondition.Name;
 		return uIComponent;
 	}
@@ -850,7 +850,7 @@ public class EntityDataSheet : DataSheet
 
 	private UIComponent AddDurationRow(StorageDuration duration)
 	{
-		UIComponent uIComponent = grdDurability.AddEntryRightJustifyValue(duration, null, null, 5, duration.StorageDurationToDisplay.DisplayName, 18, Common.DecimalToStringSignificant(duration.Duration), "The number of days the object will last when exposed to this condition. \nStructures can often have their lifespan extended with regular maintenance. Items CANNOT.", duration.StorageDurationToDisplay.Tooltip ?? duration.StorageCondition.Description);
+		UIComponent uIComponent = grdDurability.AddEntryRightJustifyValue(duration, null, null, 5, duration.StorageDurationToDisplay.DisplayName, 18, Common.DecimalToStringSignificant(duration.Duration), UWGame.Locale.Text("The number of days the object will last when exposed to this condition. \nStructures can often have their lifespan extended with regular maintenance. Items CANNOT."), duration.StorageDurationToDisplay.Tooltip ?? duration.StorageCondition.Description);
 		uIComponent.OrderByTag1 = duration.SortOrder;
 		return uIComponent;
 	}
@@ -1123,11 +1123,11 @@ public class EntityDataSheet : DataSheet
 			string text = biologicalType.SpeciesPlural.ToUpper(Config.Culture);
 			if (biologicalType.ConsumeProcesses.ContainsKey(entityType))
 			{
-				lblHumanEdible.Text = "EDIBLE TO " + text;
+				lblHumanEdible.Text = string.Format(UWGame.Locale.Text("EDIBLE TO {0}"), text);
 			}
 			else
 			{
-				lblHumanEdible.Text = "INEDIBLE TO " + text + " IN THIS CONDITION";
+				lblHumanEdible.Text = string.Format(UWGame.Locale.Text("INEDIBLE TO {0} IN THIS CONDITION"), text);
 			}
 		}
 		grdGeneralOuter.AddEntry(grdNutrition, grdNutrition);
@@ -1143,7 +1143,7 @@ public class EntityDataSheet : DataSheet
 				string satisfiedDailyIntake = foodNutrientAmount.GetSatisfiedDailyIntake(entityType.ItemType.MaximumBulk.Value, adultNeedsAndWeight, weight);
 				if (satisfiedDailyIntake != null)
 				{
-					grdNutrition.AddEntryRightJustifyValue(foodNutrientAmount.Nutrient.KeyName, null, null, null, foodNutrientAmount.Nutrient.Name, 0, satisfiedDailyIntake, "Of recommended daily intake for an adult human");
+					grdNutrition.AddEntryRightJustifyValue(foodNutrientAmount.Nutrient.KeyName, null, null, null, foodNutrientAmount.Nutrient.Name, 0, satisfiedDailyIntake, UWGame.Locale.Text("Of recommended daily intake for an adult human"));
 				}
 			}
 		}
@@ -1247,13 +1247,13 @@ public class EntityDataSheet : DataSheet
 			grdProductionOuter.AddEntry(usedInHeader, usedInHeader);
 			if (processTypeToShowProductionFor != null && processTypeToShowProductionFor.IsKilling)
 			{
-				lblUsedIn.Text = "YIELDS:";
-				lblUsedIn.ToolTip = "Yields these products";
+				lblUsedIn.Text = UWGame.Locale.Text("YIELDS:");
+				lblUsedIn.ToolTip = UWGame.Locale.Text("Yields these products");
 			}
 			else
 			{
-				lblUsedIn.Text = "USED IN:";
-				lblUsedIn.ToolTip = $"Used as a material input for making these objects (max {GameData.Instance.GUIConstants.MaxToolsToShowInUsedForList} items are shown)";
+				lblUsedIn.Text = UWGame.Locale.Text("USED IN:");
+				lblUsedIn.ToolTip = string.Format(UWGame.Locale.Text("Used as a material input for making these objects (max {0} items are shown)"), GameData.Instance.GUIConstants.MaxToolsToShowInUsedForList);
 			}
 		}
 	}
@@ -1332,7 +1332,7 @@ public class EntityDataSheet : DataSheet
 
 	protected override void SetProductionHeading(Label lbl)
 	{
-		lbl.Text = "PRODUCTION";
+		lbl.Text = UWGame.Locale.Text("PRODUCTION");
 		if (noOfProcesses <= 1)
 		{
 			PadHeader(lbl);
@@ -1341,6 +1341,6 @@ public class EntityDataSheet : DataSheet
 
 	protected override string GetInputHeading()
 	{
-		return "MADE FROM:";
+		return UWGame.Locale.Text("MADE FROM:");
 	}
 }

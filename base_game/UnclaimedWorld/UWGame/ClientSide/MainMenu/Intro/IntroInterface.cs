@@ -36,7 +36,7 @@ public class IntroInterface : CommonInterface
 		taText.Height = crtContent.Height - taText.Position.Y;
 		taText.HMargin = 0;
 		taText.AnimateOnCRTScreen = Label.AnimationMode.Line;
-		taText.Text = "entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()";
+		taText.Text = UWGame.Locale.Text("entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()");
 	}
 
 }

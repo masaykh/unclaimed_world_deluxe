@@ -26,19 +26,19 @@ public class OverlayPanel
 		btAccessMinimap.Position = new Point(num, y);
 		DisplayWindow.Add(btAccessMinimap);
 		btAccessMinimap.Click += btAccessMinimap_Click;
-		btAccessMinimap.ToolTip = "Toggle the mini-map on/off";
+		btAccessMinimap.ToolTip = UWGame.Locale.Text("Toggle the mini-map on/off");
 		btOverlay = new ImageButton(intf.gui);
 		btOverlay.Init(ImageButtonType.ResourceSelectionArrow);
 		btOverlay.Position = new Point(num + btAccessMinimap.Width, y);
 		DisplayWindow.Add(btOverlay);
 		btOverlay.Click += tbOverlay_Click;
-		btOverlay.ToolTip = "Select what to display on the mini-map and the terrain view";
+		btOverlay.ToolTip = UWGame.Locale.Text("Select what to display on the mini-map and the terrain view");
 		btResource = new ImageButton(intf.gui);
 		btResource.Init(ImageButtonType.ScanButton);
 		btResource.Position = new Point(num + 2 * btAccessMinimap.Width, y);
 		DisplayWindow.Add(btResource);
 		btResource.Click += resourceTypeRadioButton_click;
-		btResource.ToolTip = "Activate the SCAN button to highlight resources in the terrain view";
+		btResource.ToolTip = UWGame.Locale.Text("Activate the SCAN button to highlight resources in the terrain view");
 		btResource.IsChecked = The.InGameUI.OverlaySettings.ShowOverlaysOnGameArea;
 		intf.HUDOverlayPanel.Refresh();
 	}

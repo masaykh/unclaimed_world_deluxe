@@ -46,7 +46,7 @@ public class StatusScreen
 		btTrack.Click += center_Click;
 		btTrack.RightClick += center_RightClick;
 		btTrack.ZOrder = 1f;
-		btTrack.ToolTip = "Left click to center on the selected entity. Right click to track the entity.";
+		btTrack.ToolTip = UWGame.Locale.Text("Left click to center on the selected entity. Right click to track the entity.");
 		DisplayWindow = new Window(gui);
 		DisplayWindow.Skin = gui.GUISpriteSheet.GetSourceRectangle("TV_panel");
 		DisplayWindow.CornerSize = 7;

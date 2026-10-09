@@ -164,7 +164,7 @@ public abstract class HUDWindow
 		btClose.Init(ImageButtonType.HUDClose);
 		btClose.Y = 6;
 		SetCloseButtonPosition();
-		btClose.ToolTip = "Close";
+		btClose.ToolTip = UWGame.Locale.Text("Close");
 		btClose.Click += btClose_Click;
 		btClose.DebugTag = "hudClose";
 	}

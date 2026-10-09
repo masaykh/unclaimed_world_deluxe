@@ -79,22 +79,150 @@ if ($mode eq 'pseudo') {
     exit 0;
 }
 
-if ($mode eq 'unrouted') {
-    # Text written straight to an interface control, a message box or the log - each one an
-    # English string Locale cannot reach. Counted per file.
-    my $text = qr/"(?:[^"\\]|\\.)*[A-Za-z]{2}(?:[^"\\]|\\.)*"/;
-    for my $file (@ARGV) {
-        open my $fh, '<:encoding(UTF-8)', $file or next;
-        my $n = 0;
-        while (my $line = <$fh>) {
-            next if $line =~ m{^\s*(//|/\*|\*)};
-            $n++ while $line =~ /(?:\.Text|\.ToolTip|\.Title|\.Summary|\.Caption)\s*(?:=|\+=)\s*\$?$text/g;
-            $n++ while $line =~ /\b(?:ShowError|ShowMessage|AddLogEvent|ComposeHeadingAndBlobText|AddBottomButtonInSequence)\([^;]*?(?<!Locale\.Text\()\$?$text/g;
+sub without_holes {
+    my ($s) = @_;
+    $s =~ s/\{[^\}]*\}//g;
+    return $s;
+}
+
+# ---- interface text not yet routed through Locale ----------------------------------------------
+#
+# WHERE ENGLISH REACHES THE SCREEN. An assignment to a control's Text, ToolTip, Title, Summary or
+# Caption; or a whole argument of one of the SINKS - the message boxes, the log, and the interface's
+# own helpers that make a button, a heading, a tooltip or a list entry. In the interface's folders
+# also the tooltip builders (Append, AppendLine...), panel constructors (base) and string.Format:
+# elsewhere those write files and logs.
+my $literal = qr/"(?:[^"\\]|\\.)*"/;
+my %SINKS = map { $_ => 1 } qw(
+    ShowError ShowMessage AddLogEvent ComposeHeadingAndBlobText AddBottomButtonInSequence
+    CreateTooltip AddLowerButton AddEntry AddSubHeader CreateTextButton SetMinimizedOrExpandedContentProperties
+    AddCollapsablePanelAndGrid AddZoneNameAndHeader AddTextButton AppendImpossibleActionText AppendPossibleActionText
+    AddButton CreateGridAndHeader CreateCheckBox AddSpeedButton AddTabPage AppendIndentedLine AppendHeaderOnLightBG
+    CreateImageButton CreateRadioButton DisplayCommunication ShowErrorDialog AddEntityAmountRow AddBlackTextButton
+    AddCRTCaptionAndLabel SetButtonText AddEntryRightJustifyValue ShowImageAndText SetHeaderText ToLabel);
+my %INTERFACE_SINKS = map { $_ => 1 } qw(Append AppendLine AppendFormat Format base Tuple);
+# Sinks with a key among their arguments: only these positions are text. AddEntry(key, text) -
+# the key is how the grid finds the entry again, and must not change with the language.
+my %TEXT_ARGS = (AddEntry => [1], Format => [0]);
+my $interface_dir = qr{ClientSide/(?:Interface|MainMenu|Screens)/|Client/MainMenu/};
+
+# A literal a player reads, rather than a key, an icon, a path or a format. "OK", "NAME", "Name of
+# food type" are text; "HUD_icon_sword", "itemKey", "item:knife", "Fonts/x", "#COLOR" are not.
+sub is_text {
+    my ($lit) = @_;
+    my $s = without_holes(substr($lit, 1, -1));
+    return 0 unless $s =~ /[A-Za-z]{2}/;
+    return 0 if $s =~ /^[a-z][A-Za-z0-9_]*$/;                    # camelCase key
+    return 0 if $s =~ /^[A-Za-z0-9]+_[A-Za-z0-9_]*$/;             # snake_case, icons
+    return 0 if $s =~ /^[A-Za-z0-9_.]+[\/\\:][\w\/\\.:-]+$/;      # paths, keys with a colon (not "EFFECTS:")
+    return 0 if $s =~ /^#[A-Z]/;                                  # colour tags
+    return 0 if $s =~ /^[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*$/;        # PascalCase names
+    return 1;
+}
+
+# The whole-argument literals of the sinks on one line, as [start, length, literal, interpolated].
+sub sink_literals {
+    my ($line, $file) = @_;
+    my @found;
+    while ($line =~ /\b(\w+)(?:<[^<>()]*>)?\(/g) {
+        my ($name, $open) = ($1, pos($line));
+        next unless $SINKS{$name} || ($INTERFACE_SINKS{$name} && $file =~ $interface_dir);
+        # Split the arguments at top-level commas, minding strings and nested brackets.
+        my ($depth, $start, @argspans) = (0, $open);
+        my $i = $open;
+        while ($i < length $line) {
+            my $c = substr($line, $i, 1);
+            if ($c eq '"' || ($c eq '$' && substr($line, $i + 1, 1) eq '"')) {
+                pos($line) = $c eq '$' ? $i + 1 : $i;
+                last unless $line =~ /\G$literal/gc;
+                $i = pos($line);
+                next;
+            }
+            if ($c eq '(' || $c eq '[' || $c eq '{') { $depth++ }
+            elsif ($c eq ')' || $c eq ']' || $c eq '}') {
+                if ($depth == 0) { push @argspans, [$start, $i - $start]; last }
+                $depth--;
+            }
+            elsif ($c eq ',' && $depth == 0) { push @argspans, [$start, $i - $start]; $start = $i + 1 }
+            $i++;
         }
+        push @argspans, [$start, $i - $start] if $i >= length $line && $i > $start;
+        my @spans = $TEXT_ARGS{$name} ? grep { defined } @argspans[@{ $TEXT_ARGS{$name} }] : @argspans;
+        for my $span (@spans) {
+            my $arg = substr($line, $span->[0], $span->[1]);
+            next unless $arg =~ /^(\s*)(\$?)($literal)\s*$/;
+            my ($lead, $interp, $lit) = ($1, $2, $3);
+            push @found, [$span->[0] + length($lead), length($interp) + length($lit), $lit, $interp ne ''] if is_text($lit);
+        }
+        pos($line) = $open;
+    }
+    return @found;
+}
+
+# The literals of an assignment to a control, one by one, left to right.
+sub assigned_literals {
+    my ($line) = @_;
+    my @found;
+    # A control's member - lbl.ToolTip = ... - or, inside the control's own class, a bare one.
+    return @found unless $line =~ /(?:\.|^\s*)(?:Text|ToolTip|Title|Summary|Caption)\s*(?:=|\+=)/g;
+    my $from = pos($line);
+    # The spans of Locale calls, arguments and all: a literal inside one is routed already.
+    my $args = qr/(?:[^()"]|$literal|\((?:[^()"]|$literal)*\))*/;
+    my @routed;
+    while ($line =~ /Locale\.(?:Text|Count)\($args\)/g) { push @routed, [$-[0], $+[0]] }
+    pos($line) = $from;
+    while ($line =~ /(\$?)($literal)/g) {
+        my ($interp, $lit) = ($1, $2);
+        my $start = $-[0];
+        next if grep { $start >= $_->[0] && $start < $_->[1] } @routed;
+        push @found, [$start, length($interp) + length($lit), $lit, $interp ne ''] if without_holes($lit) =~ /[A-Za-z]{2}/;
+    }
+    return @found;
+}
+
+# In the interface's folders: a label given by a switch arm or a return - => "COLONY MEMBERS",
+# return "Very low"; - the way GetName and DefenseRatingToString hand text to a control.
+sub returned_literals {
+    my ($line, $file) = @_;
+    my @found;
+    return @found unless $file =~ $interface_dir;
+    while ($line =~ /(?:=>\s*|\breturn\s+)(\$?)($literal)\s*[,;]/g) {
+        my ($interp, $lit) = ($1, $2);
+        push @found, [$-[1], length($interp) + length($lit), $lit, $interp ne ''] if is_text($lit);
+    }
+    return @found;
+}
+
+if ($mode eq 'unrouted' || $mode eq 'route') {
+    my $total = 0;
+    for my $file (@ARGV) {
+        open my $fh, '<:raw', $file or next;
+        my @lines = <$fh>;
         close $fh;
-        print "$n\t$file\n" if $n > 0;
+        my ($n, $changed) = (0, 0);
+        for my $line (@lines) {
+            next if $line =~ m{^\s*(//|/\*|\*)};
+            my %seen;
+            my @hits = grep { !$seen{$_->[0]}++ } (assigned_literals($line), sink_literals($line, $file), returned_literals($line, $file));
+            $n += @hits;
+            next unless $mode eq 'route';
+            # Wrap the plain ones, right to left; an interpolated $"..." needs a format by hand.
+            for my $h (sort { $b->[0] <=> $a->[0] } grep { !$_->[3] } @hits) {
+                substr($line, $h->[0], $h->[1]) = "UWGame.Locale.Text($h->[2])";
+                $changed++;
+                $n--;
+            }
+        }
+        if ($mode eq 'route' && $changed) {
+            open my $out, '>:raw', $file or die "$file: $!";
+            print $out @lines;
+            close $out;
+        }
+        $total += $n;
+        print "$n\t$file\n" if $n > 0 && $mode eq 'unrouted';
+        print "$changed routed, $n left\t$file\n" if $mode eq 'route' && ($changed || $n);
     }
     exit 0;
 }
 
-die "usage: perl 37-strings.pl compare|pseudo|unrouted ...\n";
+die "usage: perl 37-strings.pl compare|pseudo|unrouted|route ...\n";

@@ -53,7 +53,7 @@ public class GraphPanel : RosterPanel
 	private Dictionary<ulong, Plot> plots = new Dictionary<ulong, Plot>();
 
 	public GraphPanel()
-		: base("GRAPHS", 600, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
+		: base(UWGame.Locale.Text("GRAPHS"), 600, The.InGameUI.rosterPanelHeight, needBottomMarginForButton: false)
 	{
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: true, titleBottom + 6);
 		AllGraphTypes = new List<GraphType>
@@ -62,7 +62,7 @@ public class GraphPanel : RosterPanel
 			{
 				Graph = Graphs.StarvingPercentage,
 				DisplayName = "% Undernourished",
-				Tooltip = "Shows the % of colony members that are lacking a type of nutrient",
+				Tooltip = UWGame.Locale.Text("Shows the % of colony members that are lacking a type of nutrient"),
 				FixedYAxisMaxValue = 100.0,
 				FixedYAxisMinValue = 0.0,
 				YAxisTickSpacing = 25f,
@@ -112,7 +112,7 @@ public class GraphPanel : RosterPanel
 			{
 				Graph = Graphs.FoodRating,
 				DisplayName = "Food Conditions",
-				Tooltip = "Rating of the amount of prepared food items in stock and the intake of food and nutrients among the members. Starvation will have a big negative influence on the rating.",
+				Tooltip = UWGame.Locale.Text("Rating of the amount of prepared food items in stock and the intake of food and nutrients among the members. Starvation will have a big negative influence on the rating."),
 				FixedYAxisMaxValue = 1.0,
 				FixedYAxisMinValue = 0.0,
 				YAxisTickSpacing = 0.25f,
@@ -128,7 +128,7 @@ public class GraphPanel : RosterPanel
 			{
 				Graph = Graphs.SecurityRating,
 				DisplayName = "Security Conditions",
-				Tooltip = "Rating of the number and quality of hand weapons available (in proportion to the colony size), the number and quality of defenders, and the occurrance of attacks by wildlife.",
+				Tooltip = UWGame.Locale.Text("Rating of the number and quality of hand weapons available (in proportion to the colony size), the number and quality of defenders, and the occurrance of attacks by wildlife."),
 				FixedYAxisMaxValue = 1.0,
 				FixedYAxisMinValue = 0.0,
 				YAxisTickSpacing = 0.25f,
@@ -144,7 +144,7 @@ public class GraphPanel : RosterPanel
 			{
 				Graph = Graphs.ComfortRating,
 				DisplayName = "Comfort Conditions",
-				Tooltip = "The colony's comfort conditions are a rating of its housing quality and how well it satisfies its inhabitants' need for stimulants (alcohol, coffee etc.)",
+				Tooltip = UWGame.Locale.Text("The colony's comfort conditions are a rating of its housing quality and how well it satisfies its inhabitants' need for stimulants (alcohol, coffee etc.)"),
 				FixedYAxisMaxValue = 1.0,
 				FixedYAxisMinValue = 0.0,
 				YAxisTickSpacing = 0.25f,
@@ -160,7 +160,7 @@ public class GraphPanel : RosterPanel
 			{
 				Graph = Graphs.Population,
 				DisplayName = "Population",
-				Tooltip = "Shows the size of the colony over time",
+				Tooltip = UWGame.Locale.Text("Shows the size of the colony over time"),
 				SinglePlotAppearance = new PlotAppearance
 				{
 					Color = "#72CDFF".ColorFromHex(),
@@ -173,7 +173,7 @@ public class GraphPanel : RosterPanel
 		Label label = new Label(Interface.gui);
 		uIComponent.Add(label);
 		label.Init(Label.LabelType.LCDHeadingBlue);
-		label.Text = "DATA:";
+		label.Text = UWGame.Locale.Text("DATA:");
 		label.Position = new Point(0, 0);
 		label.FitToText();
 		label.CenterThisVertically(yPosToCenterTo);
@@ -188,7 +188,7 @@ public class GraphPanel : RosterPanel
 		Label label2 = new Label(Interface.gui);
 		uIComponent.Add(label2);
 		label2.Init(Label.LabelType.LCDHeadingRed);
-		label2.Text = "RANGE:";
+		label2.Text = UWGame.Locale.Text("RANGE:");
 		label2.Position = new Point(280, 0);
 		label2.FitToText();
 		label2.CenterThisVertically(yPosToCenterTo);
@@ -255,10 +255,10 @@ public class GraphPanel : RosterPanel
 
 	private void PopulateRangesCombo()
 	{
-		cbRange.AddEntry(Ranges.OneDay, "One day");
-		cbRange.AddEntry(Ranges.OneSeason, "One season");
-		cbRange.AddEntry(Ranges.OneYear, "One year");
-		cbRange.AddEntry(Ranges.TenYears, "Ten years");
+		cbRange.AddEntry(Ranges.OneDay, UWGame.Locale.Text("One day"));
+		cbRange.AddEntry(Ranges.OneSeason, UWGame.Locale.Text("One season"));
+		cbRange.AddEntry(Ranges.OneYear, UWGame.Locale.Text("One year"));
+		cbRange.AddEntry(Ranges.TenYears, UWGame.Locale.Text("Ten years"));
 		cbRange.SelectionChanged -= cbRange_SelectionChanged;
 		cbRange.SelectedIndex = 0;
 		cbRange.SelectionChanged += cbRange_SelectionChanged;
@@ -276,19 +276,19 @@ public class GraphPanel : RosterPanel
 		switch (range)
 		{
 		case Ranges.OneDay:
-			fromLabelText = "One day ago";
+			fromLabelText = UWGame.Locale.Text("One day ago");
 			currentTimeDateYear.AddTime(-1.0);
 			break;
 		case Ranges.OneSeason:
-			fromLabelText = "One season ago";
+			fromLabelText = UWGame.Locale.Text("One season ago");
 			currentTimeDateYear.AddTime(-3.0);
 			break;
 		case Ranges.OneYear:
-			fromLabelText = "One year ago";
+			fromLabelText = UWGame.Locale.Text("One year ago");
 			currentTimeDateYear.AddTime(-12.0);
 			break;
 		case Ranges.TenYears:
-			fromLabelText = "Ten years ago";
+			fromLabelText = UWGame.Locale.Text("Ten years ago");
 			currentTimeDateYear.AddTime(-120.0);
 			break;
 		}

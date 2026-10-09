@@ -43,21 +43,21 @@ public class MessageBox : Panel
 	/// what this session has - is two lists and cannot be made to fit in that box: it came out
 	/// clipped on both sides, which is worse than not showing it.
 	/// </summary>
-	public MessageBox(CommonInterface intf, string title = "MESSAGE", Vector2? size = null)
-		: base(intf, title, new Point(420, 300), size ?? new Vector2(330f, 250f), Level.MessageBox, PanelType.RegularEdges)
+	public MessageBox(CommonInterface intf, string title = null, Vector2? size = null)
+		: base(intf, title ?? UWGame.Locale.Text("MESSAGE"), new Point(420, 300), size ?? new Vector2(330f, 250f), Level.MessageBox, PanelType.RegularEdges)
 	{
 		int num = 6;
 		btOK = new TextButton(Interface.gui);
 		Window.Add(btOK);
 		btOK.Init(TextButton.TextButtonType.White);
-		btOK.Text = "OK";
+		btOK.Text = UWGame.Locale.Text("OK");
 		PlaceLeftButtonUnderLCD(btOK);
 		btOK.Click += btOK_Click;
 		btOK.ScaleWidthToFitText();
 		btCancel = new TextButton(Interface.gui);
 		Window.Add(btCancel);
 		btCancel.Init(TextButton.TextButtonType.White);
-		btCancel.Text = "CANCEL";
+		btCancel.Text = UWGame.Locale.Text("CANCEL");
 		btCancel.Click += btCancel_Click;
 		btCancel.ScaleWidthToFitText();
 		PlaceRightButtonUnderLCD(btCancel);
@@ -110,7 +110,7 @@ public class MessageBox : Panel
 			btCancel.Visible = false;
 			break;
 		}
-		lblTitle.Text = title ?? "MESSAGE";
+		lblTitle.Text = title ?? UWGame.Locale.Text("MESSAGE");
 		base.ShowDialog(modal);
 	}
 

@@ -70,16 +70,16 @@ public class MapEditorSaveLoadPanel : Panel
 		TextButton textButton = new TextButton(Interface.gui);
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
-		textButton.Text = ((saveOrLoad == SaveOrLoad.Save) ? "SAVE" : "LOAD");
-		textButton.ToolTip = ((saveOrLoad == SaveOrLoad.Save) ? "Saves the map data." : "Loads a new map.");
+		textButton.Text = ((saveOrLoad == SaveOrLoad.Save) ? UWGame.Locale.Text("SAVE") : UWGame.Locale.Text("LOAD"));
+		textButton.ToolTip = ((saveOrLoad == SaveOrLoad.Save) ? UWGame.Locale.Text("Saves the map data.") : UWGame.Locale.Text("Loads a new map."));
 		textButton.Click += btSaveLoad_Click;
 		textButton.ScaleWidthToFitText();
 		PlaceRightButtonUnderLCD(textButton);
 		TextButton textButton2 = new TextButton(Interface.gui);
 		Window.Add(textButton2);
 		textButton2.Init(TextButton.TextButtonType.White);
-		textButton2.Text = "CANCEL";
-		textButton2.ToolTip = "Cancels and closes the dialog.";
+		textButton2.Text = UWGame.Locale.Text("CANCEL");
+		textButton2.ToolTip = UWGame.Locale.Text("Cancels and closes the dialog.");
 		textButton2.ScaleWidthToFitText();
 		textButton2.Click += btCancel_Click;
 		PlaceLeftButtonUnderLCD(textButton2);
@@ -98,7 +98,7 @@ public class MapEditorSaveLoadPanel : Panel
 
 	private void DisplayPrompt()
 	{
-		taMessages.Text = ((saveOrLoad == SaveOrLoad.Save) ? "Select an existing map file to overwrite or enter a new name in the box below." : "Select a map to load.");
+		taMessages.Text = ((saveOrLoad == SaveOrLoad.Save) ? UWGame.Locale.Text("Select an existing map file to overwrite or enter a new name in the box below.") : UWGame.Locale.Text("Select a map to load."));
 	}
 
 	private string ShortenPath(string path, int maxLength)
@@ -124,7 +124,7 @@ public class MapEditorSaveLoadPanel : Panel
 	private void DisplayFolderPath(string path)
 	{
 		string text = ShortenPath(path, 55);
-		string text2 = "Path: " + text;
+		string text2 = UWGame.Locale.Text("Path: ") + text;
 		lblFolderPath.Text = text2;
 		lblFolderPath.ToolTip = path;
 	}
@@ -189,12 +189,12 @@ public class MapEditorSaveLoadPanel : Panel
 					mapData2.FolderName = tbMapName.Text;
 					The.Map.SaveMap(fullFolderPath, mapData2, createNewFolders: true);
 				}
-				taMessages.Text = "The map was saved.";
+				taMessages.Text = UWGame.Locale.Text("The map was saved.");
 				PopulateFileList();
 			}
 			catch (Exception ex)
 			{
-				taMessages.Text = "An error occurred: " + ex.Message;
+				taMessages.Text = UWGame.Locale.Text("An error occurred:") + " " + ex.Message;
 			}
 		}
 		else if (grid.GetSelectedKey(out key))

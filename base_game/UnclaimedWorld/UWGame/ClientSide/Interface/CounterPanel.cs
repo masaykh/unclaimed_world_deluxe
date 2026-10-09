@@ -36,12 +36,12 @@ public class CounterPanel : Panel
 		lblCredits.Init(type);
 		lblCredits.FitToText();
 		lblCredits.Y = y2;
-		lblCredits.ToolTip = "Available trade credits";
+		lblCredits.ToolTip = UWGame.Locale.Text("Available trade credits");
 		lblMembers = new Label(Interface.gui);
 		Window.Add(lblMembers);
 		lblMembers.Init(type);
 		lblMembers.Y = y2;
-		lblMembers.ToolTip = "Current members of the colony";
+		lblMembers.ToolTip = UWGame.Locale.Text("Current members of the colony");
 		Rectangle sourceRectangle = Interface.gui.GUISpriteSheet.GetSourceRectangle("basic_dirt_top");
 		Panel.AddImage(Interface.gui, Window, sourceRectangle, new Point(50, -35));
 		RefreshLabels();
@@ -58,14 +58,14 @@ public class CounterPanel : Panel
 		lblMembers.FitToText();
 		Window.CenterHorizontally(68, lblMembers);
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendHeaderOnLightBG(stringBuilder, "Colony members");
-		Common.Append(stringBuilder, "Shows the current members and the maximum we can accept. (The current members do not want the community to grow too large, making their votes count less)");
+		Common.AppendHeaderOnLightBG(stringBuilder, UWGame.Locale.Text("Colony members"));
+		Common.Append(stringBuilder, UWGame.Locale.Text("Shows the current members and the maximum we can accept. (The current members do not want the community to grow too large, making their votes count less)"));
 		Common.AppendLine(stringBuilder);
 		Common.AppendDivider(stringBuilder);
-		Common.Append(stringBuilder, "Current: ");
+		Common.Append(stringBuilder, UWGame.Locale.Text("Current: "));
 		Common.Append(stringBuilder, noOfPersons.ToString(), tintAsValue: true);
 		Common.AppendLine(stringBuilder);
-		Common.Append(stringBuilder, "Maximum: ");
+		Common.Append(stringBuilder, UWGame.Locale.Text("Maximum: "));
 		Common.Append(stringBuilder, GameData.Instance.Constants.PopulationCap.ToString(), tintAsValue: true);
 		lblMembers.ToolTip = stringBuilder.ToString();
 		if (The.InGameUI.UIAllegiance.IsOverPopulationCap())

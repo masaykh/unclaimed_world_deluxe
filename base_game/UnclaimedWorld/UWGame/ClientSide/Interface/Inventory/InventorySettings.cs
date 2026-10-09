@@ -63,7 +63,7 @@ public class InventorySettings : ISnapshot
 
 	private List<Color> AvailableColors;
 
-	public const string barTooltipBeingTracked = "Being tracked";
+	public static string barTooltipBeingTracked => UWGame.Locale.Text("Being tracked");
 
 	public Dictionary<EntityType, TrackTarget> TrackedTargets = new Dictionary<EntityType, TrackTarget>();
 
@@ -624,7 +624,7 @@ public class InventorySettings : ISnapshot
 			{
 				TrackedTargets.TryGetValue(entityType, out var value);
 				color = value.Color;
-				toolTip = "Being tracked" + ((toolTip == null) ? null : (" \n" + toolTip));
+				toolTip = UWGame.Locale.Text("Being tracked") + ((toolTip == null) ? null : (" \n" + toolTip));
 			}
 			if (!color.HasValue)
 			{
@@ -659,7 +659,7 @@ public class InventorySettings : ISnapshot
 			toolTip += modifiedToolTip;
 			modifiedToolTip = "";
 		}
-		toolTip = ((toolTip != "") ? ("This item is:" + toolTip) : null);
+		toolTip = ((toolTip != "") ? (UWGame.Locale.Text("This item is:") + toolTip) : null);
 		return color;
 	}
 
@@ -701,13 +701,13 @@ public class InventorySettings : ISnapshot
 			switch (status)
 			{
 			case InOutOrTool.Input:
-				modifiedToolTip = "\n Input for:\n" + modifiedToolTip;
+				modifiedToolTip = UWGame.Locale.Text("\n Input for:\n") + modifiedToolTip;
 				break;
 			case InOutOrTool.Output:
-				modifiedToolTip = "\n Output from:\n" + modifiedToolTip;
+				modifiedToolTip = UWGame.Locale.Text("\n Output from:\n") + modifiedToolTip;
 				break;
 			case InOutOrTool.Tool:
-				modifiedToolTip = "\n Tool for making:\n" + modifiedToolTip;
+				modifiedToolTip = UWGame.Locale.Text("\n Tool for making:\n") + modifiedToolTip;
 				break;
 			}
 		}

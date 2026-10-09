@@ -64,6 +64,6 @@ public class NutrientFilterSettingType : FilterSettingType
 
 	public override string GetDefaultDisplayName()
 	{
-		return "High in " + NutrientType.Name;
+		return string.Format(UWGame.Locale.Text("High in {0}"), NutrientType.Name);
 	}
 }

@@ -22,7 +22,7 @@ public class EventArchivePanel : RosterPanel
 	private List<TextButton> buttonsOnForm = new List<TextButton>();
 
 	public EventArchivePanel()
-		: base("EVENT ARCHIVE", 487, 486)
+		: base(UWGame.Locale.Text("EVENT ARCHIVE"), 487, 486)
 	{
 		HasStatusCRT = true;
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: false);
@@ -36,13 +36,13 @@ public class EventArchivePanel : RosterPanel
 		area.Width = surfaceGrid.SurfaceWidth - 12;
 		previousButton = new ImageButton(Interface.gui);
 		previousButton.InitWithIcon(ImageButtonType.White, "arrowblack_left", hasCheckedState: false);
-		previousButton.ToolTip = "Previous event";
+		previousButton.ToolTip = UWGame.Locale.Text("Previous event");
 		previousButton.Click += previousButton_Click;
 		Window.Add(previousButton);
 		PlaceButtonUnderLCD(previousButton, 370);
 		nextButton = new ImageButton(Interface.gui);
 		nextButton.InitWithIcon(ImageButtonType.White, "arrowblack_right", hasCheckedState: false);
-		nextButton.ToolTip = "Next event";
+		nextButton.ToolTip = UWGame.Locale.Text("Next event");
 		nextButton.Click += nextButton_Click;
 		Window.Add(nextButton);
 		PlaceButtonUnderLCD(nextButton, previousButton.Right + 4);
@@ -107,7 +107,7 @@ public class EventArchivePanel : RosterPanel
 		}
 	}
 
-	private void ShowImageAndText(string imageName, string heading, string text, bool showOkButton = true, string okButtonText = "OK", string okButtonTooltip = null, int? okButtonWidth = null, bool showCancelButton = false, string cancelButtonText = "CANCEL", string cancelButtonTooltip = null, int? cancelButtonWidth = null)
+	private void ShowImageAndText(string imageName, string heading, string text, bool showOkButton = true, string okButtonText = null, string okButtonTooltip = null, int? okButtonWidth = null, bool showCancelButton = false, string cancelButtonText = null, string cancelButtonTooltip = null, int? cancelButtonWidth = null)
 	{
 		FillImageAndText(imageName, heading, text);
 		dialogOptions = null;
@@ -115,12 +115,12 @@ public class EventArchivePanel : RosterPanel
 		if (showOkButton)
 		{
 			TextButton button = buttons[0];
-			EventDialog.SetupButton(Window, buttonsOnForm, okButtonText, okButtonTooltip, okButtonWidth, button);
+			EventDialog.SetupButton(Window, buttonsOnForm, okButtonText ?? UWGame.Locale.Text("OK"), okButtonTooltip, okButtonWidth, button);
 		}
 		if (showCancelButton)
 		{
 			TextButton button2 = buttons[1];
-			EventDialog.SetupButton(Window, buttonsOnForm, cancelButtonText, cancelButtonTooltip, cancelButtonWidth, button2);
+			EventDialog.SetupButton(Window, buttonsOnForm, cancelButtonText ?? UWGame.Locale.Text("CANCEL"), cancelButtonTooltip, cancelButtonWidth, button2);
 		}
 		EventDialog.ArrangeButtons(buttonsOnForm, buttons, 20, 312);
 	}

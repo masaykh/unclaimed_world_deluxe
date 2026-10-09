@@ -312,7 +312,7 @@ public class WorldMap : UIComponent
 		else
 		{
 			missionMarker.SetSkinLocation(SkinState.Normal, null, Color.Gray, Color.Gray);
-			missionMarker.ToolTip = "No communication";
+			missionMarker.ToolTip = UWGame.Locale.Text("No communication");
 		}
 	}
 

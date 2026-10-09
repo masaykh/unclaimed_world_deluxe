@@ -21,7 +21,7 @@ public class ContextMenuOpener : HUDWindow
 		DisplayWindow.DebugTag = "contextMenuOpener";
 		btExpand = new TextButton(gui);
 		Add(btExpand);
-		btExpand.Text = "NEW";
+		btExpand.Text = UWGame.Locale.Text("NEW");
 		btExpand.Init(TextButton.TextButtonType.HUD);
 		btExpand.MouseOver += bt_MouseOver;
 		btExpand.ScaleWidthToFitText();

@@ -33,9 +33,13 @@ still the English the template has for its key, so a scenario's own wording is n
 base game's translation.
 
 Terrain features (rocks, moss, hills) are left out: their names are the names of their art
-("sulfurrock", "S: Bird 1, single") and are not shown. Still written straight into the code - and
-English until routed the same way - are the side panels, the HUD and the log.
-`tools/build/37-unrouted.txt` counts what is left, file by file.
+("sulfurrock", "S: Bird 1, single") and are not shown.
+
+The interface - side panels, HUD windows, data sheets, the missions, trade, policy and tasks panels -
+goes through `Locale` too (`(GUI)...`, 907 entries). Still English: the simulation's own sentences
+(the log's "was injured", what a colonist is doing, why a task is blocked), the mods' messages, the
+loading screen's progress lines, and the developer panels (LOAD REPLAY, the debug overlays).
+`tools/build/37-unrouted.txt` counts any interface English that comes back, file by file.
 
 ## Adding a language
 
@@ -83,6 +87,12 @@ variable part goes through a format string, never `+`, so the template has one f
 `string.Format(Locale.Text("Illegal width entered. {0} is maximum."), max)`. Then run
 `bash tools/build/37-make-strings.sh` and commit the template with the change. The script refuses a
 `Locale.Text` whose argument is built from pieces.
+
+`perl tools/build/37-strings.pl route FILE...` wraps the plain cases for you: a literal assigned to
+a control's Text, ToolTip, Title, Summary or Caption, a literal argument of the interface's helpers
+(buttons, headings, tooltips, list entries - the list is in that script), and a label returned or
+given by a switch arm. It leaves `$"..."` and `"a" + b` for you to turn into a format, and keys
+(`AddEntry`'s first argument, icon and sprite names) alone. The same rules are the ratchet.
 
 The data tables are translated once they are complete (`GameData.PostDataCompleteInitialize` →
 `Locale.TranslateData`). The game identifies everything by its key, never by its name: the locale

@@ -59,7 +59,7 @@ public class SaveLoadMessageBox : MessageBox
 			saveThread.IsBackground = true;
 			saveThread.Start();
 			mode = Mode.Save;
-			ShowMessage("Saving. Please wait...", null, modal: true, ButtonOptions.None);
+			ShowMessage(UWGame.Locale.Text("Saving. Please wait..."), null, modal: true, ButtonOptions.None);
 		}
 	}
 
@@ -98,13 +98,13 @@ public class SaveLoadMessageBox : MessageBox
 		switch (mode)
 		{
 		case Mode.Save:
-			text = "Saving (1/2). Please wait... ";
+			text = UWGame.Locale.Text("Saving (1/2). Please wait... ");
 			break;
 		case Mode.LoadAfterSave:
-			text = "Saving (2/2). Please wait... ";
+			text = UWGame.Locale.Text("Saving (2/2). Please wait... ");
 			break;
 		case Mode.Load:
-			text = "Loading. Please wait... ";
+			text = UWGame.Locale.Text("Loading. Please wait... ");
 			break;
 		}
 		int count = Common.ClampBottom((int)timeSpan.TotalSeconds, 0);

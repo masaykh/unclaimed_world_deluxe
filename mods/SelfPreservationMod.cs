@@ -209,7 +209,7 @@ public static class SelfPreservationMod
         entity.Intelligence.GetKnownData(threat.Target.Value, out var danger);
         if (The.Client?.Log != null && danger != null)
         {
-            The.Client.Log.AddLogEvent(The.Client.Log.CombatEvent, entity, $"stops chasing vermin: {danger} threatens the colony.");
+            The.Client.Log.AddLogEvent(The.Client.Log.CombatEvent, entity, string.Format(UWGame.Locale.Text("stops chasing vermin: {0} threatens the colony."), danger));
         }
         return true;
     }

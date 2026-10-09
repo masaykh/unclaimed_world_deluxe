@@ -8,7 +8,7 @@ namespace UWGame.ClientSide.Interface;
 public class MainMenuDevPanel : Panel
 {
 	public MainMenuDevPanel(MainMenuInterface intf, Point position)
-		: base(intf, "DEV OPTIONS", position, new Vector2(360f, 177f), Level.Dialogs, PanelType.MainMenu)
+		: base(intf, UWGame.Locale.Text("DEV OPTIONS"), position, new Vector2(360f, 177f), Level.Dialogs, PanelType.MainMenu)
 	{
 		InitButtons();
 	}
@@ -26,17 +26,17 @@ public class MainMenuDevPanel : Panel
 		// DEBUG MOD: named apart from the main panel's TEST MAP. Two buttons said TEST, one
 		// started a debug SCENARIO and the other opened a MAP PICKER, and a person testing had
 		// no way to tell which was which - so the scenario setting looked inert for a day.
-		textButton.Text = "TEST SCENARIO";
+		textButton.Text = UWGame.Locale.Text("TEST SCENARIO");
 		textButton.Click += btContinueGame_Click;
-		textButton.ToolTip = "Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.";
+		textButton.ToolTip = UWGame.Locale.Text("Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.");
 		textButton.Width = 106;
 		TextButton textButton2 = new TextButton(Interface.gui);
 		Window.Add(textButton2);
 		textButton2.Init(TextButton.TextButtonType.White);
 		textButton2.Position = new Point(x, 116);
-		textButton2.Text = "LOAD REPLAY";
+		textButton2.Text = UWGame.Locale.Text("LOAD REPLAY");
 		textButton2.Click += btLoadReplay_Click;
-		textButton2.ToolTip = "Load replay";
+		textButton2.ToolTip = UWGame.Locale.Text("Load replay");
 		textButton2.Width = 106;
 	}
 

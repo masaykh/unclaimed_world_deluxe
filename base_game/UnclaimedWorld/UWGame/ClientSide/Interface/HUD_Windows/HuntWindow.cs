@@ -60,7 +60,7 @@ public class HuntWindow : HUDWindow
 		DisplayWindow.MinHeight = 200;
 		DisplayWindow.ResizableBorderSize = 6;
 		DisplayWindow.Resize += DisplayWindow_Resize;
-		AddZoneNameAndHeader("", "HUNT", "HUD_icon_hunt", 12, out lblName, out lblHeader, out headerIcon);
+		AddZoneNameAndHeader("", UWGame.Locale.Text("HUNT"), "HUD_icon_hunt", 12, out lblName, out lblHeader, out headerIcon);
 		CreateGridHeader();
 		grid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
 		grid.IsOuterGrid = true;
@@ -76,14 +76,14 @@ public class HuntWindow : HUDWindow
 		Add(grid);
 		btCancel = new TextButton(gui);
 		Add(btCancel);
-		btCancel.Text = "CANCEL";
+		btCancel.Text = UWGame.Locale.Text("CANCEL");
 		btCancel.Init(TextButton.TextButtonType.HUD);
 		btCancel.Click += btCancel_Click;
 		btCancel.Width = 72;
 		btCancel.X = DisplayWindow.Width - 12 - btCancel.Width;
 		btOK = new TextButton(gui);
 		Add(btOK);
-		btOK.Text = "OK";
+		btOK.Text = UWGame.Locale.Text("OK");
 		btOK.Init(TextButton.TextButtonType.HUD);
 		btOK.Click += btOk_Click;
 		btOK.Width = 72;
@@ -108,7 +108,7 @@ public class HuntWindow : HUDWindow
 		Label label = new Label(gui);
 		Add(label);
 		label.Init(Label.LabelType.HUDWindow);
-		label.Text = "Ordered";
+		label.Text = UWGame.Locale.Text("Ordered");
 		label.FitToText();
 		label.X = 195;
 		label.Y = 28;
@@ -399,7 +399,7 @@ public class HuntWindow : HUDWindow
 		image.ResizeControlToFitImage();
 		image.X = dataTypeButton.Right + 6;
 		image.ID = UIComponent.DataControlID.Habitat;
-		image.ToolTip = "The zone is in this creature's habitat";
+		image.ToolTip = UWGame.Locale.Text("The zone is in this creature's habitat");
 		if (GameData.Instance.GUIConstants.EnableStandingOrders)
 		{
 			ImageButton imageButton = new ImageButton(Interface.gui);
@@ -407,7 +407,7 @@ public class HuntWindow : HUDWindow
 			imageButton.Init(ImageButtonType.HUDPadlock);
 			imageButton.Position = new Point(num - 13, 0);
 			imageButton.Click += btPadlock_Click;
-			imageButton.ToolTip = "Switch to standing order mode.";
+			imageButton.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 			uIComponent.CenterChildVertically(imageButton);
 			imageButton.ID = UIComponent.DataControlID.StandingOrderModePadlock;
 		}
@@ -433,11 +433,11 @@ public class HuntWindow : HUDWindow
 			ImageButton imageButton = sender as ImageButton;
 			if (imageButton.IsChecked)
 			{
-				imageButton.ToolTip = "Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.";
+				imageButton.ToolTip = UWGame.Locale.Text("Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.");
 			}
 			else
 			{
-				imageButton.ToolTip = "Switch to standing order mode.";
+				imageButton.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 			}
 			UIComponent parent = sender.Parent;
 			UpdateRow(parent, (EntityType)parent.Tag1, (bool)parent.Tag2, ownedEntities);

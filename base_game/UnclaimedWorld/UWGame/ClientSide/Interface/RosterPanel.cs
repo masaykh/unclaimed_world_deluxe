@@ -367,7 +367,7 @@ public class RosterPanel : Panel
 
 	protected TextButton AddCloseButton(Window Form, Action<object, EventArgs> closeFunction)
 	{
-		TextButton textButton = AddLowerButton("CLOSE", "Closes the panel", Align.Right);
+		TextButton textButton = AddLowerButton(UWGame.Locale.Text("CLOSE"), UWGame.Locale.Text("Closes the panel"), Align.Right);
 		textButton.Click += closeFunction.Invoke;
 		return textButton;
 	}

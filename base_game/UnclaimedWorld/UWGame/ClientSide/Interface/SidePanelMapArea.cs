@@ -64,16 +64,16 @@ public class SidePanelMapArea : RosterPanel
 		InitStatusContentPanel();
 		int value = 20;
 		outerGrid = RosterPanel.CreateOuterGridForCollapsableLists(The.InGameUI.gui, lcdSurface);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "PERSONS", value, out cpPersons, out grdPersons, Grid.SelectabilityOptions.None);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "ROBOTS", value, out cpRobots, out grdRobots, Grid.SelectabilityOptions.None, 5);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "ANIMALS", value, out cpAnimals, out grdAnimals, Grid.SelectabilityOptions.None, 10);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "STRUCTURES", value, out cpStructures, out grdStructures, Grid.SelectabilityOptions.None, 15);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "ITEMS", value, out cpItems, out grdItems, Grid.SelectabilityOptions.None, 20);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "RESOURCES", value, out cpResources, out grdResources, Grid.SelectabilityOptions.None, 25);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "PLANTS", value, out cpTrees, out grdTrees, Grid.SelectabilityOptions.None, 35);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("PERSONS"), value, out cpPersons, out grdPersons, Grid.SelectabilityOptions.None);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("ROBOTS"), value, out cpRobots, out grdRobots, Grid.SelectabilityOptions.None, 5);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("ANIMALS"), value, out cpAnimals, out grdAnimals, Grid.SelectabilityOptions.None, 10);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("STRUCTURES"), value, out cpStructures, out grdStructures, Grid.SelectabilityOptions.None, 15);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("ITEMS"), value, out cpItems, out grdItems, Grid.SelectabilityOptions.None, 20);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("RESOURCES"), value, out cpResources, out grdResources, Grid.SelectabilityOptions.None, 25);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("PLANTS"), value, out cpTrees, out grdTrees, Grid.SelectabilityOptions.None, 35);
 		if (The.Sim.Mode == Sim.EngineMode.Edit)
 		{
-			RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "TERRAIN", value, out cpTerrain, out grdTerrain, Grid.SelectabilityOptions.None, 45);
+			RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("TERRAIN"), value, out cpTerrain, out grdTerrain, Grid.SelectabilityOptions.None, 45);
 		}
 	}
 
@@ -91,7 +91,7 @@ public class SidePanelMapArea : RosterPanel
 		lblStatusHeading.Text = "";
 		if (TileSelectionContextMenu.GetMapArea() != null)
 		{
-			SetHeaderText("LAND");
+			SetHeaderText(UWGame.Locale.Text("LAND"));
 		}
 	}
 

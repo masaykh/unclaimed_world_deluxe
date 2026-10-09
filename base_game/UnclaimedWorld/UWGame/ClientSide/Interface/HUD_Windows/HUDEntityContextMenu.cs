@@ -55,55 +55,55 @@ public class HUDEntityContextMenu : HUDWindow
 		: base(240, 220)
 	{
 		tbSalvage = new TextButton(gui);
-		tbSalvage.Text = "BEGIN";
-		tbSalvage.ToolTip = "Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.";
+		tbSalvage.Text = UWGame.Locale.Text("BEGIN");
+		tbSalvage.ToolTip = UWGame.Locale.Text("Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.");
 		tbSalvage.Init(TextButton.TextButtonType.HUDSalvage);
 		tbSalvage.Click += tbSalvage_Click;
 		tbSalvage.ScaleWidthToFitText();
 		tbPackingDown = new TextButton(gui);
-		tbPackingDown.Text = "BEGIN";
-		tbPackingDown.ToolTip = "Disassemble the object: All its parts will be retrieved. See the process tooltip for more info.";
+		tbPackingDown.Text = UWGame.Locale.Text("BEGIN");
+		tbPackingDown.ToolTip = UWGame.Locale.Text("Disassemble the object: All its parts will be retrieved. See the process tooltip for more info.");
 		tbPackingDown.Init(TextButton.TextButtonType.HUDPackingDown);
 		tbPackingDown.Click += tbSalvage_Click;
 		tbPackingDown.ScaleWidthToFitText();
 		tbHunt = new TextButton(gui);
-		tbHunt.Text = "HUNT";
-		tbHunt.ToolTip = "Hunt this animal";
+		tbHunt.Text = UWGame.Locale.Text("HUNT");
+		tbHunt.ToolTip = UWGame.Locale.Text("Hunt this animal");
 		tbHunt.Init(TextButton.TextButtonType.HUDHunt);
 		tbHunt.Click += tbHunt_Click;
 		tbHunt.ScaleWidthToFitText();
 		tbSetStockpile = new TextButton(gui);
-		tbSetStockpile.Text = "STOCKPILE";
-		tbSetStockpile.ToolTip = "Choose the types of items that can be stored in this structure";
+		tbSetStockpile.Text = UWGame.Locale.Text("STOCKPILE");
+		tbSetStockpile.ToolTip = UWGame.Locale.Text("Choose the types of items that can be stored in this structure");
 		tbSetStockpile.Init(TextButton.TextButtonType.HUDStockpile);
 		tbSetStockpile.Click += tbSetStockpile_Click;
 		tbSetStockpile.ScaleWidthToFitText();
 		tbSetTradeOffers = new TextButton(gui);
-		tbSetTradeOffers.Text = "TRADE";
-		tbSetTradeOffers.ToolTip = "Choose the types of items that can be offered for trade in this structure";
+		tbSetTradeOffers.Text = UWGame.Locale.Text("TRADE");
+		tbSetTradeOffers.ToolTip = UWGame.Locale.Text("Choose the types of items that can be offered for trade in this structure");
 		tbSetTradeOffers.Init(TextButton.TextButtonType.HUDStockpile);
 		tbSetTradeOffers.Click += tbSetTradeOffers_Click;
 		tbSetTradeOffers.ScaleWidthToFitText();
 		tbUpgrade = new TextButton(gui);
-		tbUpgrade.Text = "UPGRADE";
-		tbUpgrade.ToolTip = "Choose improvements for the structure";
+		tbUpgrade.Text = UWGame.Locale.Text("UPGRADE");
+		tbUpgrade.ToolTip = UWGame.Locale.Text("Choose improvements for the structure");
 		tbUpgrade.Init(TextButton.TextButtonType.HUDUpgrade);
 		tbUpgrade.Click += tbUpgrade_Click;
 		tbUpgrade.ScaleWidthToFitText();
 		tbClaim = new TextButton(gui);
-		tbClaim.Text = "CLAIM";
+		tbClaim.Text = UWGame.Locale.Text("CLAIM");
 		tbClaim.Init(TextButton.TextButtonType.HUDClaim);
 		tbClaim.Click += tbClaim_Click;
 		tbClaim.ScaleWidthToFitText();
 		tbDiscard = new TextButton(gui);
-		tbDiscard.Text = "DISCARD";
-		tbDiscard.ToolTip = "Choose the types of items that can be stored in this structure";
+		tbDiscard.Text = UWGame.Locale.Text("DISCARD");
+		tbDiscard.ToolTip = UWGame.Locale.Text("Choose the types of items that can be stored in this structure");
 		tbDiscard.Init(TextButton.TextButtonType.HUDDiscard);
 		tbDiscard.Click += tbDiscard_Click;
 		tbDiscard.ScaleWidthToFitText();
 		tbMoveExpedition = new TextButton(gui);
-		tbMoveExpedition.Text = "MOVE CAMP";
-		tbMoveExpedition.ToolTip = "Click on terrain to designate a new spot for the camp";
+		tbMoveExpedition.Text = UWGame.Locale.Text("MOVE CAMP");
+		tbMoveExpedition.ToolTip = UWGame.Locale.Text("Click on terrain to designate a new spot for the camp");
 		tbMoveExpedition.Init(TextButton.TextButtonType.HUDStockpile);
 		tbMoveExpedition.Click += tbExpedition_Click;
 		tbMoveExpedition.Y = 6;
@@ -441,12 +441,12 @@ public class HUDEntityContextMenu : HUDWindow
 			if (Entity.IsFunctional(entityData))
 			{
 				tbSetStockpile.Enabled = true;
-				tbSetStockpile.ToolTip = "Choose the types of items that can be stored in this structure";
+				tbSetStockpile.ToolTip = UWGame.Locale.Text("Choose the types of items that can be stored in this structure");
 			}
 			else
 			{
 				tbSetStockpile.Enabled = false;
-				tbSetStockpile.ToolTip = "The structure is broken and is unusable for stockpiling.";
+				tbSetStockpile.ToolTip = UWGame.Locale.Text("The structure is broken and is unusable for stockpiling.");
 			}
 		}
 		else
@@ -462,12 +462,12 @@ public class HUDEntityContextMenu : HUDWindow
 			if (Entity.IsFunctional(entityData))
 			{
 				tbSetTradeOffers.Enabled = true;
-				tbSetTradeOffers.ToolTip = "Choose the types of items that can be offered for trade in this structure";
+				tbSetTradeOffers.ToolTip = UWGame.Locale.Text("Choose the types of items that can be offered for trade in this structure");
 			}
 			else
 			{
 				tbSetTradeOffers.Enabled = false;
-				tbSetTradeOffers.ToolTip = "The structure is broken and is unusable for stockpiling.";
+				tbSetTradeOffers.ToolTip = UWGame.Locale.Text("The structure is broken and is unusable for stockpiling.");
 			}
 		}
 		else
@@ -483,12 +483,12 @@ public class HUDEntityContextMenu : HUDWindow
 			if (Entity.IsFunctional(entityData))
 			{
 				tbUpgrade.Enabled = true;
-				tbUpgrade.ToolTip = "UPGRADE. View or set the possible upgrades.";
+				tbUpgrade.ToolTip = UWGame.Locale.Text("UPGRADE. View or set the possible upgrades.");
 			}
 			else
 			{
 				tbUpgrade.Enabled = false;
-				tbUpgrade.ToolTip = "UPGRADE. Cannot upgrade a broken structure.";
+				tbUpgrade.ToolTip = UWGame.Locale.Text("UPGRADE. Cannot upgrade a broken structure.");
 			}
 		}
 		else
@@ -503,13 +503,13 @@ public class HUDEntityContextMenu : HUDWindow
 			num += tbDiscard.Height;
 			if (entityData.EntityType.StructureType != null)
 			{
-				tbDiscard.Text = "ABANDON";
-				tbDiscard.ToolTip = "ABANDON. Stop using this structure";
+				tbDiscard.Text = UWGame.Locale.Text("ABANDON");
+				tbDiscard.ToolTip = UWGame.Locale.Text("ABANDON. Stop using this structure");
 			}
 			else
 			{
-				tbDiscard.Text = "DISCARD";
-				tbDiscard.ToolTip = "DISCARD. Exclude this item from the colony's possessions.";
+				tbDiscard.Text = UWGame.Locale.Text("DISCARD");
+				tbDiscard.ToolTip = UWGame.Locale.Text("DISCARD. Exclude this item from the colony's possessions.");
 			}
 			tbDiscard.ScaleWidthToFitText();
 		}
@@ -525,13 +525,13 @@ public class HUDEntityContextMenu : HUDWindow
 			num += tbClaim.Height;
 			if (entityData.EntityType.StructureType != null)
 			{
-				tbClaim.Text = "CLAIM";
-				tbClaim.ToolTip = "CLAIM. Start using this structure";
+				tbClaim.Text = UWGame.Locale.Text("CLAIM");
+				tbClaim.ToolTip = UWGame.Locale.Text("CLAIM. Start using this structure");
 			}
 			else
 			{
-				tbClaim.Text = "CLAIM";
-				tbClaim.ToolTip = "CLAIM. Include this item in the colony's possessions";
+				tbClaim.Text = UWGame.Locale.Text("CLAIM");
+				tbClaim.ToolTip = UWGame.Locale.Text("CLAIM. Include this item in the colony's possessions");
 			}
 			tbClaim.ScaleWidthToFitText();
 		}
@@ -617,29 +617,29 @@ public class HUDEntityContextMenu : HUDWindow
 		EntityType immovableInput;
 		if (SpecialAction.ActionJobExists(entityData, processType, otherJobs))
 		{
-			textButton.ToolTip = "This task is ongoing. Use the task panel to view or cancel it";
+			textButton.ToolTip = UWGame.Locale.Text("This task is ongoing. Use the task panel to view or cancel it");
 			textButton.Enabled = false;
 		}
 		else if (!The.InGameUI.UIAllegiance.SharedKnowledge.SpecialActionIsAvailable(entityData, processType))
 		{
-			textButton.ToolTip = "Not available at this time.";
+			textButton.ToolTip = UWGame.Locale.Text("Not available at this time.");
 			textButton.Enabled = false;
 		}
 		else if (!InventoryPanel.HasAllInputsAndToolsForProcess(processType, owner, out hasInputs, out hasTools, out maxAmountThatCanBeProduced, out noOfMissingInputTypes, out noOfAvailableInputTypes, out hasSkills, out hasResource, out hasSpecialSite, out hasPolicy, out immovableInput))
 		{
 			if (!hasPolicy)
 			{
-				textButton.ToolTip = "We need to adopt a policy first.";
+				textButton.ToolTip = UWGame.Locale.Text("We need to adopt a policy first.");
 			}
 			else
 			{
-				textButton.ToolTip = "We don't have all the needed materials or tools to begin this";
+				textButton.ToolTip = UWGame.Locale.Text("We don't have all the needed materials or tools to begin this");
 			}
 			textButton.Enabled = false;
 		}
 		else
 		{
-			textButton.ToolTip = "Click to begin";
+			textButton.ToolTip = UWGame.Locale.Text("Click to begin");
 			textButton.Enabled = true;
 		}
 	}

@@ -91,7 +91,7 @@ public class SiteWindow : UIComponent
 		imageButton.Y = titleY;
 		imageButton.Visible = true;
 		imageButton.Click += closeButton_Click;
-		imageButton.ToolTip = "Close this window";
+		imageButton.ToolTip = UWGame.Locale.Text("Close this window");
 		imageButton.CheckedMode = CheckedModes.CannotBeChecked;
 		imageButton.ZOrder = 1f;
 		taDescription = new TextArea(gui, ListBoxType.HUDAndLCD);
@@ -134,7 +134,7 @@ public class SiteWindow : UIComponent
 		lblHeader = new Label(gui);
 		Add(lblHeader);
 		lblHeader.Init(Label.LabelType.HUDWindow);
-		lblHeader.Text = "EXPEDITION";
+		lblHeader.Text = UWGame.Locale.Text("EXPEDITION");
 		lblHeader.FitToText();
 		lblHeader.X = sideMargin;
 		lblHeader.Y = y;
@@ -142,7 +142,7 @@ public class SiteWindow : UIComponent
 		lblHeader = new Label(gui);
 		Add(lblHeader);
 		lblHeader.Init(Label.LabelType.HUDWindow);
-		lblHeader.Text = "TERMINAL";
+		lblHeader.Text = UWGame.Locale.Text("TERMINAL");
 		lblHeader.FitToText();
 		lblHeader.X = terminalX;
 		lblHeader.Y = y;
@@ -158,7 +158,7 @@ public class SiteWindow : UIComponent
 	{
 		this.site = site;
 		this.otherPartyID = otherPartyID;
-		windowHeading.Text = "SITE: " + site.Name;
+		windowHeading.Text = string.Format(UWGame.Locale.Text("SITE: {0}"), site.Name);
 		taDescription.Text = site.Description;
 	}
 
@@ -284,7 +284,7 @@ public class SiteWindow : UIComponent
 		TextButton textButton = new TextButton(gui);
 		textButton.Init(TextButton.TextButtonType.HUD);
 		textButton.Visible = true;
-		textButton.Text = "SELECT";
+		textButton.Text = UWGame.Locale.Text("SELECT");
 		textButton.Tag1 = travelLocation;
 		textButton.ZOrder = 1f;
 		textButton.ScaleWidthToFitText();
@@ -380,7 +380,7 @@ public class SiteWindow : UIComponent
 			Label label2 = (Label)uIComponent;
 			if (!travelLocation.TerminalEntityID.HasValue)
 			{
-				label2.Text = "No terminal";
+				label2.Text = UWGame.Locale.Text("No terminal");
 			}
 			else
 			{
@@ -396,20 +396,20 @@ public class SiteWindow : UIComponent
 		if (flag)
 		{
 			imageButton2.Enabled = true;
-			imageButton2.ToolTip = "View prices and goods for sale at this location";
+			imageButton2.ToolTip = UWGame.Locale.Text("View prices and goods for sale at this location");
 			imageButton.Enabled = true;
-			imageButton.ToolTip = "View prices for goods this location is willing to buy";
+			imageButton.ToolTip = UWGame.Locale.Text("View prices for goods this location is willing to buy");
 			imageButton3.Enabled = true;
-			imageButton3.ToolTip = "See people at this location who are interested in migrating";
+			imageButton3.ToolTip = UWGame.Locale.Text("See people at this location who are interested in migrating");
 		}
 		else
 		{
 			imageButton2.Enabled = false;
-			imageButton2.ToolTip = "No communication with this allegiance";
+			imageButton2.ToolTip = UWGame.Locale.Text("No communication with this allegiance");
 			imageButton.Enabled = false;
-			imageButton.ToolTip = "No communication with this allegiance";
+			imageButton.ToolTip = UWGame.Locale.Text("No communication with this allegiance");
 			imageButton3.Enabled = false;
-			imageButton3.ToolTip = "No communication with this allegiance";
+			imageButton3.ToolTip = UWGame.Locale.Text("No communication with this allegiance");
 		}
 		if (allegiance == The.InGameUI.UIAllegiance)
 		{
@@ -429,18 +429,18 @@ public class SiteWindow : UIComponent
 					if (The.InGameUI.CreateMissionPanel.HasTransportationIfStart(travelLocation))
 					{
 						textButton.Enabled = true;
-						textButton.ToolTip = "Select this location";
+						textButton.ToolTip = UWGame.Locale.Text("Select this location");
 					}
 					else
 					{
 						textButton.Enabled = false;
-						textButton.ToolTip = "This cannot be selected as a starting location since there is no transportation currently available from this site.";
+						textButton.ToolTip = UWGame.Locale.Text("This cannot be selected as a starting location since there is no transportation currently available from this site.");
 					}
 				}
 				else
 				{
 					textButton.Enabled = false;
-					textButton.ToolTip = "No communication with this allegiance";
+					textButton.ToolTip = UWGame.Locale.Text("No communication with this allegiance");
 				}
 			}
 			else
@@ -448,7 +448,7 @@ public class SiteWindow : UIComponent
 				textButton.Enabled = false;
 				if (isAlreadySelected)
 				{
-					textButton.ToolTip = "This location is already selected";
+					textButton.ToolTip = UWGame.Locale.Text("This location is already selected");
 				}
 				else if (wrongTerminalType)
 				{

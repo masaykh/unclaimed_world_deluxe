@@ -47,7 +47,7 @@ public class TiersPage : TabPagePanel
 		: base(parent)
 	{
 		GUIManager gui = parent.guiManager;
-		parent.AddTabPage(this, "TECHNOLOGY TIERS", "Set/view current tiers");
+		parent.AddTabPage(this, UWGame.Locale.Text("TECHNOLOGY TIERS"), UWGame.Locale.Text("Set/view current tiers"));
 		tierHeaderContainer = new UIComponent(gui);
 		tierHeaderContainer.Width = Width;
 		tierHeaderContainer.Height = 42;
@@ -70,7 +70,7 @@ public class TiersPage : TabPagePanel
 		Array values = Enum.GetValues(typeof(RatingTypes));
 		Label label = new Label(guiManager);
 		label.Init(Label.LabelType.LCDHeadingBlue);
-		label.Text = "TECH:";
+		label.Text = UWGame.Locale.Text("TECH:");
 		tierHeaderContainer.Add(label);
 		label.Width = 42;
 		int headerXPos = 51;
@@ -320,14 +320,14 @@ public class TiersPage : TabPagePanel
 		StringBuilder stringBuilder = new StringBuilder();
 		Common.Append(stringBuilder, tierButtonTooltips[tierArea]);
 		Common.AppendDividerOnOwnLine(stringBuilder);
-		Common.AppendImpossibleActionText(stringBuilder, "Cannot adopt: ");
-		Common.Append(stringBuilder, "The colony rating has to reach ");
+		Common.AppendImpossibleActionText(stringBuilder, UWGame.Locale.Text("Cannot adopt: "));
+		Common.Append(stringBuilder, UWGame.Locale.Text("The colony rating has to reach "));
 		Common.AppendFormat(stringBuilder, "{0}", true, Common.PercentageToString(requiredRating));
 		string text = (btTier.ToolTip = stringBuilder.ToString());
 		Label label = (Label)tierComponent.FindChildById(DataControlID.Prompt, firstLevelOnly: true);
 		label.Visible = true;
 		label.ToolTip = text;
-		label.Text = "CANNOT VOTE";
+		label.Text = UWGame.Locale.Text("CANNOT VOTE");
 		label.FitToText();
 		tierComponent.CenterChildHorizontally(label);
 	}
@@ -342,8 +342,8 @@ public class TiersPage : TabPagePanel
 		StringBuilder stringBuilder = new StringBuilder();
 		Common.Append(stringBuilder, tierButtonTooltips[tierArea]);
 		Common.AppendDividerOnOwnLine(stringBuilder);
-		Common.AppendImpossibleActionText(stringBuilder, "Cannot adopt: ");
-		Common.Append(stringBuilder, "We need to adopt the lower tier areas first.");
+		Common.AppendImpossibleActionText(stringBuilder, UWGame.Locale.Text("Cannot adopt: "));
+		Common.Append(stringBuilder, UWGame.Locale.Text("We need to adopt the lower tier areas first."));
 		btTier.ToolTip = stringBuilder.ToString();
 	}
 
@@ -357,8 +357,8 @@ public class TiersPage : TabPagePanel
 		StringBuilder stringBuilder = new StringBuilder();
 		Common.Append(stringBuilder, tierButtonTooltips[tierArea]);
 		Common.AppendDividerOnOwnLine(stringBuilder);
-		Common.AppendImpossibleActionText(stringBuilder, "Cannot adopt: ");
-		Common.Append(stringBuilder, "We have already adopted this policy.");
+		Common.AppendImpossibleActionText(stringBuilder, UWGame.Locale.Text("Cannot adopt: "));
+		Common.Append(stringBuilder, UWGame.Locale.Text("We have already adopted this policy."));
 		btTier.ToolTip = stringBuilder.ToString();
 	}
 
@@ -398,7 +398,7 @@ public class TiersPage : TabPagePanel
 				FillableBar obj = (FillableBar)item.FindChildById(DataControlID.Rating, firstLevelOnly: true);
 				float rating = uIAllegiance.Statistics.GetRating(ratingType);
 				obj.Value = MapRatingToFillableBar(rating);
-				obj.ToolTip = Common.ComposeHeadingAndBlobText("Colony " + Statistic.RatingsTypeToString(ratingType).ToLower(Config.Culture) + " conditions", Common.PercentageToString(rating));
+				obj.ToolTip = Common.ComposeHeadingAndBlobText(string.Format(UWGame.Locale.Text("Colony {0} conditions"), Statistic.RatingsTypeToString(ratingType).ToLower(Config.Culture)), Common.PercentageToString(rating));
 				HorizontalList hzButtons = (HorizontalList)item.FindChildById(DataControlID.Actions, firstLevelOnly: true);
 				IterateVisibleTiers(delegate(TierType t)
 				{
@@ -448,11 +448,11 @@ public class TiersPage : TabPagePanel
 		label.Visible = true;
 		if (membersAboveRange != null)
 		{
-			label.ToolTip = "Members for: \n" + Common.ListToCommaSeparatedString(membersAboveRange, (Entity e) => e.GetDisplayName());
+			label.ToolTip = UWGame.Locale.Text("Members for:") + " \n" + Common.ListToCommaSeparatedString(membersAboveRange, (Entity e) => e.GetDisplayName());
 		}
 		else
 		{
-			label.ToolTip = "No one is for adopting this.";
+			label.ToolTip = UWGame.Locale.Text("No one is for adopting this.");
 		}
 		Label label2 = (Label)item.FindChildById(DataControlID.VotersAgainst, firstLevelOnly: true);
 		label2.Text = num2 + "X";
@@ -460,11 +460,11 @@ public class TiersPage : TabPagePanel
 		label2.Visible = true;
 		if (membersBelowRange != null)
 		{
-			label2.ToolTip = "Members against: \n" + Common.ListToCommaSeparatedString(membersBelowRange, (Entity e) => e.GetDisplayName());
+			label2.ToolTip = UWGame.Locale.Text("Members against:") + " \n" + Common.ListToCommaSeparatedString(membersBelowRange, (Entity e) => e.GetDisplayName());
 		}
 		else
 		{
-			label2.ToolTip = "No one is against adopting this.";
+			label2.ToolTip = UWGame.Locale.Text("No one is against adopting this.");
 		}
 		ImageButton imageButton = (ImageButton)item.FindChildById(DataControlID.Action);
 		Label label3 = (Label)item.FindChildById(DataControlID.Prompt, firstLevelOnly: true);
@@ -473,14 +473,14 @@ public class TiersPage : TabPagePanel
 		{
 			if (num > num2)
 			{
-				label3.Text = "DECIDE NOW?";
-				label3.ToolTip = $"Click to adopt this policy. We will then be able to buy and produce items from this tier. \n \nNOTE: When adopting this policy, those who are against will have their principles raised to this level ({Common.PercentageToString(GameData.Instance.Tiers[tier.Index - 1].UpperEdge)}). This can increase their unhappiness unless conditions are quickly improved.";
+				label3.Text = UWGame.Locale.Text("DECIDE NOW?");
+				label3.ToolTip = string.Format(UWGame.Locale.Text("Click to adopt this policy. We will then be able to buy and produce items from this tier. \n \nNOTE: When adopting this policy, those who are against will have their principles raised to this level ({0}). This can increase their unhappiness unless conditions are quickly improved."), Common.PercentageToString(GameData.Instance.Tiers[tier.Index - 1].UpperEdge));
 				label3.TooltipWidth = 200;
 				label3.TooltipExpires = true;
 				StringBuilder stringBuilder = new StringBuilder();
 				Common.Append(stringBuilder, tierButtonTooltips[tierArea]);
 				Common.AppendDividerOnOwnLine(stringBuilder);
-				Common.AppendPossibleActionText(stringBuilder, "CLICK TO ADOPT THIS POLICY");
+				Common.AppendPossibleActionText(stringBuilder, UWGame.Locale.Text("CLICK TO ADOPT THIS POLICY"));
 				imageButton.ToolTip = stringBuilder.ToString();
 				imageButton.Enabled = true;
 				color = readyToAdoptColor;
@@ -494,15 +494,15 @@ public class TiersPage : TabPagePanel
 					num4++;
 				}
 				int neededVotes = num4 - num;
-				label3.Text = "NO MAJORITY";
+				label3.Text = UWGame.Locale.Text("NO MAJORITY");
 				label3.ToolTip = ComposeNoMajorityTooltip(tier, rating, currentRating, neededVotes, membersBelowRange);
 				label3.TooltipWidth = 360;
 				label3.TooltipExpires = false;
 				StringBuilder stringBuilder2 = new StringBuilder();
 				Common.Append(stringBuilder2, tierButtonTooltips[tierArea]);
 				Common.AppendDividerOnOwnLine(stringBuilder2);
-				Common.AppendImpossibleActionText(stringBuilder2, "Cannot adopt: ");
-				Common.Append(stringBuilder2, "No majority. Learn more by hovering on the NO MAJORITY text.");
+				Common.AppendImpossibleActionText(stringBuilder2, UWGame.Locale.Text("Cannot adopt: "));
+				Common.Append(stringBuilder2, UWGame.Locale.Text("No majority. Learn more by hovering on the NO MAJORITY text."));
 				imageButton.ToolTip = stringBuilder2.ToString();
 				imageButton.Enabled = false;
 				color = lockedColor;
@@ -510,15 +510,15 @@ public class TiersPage : TabPagePanel
 		}
 		else
 		{
-			label3.Text = "NOT READY";
-			label3.ToolTip = "The following members are not ready to vote right now: \n" + Common.ListToCommaSeparatedString(unavailableVoters, (Entity e) => e.GetDisplayName());
+			label3.Text = UWGame.Locale.Text("NOT READY");
+			label3.ToolTip = UWGame.Locale.Text("The following members are not ready to vote right now:") + " \n" + Common.ListToCommaSeparatedString(unavailableVoters, (Entity e) => e.GetDisplayName());
 			label3.TooltipWidth = 200;
 			label3.TooltipExpires = true;
 			StringBuilder stringBuilder3 = new StringBuilder();
 			Common.Append(stringBuilder3, tierButtonTooltips[tierArea]);
 			Common.AppendDividerOnOwnLine(stringBuilder3);
-			Common.AppendImpossibleActionText(stringBuilder3, "Cannot adopt: ");
-			Common.Append(stringBuilder3, "Some members are busy or sleeping. Everyone must be able to participate in the vote.");
+			Common.AppendImpossibleActionText(stringBuilder3, UWGame.Locale.Text("Cannot adopt: "));
+			Common.Append(stringBuilder3, UWGame.Locale.Text("Some members are busy or sleeping. Everyone must be able to participate in the vote."));
 			imageButton.ToolTip = stringBuilder3.ToString();
 			imageButton.Enabled = false;
 			color = lockedColor;
@@ -531,30 +531,30 @@ public class TiersPage : TabPagePanel
 	{
 		DateAndTime.TimeDateYear timeToReachMajority = The.InGameUI.UIAllegiance.GetTimeToReachMajority(rating, tier, neededVotes, membersBelowRange);
 		StringBuilder stringBuilder = new StringBuilder();
-		Common.AppendHeaderOnLightBG(stringBuilder, "No majority");
-		Common.Append(stringBuilder, "There is no majority for this policy yet.");
+		Common.AppendHeaderOnLightBG(stringBuilder, UWGame.Locale.Text("No majority"));
+		Common.Append(stringBuilder, UWGame.Locale.Text("There is no majority for this policy yet."));
 		Common.AppendLine(stringBuilder);
 		Common.AppendLine(stringBuilder);
-		Common.Append(stringBuilder, "To adopt this policy, more colonists with higher principles are needed");
+		Common.Append(stringBuilder, UWGame.Locale.Text("To adopt this policy, more colonists with higher principles are needed"));
 		Common.AppendLine(stringBuilder);
 		Common.AppendLine(stringBuilder);
-		Common.AppendHeaderOnLightBG(stringBuilder, "SUGGESTED STRATEGY:");
-		Common.AppendLine(stringBuilder, "Do one or both of the following:");
+		Common.AppendHeaderOnLightBG(stringBuilder, UWGame.Locale.Text("SUGGESTED STRATEGY:"));
+		Common.AppendLine(stringBuilder, UWGame.Locale.Text("Do one or both of the following:"));
 		Common.AppendLine(stringBuilder);
-		Common.AppendLine(stringBuilder, "1. Let the inhabitants grow accustomed to a higher " + Statistic.AppendRatingsTypeToStringAndIcon(rating) + " rating.");
-		Common.AppendIndentedLine(stringBuilder, "They will slowly change their principles above the rating.");
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("1. Let the inhabitants grow accustomed to a higher {0} rating."), Statistic.AppendRatingsTypeToStringAndIcon(rating)));
+		Common.AppendIndentedLine(stringBuilder, UWGame.Locale.Text("They will slowly change their principles above the rating."));
 		float tierEdgeBelow = tier.GetTierEdgeBelow();
 		string text = timeToReachMajority.ToIntervalString();
 		if (currentRating < tierEdgeBelow)
 		{
-			Common.AppendIndentedLine(stringBuilder, "After increasing " + Statistic.AppendRatingsTypeToStringAndIcon(rating) + " to " + Common.PercentageToString(tierEdgeBelow, includePlusPrefix: false, useColoring: false, Common.ValueTint.Neutral) + " the estimated time to reach majority is: " + text);
+			Common.AppendIndentedLine(stringBuilder, string.Format(UWGame.Locale.Text("After increasing {0} to {1} the estimated time to reach majority is: {2}"), Statistic.AppendRatingsTypeToStringAndIcon(rating), Common.PercentageToString(tierEdgeBelow, includePlusPrefix: false, useColoring: false, Common.ValueTint.Neutral), text));
 		}
 		else
 		{
-			Common.AppendIndentedLine(stringBuilder, "Current time to reach majority: " + text);
+			Common.AppendIndentedLine(stringBuilder, string.Format(UWGame.Locale.Text("Current time to reach majority: {0}"), text));
 		}
-		Common.AppendLine(stringBuilder, "2. Attract immigrants with high " + Statistic.AppendRatingsTypeToStringAndIcon(rating) + " principles.");
-		Common.AppendIndentedLine(stringBuilder, "This will more quickly gain a majority.");
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("2. Attract immigrants with high {0} principles."), Statistic.AppendRatingsTypeToStringAndIcon(rating)));
+		Common.AppendIndentedLine(stringBuilder, UWGame.Locale.Text("This will more quickly gain a majority."));
 		return stringBuilder.ToString();
 	}
 

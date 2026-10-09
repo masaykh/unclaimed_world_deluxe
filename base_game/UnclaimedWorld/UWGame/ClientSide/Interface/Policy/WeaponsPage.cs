@@ -22,30 +22,30 @@ public class WeaponsPage : TabPagePanel
 	/// <summary>HuntingMod's policy switch; null when the mod does not offer it.</summary>
 	private CheckBox cbAutoclaim;
 
-	private string autoclaimTooltip = "Animals that die within the camp's hunting radius with nobody to claim them - killed by our people, dogs or sentries outside a hunt, by wildlife, or starved - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.";
+	private string autoclaimTooltip = UWGame.Locale.Text("Animals that die within the camp's hunting radius with nobody to claim them - killed by our people, dogs or sentries outside a hunt, by wildlife, or starved - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.");
 
-	private string availableTooltip = "The amount of ammunition available";
+	private string availableTooltip = UWGame.Locale.Text("The amount of ammunition available");
 
-	private string useVerminTooltip = "Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.";
+	private string useVerminTooltip = UWGame.Locale.Text("Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.");
 
 	public WeaponsPage(TabControl parent)
 		: base(parent)
 	{
 		GUIManager gUIManager = parent.guiManager;
-		parent.AddTabPage(this, "WEAPONS POLICY", "Set/view weapon policies");
+		parent.AddTabPage(this, UWGame.Locale.Text("WEAPONS POLICY"), UWGame.Locale.Text("Set/view weapon policies"));
 		Label label = new Label(guiManager);
 		label.Init(Label.LabelType.LCDBigHeaderBanner);
 		Add(label);
 		label.X = 0;
 		label.Y = 0;
-		label.Text = "AMMO USAGE";
-		label.ToolTip = "Specify what the ammunition may be used for";
+		label.Text = UWGame.Locale.Text("AMMO USAGE");
+		label.ToolTip = UWGame.Locale.Text("Specify what the ammunition may be used for");
 		label.Width = Width;
 		if (UWGame.Mods.HuntingMod.OffersAutoclaim)
 		{
 			cbAutoclaim = new CheckBox(gUIManager);
 			Add(cbAutoclaim);
-			cbAutoclaim.Text = "CLAIM ANIMALS THAT DIE IN CAMP";
+			cbAutoclaim.Text = UWGame.Locale.Text("CLAIM ANIMALS THAT DIE IN CAMP");
 			cbAutoclaim.Init(CheckBoxType.LCD);
 			cbAutoclaim.SwitchStateOnClick = true;
 			cbAutoclaim.X = 22;
@@ -80,15 +80,15 @@ public class WeaponsPage : TabPagePanel
 		Label label = new Label(guiManager);
 		Add(label);
 		label.Init(Label.LabelType.LCDHeadingBrown);
-		label.Text = "Type";
-		label.ToolTip = "The ammunition type";
+		label.Text = UWGame.Locale.Text("Type");
+		label.ToolTip = UWGame.Locale.Text("The ammunition type");
 		label.FitToText();
 		label.X = 22;
 		label.Y = gridHeaderY;
 		Label label2 = new Label(guiManager);
 		Add(label2);
 		label2.Init(Label.LabelType.LCDHeadingBlue);
-		label2.Text = "Owned";
+		label2.Text = UWGame.Locale.Text("Owned");
 		label2.ToolTip = availableTooltip;
 		label2.FitToText();
 		label2.X = 200;
@@ -97,7 +97,7 @@ public class WeaponsPage : TabPagePanel
 		Add(label3);
 		label3.Init(Label.LabelType.LCDHeadingRed);
 		label3.ToolTip = useVerminTooltip;
-		label3.Text = "Use against vermin";
+		label3.Text = UWGame.Locale.Text("Use against vermin");
 		label3.FitToText();
 		label3.X = 300;
 		label3.Y = gridHeaderY;

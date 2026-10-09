@@ -63,7 +63,7 @@ public class SortingButtons<T> : RadioGroup where T : struct, IComparable, IForm
 	private void InitButton(ICanBeChecked button, string text, string tooltip)
 	{
 		string text2 = ((tooltip == null) ? text : tooltip);
-		((UIComponent)button).ToolTip = "Sort by:" + text2;
+		((UIComponent)button).ToolTip = UWGame.Locale.Text("Sort by:") + text2;
 		base.Add(button);
 	}
 

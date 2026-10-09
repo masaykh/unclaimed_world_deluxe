@@ -40,7 +40,7 @@ public class SidePanelEntity : RosterPanel
 		outerGrid = RosterPanel.CreateOuterGridForCollapsableLists(The.InGameUI.gui, lcdSurface);
 		int value = 20;
 		new UIComponent(The.InGameUI.gui);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "ITEMS", value, out cpCarrying, out grdCarrying, Grid.SelectabilityOptions.None, 17);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("ITEMS"), value, out cpCarrying, out grdCarrying, Grid.SelectabilityOptions.None, 17);
 		AddPresentationPanel(outerGrid, customPanels, GameData.Instance.CustomSidePanelData);
 	}
 
@@ -75,26 +75,26 @@ public class SidePanelEntity : RosterPanel
 		lblStatusInfo1 = new Label(gui);
 		statusContent.Add(lblStatusInfo1);
 		lblStatusInfo1.Position = new Point(8, 110);
-		lblStatusInfo1.Text = "MALE";
+		lblStatusInfo1.Text = UWGame.Locale.Text("MALE");
 		lblStatusInfo1.Init(Label.LabelType.CRTSmall);
 		lblStatusInfo1.Width = 200;
 		lblStatusInfo2 = new Label(gui);
 		statusContent.Add(lblStatusInfo2);
 		lblStatusInfo2.Position = new Point(8, 130);
-		lblStatusInfo2.Text = "AGE: 34";
+		lblStatusInfo2.Text = UWGame.Locale.Text("AGE: 34");
 		lblStatusInfo2.Init(Label.LabelType.CRTSmall);
 		lblStatusInfo2.Width = 200;
 		lblStatusInfo3 = new Label(gui);
 		statusContent.Add(lblStatusInfo3);
 		lblStatusInfo3.Position = new Point(8, 165);
-		lblStatusInfo3.Text = "MANUAL LABORER";
+		lblStatusInfo3.Text = UWGame.Locale.Text("MANUAL LABORER");
 		lblStatusInfo3.Init(Label.LabelType.CRTSmall);
 		lblStatusInfo3.NormalColor = Color.PowderBlue;
 		lblStatusInfo3.Width = 200;
 		lblStatusInfo4 = new Label(gui);
 		statusContent.Add(lblStatusInfo4);
 		lblStatusInfo4.Position = new Point(8, 185);
-		lblStatusInfo4.Text = "WALKING";
+		lblStatusInfo4.Text = UWGame.Locale.Text("WALKING");
 		lblStatusInfo4.Init(Label.LabelType.CRTSmall);
 		lblStatusInfo4.NormalColor = Color.PowderBlue;
 		lblStatusInfo4.Width = 200;
@@ -199,7 +199,7 @@ public class SidePanelEntity : RosterPanel
 
 	private void RefreshMemoryFactExplanation()
 	{
-		string arg = "Last seen here";
+		string arg = UWGame.Locale.Text("Last seen here");
 		arg = $"-{arg}-";
 		lblStatusInfo4.Text = arg;
 	}
@@ -227,11 +227,11 @@ public class SidePanelEntity : RosterPanel
 	{
 		SetHeaderText(data.GetDisplayName().ToUpper(Config.Culture));
 		lblStatusInfo1.Text = entity.BiologicalEntity.CasteType.Reproduction.ToString().ToUpper(Config.Culture);
-		lblStatusInfo2.Text = "AGE: " + (int)entity.BiologicalEntity.AgeGroup.Age;
+		lblStatusInfo2.Text = string.Format(UWGame.Locale.Text("AGE: {0}"), (int)entity.BiologicalEntity.AgeGroup.Age);
 		float value = entity.Intelligence.Brain.GetExertionLevelOfActivity() / GameData.Instance.Constants.PhysicalWork.MaxPhysicalWorkCost;
 		string valueTerm = GameData.Instance.AllPresentationTypes["energyUsePresentation"].GetValueTerm(value, null, "");
 		Label label = lblStatusInfo4;
-		label.Text = label.Text + "EXERTION LEVEL: " + valueTerm;
+		label.Text = label.Text + string.Format(UWGame.Locale.Text("EXERTION LEVEL: {0}"), valueTerm);
 	}
 
 	private void RefreshEntityName(IKnownEntityData data)
@@ -326,11 +326,11 @@ public class SidePanelEntity : RosterPanel
 			}
 			catch (NullReferenceException)
 			{
-				string text = "Custom panel error #1 \n";
-				text = ((customPanel == null) ? (text + ", customPanel: null") : ((customPanel.Category == null) ? (text + ", customPanel.Category: null") : (text + "customPanel.Category name: " + customPanel.Category.Name)));
-				text = text + ", panelHasData: " + flag2;
-				text = text + ", entityExists: " + flag;
-				text = ((outerGrid != null) ? (text + ", outerGrid: not null") : (text + ", outerGrid: null"));
+				string text = UWGame.Locale.Text("Custom panel error #1 \n");
+				text = ((customPanel == null) ? (text + UWGame.Locale.Text(", customPanel: null")) : ((customPanel.Category == null) ? (text + UWGame.Locale.Text(", customPanel.Category: null")) : (text + UWGame.Locale.Text("customPanel.Category name: ") + customPanel.Category.Name)));
+				text = text + UWGame.Locale.Text(", panelHasData: ") + flag2;
+				text = text + UWGame.Locale.Text(", entityExists: ") + flag;
+				text = ((outerGrid != null) ? (text + UWGame.Locale.Text(", outerGrid: not null")) : (text + UWGame.Locale.Text(", outerGrid: null")));
 				throw new Exception(text);
 			}
 		}
@@ -340,14 +340,14 @@ public class SidePanelEntity : RosterPanel
 	{
 		if (entityData.EntityType.BiologicalType != null)
 		{
-			if (cpCarrying.Title != "CARRYING")
+			if (cpCarrying.Title != UWGame.Locale.Text("CARRYING"))
 			{
-				cpCarrying.Title = "CARRYING";
+				cpCarrying.Title = UWGame.Locale.Text("CARRYING");
 			}
 		}
-		else if (cpCarrying.Title != "CONTAINS")
+		else if (cpCarrying.Title != UWGame.Locale.Text("CONTAINS"))
 		{
-			cpCarrying.Title = "CONTAINS";
+			cpCarrying.Title = UWGame.Locale.Text("CONTAINS");
 		}
 		if (!RosterPanel.AddPanelIfNotPresent(entityData.ContainedEntitiesByType.Count > 0, outerGrid, cpCarrying))
 		{

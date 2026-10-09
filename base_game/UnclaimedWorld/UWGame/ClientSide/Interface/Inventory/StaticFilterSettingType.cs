@@ -17,16 +17,16 @@ public class StaticFilterSettingType : FilterSettingType
 	{
 		return StaticFilterSetting switch
 		{
-			StaticFilterSettings.Containers => "Containers ", 
-			StaticFilterSettings.Storage => "Storage ", 
-			StaticFilterSettings.Fuel => "Fuel", 
-			StaticFilterSettings.BetterTools => "Better tools", 
-			StaticFilterSettings.Structures => "Structures", 
-			StaticFilterSettings.Items => "Items", 
-			StaticFilterSettings.UsableAsWeapon => "Usable as weapon", 
-			StaticFilterSettings.AffectsComfortRating => "Affects comfort rating", 
-			StaticFilterSettings.AffectsSecurityRating => "Affects security rating", 
-			StaticFilterSettings.AffectsFoodRating => "Affects food rating", 
+			StaticFilterSettings.Containers => UWGame.Locale.Text("Containers "), 
+			StaticFilterSettings.Storage => UWGame.Locale.Text("Storage "), 
+			StaticFilterSettings.Fuel => UWGame.Locale.Text("Fuel"), 
+			StaticFilterSettings.BetterTools => UWGame.Locale.Text("Better tools"), 
+			StaticFilterSettings.Structures => UWGame.Locale.Text("Structures"), 
+			StaticFilterSettings.Items => UWGame.Locale.Text("Items"), 
+			StaticFilterSettings.UsableAsWeapon => UWGame.Locale.Text("Usable as weapon"), 
+			StaticFilterSettings.AffectsComfortRating => UWGame.Locale.Text("Affects comfort rating"), 
+			StaticFilterSettings.AffectsSecurityRating => UWGame.Locale.Text("Affects security rating"), 
+			StaticFilterSettings.AffectsFoodRating => UWGame.Locale.Text("Affects food rating"), 
 			_ => "No display string for:" + StaticFilterSetting, 
 		};
 	}

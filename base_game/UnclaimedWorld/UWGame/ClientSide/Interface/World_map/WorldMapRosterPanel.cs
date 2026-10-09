@@ -8,7 +8,7 @@ public class WorldMapRosterPanel : RosterPanel
 	private WorldMap worldMap;
 
 	public WorldMapRosterPanel()
-		: base("WORLD MAP", 600, Math.Min(584, The.InGameUI.rosterPanelHeight), needBottomMarginForButton: false)
+		: base(UWGame.Locale.Text("WORLD MAP"), 600, Math.Min(584, The.InGameUI.rosterPanelHeight), needBottomMarginForButton: false)
 	{
 		worldMap = new WorldMap(lcdSurface, 525, 440);
 		worldMap.ChildDialogDisplayed += worldMap_ChildDialogDisplayed;

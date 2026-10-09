@@ -32,9 +32,9 @@ public class PersonnelDialog : Panel
 		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out _, out lcdSurface, ref lcdScreen);
 		errorAndMessagePanel = new ErrorAndMessagePanel(lcdSurface);
 		PersonnelList = new PersonnelList(intf, lcdSurface, showSelectors: true, errorAndMessagePanel.Height, isRoster: false);
-		btOK = AddLowerButton("OK", "Accepts the order and closes the dialog.", Align.Left);
+		btOK = AddLowerButton(UWGame.Locale.Text("OK"), UWGame.Locale.Text("Accepts the order and closes the dialog."), Align.Left);
 		btOK.Click += btOK_Click;
-		btCancel = AddLowerButton("CANCEL", "Cancels and closes the dialog.", Align.Right);
+		btCancel = AddLowerButton(UWGame.Locale.Text("CANCEL"), UWGame.Locale.Text("Cancels and closes the dialog."), Align.Right);
 		btCancel.Click += btCancel_Click;
 	}
 

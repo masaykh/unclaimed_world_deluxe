@@ -32,7 +32,7 @@ public class ProcessTypeDataSheet : DataSheet
 
 	protected override void CreateProductionPanelContents()
 	{
-		CreateGridAndHeader(grdProductionOuter, out outputsHeader, "OUTPUT:", "Creates these output types and amounts", 200f, out grdOutputs, out lblOutputs);
+		CreateGridAndHeader(grdProductionOuter, out outputsHeader, UWGame.Locale.Text("OUTPUT:"), UWGame.Locale.Text("Creates these output types and amounts"), 200f, out grdOutputs, out lblOutputs);
 	}
 
 	protected override void Retire()
@@ -66,7 +66,7 @@ public class ProcessTypeDataSheet : DataSheet
 
 	protected override void SetProductionHeading(Label lbl)
 	{
-		lbl.Text = "REQUIREMENTS";
+		lbl.Text = UWGame.Locale.Text("REQUIREMENTS");
 		PadHeader(lbl);
 	}
 
@@ -84,7 +84,7 @@ public class ProcessTypeDataSheet : DataSheet
 					InventoryPanel.OwnsProductOrHasProcessInputsAndTools(output.FinalEntityTypeToCreate, resolvedOwner, out var ownsItem, out var _, out var _, out var _, null, countPartsOfEntities: true);
 					if (!grdOutputs.TryGetEntry(finalEntityTypeToCreate, out var item))
 					{
-						item = AddEntityAmountRow(grdOutputs, finalEntityTypeToCreate, ownsItem, "The amount that will be produced");
+						item = AddEntityAmountRow(grdOutputs, finalEntityTypeToCreate, ownsItem, UWGame.Locale.Text("The amount that will be produced"));
 					}
 					UpdateEntityAmountRow(item, finalEntityTypeToCreate, ownsItem, output.Amount.NoOfItems ?? 0);
 				}
@@ -100,13 +100,13 @@ public class ProcessTypeDataSheet : DataSheet
 		if (grdOutputs.Entries.Count > 0)
 		{
 			grdProductionOuter.AddEntry(outputsHeader, outputsHeader);
-			lblOutputs.Text = "OUTPUT:";
-			lblOutputs.ToolTip = "Shows the outputs for the process";
+			lblOutputs.Text = UWGame.Locale.Text("OUTPUT:");
+			lblOutputs.ToolTip = UWGame.Locale.Text("Shows the outputs for the process");
 		}
 	}
 
 	protected override string GetInputHeading()
 	{
-		return "MATERIALS";
+		return UWGame.Locale.Text("MATERIALS");
 	}
 }

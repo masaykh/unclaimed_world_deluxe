@@ -17,7 +17,7 @@ public class AlphaOption : ToolOption
 		Label label = new Label(gui);
 		label.Init(Label.LabelType.LCDNormal);
 		Add(label);
-		label.Text = "ALPHA";
+		label.Text = UWGame.Locale.Text("ALPHA");
 		label.FitToText();
 		fbToolAlpha = new FillableBar(gui, FillableBar.FillableBarType.LCDSlider, canGrow: false);
 		Add(fbToolAlpha);

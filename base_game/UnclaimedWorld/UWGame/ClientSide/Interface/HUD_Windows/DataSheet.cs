@@ -196,14 +196,14 @@ public abstract class DataSheet : HUDWindow
 		noProduction.ResizeControlToFitImage();
 		noProduction.X = 8;
 		noProduction.Y = 44;
-		noProduction.ToolTip = "No production info available for this";
+		noProduction.ToolTip = UWGame.Locale.Text("No production info available for this");
 		btShowProductionInfo = new ImageButton(gui);
 		Add(btShowProductionInfo);
 		btShowProductionInfo.Init(ImageButtonType.HUDShowProductionInfo);
 		btShowProductionInfo.X = noProduction.X;
 		btShowProductionInfo.Y = 44;
 		btShowProductionInfo.Click += btShowProductionInfo_Click;
-		btShowProductionInfo.ToolTip = "See production/process information about this";
+		btShowProductionInfo.ToolTip = UWGame.Locale.Text("See production/process information about this");
 		btShowProductionInfo.CheckedMode = CheckedModes.CanBeChecked;
 		btShowGeneralInfo = new ImageButton(gui);
 		Add(btShowGeneralInfo);
@@ -211,7 +211,7 @@ public abstract class DataSheet : HUDWindow
 		btShowGeneralInfo.X = noProduction.X;
 		btShowGeneralInfo.Y = 68;
 		btShowGeneralInfo.Click += btShowGeneralInfo_Click;
-		btShowGeneralInfo.ToolTip = "See general data/info about this";
+		btShowGeneralInfo.ToolTip = UWGame.Locale.Text("See general data/info about this");
 		btShowGeneralInfo.CheckedMode = CheckedModes.CanBeChecked;
 		btPin = new ImageButton(gui);
 		Add(btPin);
@@ -277,13 +277,13 @@ public abstract class DataSheet : HUDWindow
 	{
 		if (btPin.IsChecked)
 		{
-			btPin.ToolTip = "Unpin this window so it will be hidden as normal";
+			btPin.ToolTip = UWGame.Locale.Text("Unpin this window so it will be hidden as normal");
 			The.InGameUI.PinnedDataTypeTooltips.Add(this);
 			The.InGameUI.UnpinnedDataTypeTooltipsOutsideStack.Remove(this);
 			SpawningControl = null;
 			return;
 		}
-		btPin.ToolTip = "Pin this window so it stays open";
+		btPin.ToolTip = UWGame.Locale.Text("Pin this window so it stays open");
 		The.InGameUI.PinnedDataTypeTooltips.Remove(this);
 		if (DisplayWindow.IsVisibleAndActive)
 		{
@@ -534,30 +534,30 @@ public abstract class DataSheet : HUDWindow
 		grdProductionOuter.CanGrowInHeight = true;
 		grdProductionOuter.DebugTag = "outerProdGrid";
 		grdProductionOuter.BeginAddingEntries();
-		madeFromHeader = AddSubHeader(grdProductionOuter, "MADE FROM:", "HUD_icon_stockpile", 1, 5, out lblMadeFrom, out icMadeFrom, addToGrid: true, 0, 9);
+		madeFromHeader = AddSubHeader(grdProductionOuter, UWGame.Locale.Text("MADE FROM:"), "HUD_icon_stockpile", 1, 5, out lblMadeFrom, out icMadeFrom, addToGrid: true, 0, 9);
 		madeFromHeader.OrderByTag1 = 20f;
 		grdInputs = CreateFixedItemHeightGrid();
 		grdInputs.OrderByTag1 = 21f;
 		grdProductionOuter.AddEntry(grdInputs, grdInputs);
-		policyHeader = AddSubHeader(grdProductionOuter, "POLICY:", "lcd_icon_section", -2, 0, out var lbl, out var icon, addToGrid: true, 0, 18);
+		policyHeader = AddSubHeader(grdProductionOuter, UWGame.Locale.Text("POLICY:"), "lcd_icon_section", -2, 0, out var lbl, out var icon, addToGrid: true, 0, 18);
 		policyHeader.OrderByTag1 = 5f;
-		lbl.ToolTip = "Requires a policy to be enacted";
+		lbl.ToolTip = UWGame.Locale.Text("Requires a policy to be enacted");
 		policyIcon = new Icon(gui);
 		policyHeader.Add(policyIcon);
-		skillHeader = AddSubHeader(grdProductionOuter, "REQUIRED SKILL:", "HUD_icon_person", -7, -4, out lbl, out icon, addToGrid: true, 0, 18);
+		skillHeader = AddSubHeader(grdProductionOuter, UWGame.Locale.Text("REQUIRED SKILL:"), "HUD_icon_person", -7, -4, out lbl, out icon, addToGrid: true, 0, 18);
 		skillHeader.OrderByTag1 = 10f;
-		lbl.ToolTip = "Requires a character with sufficient level in this skill (more than 0.1)";
+		lbl.ToolTip = UWGame.Locale.Text("Requires a character with sufficient level in this skill (more than 0.1)");
 		lblSkill = new Label(gui);
 		lblSkill.Init(Label.LabelType.EntityTypeTooltip);
 		lblSkill.X = 48;
 		grdProductionOuter.AddEntry(lblSkill, lblSkill);
 		lblSkill.OrderByTag1 = 11f;
-		actingOnHeader = AddSubHeader(grdProductionOuter, "SPECIAL LOCATION:", "HUD_icon_star", -7, 1, out lbl, out icon, addToGrid: false, 6, 25);
+		actingOnHeader = AddSubHeader(grdProductionOuter, UWGame.Locale.Text("SPECIAL LOCATION:"), "HUD_icon_star", -7, 1, out lbl, out icon, addToGrid: false, 6, 25);
 		actingOnHeader.OrderByTag1 = 15f;
-		lbl.ToolTip = "Can only be built at a special location, by using its action menu";
-		gatheredFromHeader = AddSubHeader(grdProductionOuter, "GATHERED FROM:", "HUD_icon_gather", -1, 11, out lbl, out icon, addToGrid: false, 6, 25);
+		lbl.ToolTip = UWGame.Locale.Text("Can only be built at a special location, by using its action menu");
+		gatheredFromHeader = AddSubHeader(grdProductionOuter, UWGame.Locale.Text("GATHERED FROM:"), "HUD_icon_gather", -1, 11, out lbl, out icon, addToGrid: false, 6, 25);
 		gatheredFromHeader.OrderByTag1 = 18f;
-		lbl.ToolTip = "Needs to be gathered from a resource";
+		lbl.ToolTip = UWGame.Locale.Text("Needs to be gathered from a resource");
 		lblGatheredFrom = new Label(gui);
 		lblGatheredFrom.Init(Label.LabelType.EntityTypeTooltip);
 		lblGatheredFrom.X = lblSkill.X;
@@ -666,7 +666,7 @@ public abstract class DataSheet : HUDWindow
 			icon.Color = cyan;
 		}
 		lbl.NormalColor = cyan;
-		lbl.ToolTip = "Needs one of the tools from the group below. Expand the list to see more tool options. NOTE: There can be even more options than the ones shown";
+		lbl.ToolTip = UWGame.Locale.Text("Needs one of the tools from the group below. Expand the list to see more tool options. NOTE: There can be even more options than the ones shown");
 		ImageButton imageButton = new ImageButton(The.InGameUI.gui);
 		uIComponent.Add(imageButton);
 		imageButton.Init(ImageButtonType.HUDExpandCollapseTinted);
@@ -674,7 +674,7 @@ public abstract class DataSheet : HUDWindow
 		imageButton.X = 220;
 		imageButton.Y = lbl.Y;
 		imageButton.Click += btExpandTools_Click;
-		imageButton.ToolTip = "Expand the list of tools";
+		imageButton.ToolTip = UWGame.Locale.Text("Expand the list of tools");
 		imageButton.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
 		imageButton.NormalColor = cyan;
 		imageButton.DebugTag = "btExpand";
@@ -688,14 +688,14 @@ public abstract class DataSheet : HUDWindow
 			imageButton2.ID = UIComponent.DataControlID.Up;
 			imageButton2.X = 116;
 			imageButton2.Click += btScrollToolsUp_Click;
-			imageButton2.ToolTip = "Scroll up in the list of tools";
+			imageButton2.ToolTip = UWGame.Locale.Text("Scroll up in the list of tools");
 			imageButton3 = new ImageButton(The.InGameUI.gui);
 			uIComponent.Add(imageButton3);
 			imageButton3.Init(ImageButtonType.HUDArrowDown);
 			imageButton3.ID = UIComponent.DataControlID.Down;
 			imageButton3.X = imageButton2.Right + 12;
 			imageButton3.Click += btDown_Click;
-			imageButton3.ToolTip = "Scroll down in the list of tools";
+			imageButton3.ToolTip = UWGame.Locale.Text("Scroll down in the list of tools");
 		}
 		Grid grid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.EntityTypeTooltip);
 		grid.IsOuterGrid = false;
@@ -730,11 +730,11 @@ public abstract class DataSheet : HUDWindow
 	{
 		if (((ImageButton)sender).IsChecked)
 		{
-			sender.ToolTip = "Collapse the list of tools";
+			sender.ToolTip = UWGame.Locale.Text("Collapse the list of tools");
 		}
 		else
 		{
-			sender.ToolTip = "Expand the list of tools";
+			sender.ToolTip = UWGame.Locale.Text("Expand the list of tools");
 		}
 		PopulateProductionDataRefresh();
 	}
@@ -977,7 +977,7 @@ public abstract class DataSheet : HUDWindow
 			expandedContentViewPort.Remove(grdProductionOuter);
 			expandedContentViewPort.Add(grdGeneralOuter);
 			currentlyShownExpandedGrid = grdGeneralOuter;
-			lblExpandedHeading.Text = "DATA";
+			lblExpandedHeading.Text = UWGame.Locale.Text("DATA");
 			lblExpandedHeading.FitToText();
 			PadHeader(lblExpandedHeading);
 			lblExpandedHeading.NormalColor = Color.White;
@@ -1084,12 +1084,12 @@ public abstract class DataSheet : HUDWindow
 			if (!The.InGameUI.GetExpedition().HasSkill(requiredSkillType))
 			{
 				lblSkill.NormalColor = DataTypeButton.notInStockColorLight;
-				lblSkill.ToolTip = "No one has sufficent level in this skill (more than 0.1)";
+				lblSkill.ToolTip = UWGame.Locale.Text("No one has sufficent level in this skill (more than 0.1)");
 			}
 			else
 			{
 				lblSkill.NormalColor = lblSkill.GetNormalColorForType();
-				lblSkill.ToolTip = "At least one character has the sufficent level in this skill (more than 0.1)";
+				lblSkill.ToolTip = UWGame.Locale.Text("At least one character has the sufficent level in this skill (more than 0.1)");
 			}
 			grdProductionOuter.AddEntry(skillHeader, skillHeader);
 			grdProductionOuter.AddEntry(lblSkill, lblSkill);
@@ -1128,7 +1128,7 @@ public abstract class DataSheet : HUDWindow
 			else
 			{
 				policyIcon.Color = Color.White;
-				policyIcon.ToolTip = "We have the needed policy: " + tierArea.ToString();
+				policyIcon.ToolTip = string.Format(UWGame.Locale.Text("We have the needed policy: {0}"), tierArea.ToString());
 			}
 			grdProductionOuter.AddEntry(policyHeader, policyHeader);
 		}
@@ -1147,7 +1147,7 @@ public abstract class DataSheet : HUDWindow
 			}
 			else
 			{
-				lblGatheredFrom.Text = "CONSULT DATASHEET";
+				lblGatheredFrom.Text = UWGame.Locale.Text("CONSULT DATASHEET");
 			}
 			grdProductionOuter.AddEntry(gatheredFromHeader, gatheredFromHeader);
 			grdProductionOuter.AddEntry(lblGatheredFrom, lblGatheredFrom);
@@ -1164,7 +1164,7 @@ public abstract class DataSheet : HUDWindow
 			{
 				if (processTypeToShowProductionFor.IsKilling)
 				{
-					lblMadeFrom.Text = "YIELDED FROM:";
+					lblMadeFrom.Text = UWGame.Locale.Text("YIELDED FROM:");
 				}
 				else
 				{
@@ -1184,12 +1184,12 @@ public abstract class DataSheet : HUDWindow
 				grdProductionOuter.AddEntry(madeFromHeader, madeFromHeader);
 				if (icMadeFrom.Visible)
 				{
-					lblMadeFrom.ToolTip = "We need all of the below materials, in the given amounts";
+					lblMadeFrom.ToolTip = UWGame.Locale.Text("We need all of the below materials, in the given amounts");
 					lblMadeFrom.X = 25;
 				}
 				else
 				{
-					lblMadeFrom.ToolTip = "This item is gathered from a resource";
+					lblMadeFrom.ToolTip = UWGame.Locale.Text("This item is gathered from a resource");
 					lblMadeFrom.X = 10;
 				}
 			}
@@ -1205,7 +1205,7 @@ public abstract class DataSheet : HUDWindow
 						bool value = InventoryPanel.HasToolsForProcess(processTypeToShowProductionFor, resolvedOwner);
 						if (!grdInputs.TryGetEntry(key, out var item))
 						{
-							item = AddEntityAmountRow(grdInputs, key, flag, "The amount of materials that are needed");
+							item = AddEntityAmountRow(grdInputs, key, flag, UWGame.Locale.Text("The amount of materials that are needed"));
 						}
 						UpdateRequiredItemRow(item, key, 0f, value, hasInputs, flag, item2.Value.Amount.NoOfItems, noOfAvailableItems);
 					}
@@ -1314,19 +1314,19 @@ public abstract class DataSheet : HUDWindow
 				StringBuilder stringBuilder = new StringBuilder();
 				if (availableAmount.Value >= neededAmount.Value)
 				{
-					Common.AppendLine(stringBuilder, "We have the needed amount of this input.");
-					Common.Append(stringBuilder, "Available: ");
+					Common.AppendLine(stringBuilder, UWGame.Locale.Text("We have the needed amount of this input."));
+					Common.Append(stringBuilder, UWGame.Locale.Text("Available: "));
 					Common.Append(stringBuilder, availableAmount.Value.ToString(), tintAsValue: true);
 					label.NormalColor = Color.White;
 				}
 				else
 				{
-					Common.AppendLine(stringBuilder, "We do not have the needed amount of this input.");
-					Common.Append(stringBuilder, "Available: ");
+					Common.AppendLine(stringBuilder, UWGame.Locale.Text("We do not have the needed amount of this input."));
+					Common.Append(stringBuilder, UWGame.Locale.Text("Available: "));
 					Common.Append(stringBuilder, availableAmount.Value.ToString(), Common.ValueTint.Negative);
 					label.NormalColor = DataTypeButton.notInStockColorLight;
 				}
-				Common.Append(stringBuilder, " / Needed: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text(" / Needed: "));
 				Common.Append(stringBuilder, neededAmount.Value.ToString(), tintAsValue: true);
 				label.ToolTip = stringBuilder.ToString();
 			}
@@ -1334,7 +1334,7 @@ public abstract class DataSheet : HUDWindow
 			{
 				label.Text = neededAmount.Value.ToString();
 				label.NormalColor = Color.White;
-				label.ToolTip = "Needed amount";
+				label.ToolTip = UWGame.Locale.Text("Needed amount");
 			}
 			label.FitToText();
 			RightJustify(label);
@@ -1377,7 +1377,7 @@ public abstract class DataSheet : HUDWindow
 		uIComponent.Add(label);
 		RightJustify(label);
 		label.DebugTag = "toolProd";
-		label.ToolTip = "Productivity rating";
+		label.ToolTip = UWGame.Locale.Text("Productivity rating");
 		uIComponent.CenterChildVertically(label);
 		label.Y++;
 		return uIComponent;

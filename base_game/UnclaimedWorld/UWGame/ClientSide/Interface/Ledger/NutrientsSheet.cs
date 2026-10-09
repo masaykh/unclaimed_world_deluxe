@@ -36,9 +36,9 @@ public class NutrientsSheet : LedgerSheet
 
 	private int gridYPos;
 
-	public override string DisplayName => "Nutrients";
+	public override string DisplayName => UWGame.Locale.Text("Nutrients");
 
-	public override string Tooltip => "Shows food nutrients produced and consumed.";
+	public override string Tooltip => UWGame.Locale.Text("Shows food nutrients produced and consumed.");
 
 	public override bool ShowRangeSelector => true;
 
@@ -66,12 +66,12 @@ public class NutrientsSheet : LedgerSheet
 
 	private void CreateTooltips()
 	{
-		nameTooltip = CreateTooltip("Name", "Name of food nutrient type");
-		overconsumedTooltip = CreateTooltip("Overconsumed", "These nutrients were consumed but were not needed. To reduce this waste, make sure there is food with different nutrient profiles available.");
-		consumedTooltip = CreateTooltip("Consumed", "Consumed by colony members");
-		producedTooltip = CreateTooltip("Produced", "Produced by the colony");
-		storedTooltip = CreateTooltip("Stored", "Currently stored");
-		daysLeftTooltip = CreateTooltip("Days left", "How many days the current store will last");
+		nameTooltip = CreateTooltip(UWGame.Locale.Text("Name"), UWGame.Locale.Text("Name of food nutrient type"));
+		overconsumedTooltip = CreateTooltip(UWGame.Locale.Text("Overconsumed"), UWGame.Locale.Text("These nutrients were consumed but were not needed. To reduce this waste, make sure there is food with different nutrient profiles available."));
+		consumedTooltip = CreateTooltip(UWGame.Locale.Text("Consumed"), UWGame.Locale.Text("Consumed by colony members"));
+		producedTooltip = CreateTooltip(UWGame.Locale.Text("Produced"), UWGame.Locale.Text("Produced by the colony"));
+		storedTooltip = CreateTooltip(UWGame.Locale.Text("Stored"), UWGame.Locale.Text("Currently stored"));
+		daysLeftTooltip = CreateTooltip(UWGame.Locale.Text("Days left"), UWGame.Locale.Text("How many days the current store will last"));
 	}
 
 	public void LoadUserSettings(SortingSettings<NutrientSheetSettings.SortColumns> settings)
@@ -87,12 +87,12 @@ public class NutrientsSheet : LedgerSheet
 		sortingButtons.Position = new Point(0, 0);
 		Add(sortingButtons);
 		sortingButtons.SortClicked += tbSort_Click;
-		sortingButtons.AddTextButton(150, "NAME", NutrientSheetSettings.SortColumns.Name, nameTooltip);
-		sortingButtons.AddTextButton(90, "PROD.", NutrientSheetSettings.SortColumns.Produced, producedTooltip);
-		sortingButtons.AddTextButton(90, "CONS.", NutrientSheetSettings.SortColumns.Consumed, consumedTooltip);
-		sortingButtons.AddTextButton(90, "OVER.", NutrientSheetSettings.SortColumns.Overconsumed, overconsumedTooltip);
-		sortingButtons.CreateTextButton(465, 90, "STORED", NutrientSheetSettings.SortColumns.Stored, storedTooltip);
-		sortingButtons.CreateTextButton(555, 90, "DAYS", NutrientSheetSettings.SortColumns.DaysLeft, daysLeftTooltip);
+		sortingButtons.AddTextButton(150, UWGame.Locale.Text("NAME"), NutrientSheetSettings.SortColumns.Name, nameTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("PROD."), NutrientSheetSettings.SortColumns.Produced, producedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("CONS."), NutrientSheetSettings.SortColumns.Consumed, consumedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("OVER."), NutrientSheetSettings.SortColumns.Overconsumed, overconsumedTooltip);
+		sortingButtons.CreateTextButton(465, 90, UWGame.Locale.Text("STORED"), NutrientSheetSettings.SortColumns.Stored, storedTooltip);
+		sortingButtons.CreateTextButton(555, 90, UWGame.Locale.Text("DAYS"), NutrientSheetSettings.SortColumns.DaysLeft, daysLeftTooltip);
 	}
 
 	private void tbSort_Click()

@@ -33,9 +33,9 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 	{
 		int value = 20;
 		outerGrid = RosterPanel.CreateOuterGridForCollapsableLists(The.InGameUI.gui, lcdSurface, 150);
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Soil", value, out _, out grdSoil);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("Soil"), value, out _, out grdSoil);
 		grdSoil.SelectedChanged += grdSoil_SelectedChanged;
-		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, "Vegetation", value, out _, out grdVegetation);
+		RosterPanel.AddCollapsablePanelAndGrid(The.InGameUI.gui, outerGrid, UWGame.Locale.Text("Vegetation"), value, out _, out grdVegetation);
 		grdVegetation.SelectedChanged += grdVegetation_SelectedChanged;
 		PopulateGrid();
 		InitStatusContentPanel();

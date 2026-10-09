@@ -662,22 +662,22 @@ public class InGameInterface : CommonInterface
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.AppendLine(ex.Message);
-			stringBuilder.AppendLine("Info: ");
+			stringBuilder.AppendLine(UWGame.Locale.Text("Info: "));
 			if (screenBounds == null)
 			{
-				stringBuilder.AppendLine("Screenbounds is null");
+				stringBuilder.AppendLine(UWGame.Locale.Text("Screenbounds is null"));
 			}
 			if (zone == null)
 			{
-				stringBuilder.AppendLine("Zone is null");
+				stringBuilder.AppendLine(UWGame.Locale.Text("Zone is null"));
 			}
 			else if (zone.MapArea == null)
 			{
-				stringBuilder.AppendLine("zone.MapArea is null");
+				stringBuilder.AppendLine(UWGame.Locale.Text("zone.MapArea is null"));
 			}
 			else if (zone.MapArea.BottomLeftTile == null)
 			{
-				stringBuilder.AppendLine("zone.MapArea.BottomLeftTile is null");
+				stringBuilder.AppendLine(UWGame.Locale.Text("zone.MapArea.BottomLeftTile is null"));
 			}
 			throw new Exception(stringBuilder.ToString());
 		}

@@ -41,13 +41,13 @@ internal class SiteMarker : UIComponent
 		StringBuilder stringBuilder = new StringBuilder();
 		Common.AppendLine(stringBuilder, site.Name);
 		Common.AppendDivider(stringBuilder);
-		stringBuilder.Append("Distance: ");
-		Common.AppendLine(stringBuilder, $"{num2:N1} km");
+		stringBuilder.Append(UWGame.Locale.Text("Distance: "));
+		Common.AppendLine(stringBuilder, string.Format(UWGame.Locale.Text("{0:N1} km"), num2));
 		btSite = new ImageButton(guiManager);
 		if (site.Allegiances.Contains(The.InGameUI.UIAllegiance))
 		{
-			Common.AppendLine(stringBuilder, "This is where we are.");
-			Common.AppendLine(stringBuilder, "Click to view options and details.");
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("This is where we are."));
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("Click to view options and details."));
 			btSite.InitWithIcon(type, "HUD_icon_structure", hasCheckedState: false);
 			btSite.SetIconTooltip(stringBuilder.ToString());
 			btSite.SetIconTint(Color.LightGreen);
@@ -56,7 +56,7 @@ internal class SiteMarker : UIComponent
 		}
 		else
 		{
-			Common.AppendLine(stringBuilder, "Click to view options and details.");
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("Click to view options and details."));
 			btSite.Init(type);
 			btSite.Tag1 = site;
 		}
@@ -86,12 +86,12 @@ internal class SiteMarker : UIComponent
 		Color value;
 		if (canCommunicate)
 		{
-			text = "Communication is established with this location.";
+			text = UWGame.Locale.Text("Communication is established with this location.");
 			value = Color.Yellow;
 		}
 		else
 		{
-			text = "No communication with this location. Both locations need a functioning radio or satellite station.";
+			text = UWGame.Locale.Text("No communication with this location. Both locations need a functioning radio or satellite station.");
 			value = Color.Red;
 		}
 		imRadio.SetSkinLocation(SkinState.Normal, guiManager.GUISpriteSheet.GetSourceRectangle("antenna_icon"), value, value);

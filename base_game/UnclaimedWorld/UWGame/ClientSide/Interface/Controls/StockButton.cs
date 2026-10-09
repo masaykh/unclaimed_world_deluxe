@@ -16,7 +16,7 @@ public class StockButton : TextButton
 		: base(gui)
 	{
 		Init(TextButtonType.LCDAmount);
-		ToolTip = "Click to see the list of items";
+		ToolTip = UWGame.Locale.Text("Click to see the list of items");
 		EntityType = entityType;
 	}
 
@@ -43,22 +43,22 @@ public class StockButton : TextButton
 		if (noOfAvailableItems.HasValue && num.HasValue)
 		{
 			base.Text = noOfAvailableItems + "|" + num;
-			ToolTip = noOfAvailableItems.Value + " items are available.";
+			ToolTip = noOfAvailableItems.Value + UWGame.Locale.Text(" items are available.");
 			string unavailableItemsBreakdown = GetUnavailableItemsBreakdown(noOfIncompleteItems, noOfItemsUsedAsParts, noOfItemsOffSite, noOfItemsOwnedByOthers);
 			if (!string.IsNullOrEmpty(unavailableItemsBreakdown))
 			{
 				ToolTip = ToolTip + " \n" + unavailableItemsBreakdown;
 			}
-			ToolTip += "\n \nClick to see the list";
+			ToolTip += UWGame.Locale.Text("\n \nClick to see the list");
 		}
 		else if (noOfAvailableItems.HasValue)
 		{
 			base.Text = noOfAvailableItems.Value.ToString();
-			ToolTip = "We have " + noOfAvailableItems.Value + " items in inventory.";
+			ToolTip = UWGame.Locale.Text("We have ") + noOfAvailableItems.Value + UWGame.Locale.Text(" items in inventory.");
 			if (noOfAvailableItems > 0)
 			{
 				Visible = true;
-				ToolTip += "\n \nClick to see the list";
+				ToolTip += UWGame.Locale.Text("\n \nClick to see the list");
 			}
 			else if (hideIfZero)
 			{
@@ -72,7 +72,7 @@ public class StockButton : TextButton
 			if (num > 0)
 			{
 				Visible = true;
-				ToolTip += "\n \nClick to see the list";
+				ToolTip += UWGame.Locale.Text("\n \nClick to see the list");
 			}
 			else if (hideIfZero)
 			{
@@ -98,7 +98,7 @@ public class StockButton : TextButton
 		if (noOfIncompleteItems.HasValue && noOfIncompleteItems.Value > 0)
 		{
 			stringBuilder.Append(noOfIncompleteItems.Value);
-			stringBuilder.Append(" items are being produced");
+			stringBuilder.Append(UWGame.Locale.Text(" items are being produced"));
 			flag = true;
 		}
 		if (noOfItemsUsedAsParts.HasValue && noOfItemsUsedAsParts.Value > 0)
@@ -108,7 +108,7 @@ public class StockButton : TextButton
 				stringBuilder.Append(" \n");
 			}
 			stringBuilder.Append(noOfItemsUsedAsParts.Value);
-			stringBuilder.Append(" items are parts");
+			stringBuilder.Append(UWGame.Locale.Text(" items are parts"));
 			flag = true;
 		}
 		if (noOfItemsOffSite.HasValue && noOfItemsOffSite.Value > 0)
@@ -118,7 +118,7 @@ public class StockButton : TextButton
 				stringBuilder.Append(" \n");
 			}
 			stringBuilder.Append(noOfItemsOffSite.Value);
-			stringBuilder.Append(" items are off-site");
+			stringBuilder.Append(UWGame.Locale.Text(" items are off-site"));
 			flag = true;
 		}
 		if (noOfItemsOwnedByOthers.HasValue && noOfItemsOwnedByOthers.Value > 0)
@@ -128,7 +128,7 @@ public class StockButton : TextButton
 				stringBuilder.Append(" \n");
 			}
 			stringBuilder.Append(noOfItemsOwnedByOthers.Value);
-			stringBuilder.Append(" items are owned by others");
+			stringBuilder.Append(UWGame.Locale.Text(" items are owned by others"));
 			flag = true;
 		}
 		return stringBuilder.ToString();

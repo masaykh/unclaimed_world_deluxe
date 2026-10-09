@@ -83,8 +83,8 @@ public class HUDOverlayPanel : HUDWindow
 		}
 		childGridsThatWereChanged.Clear();
 		categoryGrid.BeginAddingEntries();
-		PopulateResources(sharedKnowledge, "Show resource");
-		PopulateStructureTypes(sharedKnowledge, "Show structure");
+		PopulateResources(sharedKnowledge, UWGame.Locale.Text("Show resource"));
+		PopulateStructureTypes(sharedKnowledge, UWGame.Locale.Text("Show structure"));
 		PopulateEntityTypes(sharedKnowledge, "");
 		foreach (Grid item in childGridsThatWereChanged)
 		{
@@ -439,11 +439,11 @@ public class HUDOverlayPanel : HUDWindow
 			{
 				if (grouping.Equals(EntityGrouping.Animals))
 				{
-					checkboxTooltip = "Show animal";
+					checkboxTooltip = UWGame.Locale.Text("Show animal");
 				}
 				else if (grouping.Equals(EntityGrouping.Interest))
 				{
-					checkboxTooltip = "Show places of interest";
+					checkboxTooltip = UWGame.Locale.Text("Show places of interest");
 				}
 			}
 			item2 = AddEntityTypeRow(grdGrouping, entityType, grouping, checkboxTooltip);
@@ -459,7 +459,7 @@ public class HUDOverlayPanel : HUDWindow
 		cp.Title = title;
 		cp.TitleSummaryRightAlignXPos = 10;
 		cp.TitlePositionX = 10;
-		cp.ToolTip = "Click to see more detailed options";
+		cp.ToolTip = UWGame.Locale.Text("Click to see more detailed options");
 		cp.CollapsablePanelRightPadding = 1;
 		categoryGrid.AddEntry(key, cp);
 		grdChild = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
@@ -476,7 +476,7 @@ public class HUDOverlayPanel : HUDWindow
 		if (key is ResourceCategory)
 		{
 			Image image = new Image(gui);
-			image.ToolTip = "When activating the SCAN button, these resources will also be visible in the terrain view.";
+			image.ToolTip = UWGame.Locale.Text("When activating the SCAN button, these resources will also be visible in the terrain view.");
 			image.SetSkinLocation(SkinState.Normal, gui.GUISpriteSheet.GetSourceRectangle("HUD_icon_scan"));
 			image.ResizeControlToFitImage();
 			image.X = 10;
@@ -488,7 +488,7 @@ public class HUDOverlayPanel : HUDWindow
 		}
 		CheckBox checkBox = new CheckBox(gui);
 		checkBox.Init(CheckBoxType.HUDCheckBox);
-		checkBox.ToolTip = "Select all / Deselect all";
+		checkBox.ToolTip = UWGame.Locale.Text("Select all / Deselect all");
 		checkBox.ID = UIComponent.DataControlID.Selector;
 		checkBox.X = 188;
 		checkBox.Y = 4;
@@ -500,7 +500,7 @@ public class HUDOverlayPanel : HUDWindow
 		cp.Add(checkBox);
 		checkBox.DebugTag = "cbOverlaySelect";
 		Image image2 = new Image(gui);
-		image2.ToolTip = "Some items in the category have overriding settings.";
+		image2.ToolTip = UWGame.Locale.Text("Some items in the category have overriding settings.");
 		image2.SetSkinLocation(SkinState.Normal, gui.GUISpriteSheet.GetSourceRectangle("HUD_exclamationmark_parenthesis"));
 		image2.ResizeControlToFitImage();
 		image2.X = checkBox.X - 20;
@@ -792,11 +792,11 @@ public class HUDOverlayPanel : HUDWindow
 			image.Visible = true;
 			if (hiddenItemsAreDifferent)
 			{
-				image.ToolTip = "Some hidden item types have overriding settings that are different.";
+				image.ToolTip = UWGame.Locale.Text("Some hidden item types have overriding settings that are different.");
 			}
 			else
 			{
-				image.ToolTip = "Some item types have overriding settings that are different.";
+				image.ToolTip = UWGame.Locale.Text("Some item types have overriding settings that are different.");
 			}
 		}
 		else

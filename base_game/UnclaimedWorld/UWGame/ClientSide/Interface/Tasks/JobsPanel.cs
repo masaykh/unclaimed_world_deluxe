@@ -66,14 +66,14 @@ public class JobsPanel : RosterPanel
 
 	private static Color activeColor = "EDFAFF".ColorFromHex();
 
-	private string noTools = "Tools not in inventory";
+	private string noTools = UWGame.Locale.Text("Tools not in inventory");
 
-	private string allToolsInUse = "Tools owned but currently in use";
+	private string allToolsInUse = UWGame.Locale.Text("Tools owned but currently in use");
 
-	private string allToolsBroken = "Tools are broken and unusable";
+	private string allToolsBroken = UWGame.Locale.Text("Tools are broken and unusable");
 
 	public JobsPanel()
-		: base("TASKS", 622, needBottomMarginForButtons: false)
+		: base(UWGame.Locale.Text("TASKS"), 622, needBottomMarginForButtons: false)
 	{
 		CreateTopPanel();
 		CreateGridHeaderButtons();
@@ -137,7 +137,7 @@ public class JobsPanel : RosterPanel
 		topPanel.AddContent(label, 0, num);
 		Label.LabelType type = Label.LabelType.LCDSmallHeadingBanner;
 		label.Init(type);
-		label.Text = "SET PRIORITY:";
+		label.Text = UWGame.Locale.Text("SET PRIORITY:");
 		label.Width = 100;
 		cbTaskType = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
 		topPanel.AddContent(cbTaskType, 104, num - 6);
@@ -145,7 +145,7 @@ public class JobsPanel : RosterPanel
 		cbTaskType.Width = 145;
 		PopulateTaskTypeCombo();
 		cbTaskType.SelectionChanged += cbTaskType_SelectionChanged;
-		cbTaskType.ToolTip = "Select a task type to view or set its priority";
+		cbTaskType.ToolTip = UWGame.Locale.Text("Select a task type to view or set its priority");
 		rgPriority = new RadioGroup(Interface.gui);
 		topPanel.AddContent(rgPriority, 270, num - 1);
 		rgPriority.Width = 280;
@@ -154,7 +154,7 @@ public class JobsPanel : RosterPanel
 		rgPriority.Add(rbJobTypeLow);
 		rbJobTypeLow.Init(CheckBoxType.LCDRadioBanner);
 		rbJobTypeLow.Text = Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.Low);
-		rbJobTypeLow.ToolTip = "Set to low priority. This will affect all current and future tasks of this type.";
+		rbJobTypeLow.ToolTip = UWGame.Locale.Text("Set to low priority. This will affect all current and future tasks of this type.");
 		rbJobTypeLow.Tag1 = UWGame.SimSide.Jobs.Priority.Low;
 		rbJobTypeLow.Width = 90;
 		rbJobTypeNormal = new RadioButton(Interface.gui);
@@ -162,7 +162,7 @@ public class JobsPanel : RosterPanel
 		rbJobTypeNormal.Init(CheckBoxType.LCDRadioBanner);
 		rbJobTypeNormal.X = rbJobTypeLow.Right + 6;
 		rbJobTypeNormal.Text = Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.Normal);
-		rbJobTypeNormal.ToolTip = "Set to normal priority. This will affect all current and future tasks of this type.";
+		rbJobTypeNormal.ToolTip = UWGame.Locale.Text("Set to normal priority. This will affect all current and future tasks of this type.");
 		rbJobTypeNormal.IsChecked = true;
 		rbJobTypeNormal.Tag1 = UWGame.SimSide.Jobs.Priority.Normal;
 		rbJobTypeNormal.Width = rbJobTypeLow.Width;
@@ -171,7 +171,7 @@ public class JobsPanel : RosterPanel
 		rbJobTypeHigh.Init(CheckBoxType.LCDRadioBanner);
 		rbJobTypeHigh.X = rbJobTypeNormal.Right + 6;
 		rbJobTypeHigh.Text = Job.GetPriorityAsString(UWGame.SimSide.Jobs.Priority.High);
-		rbJobTypeHigh.ToolTip = "Set to high priority. This will affect all current and future tasks of this type.";
+		rbJobTypeHigh.ToolTip = UWGame.Locale.Text("Set to high priority. This will affect all current and future tasks of this type.");
 		rbJobTypeHigh.Tag1 = UWGame.SimSide.Jobs.Priority.High;
 		rbJobTypeHigh.Width = rbJobTypeLow.Width;
 		rbJobTypeNormal.Click += btJobTypeNormal_Click;
@@ -182,7 +182,7 @@ public class JobsPanel : RosterPanel
 
 	private void PopulateTaskTypeCombo()
 	{
-		cbTaskType.AddEntry("SELECTTASKTYPE", "Select task type:");
+		cbTaskType.AddEntry("SELECTTASKTYPE", UWGame.Locale.Text("Select task type:"));
 		foreach (KeyValuePair<string, JobType> allJobType in GameData.Instance.AllJobTypes)
 		{
 			cbTaskType.BeginAddingEntries();
@@ -470,7 +470,7 @@ public class JobsPanel : RosterPanel
 		panel.AddContent(imageButton, 300, -4);
 		imageButton.Init(ImageButtonType.LCDExpandWithUpAndDownArrows);
 		imageButton.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
-		imageButton.ToolTip = "Show more details";
+		imageButton.ToolTip = UWGame.Locale.Text("Show more details");
 		imageButton.Click += btnExpand_Click;
 		imageButton.Tag1 = key;
 		imageButton.Width = 28;
@@ -488,7 +488,7 @@ public class JobsPanel : RosterPanel
 		comboBox.Tag1 = GetKey(job);
 		comboBox.SelectionChanged += cbPriority_SelectionChanged;
 		panel.AddContent(comboBox, 418, -4);
-		comboBox.ToolTip = "Set the priority for this task";
+		comboBox.ToolTip = UWGame.Locale.Text("Set the priority for this task");
 		ImageButton imageButton2 = new ImageButton(Interface.gui);
 		panel.AddContent(imageButton2, 516, -2);
 		imageButton2.InitWithIcon(ImageButtonType.LCD, "lcd_icon_asterisk", hasCheckedState: false, UIComponent.LCDNormal);
@@ -499,11 +499,11 @@ public class JobsPanel : RosterPanel
 		if (jobType == null)
 		{
 			imageButton2.Enabled = false;
-			imageButton2.ToolTip = "Not possible to set default priority for this task type";
+			imageButton2.ToolTip = UWGame.Locale.Text("Not possible to set default priority for this task type");
 		}
 		else
 		{
-			imageButton2.ToolTip = $"Click to set this priority as the default for all current and future tasks of this type ({jobType.GetDefaultDisplayName()})";
+			imageButton2.ToolTip = string.Format(UWGame.Locale.Text("Click to set this priority as the default for all current and future tasks of this type ({0})"), jobType.GetDefaultDisplayName());
 		}
 		Icon icon = new Icon(Interface.gui);
 		panel.AddContent(icon, -5);
@@ -522,7 +522,7 @@ public class JobsPanel : RosterPanel
 		Label label2 = new Label(Interface.gui);
 		label2.Init(Label.LabelType.LCDNormal);
 		panel.AddContent(label2);
-		label2.Text = "LOCATION:";
+		label2.Text = UWGame.Locale.Text("LOCATION:");
 		label2.FitToText();
 		label2.Y = linkOrLabel.Y;
 		label2.X = 180;
@@ -536,7 +536,7 @@ public class JobsPanel : RosterPanel
 		Label label3 = new Label(Interface.gui);
 		label3.Init(Label.LabelType.LCDNormal);
 		panel.AddContent(label3);
-		label3.Text = "STATUS:";
+		label3.Text = UWGame.Locale.Text("STATUS:");
 		label3.FitToText();
 		label3.Y = linkOrLabel.Bottom + 8;
 		label3.ID = UIComponent.DataControlID.JobStatus;
@@ -545,7 +545,7 @@ public class JobsPanel : RosterPanel
 		ImageButton imageButton3 = new ImageButton(Interface.gui);
 		panel.AddContent(imageButton3);
 		imageButton3.InitWithIcon(ImageButtonType.LCD, "lcd_icon_trash", hasCheckedState: false);
-		imageButton3.ToolTip = (flag ? "Cancel this task" : tooltip);
+		imageButton3.ToolTip = (flag ? UWGame.Locale.Text("Cancel this task") : tooltip);
 		imageButton3.X = 370;
 		imageButton3.Y = linkOrLabel.Y - 4;
 		imageButton3.Click += btCancel_Click;
@@ -588,7 +588,7 @@ public class JobsPanel : RosterPanel
 				if (productionJob.Value.Count > GameData.Instance.GUIConstants.OrderedJobsWithSameOutputToTriggerWarning)
 				{
 					TextArea textArea = taMessages;
-					textArea.Text = textArea.Text + "- " + productionJob.Key.PluralName + ": Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time. \n";
+					textArea.Text = textArea.Text + "- " + string.Format(UWGame.Locale.Text("{0}: Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time."), productionJob.Key.PluralName) + " \n";
 				}
 			}
 		}
@@ -668,7 +668,7 @@ public class JobsPanel : RosterPanel
 		ibCompress.Click += ibCompress_Click;
 		ibCompress.Y = 0;
 		ibCompress.X = 0;
-		ibCompress.ToolTip = "Collapse all";
+		ibCompress.ToolTip = UWGame.Locale.Text("Collapse all");
 		ibCompress.Width = 30;
 		ibCompress.Height = 30;
 		ibCompress.RecalculateIconPosition();
@@ -677,15 +677,15 @@ public class JobsPanel : RosterPanel
 		ibExpand.InitWithIcon(ImageButtonType.LCD, "lcd_icon_allExpand", hasCheckedState: true);
 		ibExpand.CheckedMode = CheckedModes.CannotBeChecked;
 		ibExpand.Click += ibExpand_Click;
-		ibExpand.ToolTip = "Expand all";
+		ibExpand.ToolTip = UWGame.Locale.Text("Expand all");
 		ibExpand.Width = 30;
 		ibExpand.Y = 0;
 		ibExpand.X = 30;
 		ibExpand.Height = 30;
 		ibExpand.RecalculateIconPosition();
-		sortingButtons.CreateTextButton(0, 248, "TASK TYPE", TaskSettings.SortColumns.TaskType);
-		sortingButtons.CreateTextButton(244, 124, "COMPLETION", TaskSettings.SortColumns.Completion);
-		sortingButtons.CreateTextButton(364, 136, "PRIORITY", TaskSettings.SortColumns.Priority);
+		sortingButtons.CreateTextButton(0, 248, UWGame.Locale.Text("TASK TYPE"), TaskSettings.SortColumns.TaskType);
+		sortingButtons.CreateTextButton(244, 124, UWGame.Locale.Text("COMPLETION"), TaskSettings.SortColumns.Completion);
+		sortingButtons.CreateTextButton(364, 136, UWGame.Locale.Text("PRIORITY"), TaskSettings.SortColumns.Priority);
 	}
 
 	private void ibExpand_Click(UIComponent sender, EventArgs e)
@@ -810,44 +810,44 @@ public class JobsPanel : RosterPanel
 		Color normalColor = label.GetNormalColorForType();
 		if (hasWeapon == false)
 		{
-			text = "No weapon available";
-			text2 = "No suitable weapon is available for this task.";
+			text = UWGame.Locale.Text("No weapon available");
+			text2 = UWGame.Locale.Text("No suitable weapon is available for this task.");
 		}
 		else if (isInaccessible)
 		{
 			if (blockedByThreat)
 			{
-				text = "Dangerous area";
-				text2 = "The task is located in a dangerous spot. Suggestion: First secure the area with PATROL/ATTACK zones. Use the THREAT overlay (next to the minimap) to highlight dangerous areas.";
+				text = UWGame.Locale.Text("Dangerous area");
+				text2 = UWGame.Locale.Text("The task is located in a dangerous spot. Suggestion: First secure the area with PATROL/ATTACK zones. Use the THREAT overlay (next to the minimap) to highlight dangerous areas.");
 			}
 			else if (isBlockedDueToBoldStanceRequired)
 			{
-				text = "Noone dares go near";
-				text2 = "No workers are currently willing to move near danger, perhaps because of injuries and/or low morale";
+				text = UWGame.Locale.Text("Noone dares go near");
+				text2 = UWGame.Locale.Text("No workers are currently willing to move near danger, perhaps because of injuries and/or low morale");
 			}
 			else
 			{
-				text = "Area not accessible";
-				text2 = "The area is geographically inaccessible because of terrain or structures blocking the way";
+				text = UWGame.Locale.Text("Area not accessible");
+				text2 = UWGame.Locale.Text("The area is geographically inaccessible because of terrain or structures blocking the way");
 			}
 			normalColor = Label.LCDErrorColor;
 		}
 		else if (tooFarAwayFromExpedition)
 		{
-			text = "Too far away from camp";
-			text2 = "The target is too far away from the camp.";
+			text = UWGame.Locale.Text("Too far away from camp");
+			text2 = UWGame.Locale.Text("The target is too far away from the camp.");
 			normalColor = Label.LCDErrorColor;
 		}
 		else if (huntingNotFeasible)
 		{
-			text = "Ranged weapon needed";
-			text2 = "No workers have the speed to hunt down this animal after it has spotted us.";
+			text = UWGame.Locale.Text("Ranged weapon needed");
+			text2 = UWGame.Locale.Text("No workers have the speed to hunt down this animal after it has spotted us.");
 			normalColor = Label.LCDErrorColor;
 		}
 		else if (areaNotCleared)
 		{
-			text = "Area not cleared";
-			text2 = "The construction area contains items that must be removed first.";
+			text = UWGame.Locale.Text("Area not cleared");
+			text2 = UWGame.Locale.Text("The construction area contains items that must be removed first.");
 			normalColor = Label.LCDErrorColor;
 		}
 		else
@@ -867,7 +867,7 @@ public class JobsPanel : RosterPanel
 				if (isMemory)
 				{
 					fillableBar.BarColor = Color.Gray;
-					fillableBar.ToolTip = presentationType.GetValueTerm(progress.Value, null, null) + " (last known status)";
+					fillableBar.ToolTip = presentationType.GetValueTerm(progress.Value, null, null) + " " + UWGame.Locale.Text("(last known status)");
 				}
 				else
 				{
@@ -880,12 +880,12 @@ public class JobsPanel : RosterPanel
 			if (cpJob.FindChildById(UIComponent.DataControlID.Cancel) is TextButton textButton && processJob.CumulativelyEstimatedProgress > 0f && textButton.Enabled)
 			{
 				textButton.Enabled = false;
-				textButton.ToolTip = "Cannot cancel this ongoing task.";
+				textButton.ToolTip = UWGame.Locale.Text("Cannot cancel this ongoing task.");
 			}
 		}
 		if (text != null)
 		{
-			label.Text = "STATUS: " + text;
+			label.Text = string.Format(UWGame.Locale.Text("STATUS: {0}"), text);
 			if (text2 != null)
 			{
 				label.ToolTip = text2;
@@ -932,8 +932,8 @@ public class JobsPanel : RosterPanel
 		}
 		else
 		{
-			hyperlink.Text = "NONE";
-			hyperlink.ToolTip = "The task has no location yet.";
+			hyperlink.Text = UWGame.Locale.Text("NONE");
+			hyperlink.ToolTip = UWGame.Locale.Text("The task has no location yet.");
 			hyperlink.Enabled = false;
 		}
 		hyperlink.ScaleWidthToFitText();
@@ -997,7 +997,7 @@ public class JobsPanel : RosterPanel
 			linkOrLabel.Hyperlink.TargetEntityID = (uint)assignedWorker.ID;
 			if (text != null)
 			{
-				icon.ToolTip = $"This worker supplies the needed '{text}' skill";
+				icon.ToolTip = string.Format(UWGame.Locale.Text("This worker supplies the needed '{0}' skill"), text);
 			}
 			else
 			{
@@ -1010,11 +1010,11 @@ public class JobsPanel : RosterPanel
 		if (text != null)
 		{
 			linkOrLabel.Text = text;
-			icon.ToolTip = $"A worker with '{text}' skill is needed";
+			icon.ToolTip = string.Format(UWGame.Locale.Text("A worker with '{0}' skill is needed"), text);
 			if (hasSkill == false)
 			{
 				linkOrLabel.Label.NormalColor = Label.LCDErrorColor;
-				linkOrLabel.ToolTip = $"There are no colony members with this skill (Requirement: Skill level above {GameData.Instance.Constants.MinimumSkillValueToUse:N1})";
+				linkOrLabel.ToolTip = string.Format(UWGame.Locale.Text("There are no colony members with this skill (Requirement: Skill level above {0:N1})"), GameData.Instance.Constants.MinimumSkillValueToUse);
 			}
 			else
 			{
@@ -1023,7 +1023,7 @@ public class JobsPanel : RosterPanel
 		}
 		else
 		{
-			linkOrLabel.Text = "NO ONE ASSIGNED";
+			linkOrLabel.Text = UWGame.Locale.Text("NO ONE ASSIGNED");
 		}
 	}
 
@@ -1057,7 +1057,7 @@ public class JobsPanel : RosterPanel
 					EntityID item = item2.Value[num].Item1;
 					if (GoalEvaluator.HandleOwnerDataResult(The.InGameUI.UIAllegiance.SharedKnowledge, item, owner, out var entityData))
 					{
-						UpdateAssignedInputs(grid, entityData, "On site");
+						UpdateAssignedInputs(grid, entityData, UWGame.Locale.Text("On site"));
 					}
 					else
 					{
@@ -1214,13 +1214,13 @@ public class JobsPanel : RosterPanel
 	{
 		if (takenBy > 0)
 		{
-			return "On site";
+			return UWGame.Locale.Text("On site");
 		}
 		if (hasInputs)
 		{
-			return "In inventory";
+			return UWGame.Locale.Text("In inventory");
 		}
-		return "Not in inventory";
+		return UWGame.Locale.Text("Not in inventory");
 	}
 
 	private void UpdateLeftColumn(Box cPanel, ProcessJob pJob, EntityGroup owner, ref bool hasProblems)
@@ -1229,8 +1229,8 @@ public class JobsPanel : RosterPanel
 		Label label = (Label)cPanel.FindChildById(UIComponent.DataControlID.InputHeading);
 		if (pJob.HarvestJob != null)
 		{
-			label.Text = "RESOURCES";
-			label.ToolTip = "This column shows a summary of the resources being gathered";
+			label.Text = UWGame.Locale.Text("RESOURCES");
+			label.ToolTip = UWGame.Locale.Text("This column shows a summary of the resources being gathered");
 			Grid grid = (Grid)cPanel.FindChildById(UIComponent.DataControlID.LeftGrid);
 			grid.BeginAddingEntries();
 			UpdateHarvestJobResources(owner, grid, pJob, ref setTitlebarColorToRed);
@@ -1238,8 +1238,8 @@ public class JobsPanel : RosterPanel
 		}
 		else if (pJob != null && pJob.ProcessType.Inputs != null)
 		{
-			label.Text = "MATERIALS";
-			label.ToolTip = "This column shows the status of the needed input materials";
+			label.Text = UWGame.Locale.Text("MATERIALS");
+			label.ToolTip = UWGame.Locale.Text("This column shows the status of the needed input materials");
 			Grid grid2 = (Grid)cPanel.FindChildById(UIComponent.DataControlID.LeftGrid);
 			grid2.BeginAddingEntries();
 			UpdateProcessJobInputs(cPanel, pJob, owner, grid2, ref setTitlebarColorToRed);
@@ -1459,7 +1459,7 @@ public class JobsPanel : RosterPanel
 			Label label2 = new Label(uIComponent.guiManager);
 			label2.Init(Label.LabelType.LCDSmallHeadingBanner);
 			uIComponent.Add(label2);
-			label2.Text = "TOOLS";
+			label2.Text = UWGame.Locale.Text("TOOLS");
 			label2.Width = 297;
 			label2.X = label.Right + 10;
 			Grid grid = null;

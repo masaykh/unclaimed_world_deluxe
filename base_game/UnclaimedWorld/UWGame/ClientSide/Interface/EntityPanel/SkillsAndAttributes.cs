@@ -34,7 +34,7 @@ public class SkillsAndAttributes : EntityPanelTabPage
 	public SkillsAndAttributes(GUIManager gui, EntityPanel entityPanel, UIComponent fullLCD, UIComponent halfLCD)
 		: base(gui, entityPanel, hasCRT: true, fullLCD, halfLCD)
 	{
-		Title = "MAIN";
+		Title = UWGame.Locale.Text("MAIN");
 		InitAttributes();
 		InitSkills();
 	}
@@ -46,7 +46,7 @@ public class SkillsAndAttributes : EntityPanelTabPage
 		Label label = new Label(gui);
 		pnAttributes.Add(label);
 		label.Y = 5;
-		label.Text = "ATTRIBUTES";
+		label.Text = UWGame.Locale.Text("ATTRIBUTES");
 		label.Init(Label.LabelType.LCDNormal);
 		FullLCDPanel.AddLCDLineThin(gui, new Point(0, 23), pnAttributes.Width, pnAttributes);
 		int yPos;
@@ -69,7 +69,7 @@ public class SkillsAndAttributes : EntityPanelTabPage
 		int width = (pnSkills.Width - num) / 2;
 		Label label = new Label(gui);
 		pnSkills.Add(label);
-		label.Text = "SKILLS";
+		label.Text = UWGame.Locale.Text("SKILLS");
 		label.Init(Label.LabelType.LCDNormal);
 		FullLCDPanel.AddLCDLineThin(gui, new Point(0, 18), pnSkills.Width, pnSkills).DebugTag = "SkillsLine";
 		int y = 22;

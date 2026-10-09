@@ -43,6 +43,8 @@ public partial class Locale
 		"Description", "SummaryDescription", "ShortDescription", "PluralName", "DisplayName", "Heading",
 		"Text", "Tooltip", "ToolTip", "DefaultText", "LoseScreenText", "UserCannotCancelReason",
 		"SpecialActionCaption", "Term", "TermTooltip", "StaticString", "TextWithPlaceholders",
+		// GUIConstants' headings for the tool options of a recipe.
+		"FirstToolOption", "SecondToolOption", "ThirdToolOption",
 	};
 
 	/// <summary>
@@ -151,6 +153,11 @@ public partial class Locale
 		foreach (var topic in data.AllTutorialTopics.OrderBy(t => t.Key, StringComparer.Ordinal))
 		{
 			walk.Root(topic.Value, "TUTORIAL", names: true);
+		}
+		// The interface's own data (GUIConstants.xml): storage locations' names, tool option headings.
+		if (data.GUIConstants != null)
+		{
+			walk.Root(data.GUIConstants, "GUI CONSTANTS", names: false, key: "guiConstants");
 		}
 		return walk.Texts;
 	}

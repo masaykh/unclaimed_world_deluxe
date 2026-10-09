@@ -62,7 +62,7 @@ public class UpgradeWindow : HUDWindow
 		DisplayWindow.MinHeight = 100;
 		DisplayWindow.ResizableBorderSize = 6;
 		DisplayWindow.Resize += DisplayWindow_Resize;
-		AddZoneNameAndHeader("", "UPGRADE", "HUD_icon_uparrow", 18, out lblName, out lblHeader, out headerIcon);
+		AddZoneNameAndHeader("", UWGame.Locale.Text("UPGRADE"), "HUD_icon_uparrow", 18, out lblName, out lblHeader, out headerIcon);
 		listSurface = new UIComponent(gui);
 		Add(listSurface);
 		listSurface.X = 18;
@@ -73,7 +73,7 @@ public class UpgradeWindow : HUDWindow
 		outerGrid.ItemHeight = 36;
 		btCancel = new TextButton(gui);
 		Add(btCancel);
-		btCancel.Text = "CLOSE";
+		btCancel.Text = UWGame.Locale.Text("CLOSE");
 		btCancel.Init(TextButton.TextButtonType.HUD);
 		btCancel.Click += btCancel_Click;
 		btCancel.Width = 72;
@@ -127,7 +127,7 @@ public class UpgradeWindow : HUDWindow
 		Image image = new Image(gui);
 		image.SetSkinLocation(SkinState.Normal, gui.GUISpriteSheet.GetSourceRectangle("HUD_checkmark"));
 		image.ResizeControlToFitImage();
-		image.ToolTip = "An upgrade is selected";
+		image.ToolTip = UWGame.Locale.Text("An upgrade is selected");
 		cpCategory.Add(image);
 		image.X = 330;
 		cpCategory.CenterOnHeader(image);
@@ -186,7 +186,7 @@ public class UpgradeWindow : HUDWindow
 			UpgradeCategory = upgradeCategory
 		};
 		checkBox.ID = UIComponent.DataControlID.Selector;
-		checkBox.ToolTip = "When selected, the upgrade will be installed as soon as possible. If it breaks, a new upgrade will be installed. If unselected, the upgrade will be removed again.";
+		checkBox.ToolTip = UWGame.Locale.Text("When selected, the upgrade will be installed as soon as possible. If it breaks, a new upgrade will be installed. If unselected, the upgrade will be removed again.");
 		categoryGrid.DebugTag = "categoryGrid";
 		return uIComponent;
 	}
@@ -422,23 +422,23 @@ public class UpgradeWindow : HUDWindow
 		// although nothing can use it (InventoryPanel.HasValidTool requires IsCompleted).
 		if (flag && !installedData.IsCompleted())
 		{
-			label.Text = "PART-BUILT";
-			label.ToolTip = "Construction of this upgrade was started but not finished. It cannot be used.";
+			label.Text = UWGame.Locale.Text("PART-BUILT");
+			label.ToolTip = UWGame.Locale.Text("Construction of this upgrade was started but not finished. It cannot be used.");
 		}
 		else if (flag && !Entity.IsFunctional(installedData))
 		{
-			label.Text = "BROKEN";
-			label.ToolTip = "The upgrade is installed but broken. It cannot be used.";
+			label.Text = UWGame.Locale.Text("BROKEN");
+			label.ToolTip = UWGame.Locale.Text("The upgrade is installed but broken. It cannot be used.");
 		}
 		else if (flag)
 		{
-			label.Text = "INSTALLED";
-			label.ToolTip = "The upgrade is installed.";
+			label.Text = UWGame.Locale.Text("INSTALLED");
+			label.ToolTip = UWGame.Locale.Text("The upgrade is installed.");
 		}
 		else
 		{
-			label.Text = "AVAILABLE";
-			label.ToolTip = "The upgrade can be installed now.";
+			label.Text = UWGame.Locale.Text("AVAILABLE");
+			label.ToolTip = UWGame.Locale.Text("The upgrade can be installed now.");
 		}
 		label.FitToText();
 		horizontalList2.Visible = false;

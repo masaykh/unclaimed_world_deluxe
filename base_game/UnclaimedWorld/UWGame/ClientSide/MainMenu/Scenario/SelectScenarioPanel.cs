@@ -34,7 +34,7 @@ public class SelectScenarioPanel : Panel
 	public event EventHandler CancelClick;
 
 	public SelectScenarioPanel(SelectScenarioInterface intf, Point position)
-		: base(intf, "SCENARIOS", position, new Vector2(800f, 620f), Level.Middle)
+		: base(intf, UWGame.Locale.Text("SCENARIOS"), position, new Vector2(800f, 620f), Level.Middle)
 	{
 		selectScenarioInterface = intf;
 		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out _, out lcdSurface, ref lcdScreen, 55);
@@ -94,12 +94,12 @@ public class SelectScenarioPanel : Panel
 		Label label = new Label(Interface.gui);
 		lCDInnerPanel2.AddContent(label);
 		label.Init(Label.LabelType.LCDHeadingBlue);
-		label.Text = scenario.DisplayName ?? "(Missing)";
+		label.Text = scenario.DisplayName ?? UWGame.Locale.Text("(Missing)");
 		Label label2 = new Label(Interface.gui);
 		lCDInnerPanel2.AddContent(label2);
 		label2.Init(Label.LabelType.LCDHeadingSteelGrey);
-		label2.Text = "Map size: " + UWGame.SimSide.Scenarios.Scenario.GetMapSizeAsString(scenario.MapSize);
-		label2.ToolTip = "The map size gives a hint about the hardware requirements for the AI to function properly. Larger maps usually have higher CPU demands.";
+		label2.Text = UWGame.Locale.Text("Map size:") + " " + UWGame.SimSide.Scenarios.Scenario.GetMapSizeAsString(scenario.MapSize);
+		label2.ToolTip = UWGame.Locale.Text("The map size gives a hint about the hardware requirements for the AI to function properly. Larger maps usually have higher CPU demands.");
 		label2.FitToText();
 		label2.X = lCDInnerPanel2.ContentWidth - label2.Width;
 		TextArea textArea = new TextArea(Interface.gui, ListBoxType.LCD);
@@ -119,7 +119,7 @@ public class SelectScenarioPanel : Panel
 		TextButton textButton = new TextButton(Interface.gui);
 		lCDInnerPanel3.Panel.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.LCD);
-		textButton.Text = "SELECT";
+		textButton.Text = UWGame.Locale.Text("SELECT");
 		textButton.ScaleWidthToFitText();
 		textButton.X = lCDInnerPanel3.Panel.Width - textButton.Width - lCDInnerPanel3.HorizontalContentPadding;
 		textButton.Y = lCDInnerPanel3.Panel.Height - textButton.Height;
@@ -131,7 +131,7 @@ public class SelectScenarioPanel : Panel
 		if (!Environment.Is64BitProcess && !scenario.Allow32Bit)
 		{
 			textButton.Enabled = false;
-			textButton.ToolTip = "Requires 64 bit, not available under 32 bit.";
+			textButton.ToolTip = UWGame.Locale.Text("Requires 64 bit, not available under 32 bit.");
 		}
 		grid.AddEntry(scenario, uIComponent);
 	}
@@ -159,9 +159,9 @@ public class SelectScenarioPanel : Panel
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
 		PlaceLeftButtonUnderLCD(textButton);
-		textButton.Text = "MAIN";
+		textButton.Text = UWGame.Locale.Text("MAIN");
 		textButton.ScaleWidthToFitText();
-		textButton.ToolTip = "Return to the main menu";
+		textButton.ToolTip = UWGame.Locale.Text("Return to the main menu");
 		textButton.Click += btCancel_Click;
 		Rectangle sourceRectangle = Interface.gui.GUISpriteSheet.GetSourceRectangle("main_panel_dirt_center");
 		Panel.AddImage(Interface.gui, Window, sourceRectangle, new Point(40, 30));

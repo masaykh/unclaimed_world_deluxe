@@ -20,9 +20,9 @@ public class MissionsPanel : RosterPanel
 	private Label lblNewRun;
 
 	public MissionsPanel()
-		: base("MISSIONS", 600, needBottomMarginForButtons: false)
+		: base(UWGame.Locale.Text("MISSIONS"), 600, needBottomMarginForButtons: false)
 	{
-		Panel.CreateColumnHeadingsWithFixedLength(lcdSurface, 0, new Tuple<string, int, int>("TRANSPORT", 0, 136), new Tuple<string, int, int>("COMMUNICATION", 140, 128), new Tuple<string, int, int>("NEXT STOP", 270, 118), new Tuple<string, int, int>("ETA", 390, 143));
+		Panel.CreateColumnHeadingsWithFixedLength(lcdSurface, 0, new Tuple<string, int, int>(UWGame.Locale.Text("TRANSPORT"), 0, 136), new Tuple<string, int, int>(UWGame.Locale.Text("COMMUNICATION"), 140, 128), new Tuple<string, int, int>(UWGame.Locale.Text("NEXT STOP"), 270, 118), new Tuple<string, int, int>(UWGame.Locale.Text("ETA"), 390, 143));
 		int num = 21;
 		outerGrid = new Grid(Interface.gui, ListBoxType.LCD, Label.LabelType.CRTBigGlow);
 		outerGrid.FixedItemHeights = false;
@@ -73,7 +73,7 @@ public class MissionsPanel : RosterPanel
 		lblNewRun = new Label(Interface.gui);
 		uIComponent.Add(lblNewRun);
 		lblNewRun.Init(Label.LabelType.LCDNormal);
-		lblNewRun.Text = "NEW RUN";
+		lblNewRun.Text = UWGame.Locale.Text("NEW RUN");
 		lblNewRun.X = 16;
 		lblNewRun.Y = 14;
 		return uIComponent;
@@ -88,7 +88,7 @@ public class MissionsPanel : RosterPanel
 	{
 		// PORT: the run being planned now survives the planning panel being hidden (see
 		// CreateMissionPanel.Hide), so the button that leads back to it says so.
-		lblNewRun.Text = The.InGameUI.CreateMissionPanel.HasDraft ? "CONTINUE RUN" : "NEW RUN";
+		lblNewRun.Text = The.InGameUI.CreateMissionPanel.HasDraft ? UWGame.Locale.Text("CONTINUE RUN") : UWGame.Locale.Text("NEW RUN");
 		lblNewRun.FitToText();
 		GetAllMissionsToShow();
 		outerGrid.BeginAddingEntries();
@@ -173,10 +173,10 @@ public class MissionsPanel : RosterPanel
 		}
 		else
 		{
-			label.Text = "On foot";
+			label.Text = UWGame.Locale.Text("On foot");
 		}
 		Label lblCommunication = itemRow.FindChildById(UIComponent.DataControlID.Communication) as Label;
-		DiplomacyPanel.DisplayCommunication(The.InGameUI.UIAllegiance, mission, lblCommunication, "The mission can be reached with the communication equipment ({0}) that is currently deployed", "We currently have no way to communicate with the mission. ETA and location are not up to date.", out var inCommRange);
+		DiplomacyPanel.DisplayCommunication(The.InGameUI.UIAllegiance, mission, lblCommunication, UWGame.Locale.Text("The mission can be reached with the communication equipment ({0}) that is currently deployed"), UWGame.Locale.Text("We currently have no way to communicate with the mission. ETA and location are not up to date."), out var inCommRange);
 		Label label2 = itemRow.FindChildById(UIComponent.DataControlID.NextStop) as Label;
 		Label label3 = itemRow.FindChildById(UIComponent.DataControlID.ETA) as Label;
 		// PORT: the next stop and its ETA are filled in whether or not the mission can be reached.
@@ -196,7 +196,7 @@ public class MissionsPanel : RosterPanel
 		label3.NormalColor = inCommRange ? label3.GetNormalColorForType() : Label.LCDErrorColor;
 		label2.Text = "";
 		label3.Text = "";
-		label3.ToolTip = inCommRange ? null : "We are not in communication with the mission.";
+		label3.ToolTip = inCommRange ? null : UWGame.Locale.Text("We are not in communication with the mission.");
 		if (mission.GetNextStopAndETA(out var nextStop, out var eta))
 		{
 			nextStop.Value.ResolveLocation(The.InGameUI.UIAllegiance.SharedKnowledge, out var site, out var _, out var _, out var _);
@@ -208,8 +208,8 @@ public class MissionsPanel : RosterPanel
 				label2.Text = site.Name;
 				// MOD: TradeMod may put both in words ("half a day", "in the evening").
 				label3.Text = UWGame.Mods.TradeMod.ArrivalIn(daysLeft);
-				label3.ToolTip = (inCommRange ? "Estimated time of arrival at " : "We are not in communication with the mission. Estimated from its route and speed: arrival at ")
-					+ site.Name + UWGame.Mods.TradeMod.ArrivalAt(eta.Value) + ".";
+				label3.ToolTip = string.Format(inCommRange ? UWGame.Locale.Text("Estimated time of arrival at {0}{1}.") : UWGame.Locale.Text("We are not in communication with the mission. Estimated from its route and speed: arrival at {0}{1}."),
+					site.Name, UWGame.Mods.TradeMod.ArrivalAt(eta.Value));
 			}
 		}
 	}

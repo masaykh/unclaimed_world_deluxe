@@ -38,11 +38,11 @@ public class PersonnelList : UIComponent
 		this.isRoster = isRoster;
 		if (isRoster)
 		{
-			Panel.CreateGridWithColumnHeadingsWithFixedLength(lcdSurface, 0, 25, out outerGrid, bottomMargin, new Tuple<string, int, int>("OPINION", 0, 98), new Tuple<string, int, int>("PERSON DATA", 106, 312), new Tuple<string, int, int>("STATUS", 410, 123));
+			Panel.CreateGridWithColumnHeadingsWithFixedLength(lcdSurface, 0, 25, out outerGrid, bottomMargin, new Tuple<string, int, int>(UWGame.Locale.Text("OPINION"), 0, 98), new Tuple<string, int, int>(UWGame.Locale.Text("PERSON DATA"), 106, 312), new Tuple<string, int, int>(UWGame.Locale.Text("STATUS"), 410, 123));
 		}
 		else
 		{
-			Panel.CreateGridWithColumnHeadingsWithFixedLength(lcdSurface, 0, 25, out outerGrid, bottomMargin, new Tuple<string, int, int>("OPINION", 0, 98), new Tuple<string, int, int>("PERSON DATA", 106, 312));
+			Panel.CreateGridWithColumnHeadingsWithFixedLength(lcdSurface, 0, 25, out outerGrid, bottomMargin, new Tuple<string, int, int>(UWGame.Locale.Text("OPINION"), 0, 98), new Tuple<string, int, int>(UWGame.Locale.Text("PERSON DATA"), 106, 312));
 		}
 		outerGrid.FixedItemHeights = false;
 	}
@@ -198,7 +198,7 @@ public class PersonnelList : UIComponent
 		label2.Y = 1;
 		label2.Init(Label.LabelType.LCDNormal);
 		label2.ID = DataControlID.Age;
-		label2.ToolTip = "The age of the person";
+		label2.ToolTip = UWGame.Locale.Text("The age of the person");
 		item.CenterChildVertically(label2);
 		Icon icon6 = new Icon(guiManager);
 		icon6.ScaleImageToSizeOfControl = false;
@@ -209,7 +209,7 @@ public class PersonnelList : UIComponent
 		TextButton textButton = new TextButton(guiManager);
 		item.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.LCD);
-		textButton.Text = "MORE";
+		textButton.Text = UWGame.Locale.Text("MORE");
 		textButton.ID = DataControlID.Expand;
 		textButton.X = 345;
 		textButton.Click += tbExpand_Click;
@@ -250,13 +250,13 @@ public class PersonnelList : UIComponent
 		if (textButton.IsChecked)
 		{
 			box.Visible = true;
-			textButton.Text = "LESS";
+			textButton.Text = UWGame.Locale.Text("LESS");
 			SetExpandedItemHeight((Grid)box.FindChildById(DataControlID.GridInItemRow));
 		}
 		else
 		{
 			box.Visible = false;
-			textButton.Text = "MORE";
+			textButton.Text = UWGame.Locale.Text("MORE");
 			item.Height = 25;
 		}
 	}
@@ -305,7 +305,7 @@ public class PersonnelList : UIComponent
 			icon.Visible = true;
 			icon.SetSkinLocations(guiManager.GUISpriteSheet.GetSourceRectangle(professionType.Icon), UIComponent.LCDNormal, Hyperlink.HoverColor);
 			icon.ResizeControlToFitImage();
-			icon.ToolTip = "Field: " + professionType.Name;
+			icon.ToolTip = string.Format(UWGame.Locale.Text("Field: {0}"), professionType.Name);
 			itemRow.OrderByTag1 = professionType.Name;
 		}
 		else
@@ -335,12 +335,12 @@ public class PersonnelList : UIComponent
 		if (reproduction == Reproduction.Male)
 		{
 			text = "lcd_icon_male";
-			text2 = "Male";
+			text2 = UWGame.Locale.Text("Male");
 		}
 		else if (reproduction == Reproduction.Female)
 		{
 			text = "lcd_icon_female";
-			text2 = "Female";
+			text2 = UWGame.Locale.Text("Female");
 		}
 		if (text != null)
 		{
@@ -385,12 +385,12 @@ public class PersonnelList : UIComponent
 		string text5 = "";
 		if (entityData.Site.HasValue)
 		{
-			text4 = "On site";
+			text4 = UWGame.Locale.Text("On site");
 			text5 = "HUD_icon_structure";
 		}
 		else
 		{
-			text4 = "Travelling";
+			text4 = UWGame.Locale.Text("Travelling");
 			text5 = "hiker_map_icon";
 		}
 		if (isRoster)
@@ -401,7 +401,7 @@ public class PersonnelList : UIComponent
 				string text6 = entity.Intelligence.Brain.GetStatus().ToUpper(Config.Culture);
 				if (string.IsNullOrEmpty(text6))
 				{
-					text6 = "Idling".ToUpper(Config.Culture);
+					text6 = UWGame.Locale.Text("Idling").ToUpper(Config.Culture);
 				}
 				label2.Text = text6;
 				label2.ToolTip = text6;
@@ -448,7 +448,7 @@ public class PersonnelList : UIComponent
 				imBiggestConcern.ResizeControlToFitImage();
 				itemRow.CenterChildVertically(imBiggestConcern);
 				StringBuilder stringBuilder = new StringBuilder();
-				Common.Append(stringBuilder, "The area causing the most unhappiness for the character: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("The area causing the most unhappiness for the character: "));
 				Statistic.AppendRatingsTypeToStringAndIcon(stringBuilder, value);
 				imBiggestConcern.ToolTip = stringBuilder.ToString();
 			}
@@ -480,7 +480,7 @@ public class PersonnelList : UIComponent
 
 	private void UpdateOtherSiteEntity(UIComponent itemRow, Entity entity, Icon imRating, Label lblRating)
 	{
-		string text = "The person's rating of our colony.";
+		string text = UWGame.Locale.Text("The person's rating of our colony.");
 		string text2 = "";
 		Color? color = null;
 		string text3 = null;
@@ -497,20 +497,20 @@ public class PersonnelList : UIComponent
 			AllegianceRatings ratingsForAllegiance = entity.Intelligence.GetRatingsForAllegiance(The.InGameUI.UIAllegiance.ID);
 			if (ratingsForAllegiance != null)
 			{
-				text = "The person's willingness to join our colony. \n";
+				text = UWGame.Locale.Text("The person's willingness to join our colony. \n");
 				text += ratingsForAllegiance.Breakdown;
 				text2 = Common.PercentageToString(ratingsForAllegiance.Desirability);
 				if (entity.Intelligence.IsReadyForEmbark(The.InGameUI.UIAllegiance))
 				{
 					text3 = "lcd_icon_thumbsUp";
 					color = GameData.Instance.GUIConstants.PositiveTint;
-					imRating.ToolTip = "The person is willing to join our colony right now.";
+					imRating.ToolTip = UWGame.Locale.Text("The person is willing to join our colony right now.");
 				}
 				else
 				{
 					text3 = "lcd_icon_thumbsDown";
 					color = GameData.Instance.GUIConstants.NegativeTint;
-					imRating.ToolTip = "The person is not willing to join our colony at this time.";
+					imRating.ToolTip = UWGame.Locale.Text("The person is not willing to join our colony at this time.");
 				}
 				lblRating.Text = text2;
 				lblRating.ToolTip = text;

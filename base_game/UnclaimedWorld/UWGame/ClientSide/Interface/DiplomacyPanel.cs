@@ -14,9 +14,9 @@ public class DiplomacyPanel : RosterPanel
 	private List<AllegianceRelation> allAllegiancesToShow = new List<AllegianceRelation>();
 
 	public DiplomacyPanel()
-		: base("CONTACTS", 600, needBottomMarginForButtons: false)
+		: base(UWGame.Locale.Text("CONTACTS"), 600, needBottomMarginForButtons: false)
 	{
-		Panel.CreateGridWithColumnHeadings(lcdSurface, 0, 36, out grid, 0, new Tuple<string, int>("NAME", 0), new Tuple<string, int>("LOCATION", 140), new Tuple<string, int>("MIGRTE FACTOR", 260), new Tuple<string, int>("COMMUNICATION", 380));
+		Panel.CreateGridWithColumnHeadings(lcdSurface, 0, 36, out grid, 0, new Tuple<string, int>(UWGame.Locale.Text("NAME"), 0), new Tuple<string, int>(UWGame.Locale.Text("LOCATION"), 140), new Tuple<string, int>(UWGame.Locale.Text("MIGRTE FACTOR"), 260), new Tuple<string, int>(UWGame.Locale.Text("COMMUNICATION"), 380));
 	}
 
 	private void Populate()
@@ -98,21 +98,21 @@ public class DiplomacyPanel : RosterPanel
 	{
 		double overallRating = relation.AllegianceB.Statistics.GetOverallRating();
 		lblMigration.Text = (thisAllegianceRating - overallRating).ToString("F2");
-		lblMigration.ToolTip = "Shows the overall migration pull factor between this allegiance and our own. If the number is positive, we could receive more migrants.";
+		lblMigration.ToolTip = UWGame.Locale.Text("Shows the overall migration pull factor between this allegiance and our own. If the number is positive, we could receive more migrants.");
 	}
 
 	public static void DisplayCommunication(ICommunicates commA, ICommunicates commB, Label lblCommunication, string inCommTooltip, string noCommTooltip, out bool inCommRange)
 	{
 		if (Communicates.IsInCommunicationRange(commA, commB, out var workingMethod))
 		{
-			lblCommunication.Text = "IN COMM RANGE";
+			lblCommunication.Text = UWGame.Locale.Text("IN COMM RANGE");
 			lblCommunication.ToolTip = string.Format(inCommTooltip, CommunicatorType.GetName(workingMethod.Value));
 			lblCommunication.NormalColor = lblCommunication.GetNormalColorForType();
 			inCommRange = true;
 		}
 		else
 		{
-			lblCommunication.Text = "NO COMM";
+			lblCommunication.Text = UWGame.Locale.Text("NO COMM");
 			lblCommunication.ToolTip = noCommTooltip;
 			lblCommunication.NormalColor = Label.LCDErrorColor;
 			inCommRange = false;
@@ -124,7 +124,7 @@ public class DiplomacyPanel : RosterPanel
 		(itemRow.FindChildById(UIComponent.DataControlID.Caption) as Label).Text = relation.AllegianceB.Name;
 		(itemRow.FindChildById(UIComponent.DataControlID.Location) as Label).Text = relation.AllegianceB.Site.Name;
 		Label lblCommunication = itemRow.FindChildById(UIComponent.DataControlID.Communication) as Label;
-		DisplayCommunication(The.InGameUI.UIAllegiance, relation.AllegianceB, lblCommunication, "The allegiance can be reached with the communication equipment ({0}) that is currently deployed", "We currently have no way to communicate with the allegiance.", out var _);
+		DisplayCommunication(The.InGameUI.UIAllegiance, relation.AllegianceB, lblCommunication, UWGame.Locale.Text("The allegiance can be reached with the communication equipment ({0}) that is currently deployed"), UWGame.Locale.Text("We currently have no way to communicate with the allegiance."), out var _);
 		Label lblMigration = itemRow.FindChildById(UIComponent.DataControlID.Immigration) as Label;
 		SetMigrationFactor(relation, lblMigration, currentAllegianceRating);
 	}

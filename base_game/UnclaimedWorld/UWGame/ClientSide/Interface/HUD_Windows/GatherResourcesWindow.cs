@@ -70,7 +70,7 @@ public class GatherResourcesWindow : HUDWindow
 		DisplayWindow.MinHeight = 200;
 		DisplayWindow.ResizableBorderSize = 6;
 		DisplayWindow.Resize += DisplayWindow_Resize;
-		AddZoneNameAndHeader("", "GATHER", "HUD_icon_gather", 12, out lblName, out lblHeader, out headerIcon);
+		AddZoneNameAndHeader("", UWGame.Locale.Text("GATHER"), "HUD_icon_gather", 12, out lblName, out lblHeader, out headerIcon);
 		CreateGridHeader();
 		outerGrid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
 		outerGrid.IsOuterGrid = true;
@@ -86,34 +86,34 @@ public class GatherResourcesWindow : HUDWindow
 		Add(outerGrid);
 		btCancel = new TextButton(gui);
 		Add(btCancel);
-		btCancel.Text = "CANCEL";
+		btCancel.Text = UWGame.Locale.Text("CANCEL");
 		btCancel.Init(TextButton.TextButtonType.HUD);
 		btCancel.Click += btCancel_Click;
 		btCancel.Width = 72;
 		btCancel.X = DisplayWindow.Width - 12 - btCancel.Width;
 		btOK = new TextButton(gui);
 		Add(btOK);
-		btOK.Text = "OK";
+		btOK.Text = UWGame.Locale.Text("OK");
 		btOK.Init(TextButton.TextButtonType.HUD);
 		btOK.Click += btOk_Click;
 		btOK.Width = 72;
 		btOK.X = btCancel.X - 2 - btOK.Width;
 		btNone = new TextButton(gui);
 		Add(btNone);
-		btNone.Text = "None";
+		btNone.Text = UWGame.Locale.Text("None");
 		btNone.Init(TextButton.TextButtonType.HUDHasState);
 		btNone.Click += btGatherNone_Click;
 		btNone.X = 127;
-		btNone.ToolTip = "Cancel all gathering";
+		btNone.ToolTip = UWGame.Locale.Text("Cancel all gathering");
 		btNone.Width = 48;
 		btNone.CheckedMode = CheckedModes.CannotBeChecked;
 		btAll = new TextButton(gui);
 		Add(btAll);
-		btAll.Text = "All";
+		btAll.Text = UWGame.Locale.Text("All");
 		btAll.Init(TextButton.TextButtonType.HUDHasState);
 		btAll.Click += btGatherAll_Click;
 		btAll.X = btNone.Right + 2;
-		btAll.ToolTip = "Gather all resources";
+		btAll.ToolTip = UWGame.Locale.Text("Gather all resources");
 		btAll.Width = 48;
 		btAll.CheckedMode = CheckedModes.CannotBeChecked;
 		SetVerticalPositions();
@@ -138,16 +138,16 @@ public class GatherResourcesWindow : HUDWindow
 		Label label = new Label(gui);
 		Add(label);
 		label.Init(Label.LabelType.HUDWindow);
-		label.Text = "Ordered / available";
+		label.Text = UWGame.Locale.Text("Ordered / available");
 		label.FitToText();
 		label.X = 175;
 		label.Y = 28;
 		Label label2 = new Label(gui);
 		Add(label2);
 		label2.Init(Label.LabelType.HUDWindow);
-		label2.Text = "Regrowth";
+		label2.Text = UWGame.Locale.Text("Regrowth");
 		label2.FitToText();
-		label2.ToolTip = "The yearly regrowth of each resource in the zone";
+		label2.ToolTip = UWGame.Locale.Text("The yearly regrowth of each resource in the zone");
 		label2.X = 290;
 		label2.Y = 28;
 	}
@@ -505,8 +505,8 @@ public class GatherResourcesWindow : HUDWindow
 				string t;
 				if (maxReached)
 				{
-					text = "max.";
-					t = "0 (at max.)";
+					text = UWGame.Locale.Text("max.");
+					t = UWGame.Locale.Text("0 (at max.)");
 				}
 				else
 				{
@@ -518,13 +518,13 @@ public class GatherResourcesWindow : HUDWindow
 				label.Text = UWGame.Mods.RegrowthMod.RegrowthLabel(currentRegrowth.Value, maxReached) ?? text;
 				label.FitToText();
 				StringBuilder stringBuilder = new StringBuilder();
-				Common.AppendHeaderOnLightBG(stringBuilder, "Regrowth rate");
-				Common.AppendFormat(stringBuilder, "Shows the expected yearly regrowth of {0} in the zone.", false, resourceType.Name);
+				Common.AppendHeaderOnLightBG(stringBuilder, UWGame.Locale.Text("Regrowth rate"));
+				Common.AppendFormat(stringBuilder, UWGame.Locale.Text("Shows the expected yearly regrowth of {0} in the zone."), false, resourceType.Name);
 				Common.AppendDividerOnOwnLine(stringBuilder);
-				Common.Append(stringBuilder, "Maximum regrowth per year: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Maximum regrowth per year: "));
 				Common.AppendFormat(stringBuilder, "{0:N1}", true, maxRegrowth.Value);
 				Common.AppendLine(stringBuilder);
-				Common.Append(stringBuilder, "Current regrowth per year: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Current regrowth per year: "));
 				Common.Append(stringBuilder, t, tintAsValue: true);
 				string regrowthNote = UWGame.Mods.RegrowthMod.RegrowthToolTipNote(resourceType);
 				if (regrowthNote != null)
@@ -644,7 +644,7 @@ public class GatherResourcesWindow : HUDWindow
 			imageButton.Init(ImageButtonType.HUDPadlock);
 			imageButton.Position = new Point(num - 13, 0);
 			imageButton.Click += btPadlock_Click;
-			imageButton.ToolTip = "Switch to standing order mode.";
+			imageButton.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 			imageButton.ID = UIComponent.DataControlID.StandingOrderModePadlock;
 			uIComponent.CenterChildVertically(imageButton);
 		}
@@ -692,11 +692,11 @@ public class GatherResourcesWindow : HUDWindow
 			ImageButton imageButton = sender as ImageButton;
 			if (imageButton.IsChecked)
 			{
-				imageButton.ToolTip = "Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.";
+				imageButton.ToolTip = UWGame.Locale.Text("Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.");
 			}
 			else
 			{
-				imageButton.ToolTip = "Switch to standing order mode.";
+				imageButton.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 			}
 			UIComponent parent = sender.Parent;
 			ResourceType resourceType = (ResourceType)parent.Tag1;

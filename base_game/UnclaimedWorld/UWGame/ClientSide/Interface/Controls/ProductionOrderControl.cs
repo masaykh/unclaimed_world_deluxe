@@ -21,10 +21,10 @@ public class ProductionOrderControl : UIComponent
 		LCD
 	}
 
-	public const string btPadlockTooltip = "Switch to standing order mode.";
+	public static string btPadlockTooltip => UWGame.Locale.Text("Switch to standing order mode.");
 
-	public const string btPadlockEnabledTooltip = "Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.";
-	public const string orderSpamWarning = "Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.";
+	public static string btPadlockEnabledTooltip => UWGame.Locale.Text("Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.");
+	public static string orderSpamWarning => UWGame.Locale.Text("Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.");
 
 	private EntityType entityType;
 
@@ -102,15 +102,15 @@ public class ProductionOrderControl : UIComponent
 			fillableBar.Width = (UWGame.Mods.ReserveMod.Enabled ? 110 : 130);
 			fillableBar.X = productionColumnX;
 			fillableBar.Y = 5;
-			fillableBar.SliderTooltip = "Drag slider to specify amount to produce.";
-			fillableBar.ButtonTooltip = "Click or hold the mouse button to change the amount to produce.";
+			fillableBar.SliderTooltip = UWGame.Locale.Text("Drag slider to specify amount to produce.");
+			fillableBar.ButtonTooltip = UWGame.Locale.Text("Click or hold the mouse button to change the amount to produce.");
 			fillableBar.EventArgs = eventArgs;
 			fillableBar.SliderMouseDown += fillableBar_SliderMouseDown;
 			fillableBar.SliderMouseUp += fillableBar_SliderMouseUp;
 			fillableBar.ShowNotches = true;
 			icWarning = new Icon(guiManager);
 			Add(icWarning);
-			icWarning.ToolTip = "Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.";
+			icWarning.ToolTip = UWGame.Locale.Text("Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.");
 			icWarning.SetSkinLocation(SkinState.Normal, guiManager.GUISpriteSheet.GetSourceRectangle("HUD_icon_status_exclamation"), Color.Red, Color.Red);
 			icWarning.ResizeControlToFitImage();
 			icWarning.X = fillableBar.Right - 7;
@@ -127,7 +127,7 @@ public class ProductionOrderControl : UIComponent
 				btReserve.Width = 14;
 				btReserve.NormalColor = NoReserveTint;
 				btReserve.X = fillableBar.Right + 5;
-				btReserve.ToolTip = "Reserve: click, then use the slider to set an amount colonists will not eat and workshops will not use.";
+				btReserve.ToolTip = UWGame.Locale.Text("Reserve: click, then use the slider to set an amount colonists will not eat and workshops will not use.");
 				btReserve.Click += btReserve_Click;
 				CenterChildVertically(btReserve);
 			}
@@ -149,7 +149,7 @@ public class ProductionOrderControl : UIComponent
 			btBuild.Position = new Point(productionColumnX + 10, 0);
 			btBuild.EventArgs = eventArgs;
 			btBuild.Click += build_Click;
-			btBuild.ToolTip = "Build: Click the button, then place the structure on the terrain";
+			btBuild.ToolTip = UWGame.Locale.Text("Build: Click the button, then place the structure on the terrain");
 			btBuild.DebugTag = "Build Debug";
 			CenterChildVertically(btBuild);
 			lblMaxOrder = new Label(guiManager);
@@ -164,7 +164,7 @@ public class ProductionOrderControl : UIComponent
 			}
 			lblMaxOrder.X = btBuild.Right + 16;
 			CenterChildVertically(lblMaxOrder);
-			lblMaxOrder.ToolTip = "Maximum number of structures we can build";
+			lblMaxOrder.ToolTip = UWGame.Locale.Text("Maximum number of structures we can build");
 		}
 		if (GameData.Instance.GUIConstants.EnableStandingOrders)
 		{
@@ -175,7 +175,7 @@ public class ProductionOrderControl : UIComponent
 			btStandingOrder.EventArgs = eventArgs;
 			btStandingOrder.Click += btPadlock_Click.Invoke;
 			btStandingOrder.Visible = true;
-			btStandingOrder.ToolTip = "Switch to standing order mode.";
+			btStandingOrder.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 			CenterChildVertically(btStandingOrder);
 			btStandingOrder.X = productionColumnX - 16;
 		}
@@ -216,12 +216,12 @@ public class ProductionOrderControl : UIComponent
 		if (hasOrder)
 		{
 			btStandingOrder.IsChecked = true;
-			btStandingOrder.ToolTip = "Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.";
+			btStandingOrder.ToolTip = UWGame.Locale.Text("Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.");
 		}
 		else
 		{
 			btStandingOrder.IsChecked = false;
-			btStandingOrder.ToolTip = "Switch to standing order mode.";
+			btStandingOrder.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 		}
 	}
 
@@ -234,13 +234,13 @@ public class ProductionOrderControl : UIComponent
 			ImageButton imageButton = sender as ImageButton;
 			if (imageButton.IsChecked)
 			{
-				imageButton.ToolTip = "Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.";
+				imageButton.ToolTip = UWGame.Locale.Text("Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. \nClick to switch back to direct order mode.");
 				SetStandingOrder command = new SetStandingOrder(expedition.ID, e2.Item.KeyName, 0, giveClientFeedback: true);
 				The.Client.Controller.StoreAndExecuteCommand(command);
 			}
 			else
 			{
-				imageButton.ToolTip = "Switch to standing order mode.";
+				imageButton.ToolTip = UWGame.Locale.Text("Switch to standing order mode.");
 				SetProduction command2 = new SetProduction(expedition.ID, e2.Item.KeyName, 0, giveClientFeedback: true);
 				The.Client.Controller.StoreAndExecuteCommand(command2);
 			}
@@ -355,8 +355,8 @@ public class ProductionOrderControl : UIComponent
 	{
 		int reserve = UWGame.Mods.ReserveMod.Reserved(owner, entityType);
 		btReserve.NormalColor = ((reserve > 0 || btReserve.IsChecked) ? ReserveTint : NoReserveTint);
-		string text = ((reserve > 0) ? ("Reserved: " + reserve + ". Colonists will not eat these and workshops will not use them, unless someone is starving. ") : "No reserve. ");
-		btReserve.ToolTip = text + (btReserve.IsChecked ? "The slider sets the reserve. Click the button again to go back to ordering." : "Click, then use the slider to set the reserve.");
+		string text = ((reserve > 0) ? (UWGame.Locale.Text("Reserved: ") + reserve + UWGame.Locale.Text(". Colonists will not eat these and workshops will not use them, unless someone is starving. ")) : UWGame.Locale.Text("No reserve. "));
+		btReserve.ToolTip = text + (btReserve.IsChecked ? UWGame.Locale.Text("The slider sets the reserve. Click the button again to go back to ordering.") : UWGame.Locale.Text("Click, then use the slider to set the reserve."));
 	}
 
 	/// <summary>Redraws the row as soon as the reserve button is pressed, paused or not.</summary>
@@ -459,7 +459,7 @@ public class ProductionOrderControl : UIComponent
 		{
 			btBuild.Visible = true;
 		}
-		btBuild.ToolTip = beforeMaterials ? "Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made" : "Build: Click the button, then place the structure on the terrain";
+		btBuild.ToolTip = beforeMaterials ? UWGame.Locale.Text("Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made") : UWGame.Locale.Text("Build: Click the button, then place the structure on the terrain");
 		if (!btBuild.Visible)
 		{
 			UpdateAttainable(attainableInfo, hzAttainable, hzNotAttainable, hasTools, hasInputs, hasSkills, hasResources, canProduceNow, process);
@@ -523,7 +523,7 @@ public class ProductionOrderControl : UIComponent
 		if (producableProcess.IsSalvageProcess)
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.Salvage, list, "lcd_icon_recycleArrows", attainableColor);
-			text = "Attainable from salvaging items or structures";
+			text = UWGame.Locale.Text("Attainable from salvaging items or structures");
 			uIComponent.ToolTip = text;
 			list.TryRemoveEntry(IconKeys.NoProcess);
 			list.TryRemoveEntry(IconKeys.NoSkill);
@@ -550,7 +550,7 @@ public class ProductionOrderControl : UIComponent
 		if (!hasInputs)
 		{
 			UIComponent uIComponent2 = AddOrGetIcon(IconKeys.NoInput, list, "lcd_icon_stockpile", attainableColor);
-			text = "Attainable, but inputs are needed. Examine the tooltip to determine what is missing.";
+			text = UWGame.Locale.Text("Attainable, but inputs are needed. Examine the tooltip to determine what is missing.");
 			uIComponent2.ToolTip = text;
 		}
 		else
@@ -560,7 +560,7 @@ public class ProductionOrderControl : UIComponent
 		if (!hasTools)
 		{
 			UIComponent uIComponent3 = AddOrGetIcon(IconKeys.NoTool, list, "lcd_icon_tool", attainableColor);
-			text = "Attainable, but some tools are needed. Examine the tooltip to determine what is missing.";
+			text = UWGame.Locale.Text("Attainable, but some tools are needed. Examine the tooltip to determine what is missing.");
 			uIComponent3.ToolTip = text;
 		}
 		else
@@ -607,7 +607,7 @@ public class ProductionOrderControl : UIComponent
 		if (noOfProcesses > 1)
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.MultipleProcesses, list, "lcd_icon_asterisk", unattainableColor);
-			uIComponent.ToolTip = "There is more than one way of producing this item, but none of them are attainable.";
+			uIComponent.ToolTip = UWGame.Locale.Text("There is more than one way of producing this item, but none of them are attainable.");
 			list.TryRemoveEntry(IconKeys.NoProcess);
 			list.TryRemoveEntry(IconKeys.NoSkill);
 			list.TryRemoveEntry(IconKeys.NoResource);
@@ -620,7 +620,7 @@ public class ProductionOrderControl : UIComponent
 		if (info == null)
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.NoProcess, list, "lcd_icon_noEntry", unattainableColor);
-			text = ((!The.InGameUI.InventorySettings.IncludeSalvageProcesses) ? "Not attainable. We have no way of producing this (HOWEVER: There may/may not be salvage options available!)" : "Not attainable. We have no way of producing this.");
+			text = ((!The.InGameUI.InventorySettings.IncludeSalvageProcesses) ? UWGame.Locale.Text("Not attainable. We have no way of producing this (HOWEVER: There may/may not be salvage options available!)") : UWGame.Locale.Text("Not attainable. We have no way of producing this."));
 			uIComponent.ToolTip = text;
 			list.TryRemoveEntry(IconKeys.NoSkill);
 			list.TryRemoveEntry(IconKeys.NoResource);
@@ -634,7 +634,7 @@ public class ProductionOrderControl : UIComponent
 		{
 			string sprite = "lcd_icon_person";
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.NoSkill, list, sprite, unattainableColor);
-			text = "Not attainable. No one has the needed skill: " + info.UnavailableSkill.Name;
+			text = UWGame.Locale.Text("Not attainable. No one has the needed skill: ") + info.UnavailableSkill.Name;
 			uIComponent.ToolTip = text;
 		}
 		else
@@ -644,7 +644,7 @@ public class ProductionOrderControl : UIComponent
 		if (info.UnavailableResource != null)
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.NoResource, list, "lcd_icon_gather", unattainableColor);
-			text = "Not attainable. The following resource is needed, but has not been discovered (exploration may help): " + info.UnavailableResource.Name;
+			text = UWGame.Locale.Text("Not attainable. The following resource is needed, but has not been discovered (exploration may help): ") + info.UnavailableResource.Name;
 			uIComponent.ToolTip = text;
 		}
 		else
@@ -654,7 +654,7 @@ public class ProductionOrderControl : UIComponent
 		if (info.UnavailablePolicy != null)
 		{
 			UIComponent uIComponent = AddOrGetIcon(info.UnavailablePolicy, list, unattainableColor);
-			text = "Not attainable. " + info.UnavailablePolicy.GetNotAvailableTooltip();
+			text = UWGame.Locale.Text("Not attainable. ") + info.UnavailablePolicy.GetNotAvailableTooltip();
 			uIComponent.ToolTip = text;
 		}
 		else
@@ -664,7 +664,7 @@ public class ProductionOrderControl : UIComponent
 		if (info.UnavailableSpecialSite != null)
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.NoSpecialEntity, list, "lcd_icon_star", unattainableColor);
-			text = "Not attainable. The following special site is needed, but has not been discovered (exploration may help): " + info.UnavailableSpecialSite.Name;
+			text = UWGame.Locale.Text("Not attainable. The following special site is needed, but has not been discovered (exploration may help): ") + info.UnavailableSpecialSite.Name;
 			uIComponent.ToolTip = text;
 		}
 		else
@@ -674,7 +674,7 @@ public class ProductionOrderControl : UIComponent
 		if (info.UnavailableInputs != null)
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.NoInput, list, "lcd_icon_stockpile", unattainableColor);
-			text = "Not attainable. The following inputs (materials/ingredients) are needed, but are also not attainable: \n";
+			text = UWGame.Locale.Text("Not attainable. The following inputs (materials/ingredients) are needed, but are also not attainable: \n");
 			text2 = "";
 			foreach (EntityType unavailableInput in info.UnavailableInputs)
 			{
@@ -691,7 +691,7 @@ public class ProductionOrderControl : UIComponent
 		{
 			UIComponent uIComponent = AddOrGetIcon(IconKeys.NoTool, list, "lcd_icon_tool", unattainableColor);
 			int num = 0;
-			text = "Not attainable. One of these tools is needed, but they are not attainable either: \n";
+			text = UWGame.Locale.Text("Not attainable. One of these tools is needed, but they are not attainable either: \n");
 			string text3 = "";
 			foreach (EntityType unavailableTool in info.UnavailableTools)
 			{
@@ -803,7 +803,7 @@ public class ProductionOrderControl : UIComponent
 		bool flag = false;
 		fillableBar.StepSize = 1;
 		fillableBar.MaxSliderValueSymbol = "...";
-		fillableBar.MaxSliderValueTooltip = "No limit";
+		fillableBar.MaxSliderValueTooltip = UWGame.Locale.Text("No limit");
 		fillableBar.ShowMaxValueLabelAtEnd = false;
 		if (fillableBar.MaxValue != GameData.Instance.GUIConstants.UnlimitedStandingOrderValue)
 		{
@@ -912,10 +912,10 @@ public class ProductionOrderControl : UIComponent
 				EntityType key = processType.InputsByType.First().Key;
 				if (allAvailableItems.TryGetValue(key, out var value) && value.NoOfAvailableItems > 0)
 				{
-					text2 = ", for example: " + key.Name + ".";
+					text2 = UWGame.Locale.Text(", for example: ") + key.Name + ".";
 				}
 			}
-			text = "Attainable from salvaging items or structures" + text2;
+			text = UWGame.Locale.Text("Attainable from salvaging items or structures") + text2;
 			uIComponent.ToolTip = text;
 		}
 		else
@@ -925,7 +925,7 @@ public class ProductionOrderControl : UIComponent
 		if (processType.IsGathering)
 		{
 			UIComponent uIComponent2 = AddOrGetIcon(IconKeys.NoResource, hzAttainable, "lcd_icon_gather", lCDNormal);
-			text = "Attainable, but needs to be harvested from a resource with the GATHER action. Examine the tooltip to see the resource.";
+			text = UWGame.Locale.Text("Attainable, but needs to be harvested from a resource with the GATHER action. Examine the tooltip to see the resource.");
 			uIComponent2.ToolTip = text;
 		}
 		else
@@ -935,7 +935,7 @@ public class ProductionOrderControl : UIComponent
 		if (processType.IsUpgrade)
 		{
 			UIComponent uIComponent3 = AddOrGetIcon(IconKeys.Upgrade, hzAttainable, "lcd_icon_uparrow", lCDNormal);
-			text = "This is an upgrade and it is constructed with the UPGRADE action. Examine the tooltip to see the objects that can be upgraded.";
+			text = UWGame.Locale.Text("This is an upgrade and it is constructed with the UPGRADE action. Examine the tooltip to see the objects that can be upgraded.");
 			uIComponent3.ToolTip = text;
 		}
 		else
@@ -945,7 +945,7 @@ public class ProductionOrderControl : UIComponent
 		if (processType.IsPseudoProcess)
 		{
 			UIComponent uIComponent4 = AddOrGetIcon(IconKeys.Pseudo, hzAttainable, "lcd_icon_pseudo", lCDNormal);
-			text = "This is a pseudo process. Each pseudo process yields its product in a special way. Examine the tooltip to find out how to produce the item";
+			text = UWGame.Locale.Text("This is a pseudo process. Each pseudo process yields its product in a special way. Examine the tooltip to find out how to produce the item");
 			uIComponent4.ToolTip = text;
 		}
 		else
@@ -955,7 +955,7 @@ public class ProductionOrderControl : UIComponent
 		if (processType.IsSpecialActionType)
 		{
 			UIComponent uIComponent5 = AddOrGetIcon(IconKeys.NoSpecialEntity, hzAttainable, "lcd_icon_special", lCDNormal);
-			text = $"{processType.ActingOnType.Name} must first be selected, then the item can be built from the action menu";
+			text = string.Format(UWGame.Locale.Text("{0} must first be selected, then the item can be built from the action menu"), processType.ActingOnType.Name);
 			uIComponent5.ToolTip = text;
 		}
 		else

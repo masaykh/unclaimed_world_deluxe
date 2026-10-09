@@ -150,7 +150,7 @@ internal static class Program
 		string codecProblem = PlatformWindow.CheckMediaCodecsAvailable();
 		if (codecProblem != null)
 		{
-			PlatformWindow.ShowErrorDialog(IntPtr.Zero, codecProblem, "Missing Windows Media Player");
+			PlatformWindow.ShowErrorDialog(IntPtr.Zero, codecProblem, UWGame.Locale.Text("Missing Windows Media Player"));
 			return;
 		}
 
@@ -166,7 +166,7 @@ internal static class Program
 		string effectProblem = EffectVersionCheck.Check();
 		if (effectProblem != null)
 		{
-			PlatformWindow.ShowErrorDialog(IntPtr.Zero, effectProblem, "Shaders not set up");
+			PlatformWindow.ShowErrorDialog(IntPtr.Zero, effectProblem, UWGame.Locale.Text("Shaders not set up"));
 			return;
 		}
 		using UnclaimedWorld unclaimedWorld = new UnclaimedWorld();

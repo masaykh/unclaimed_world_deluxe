@@ -63,7 +63,7 @@ public class LoadingScreenInterface : CommonInterface
 		if (text != null)
 		{
 			dialog = new EventDialog(this);
-			dialog.ShowImageAndText(imageName, heading, text, showOkButton: true, "OK", null, null, showCancelButton: false, "CANCEL", null, null, EventDialog.Mode.OtherDialog);
+			dialog.ShowImageAndText(imageName, heading, text, showOkButton: true, UWGame.Locale.Text("OK"), null, null, showCancelButton: false, UWGame.Locale.Text("CANCEL"), null, null, EventDialog.Mode.OtherDialog);
 			dialog.ShowInScreenSpace(200, 200);
 			dialog.Window.CenterWindow();
 			dialog.Window.Close += Form_Close;
@@ -84,7 +84,7 @@ public class LoadingScreenInterface : CommonInterface
 	{
 		if (dialog != null)
 		{
-			dialog.SetButtonText(0, "CONTINUE");
+			dialog.SetButtonText(0, UWGame.Locale.Text("CONTINUE"));
 		}
 	}
 }

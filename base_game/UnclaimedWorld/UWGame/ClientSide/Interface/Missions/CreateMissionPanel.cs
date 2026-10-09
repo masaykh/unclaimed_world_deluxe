@@ -131,7 +131,7 @@ public class CreateMissionPanel : RosterPanel
 	}
 
 	public CreateMissionPanel()
-		: base("CREATE NEW RUN", 620, needBottomMarginForButtons: true)
+		: base(UWGame.Locale.Text("CREATE NEW RUN"), 620, needBottomMarginForButtons: true)
 	{
 		AddSelectionPanel();
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: true, 184);
@@ -146,8 +146,8 @@ public class CreateMissionPanel : RosterPanel
 		ActionPicker.InvalidLocation += ActionPicker_InvalidLocation;
 		lcdSurface.Add(ActionPicker);
 		HideActionPicker();
-		AddLowerButton("START RUN", "Click to start this run", Align.Left).Click += btStartRun_Click;
-		AddLowerButton("CANCEL RUN", "Click to cancel this run", Align.Right).Click += btCancelRun_Click;
+		AddLowerButton(UWGame.Locale.Text("START RUN"), UWGame.Locale.Text("Click to start this run"), Align.Left).Click += btStartRun_Click;
+		AddLowerButton(UWGame.Locale.Text("CANCEL RUN"), UWGame.Locale.Text("Click to cancel this run"), Align.Right).Click += btCancelRun_Click;
 	}
 
 	private void ActionPicker_InvalidLocation()
@@ -182,53 +182,53 @@ public class CreateMissionPanel : RosterPanel
 		{
 			EntityGroup entityGroup = LookUp<EntityGroup, EntityGroupID>.FindByID(The.InGameUI.UIOwner.Value);
 			lblTotalCargoBulk.Text = Entity.GetBulkAsString(missionTemplate.ComputeTotalCargoBulk());
-			lblTotalCargoBulk.ToolTip = "Amount of cargo bulk packed into the vehicle.";
+			lblTotalCargoBulk.ToolTip = UWGame.Locale.Text("Amount of cargo bulk packed into the vehicle.");
 			lblAvailableCargoBulk.Text = "/ " + Entity.GetBulkAsString(missionTemplate.GetTotalCargoCapacity());
 			lblAvailableCargoBulk.X = lblTotalCargoBulk.Right;
-			lblAvailableCargoBulk.ToolTip = "Total amount of cargo bulk that the vehicle can transport.";
+			lblAvailableCargoBulk.ToolTip = UWGame.Locale.Text("Total amount of cargo bulk that the vehicle can transport.");
 			lblTotalMissionCost.Visible = true;
 			decimal num = missionTemplate.ComputeTotalCost(out var transportCost, out var boughtItemsCost, out var soldItemsCost);
 			lblTotalMissionCost.Text = Common.GetPriceAsString(num);
 			ColorLabelByValue(lblTotalMissionCost, num);
 			StringBuilder stringBuilder = new StringBuilder();
-			Common.AppendLine(stringBuilder, "The total cost of the mission.");
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("The total cost of the mission."));
 			Common.AppendDivider(stringBuilder);
-			Common.Append(stringBuilder, "Transport cost: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Transport cost: "));
 			Common.Append(stringBuilder, Common.GetPriceAsString(transportCost, useColoring: true, Common.ValueTint.Negative));
 			Common.AppendLine(stringBuilder);
 			if (!Common.IsZero(boughtItemsCost))
 			{
-				Common.Append(stringBuilder, "Cost of bought items: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Cost of bought items: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(boughtItemsCost, useColoring: true, Common.ValueTint.Negative));
 				Common.AppendLine(stringBuilder);
 			}
 			if (!Common.IsZero(soldItemsCost))
 			{
-				Common.Append(stringBuilder, "Price of sold items: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Price of sold items: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(soldItemsCost, useColoring: true, Common.ValueTint.Positive));
 				Common.AppendLine(stringBuilder);
 			}
 			Common.AppendLine(stringBuilder);
 			if (Common.IsGreaterThan(num, 0m))
 			{
-				Common.Append(stringBuilder, "Total cost: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Total cost: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(num, useColoring: true, Common.ValueTint.Negative));
 			}
 			else
 			{
-				Common.Append(stringBuilder, "Total earned: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Total earned: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(num, useColoring: true, Common.ValueTint.Positive));
 			}
 			lblTotalMissionCost.ToolTip = stringBuilder.ToString();
 			lblTotalTradingCredits.Text = " / " + Common.MoneyAsString(entityGroup.Parent.TradeCredits.Value, abbreviate: true);
-			lblTotalTradingCredits.ToolTip = "Total amount of available Credits.";
+			lblTotalTradingCredits.ToolTip = UWGame.Locale.Text("Total amount of available Credits.");
 			lblTotalTradingCredits.X = lblTotalMissionCost.Right;
 			if (missionTemplate.StartMissionStopTemplate != null && missionTemplate.StartMissionStopTemplate.TravelAction != null && missionTemplate.TransportationType != null)
 			{
 				missionTemplate.GetTotalDistance();
 				num = missionTemplate.ComputeTransportationCost(out var _, out var _, out var costPerKilometer);
-				lblCost.Text = Common.GetPriceAsString(costPerKilometer) + "/ KM";
-				lblCost.ToolTip = "The cost of transportation / km";
+				lblCost.Text = Common.GetPriceAsString(costPerKilometer) + UWGame.Locale.Text("/ KM");
+				lblCost.ToolTip = UWGame.Locale.Text("The cost of transportation / km");
 			}
 		}
 	}
@@ -328,17 +328,17 @@ public class CreateMissionPanel : RosterPanel
 			Dictionary<EntityType, List<Entity>> vehicles = null;
 			if (!GetVehiclesToAssign(expedition, ref vehicles))
 			{
-				ShowError("No vehicle available.", null, FieldError.Transport);
+				ShowError(UWGame.Locale.Text("No vehicle available."), null, FieldError.Transport);
 				return;
 			}
 			if (VehiclesAreHired(expedition) && !CanCommunicateWithExpedition(expedition))
 			{
-				ShowError("No communication with Start allegiance.", "To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option.", FieldError.Start);
+				ShowError(UWGame.Locale.Text("No communication with Start allegiance."), UWGame.Locale.Text("To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option."), FieldError.Start);
 				return;
 			}
 			if (!CanCommunicateWithExpedition(LookUp<Expedition, ExpeditionID>.FindByID((ExpeditionID)destination.Value.ExpeditionID.Value)))
 			{
-				ShowError("No communication with Destination allegiance.", "To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option.", FieldError.Destination);
+				ShowError(UWGame.Locale.Text("No communication with Destination allegiance."), UWGame.Locale.Text("To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option."), FieldError.Destination);
 				return;
 			}
 			Command command = new CreateMissionTemplate(missionTemplate);
@@ -390,7 +390,7 @@ public class CreateMissionPanel : RosterPanel
 
 	private void HandleDestroyedMissionStop()
 	{
-		The.InGameUI.MessageBox.ShowMessage("One of the travel locations no longer exists. It is not possible to continue editing the mission.");
+		The.InGameUI.MessageBox.ShowMessage(UWGame.Locale.Text("One of the travel locations no longer exists. It is not possible to continue editing the mission."));
 		The.InGameUI.MessageBox.OKClick += MessageBoxDestroyedMission_OKClick;
 	}
 
@@ -898,14 +898,14 @@ public class CreateMissionPanel : RosterPanel
 		Label label = new Label(Interface.gui);
 		selectionPanel.AddContent(label);
 		label.Init(Label.LabelType.LCDHeadingSteelGrey);
-		label.Text = "START:";
+		label.Text = UWGame.Locale.Text("START:");
 		label.Width = width;
 		ImageButton imageButton = new ImageButton(Interface.gui);
 		imageButton.InitWithIcon(ImageButtonType.LCD, "globe_icon", hasCheckedState: false);
 		selectionPanel.AddContent(imageButton);
 		imageButton.Width = 35;
 		imageButton.Height = 44;
-		imageButton.ToolTip = "Select the starting point for the mission";
+		imageButton.ToolTip = UWGame.Locale.Text("Select the starting point for the mission");
 		imageButton.X = controlXPos;
 		label.AlignVertically(imageButton);
 		imageButton.Click += btStart_Click;
@@ -913,7 +913,7 @@ public class CreateMissionPanel : RosterPanel
 		label = new Label(Interface.gui);
 		selectionPanel.AddContent(label);
 		label.Init(Label.LabelType.LCDHeadingSteelGrey);
-		label.Text = "DESTINATION:";
+		label.Text = UWGame.Locale.Text("DESTINATION:");
 		label.Y = imageButton.Bottom + 6;
 		label.Width = width;
 		ImageButton imageButton2 = new ImageButton(Interface.gui);
@@ -921,7 +921,7 @@ public class CreateMissionPanel : RosterPanel
 		selectionPanel.AddContent(imageButton2);
 		imageButton2.Width = 35;
 		imageButton2.Height = 44;
-		imageButton2.ToolTip = "Select the destination point for the mission";
+		imageButton2.ToolTip = UWGame.Locale.Text("Select the destination point for the mission");
 		imageButton2.X = controlXPos;
 		label.AlignVertically(imageButton2);
 		imageButton2.Click += btDestination_Click;
@@ -929,7 +929,7 @@ public class CreateMissionPanel : RosterPanel
 		label = new Label(Interface.gui);
 		selectionPanel.AddContent(label);
 		label.Init(Label.LabelType.LCDHeadingSteelGrey);
-		label.Text = "TRANSPORT:";
+		label.Text = UWGame.Locale.Text("TRANSPORT:");
 		label.Y = imageButton2.Bottom + 12;
 		label.Width = width;
 		cbTransportation = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
@@ -942,7 +942,7 @@ public class CreateMissionPanel : RosterPanel
 		tbTransportMore = new TextButton(Interface.gui);
 		tbTransportMore.Init(TextButton.TextButtonType.LCD);
 		selectionPanel.AddContent(tbTransportMore);
-		tbTransportMore.Text = "MORE";
+		tbTransportMore.Text = UWGame.Locale.Text("MORE");
 		tbTransportMore.Width = 70;
 		tbTransportMore.X = cbTransportation.Right + 2;
 		label.AlignVertically(tbTransportMore);
@@ -970,7 +970,7 @@ public class CreateMissionPanel : RosterPanel
 		lblSupplyNeedsHeader = new Label(Interface.gui);
 		lblSupplyNeedsHeader.Init(Label.LabelType.LCDHeadingSteelGrey);
 		selectionPanel.AddContent(lblSupplyNeedsHeader);
-		lblSupplyNeedsHeader.Text = "SUPPLY NEEDS";
+		lblSupplyNeedsHeader.Text = UWGame.Locale.Text("SUPPLY NEEDS");
 		lblSupplyNeedsHeader.Width = labelWidth;
 		lblSupplyNeedsHeader.X = 160;
 		lblSupplyNeedsHeader.Y = cbTransportation.Bottom + 6;
@@ -987,7 +987,7 @@ public class CreateMissionPanel : RosterPanel
 		lblCostHeader.Width = labelWidth;
 		lblCostHeader.X = lblSupplyNeedsHeader.Right + 14;
 		lblCostHeader.Y = cbTransportation.Bottom + 6;
-		lblCostHeader.Text = "COST / KM";
+		lblCostHeader.Text = UWGame.Locale.Text("COST / KM");
 		lblCost = new Label(Interface.gui);
 		lblCost.Init(Label.LabelType.LCDNormal);
 		selectionPanel.AddContent(lblCost);
@@ -1026,8 +1026,8 @@ public class CreateMissionPanel : RosterPanel
 		label2.Init(Label.LabelType.LCDSmallHeadingBanner);
 		label2.Y = num;
 		label2.X = 370;
-		label2.Text = "TOTAL CARGO:";
-		label2.ToolTip = "Total bulk of the cargo";
+		label2.Text = UWGame.Locale.Text("TOTAL CARGO:");
+		label2.ToolTip = UWGame.Locale.Text("Total bulk of the cargo");
 		lblTotalCargoBulk = new Label(Window.guiManager);
 		lcdSurface.Add(lblTotalCargoBulk);
 		lblTotalCargoBulk.Init(Label.LabelType.LCDNormal);
@@ -1043,8 +1043,8 @@ public class CreateMissionPanel : RosterPanel
 		label3.Init(Label.LabelType.LCDSmallHeadingBanner);
 		label3.Y = imageButton.Bottom + 6;
 		label3.X = 370;
-		label3.Text = "TOTAL COST:";
-		label3.ToolTip = "Total expenses (in trade credits) for starting this run. A negative number here means we will earn credits.";
+		label3.Text = UWGame.Locale.Text("TOTAL COST:");
+		label3.ToolTip = UWGame.Locale.Text("Total expenses (in trade credits) for starting this run. A negative number here means we will earn credits.");
 		lblTotalMissionCost = new Label(Window.guiManager);
 		lcdSurface.Add(lblTotalMissionCost);
 		lblTotalMissionCost.Init(Label.LabelType.LCDNormal);
@@ -1073,7 +1073,7 @@ public class CreateMissionPanel : RosterPanel
 		Image image = new Image(Window.guiManager);
 		image.SetSkinLocation(SkinState.Normal, Window.guiManager.GUISpriteSheet.GetSourceRectangle("HUD_icon_structure"), Color.Green, Color.Green);
 		image.ResizeControlToFitImage();
-		image.ToolTip = "This is where we are";
+		image.ToolTip = UWGame.Locale.Text("This is where we are");
 		image.Visible = false;
 		lcdSurface.Add(image);
 		return image;
@@ -1094,7 +1094,7 @@ public class CreateMissionPanel : RosterPanel
 		}
 		else
 		{
-			ShowError("Select a starting point first.", null, FieldError.Start);
+			ShowError(UWGame.Locale.Text("Select a starting point first."), null, FieldError.Start);
 		}
 	}
 
@@ -1103,13 +1103,13 @@ public class CreateMissionPanel : RosterPanel
 		if (transportIsExpanded)
 		{
 			transportIsExpanded = false;
-			tbTransportMore.Text = "MORE";
+			tbTransportMore.Text = UWGame.Locale.Text("MORE");
 			selectionPanel.ContentHeight = 115;
 		}
 		else
 		{
 			transportIsExpanded = true;
-			tbTransportMore.Text = "LESS";
+			tbTransportMore.Text = UWGame.Locale.Text("LESS");
 			selectionPanel.ContentHeight = 162;
 		}
 		UpdateMissionStopGridYPosAndHeight();
@@ -1232,7 +1232,7 @@ public class CreateMissionPanel : RosterPanel
 		textButton.Init(TextButton.TextButtonType.LCD);
 		uIComponent.Add(textButton);
 		textButton.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
-		textButton.Text = "SHOW";
+		textButton.Text = UWGame.Locale.Text("SHOW");
 		textButton.Width = 70;
 		textButton.X = 99;
 		textButton.Y = 2;
@@ -1260,7 +1260,7 @@ public class CreateMissionPanel : RosterPanel
 		Label label = new Label(Interface.gui);
 		uIComponent.Add(label);
 		label.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label.Text = "DISTANCE:";
+		label.Text = UWGame.Locale.Text("DISTANCE:");
 		label.X = x;
 		label.Y = 8;
 		label.Width = width;
@@ -1277,7 +1277,7 @@ public class CreateMissionPanel : RosterPanel
 		Label label3 = new Label(Interface.gui);
 		uIComponent.Add(label3);
 		label3.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label3.Text = "CAPACITY:";
+		label3.Text = UWGame.Locale.Text("CAPACITY:");
 		label3.X = label.Right + 5;
 		label3.Y = 8;
 		label3.Width = width;
@@ -1294,7 +1294,7 @@ public class CreateMissionPanel : RosterPanel
 		Label label5 = new Label(Interface.gui);
 		uIComponent.Add(label5);
 		label5.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label5.Text = "TRAVEL TIME:";
+		label5.Text = UWGame.Locale.Text("TRAVEL TIME:");
 		label5.X = x;
 		label5.Y = y;
 		label5.Width = width;
@@ -1311,7 +1311,7 @@ public class CreateMissionPanel : RosterPanel
 		Label label7 = new Label(Interface.gui);
 		uIComponent.Add(label7);
 		label7.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label7.Text = "FUEL CONSUMPTION:";
+		label7.Text = UWGame.Locale.Text("FUEL CONSUMPTION:");
 		label7.X = label.Right + 5;
 		label7.Y = y;
 		label7.Width = width;
@@ -1339,7 +1339,7 @@ public class CreateMissionPanel : RosterPanel
 		}
 		else
 		{
-			textButton.Text = "SHOW";
+			textButton.Text = UWGame.Locale.Text("SHOW");
 			item.Height = 30;
 		}
 		UpdateTravelActionRow(item, (TravelActionTemplate)sender.Tag1);
@@ -1392,19 +1392,19 @@ public class CreateMissionPanel : RosterPanel
 				PassengerListTemplate passengerListTemplate = missionTemplate.GetPassengerListTemplate();
 				if (passengerListTemplate == null)
 				{
-					label4.Text = Entity.GetBulkAsString(missionTemplate.ComputeTotalCargoBulk()) + " BULK";
+					label4.Text = Entity.GetBulkAsString(missionTemplate.ComputeTotalCargoBulk()) + " " + UWGame.Locale.Text("BULK");
 				}
 				else
 				{
-					label4.Text = passengerListTemplate.Passengers.Count() + " Passengers | " + Entity.GetBulkAsString(missionTemplate.ComputeTotalCargoBulk()) + " BULK";
+					label4.Text = UWGame.Locale.Count(passengerListTemplate.Passengers.Count(), "{0} Passenger", "{0} Passengers") + " | " + Entity.GetBulkAsString(missionTemplate.ComputeTotalCargoBulk()) + " " + UWGame.Locale.Text("BULK");
 				}
 			}
 			else
 			{
-				label5.Text = "UNKNOWN";
+				label5.Text = UWGame.Locale.Text("UNKNOWN");
 			}
-			textButton.Text = "HIDE";
-			textButton.ToolTip = "Collapse this part";
+			textButton.Text = UWGame.Locale.Text("HIDE");
+			textButton.ToolTip = UWGame.Locale.Text("Collapse this part");
 		}
 		else
 		{
@@ -1414,8 +1414,8 @@ public class CreateMissionPanel : RosterPanel
 			label2.Visible = false;
 			label3.Visible = false;
 			label4.Visible = false;
-			textButton.Text = "SHOW";
-			textButton.ToolTip = "Expand to show more information";
+			textButton.Text = UWGame.Locale.Text("SHOW");
+			textButton.ToolTip = UWGame.Locale.Text("Expand to show more information");
 		}
 	}
 
@@ -1426,7 +1426,7 @@ public class CreateMissionPanel : RosterPanel
 		if (Mission.TransportationType == null && !missionLocation.IsLocked)
 		{
 			label.Visible = true;
-			label.Text = "First select a transportation, then add actions to each stop.";
+			label.Text = UWGame.Locale.Text("First select a transportation, then add actions to each stop.");
 			label.FitToText();
 		}
 		else
@@ -1500,7 +1500,7 @@ public class CreateMissionPanel : RosterPanel
 					{
 						deleteAction = ibDelete_Click;
 					}
-					entry = AddAction(horizontalList, actionType, item, item.ActionType, "Click to edit", flag, deleteAction, Interface.gui, out btAction);
+					entry = AddAction(horizontalList, actionType, item, item.ActionType, UWGame.Locale.Text("Click to edit"), flag, deleteAction, Interface.gui, out btAction);
 					btAction.Click += tbAction_Click;
 				}
 				UpdateAction(entry, item, flag);
@@ -1542,7 +1542,7 @@ public class CreateMissionPanel : RosterPanel
 		Label label = new Label(Interface.gui);
 		uIComponent.Add(label);
 		label.Init(Label.LabelType.LCDNormal);
-		label.Text = "ADD ACTION";
+		label.Text = UWGame.Locale.Text("ADD ACTION");
 		label.X = 16;
 		label.Y = 14;
 	}
@@ -1575,7 +1575,7 @@ public class CreateMissionPanel : RosterPanel
 			uIComponent.Add(image);
 			image.SetSkinLocation(SkinState.Normal, gui.GUISpriteSheet.GetSourceRectangle("HUD_icon_trash"));
 			image.SetSkinLocation(SkinState.Hover, gui.GUISpriteSheet.GetSourceRectangle("HUD_icon_trash"), Color.Gray, Color.Gray);
-			image.ToolTip = "Delete this action";
+			image.ToolTip = UWGame.Locale.Text("Delete this action");
 			image.X = 101;
 			image.Y = 14;
 			image.Color = GameData.Instance.GUIConstants.sidePanelTextColor;
@@ -1950,7 +1950,7 @@ public class CreateMissionPanel : RosterPanel
 		lblDestination.Visible = false;
 		lblStartingLocation.Visible = false;
 		transportIsExpanded = false;
-		tbTransportMore.Text = "MORE";
+		tbTransportMore.Text = UWGame.Locale.Text("MORE");
 		selectionPanel.ContentHeight = 115;
 		errorAndMessagePanel.Clear();
 		foreach (KeyValuePair<object, UIComponent> item in surfaceGrid.EntriesByKey)
@@ -2003,7 +2003,7 @@ public class CreateMissionPanel : RosterPanel
 							string text = item.Key.Name;
 							if (expedition.Allegiance != The.InGameUI.UIAllegiance)
 							{
-								text += " (HIRED)";
+								text += UWGame.Locale.Text(" (HIRED)");
 							}
 							cbTransportation.AddEntry(new TransportationType
 							{
@@ -2053,11 +2053,11 @@ public class CreateMissionPanel : RosterPanel
 		bool flag = VehiclesAreHired(fromExpedition);
 		if (flag && !CanCommunicateWithExpedition(fromExpedition))
 		{
-			ShowError("No communication with the Start allegiance.", "To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option.");
+			ShowError(UWGame.Locale.Text("No communication with the Start allegiance."), UWGame.Locale.Text("To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option."));
 		}
 		else if (cbTransportation.EntriesByKey.Count == 0 && start.HasValue && destination.HasValue)
 		{
-			ShowError("No modes of transport are available from Start to Destination.", null, FieldError.Transport);
+			ShowError(UWGame.Locale.Text("No modes of transport are available from Start to Destination."), null, FieldError.Transport);
 		}
 		else if (cbTransportation.SelectedKey != null)
 		{
@@ -2070,22 +2070,22 @@ public class CreateMissionPanel : RosterPanel
 				decimal totalDistanceCost;
 				decimal costPerKilometer;
 				decimal value = missionTemplate.ComputeTransportationCost(out startFee, out totalDistanceCost, out costPerKilometer);
-				lblTransportNotesOrCost.Text = "COST TO HIRE: " + Common.GetPriceAsString(value);
+				lblTransportNotesOrCost.Text = string.Format(UWGame.Locale.Text("COST TO HIRE: {0}"), Common.GetPriceAsString(value));
 				StringBuilder stringBuilder = new StringBuilder();
-				Common.AppendLine(stringBuilder, "Hired transport cost");
-				Common.AppendLine(stringBuilder, "The vehicle is not owned by us, but we can hire it for a price.");
+				Common.AppendLine(stringBuilder, UWGame.Locale.Text("Hired transport cost"));
+				Common.AppendLine(stringBuilder, UWGame.Locale.Text("The vehicle is not owned by us, but we can hire it for a price."));
 				Common.AppendDivider(stringBuilder);
-				Common.Append(stringBuilder, "Starting fee: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Starting fee: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(startFee), tintAsValue: true);
 				Common.AppendLine(stringBuilder);
-				Common.Append(stringBuilder, "Cost per kilometer: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Cost per kilometer: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(costPerKilometer), tintAsValue: true);
 				Common.AppendLine(stringBuilder);
-				Common.Append(stringBuilder, "Distance cost: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Distance cost: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(totalDistanceCost), tintAsValue: true);
 				Common.AppendLine(stringBuilder);
 				Common.AppendLine(stringBuilder);
-				Common.Append(stringBuilder, "Total cost: ");
+				Common.Append(stringBuilder, UWGame.Locale.Text("Total cost: "));
 				Common.Append(stringBuilder, Common.GetPriceAsString(value), tintAsValue: true);
 				lblTransportNotesOrCost.ToolTip = stringBuilder.ToString();
 			}

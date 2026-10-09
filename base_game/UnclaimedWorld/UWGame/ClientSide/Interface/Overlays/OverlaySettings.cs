@@ -255,10 +255,10 @@ public class OverlaySettings : ISnapshot
 	{
 		return grouping switch
 		{
-			EntityGrouping.Interest => "INTEREST", 
-			EntityGrouping.ColonyMembers => "COLONY MEMBERS", 
-			EntityGrouping.Animals => "ANIMALS", 
-			EntityGrouping.Structures => "STRUCTURES", 
+			EntityGrouping.Interest => UWGame.Locale.Text("INTEREST"), 
+			EntityGrouping.ColonyMembers => UWGame.Locale.Text("COLONY MEMBERS"), 
+			EntityGrouping.Animals => UWGame.Locale.Text("ANIMALS"), 
+			EntityGrouping.Structures => UWGame.Locale.Text("STRUCTURES"), 
 			_ => UWGame.Mods.HudMod.ItemGroupingName(grouping), 
 		};
 	}
@@ -279,10 +279,10 @@ public class OverlaySettings : ISnapshot
 	{
 		return type switch
 		{
-			EditorOverlayTypes.BuildAreas => "BUILDABLE AREA", 
-			EditorOverlayTypes.Coords => "COORDINATES", 
-			EditorOverlayTypes.EntityIDs => "IDs", 
-			EditorOverlayTypes.TerrainDivision => "TERRAIN DIVISION", 
+			EditorOverlayTypes.BuildAreas => UWGame.Locale.Text("BUILDABLE AREA"), 
+			EditorOverlayTypes.Coords => UWGame.Locale.Text("COORDINATES"), 
+			EditorOverlayTypes.EntityIDs => UWGame.Locale.Text("IDs"), 
+			EditorOverlayTypes.TerrainDivision => UWGame.Locale.Text("TERRAIN DIVISION"), 
 			_ => null, 
 		};
 	}
@@ -291,10 +291,10 @@ public class OverlaySettings : ISnapshot
 	{
 		return type switch
 		{
-			EditorOverlayTypes.BuildAreas => "Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas.", 
-			EditorOverlayTypes.Coords => "Shows tile coordinates and world coordinates on each tile", 
-			EditorOverlayTypes.EntityIDs => "Shows entity IDs", 
-			EditorOverlayTypes.TerrainDivision => "Shows terrain division", 
+			EditorOverlayTypes.BuildAreas => UWGame.Locale.Text("Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas."), 
+			EditorOverlayTypes.Coords => UWGame.Locale.Text("Shows tile coordinates and world coordinates on each tile"), 
+			EditorOverlayTypes.EntityIDs => UWGame.Locale.Text("Shows entity IDs"), 
+			EditorOverlayTypes.TerrainDivision => UWGame.Locale.Text("Shows terrain division"), 
 			_ => null, 
 		};
 	}
@@ -326,9 +326,9 @@ public class OverlaySettings : ISnapshot
 	{
 		return type switch
 		{
-			OverlayTypes.BuildAreas => "BUILDABLE AREA", 
-			OverlayTypes.Threats => "THREATS", 
-			OverlayTypes.ColonyMembers => "COLONY MEMBERS", 
+			OverlayTypes.BuildAreas => UWGame.Locale.Text("BUILDABLE AREA"), 
+			OverlayTypes.Threats => UWGame.Locale.Text("THREATS"), 
+			OverlayTypes.ColonyMembers => UWGame.Locale.Text("COLONY MEMBERS"), 
 			_ => null, 
 		};
 	}
@@ -337,9 +337,9 @@ public class OverlaySettings : ISnapshot
 	{
 		return type switch
 		{
-			OverlayTypes.BuildAreas => "Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas.", 
-			OverlayTypes.Threats => "Shows the areas considered dangerous by the colonists because threats have been spotted there. Threats can sometimes be removed with the ATTACK action.", 
-			OverlayTypes.ColonyMembers => "Shows where the colony members are on the minimap", 
+			OverlayTypes.BuildAreas => UWGame.Locale.Text("Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas."), 
+			OverlayTypes.Threats => UWGame.Locale.Text("Shows the areas considered dangerous by the colonists because threats have been spotted there. Threats can sometimes be removed with the ATTACK action."), 
+			OverlayTypes.ColonyMembers => UWGame.Locale.Text("Shows where the colony members are on the minimap"), 
 			_ => null, 
 		};
 	}

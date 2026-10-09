@@ -36,12 +36,12 @@ public class AttackWindow : HUDWindow
 	public AttackWindow()
 		: base(239, 240, hasSurface: true, hasCloseButton: false, isMovable: true, "HUD_window_base", hideWhenMouseExits: false, Level.Bottom)
 	{
-		AddZoneNameAndHeader("", "ATTACK", "HUD_icon_sword", 12, out lblName, out lblHeader, out headerIcon);
+		AddZoneNameAndHeader("", UWGame.Locale.Text("ATTACK"), "HUD_icon_sword", 12, out lblName, out lblHeader, out headerIcon);
 		Label label = new Label(gui);
 		label.Init(Label.LabelType.HUDWindow);
 		Add(label);
-		label.Text = "No. of attackers:";
-		label.ToolTip = "Select how many armed colony members should participate in the attack. \nWhen all threats are eliminated, the task will be canceled automatically";
+		label.Text = UWGame.Locale.Text("No. of attackers:");
+		label.ToolTip = UWGame.Locale.Text("Select how many armed colony members should participate in the attack. \nWhen all threats are eliminated, the task will be canceled automatically");
 		label.X = 18;
 		label.Y = 52;
 		fbNoOfAttackers = new FillableBar(gui, FillableBar.FillableBarType.HUDSlider, canGrow: false, includeButtons: true, GameData.Instance.GUIConstants.TimeBetweenSliderButtonIncrements, GameData.Instance.GUIConstants.SliderButtonDelay);
@@ -55,22 +55,22 @@ public class AttackWindow : HUDWindow
 		cbAttackVermin = new CheckBox(gui);
 		Add(cbAttackVermin);
 		cbAttackVermin.Init(CheckBoxType.HUDCheckBox);
-		cbAttackVermin.Text = "Also attack vermin";
-		cbAttackVermin.ToolTip = "Select whether vermin should be attacked by the patrollers in addition to dangerous animals.";
+		cbAttackVermin.Text = UWGame.Locale.Text("Also attack vermin");
+		cbAttackVermin.ToolTip = UWGame.Locale.Text("Select whether vermin should be attacked by the patrollers in addition to dangerous animals.");
 		cbAttackVermin.FitToText();
 		cbAttackVermin.X = 18;
 		cbAttackVermin.Y = fbNoOfAttackers.Bottom + 12;
 		cbAttackVermin.button.DebugTag = "cbAttackVermin";
 		btCancel = new TextButton(gui);
 		Add(btCancel);
-		btCancel.Text = "CANCEL";
+		btCancel.Text = UWGame.Locale.Text("CANCEL");
 		btCancel.Init(TextButton.TextButtonType.HUD);
 		btCancel.Click += btCancel_Click;
 		btCancel.Width = 72;
 		btCancel.X = DisplayWindow.Width - 12 - btCancel.Width;
 		btOK = new TextButton(gui);
 		Add(btOK);
-		btOK.Text = "OK";
+		btOK.Text = UWGame.Locale.Text("OK");
 		btOK.Init(TextButton.TextButtonType.HUD);
 		btOK.Click += btOk_Click;
 		btOK.Width = 72;

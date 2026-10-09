@@ -113,12 +113,12 @@ public class ActionPicker : UIComponent
 		if (!ActionExists(ActionTypes.Embark, ref errors) && EmbarkActionTemplate.ValidateEmbark(ourAllegiance, terminalData, siteAllegiance, ref errors))
 		{
 			btEmbark.Enabled = true;
-			btEmbark.ToolTip = "Click to add an Embark action";
+			btEmbark.ToolTip = UWGame.Locale.Text("Click to add an Embark action");
 		}
 		else
 		{
 			btEmbark.Enabled = false;
-			btEmbark.ToolTip = "Embark is unavailable here: " + string.Join(" \n", errors);
+			btEmbark.ToolTip = UWGame.Locale.Text("Embark is unavailable here:") + " " + string.Join(" \n", errors);
 		}
 	}
 
@@ -128,12 +128,12 @@ public class ActionPicker : UIComponent
 		if (!ActionExists(ActionTypes.Sell, ref errors) && BuySellActionTemplate.ValidateWorkingTerminalCanSell(missionTemplate, terminalData, ref errors))
 		{
 			btSell.Enabled = true;
-			btSell.ToolTip = "Click to add a Sell action";
+			btSell.ToolTip = UWGame.Locale.Text("Click to add a Sell action");
 		}
 		else
 		{
 			btSell.Enabled = false;
-			btSell.ToolTip = "Sell is unavailable here: " + string.Join(" \n", errors);
+			btSell.ToolTip = UWGame.Locale.Text("Sell is unavailable here:") + " " + string.Join(" \n", errors);
 		}
 	}
 
@@ -141,7 +141,7 @@ public class ActionPicker : UIComponent
 	{
 		if (missionStopTemplate.Actions.Any((MissionActionTemplate a) => a.ActionType == action))
 		{
-			Common.AddToList(ref errors, "Action already exists.");
+			Common.AddToList(ref errors, UWGame.Locale.Text("Action already exists."));
 			return true;
 		}
 		return false;
@@ -153,12 +153,12 @@ public class ActionPicker : UIComponent
 		if (!ActionExists(ActionTypes.Buy, ref errors) && BuySellActionTemplate.ValidateWorkingTerminalCanBuy(missionTemplate, terminalData, ref errors))
 		{
 			btBuy.Enabled = true;
-			btBuy.ToolTip = "Click to add a Buy action";
+			btBuy.ToolTip = UWGame.Locale.Text("Click to add a Buy action");
 		}
 		else
 		{
 			btBuy.Enabled = false;
-			btBuy.ToolTip = "Buy is unavailable here: " + string.Join(" \n", errors);
+			btBuy.ToolTip = UWGame.Locale.Text("Buy is unavailable here:") + " " + string.Join(" \n", errors);
 		}
 	}
 

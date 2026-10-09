@@ -32,7 +32,7 @@ public class SetTileResourcesPopup : HUDPopup
 		lblHeader.Position = new Point(num4, 5);
 		Label label = new Label(gui);
 		Add(label);
-		label.Text = "Modifier: ";
+		label.Text = UWGame.Locale.Text("Modifier: ");
 		label.Init(Label.LabelType.HUDWindow);
 		label.Position = new Point(num4, num);
 		num4 += num2;
@@ -47,7 +47,7 @@ public class SetTileResourcesPopup : HUDPopup
 		num4 = num3;
 		label = new Label(gui);
 		Add(label);
-		label.Text = "Min/max:";
+		label.Text = UWGame.Locale.Text("Min/max:");
 		label.Init(Label.LabelType.HUDWindow);
 		label.Position = new Point(num4, num);
 		num4 += num2;
@@ -71,7 +71,7 @@ public class SetTileResourcesPopup : HUDPopup
 		num4 = num3;
 		TextButton textButton = new TextButton(gui);
 		Add(textButton);
-		textButton.Text = "Save";
+		textButton.Text = UWGame.Locale.Text("Save");
 		textButton.Init(TextButton.TextButtonType.HUD);
 		textButton.Position = new Point(num3, num);
 		textButton.Click += btSave_Click;
@@ -80,7 +80,7 @@ public class SetTileResourcesPopup : HUDPopup
 		num4 += textButton.Width + 8;
 		TextButton textButton2 = new TextButton(gui);
 		Add(textButton2);
-		textButton2.Text = "Clear";
+		textButton2.Text = UWGame.Locale.Text("Clear");
 		textButton2.Init(TextButton.TextButtonType.HUD);
 		textButton2.Position = new Point(num4, num);
 		textButton2.Click += btClear_Click;
@@ -88,7 +88,7 @@ public class SetTileResourcesPopup : HUDPopup
 		num4 += textButton2.Width + 8;
 		TextButton textButton3 = new TextButton(gui);
 		Add(textButton3);
-		textButton3.Text = "Close";
+		textButton3.Text = UWGame.Locale.Text("Close");
 		textButton3.Init(TextButton.TextButtonType.HUD);
 		textButton3.Position = new Point(num4, num);
 		textButton3.Click += btClose_Click;

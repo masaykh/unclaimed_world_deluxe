@@ -30,7 +30,7 @@ public class LoseGamePanel : Panel
 	public event EventHandler CancelClick;
 
 	public LoseGamePanel(LoseGameInterface intf, Point position)
-		: base(intf, "GAME END", position, Dimensions, Level.Dialogs)
+		: base(intf, UWGame.Locale.Text("GAME END"), position, Dimensions, Level.Dialogs)
 	{
 		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(intf, Window, 52, new Point(16, MarginTop), out _, out lcdSurface, ref lcdScreen);
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: false);
@@ -39,7 +39,7 @@ public class LoseGamePanel : Panel
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
 		PlaceLeftButtonUnderLCD(textButton);
-		textButton.Text = "DONE";
+		textButton.Text = UWGame.Locale.Text("DONE");
 		textButton.Click += btDone_Click;
 		textButton.ScaleWidthToFitText();
 		AddDefaultDirt();

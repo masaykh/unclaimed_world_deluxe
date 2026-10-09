@@ -59,9 +59,9 @@ public class FoodProduction : LedgerSheet
 
 	private int gridYPos;
 
-	public override string DisplayName => "Food production";
+	public override string DisplayName => UWGame.Locale.Text("Food production");
 
-	public override string Tooltip => "Shows food produced, consumed and wasted. Listed by food types.";
+	public override string Tooltip => UWGame.Locale.Text("Shows food produced, consumed and wasted. Listed by food types.");
 
 	public override bool ShowRangeSelector => true;
 
@@ -95,7 +95,7 @@ public class FoodProduction : LedgerSheet
 		bottomContainer.Add(label);
 		label.Init(Label.LabelType.LCDNormal);
 		label.X = 30;
-		label.Text = "TOTAL:";
+		label.Text = UWGame.Locale.Text("TOTAL:");
 		label.FitToText();
 		bottomContainer.CenterChildVertically(label);
 		lblTotalProduced = new Label(gui);
@@ -131,12 +131,12 @@ public class FoodProduction : LedgerSheet
 
 	private void CreateTooltips()
 	{
-		nameTooltip = CreateTooltip("Name", "Name of food type");
-		producedTooltip = CreateTooltip("Produced", "Produced by the colony");
-		consumedTooltip = CreateTooltip("Consumed", "Consumed by colony members");
-		wastedTooltip = CreateTooltip("Spoiled", "Spoiled/degraded into waste");
-		verminTooltip = CreateTooltip("Vermin", "Eaten by creatures");
-		disappearedTooltip = CreateTooltip("Disappeared", "Disappeared");
+		nameTooltip = CreateTooltip(UWGame.Locale.Text("Name"), UWGame.Locale.Text("Name of food type"));
+		producedTooltip = CreateTooltip(UWGame.Locale.Text("Produced"), UWGame.Locale.Text("Produced by the colony"));
+		consumedTooltip = CreateTooltip(UWGame.Locale.Text("Consumed"), UWGame.Locale.Text("Consumed by colony members"));
+		wastedTooltip = CreateTooltip(UWGame.Locale.Text("Spoiled"), UWGame.Locale.Text("Spoiled/degraded into waste"));
+		verminTooltip = CreateTooltip(UWGame.Locale.Text("Vermin"), UWGame.Locale.Text("Eaten by creatures"));
+		disappearedTooltip = CreateTooltip(UWGame.Locale.Text("Disappeared"), UWGame.Locale.Text("Disappeared"));
 	}
 
 	private void ResizeHeight()
@@ -170,12 +170,12 @@ public class FoodProduction : LedgerSheet
 		sortingButtons.Position = new Point(0, 0);
 		Add(sortingButtons);
 		sortingButtons.SortClicked += tbSort_Click;
-		sortingButtons.AddTextButton(215, "NAME", FoodProductionSettings.SortColumns.Name, nameTooltip);
-		sortingButtons.AddTextButton(90, "PROD.", FoodProductionSettings.SortColumns.Produced, producedTooltip);
-		sortingButtons.AddTextButton(90, "CONS.", FoodProductionSettings.SortColumns.Consumed, consumedTooltip);
-		sortingButtons.AddTextButton(90, "SPOIL.", FoodProductionSettings.SortColumns.Wasted, wastedTooltip);
-		sortingButtons.AddTextButton(90, "VERMIN", FoodProductionSettings.SortColumns.EatenByCreatures, verminTooltip);
-		sortingButtons.AddTextButton(90, "DISAPP.", FoodProductionSettings.SortColumns.Disappeared, disappearedTooltip);
+		sortingButtons.AddTextButton(215, UWGame.Locale.Text("NAME"), FoodProductionSettings.SortColumns.Name, nameTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("PROD."), FoodProductionSettings.SortColumns.Produced, producedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("CONS."), FoodProductionSettings.SortColumns.Consumed, consumedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("SPOIL."), FoodProductionSettings.SortColumns.Wasted, wastedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("VERMIN"), FoodProductionSettings.SortColumns.EatenByCreatures, verminTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("DISAPP."), FoodProductionSettings.SortColumns.Disappeared, disappearedTooltip);
 	}
 
 	private void tbSort_Click()

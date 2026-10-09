@@ -27,7 +27,7 @@ public class CombatHistory : EntityPanelTabPage
 	public CombatHistory(GUIManager gui, EntityPanel entityPanel, UIComponent fullLCD, UIComponent halfLCD)
 		: base(gui, entityPanel, hasCRT: true, fullLCD, halfLCD)
 	{
-		Title = "COMBAT";
+		Title = UWGame.Locale.Text("COMBAT");
 		InitAttributes();
 	}
 
@@ -38,7 +38,7 @@ public class CombatHistory : EntityPanelTabPage
 		Label label = new Label(gui);
 		pnSummary.Add(label);
 		label.Y = 5;
-		label.Text = "COMBAT STATISTICS";
+		label.Text = UWGame.Locale.Text("COMBAT STATISTICS");
 		label.Init(Label.LabelType.LCDNormal);
 		FullLCDPanel.AddLCDLineThin(gui, new Point(0, 23), pnSummary.Width, pnSummary);
 		int yPos = 35;
@@ -50,7 +50,7 @@ public class CombatHistory : EntityPanelTabPage
 	private void PopulateSummary()
 	{
 		lblAccuracy.Text = "89 %";
-		lblKills.Text = "4      Night piper (2), Tree dragon (1), Hecatonth (1)";
+		lblKills.Text = UWGame.Locale.Text("4      Night piper (2), Tree dragon (1), Hecatonth (1)");
 	}
 
 	public override void Refresh()

@@ -34,7 +34,7 @@ public class EntityListWindow : HUDWindow
 
 	private static int WindowHeight = 20;
 
-	private string hyperLinkToolTip = "LMB: Select the link target.\n RMB: Center on target.\n Double click: Select and center.";
+	private string hyperLinkToolTip = UWGame.Locale.Text("LMB: Select the link target.\n RMB: Center on target.\n Double click: Select and center.");
 
 	private int gridY;
 	private static int locationX = 15;
@@ -95,7 +95,7 @@ public class EntityListWindow : HUDWindow
 		Label label = new Label(gui);
 		label.Init(Label.LabelType.HUDWindow);
 		label.ID = UIComponent.DataControlID.Location;
-		label.Text = "LOCATION";
+		label.Text = UWGame.Locale.Text("LOCATION");
 		label.FitToText();
 		label.X = locationX;
 		label.Y = windowHeading.Bottom + 3;
@@ -103,7 +103,7 @@ public class EntityListWindow : HUDWindow
 		label = new Label(gui);
 		label.Init(Label.LabelType.HUDWindow);
 		label.ID = UIComponent.DataControlID.Status;
-		label.Text = "STATUS";
+		label.Text = UWGame.Locale.Text("STATUS");
 		label.FitToText();
 		label.X = statusX;
 		label.Y = windowHeading.Bottom + 3;
@@ -122,7 +122,7 @@ public class EntityListWindow : HUDWindow
 		string text = "";
 		if (entityType.ItemType != null)
 		{
-			text = "ITEM: ";
+			text = UWGame.Locale.Text("ITEM: ");
 		}
 		text += entityType.Name;
 		windowHeading.Text = text;
@@ -220,7 +220,7 @@ public class EntityListWindow : HUDWindow
 			imageButton.ID = UIComponent.DataControlID.SalvageAction;
 			imageButton.X = x;
 			imageButton.EventArgs = new EntityButtonEventArgs(key);
-			imageButton.ToolTip = "Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.";
+			imageButton.ToolTip = UWGame.Locale.Text("Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.");
 			imageButton.Click += salvage_Click;
 			item.Add(imageButton);
 			imageButton.Y--;
@@ -231,7 +231,7 @@ public class EntityListWindow : HUDWindow
 			imageButton2.ID = UIComponent.DataControlID.PackingDownAction;
 			imageButton2.X = x;
 			imageButton2.EventArgs = new EntityButtonEventArgs(key);
-			imageButton2.ToolTip = "Disassemble the object: All its parts will be retrieved. See the process tooltip for more info.";
+			imageButton2.ToolTip = UWGame.Locale.Text("Disassemble the object: All its parts will be retrieved. See the process tooltip for more info.");
 			imageButton2.Click += salvage_Click;
 			item.Add(imageButton2);
 			imageButton2.Y--;
@@ -242,7 +242,7 @@ public class EntityListWindow : HUDWindow
 		imageButton3.Init(canBeClaimed ? ImageButtonType.HUDClaim : ImageButtonType.HUDDiscard);
 		imageButton3.ID = UIComponent.DataControlID.DiscardClaim;
 		imageButton3.X = x;
-		imageButton3.ToolTip = (canBeClaimed ? "Claim this object which is not owned by anyone" : "Discard the object");
+		imageButton3.ToolTip = (canBeClaimed ? UWGame.Locale.Text("Claim this object which is not owned by anyone") : UWGame.Locale.Text("Discard the object"));
 		imageButton3.EventArgs = new EntityButtonEventArgs(key);
 		imageButton3.Click += owner_Click;
 		imageButton3.MaxHeight = imageButton3.Height - 2;
@@ -252,7 +252,7 @@ public class EntityListWindow : HUDWindow
 		x = ((x == salvageX) ? discardClaimX : captionX);
 		ItemTypeButtonEventArgs eventArgs = new ItemTypeButtonEventArgs(entityType);
 		TextButton textButton = new TextButton(gui);
-		textButton.Text = "SELECT";
+		textButton.Text = UWGame.Locale.Text("SELECT");
 		textButton.ID = UIComponent.DataControlID.Selector;
 		textButton.Init(TextButton.TextButtonType.HUD);
 		textButton.Tag1 = entityData.EntityID;
@@ -296,13 +296,13 @@ public class EntityListWindow : HUDWindow
 			{
 				bt.Init(ImageButtonType.HUDDiscard);
 				bt.Tag1 = OwnerAction.Discard;
-				bt.ToolTip = "Discard the item";
+				bt.ToolTip = UWGame.Locale.Text("Discard the item");
 			}
 			else
 			{
 				bt.Init(ImageButtonType.HUDClaim);
 				bt.Tag1 = OwnerAction.Claim;
-				bt.ToolTip = "Claim the item not owned by anyone";
+				bt.ToolTip = UWGame.Locale.Text("Claim the item not owned by anyone");
 			}
 			bt.Visible = true;
 		}
@@ -326,7 +326,7 @@ public class EntityListWindow : HUDWindow
 				hyperlink.Enabled = true;
 				if (entityData.ParentEntityID.HasValue)
 				{
-					hyperlink.ToolTip = "*" + partOrContainerData.GetDisplayName() + " \n*:part of this item. \n \n" + hyperlink.ToolTip;
+					hyperlink.ToolTip = "*" + partOrContainerData.GetDisplayName() + " \n" + UWGame.Locale.Text("*:part of this item.") + " \n \n" + hyperlink.ToolTip;
 					hyperlink.Text = "*" + partOrContainerData.GetDisplayName();
 				}
 				else
@@ -339,14 +339,14 @@ public class EntityListWindow : HUDWindow
 			{
 				hyperlink.Text = partOrContainerData.GetDisplayName();
 				hyperlink.Enabled = false;
-				hyperlink.ToolTip = "Cannot be selected. The item is off site.";
+				hyperlink.ToolTip = UWGame.Locale.Text("Cannot be selected. The item is off site.");
 			}
 		}
 		else
 		{
 			if (stockpile != null)
 			{
-				hyperlink.Text = "Stockpile " + stockpile.GetDisplayName();
+				hyperlink.Text = string.Format(UWGame.Locale.Text("Stockpile {0}"), stockpile.GetDisplayName());
 			}
 			else
 			{
@@ -398,12 +398,12 @@ public class EntityListWindow : HUDWindow
 		if (InGameInterface.CanSelectEntity(entityData))
 		{
 			textButton.Enabled = true;
-			textButton.ToolTip = "Click to select";
+			textButton.ToolTip = UWGame.Locale.Text("Click to select");
 		}
 		else
 		{
 			textButton.Enabled = false;
-			textButton.ToolTip = "Cannot be selected. The item is off site.";
+			textButton.ToolTip = UWGame.Locale.Text("Cannot be selected. The item is off site.");
 		}
 		if (imageButton != null)
 		{

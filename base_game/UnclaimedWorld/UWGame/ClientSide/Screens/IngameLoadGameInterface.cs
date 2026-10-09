@@ -18,7 +18,7 @@ public class IngameLoadGameInterface : CommonInterface
 	{
 		base.LoadContent();
 		SaveLoadMessageBox = new SaveLoadMessageBox(this);
-		SaveLoadMessageBox.ShowMessage("Loading game, please wait...", null, modal: true, UWGame.ClientSide.Interface.MessageBox.ButtonOptions.None);
+		SaveLoadMessageBox.ShowMessage(UWGame.Locale.Text("Loading game, please wait..."), null, modal: true, UWGame.ClientSide.Interface.MessageBox.ButtonOptions.None);
 		SetInterfaceCursor();
 	}
 

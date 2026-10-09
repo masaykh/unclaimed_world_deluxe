@@ -58,9 +58,9 @@ public class Production : LedgerSheet
 
 	private int gridYPos;
 
-	public override string DisplayName => "Production";
+	public override string DisplayName => UWGame.Locale.Text("Production");
 
-	public override string Tooltip => "Shows production details including productivity.";
+	public override string Tooltip => UWGame.Locale.Text("Shows production details including productivity.");
 
 	public override bool ShowRangeSelector => true;
 
@@ -94,7 +94,7 @@ public class Production : LedgerSheet
 		bottomContainer.Add(label);
 		label.Init(Label.LabelType.LCDNormal);
 		label.X = 30;
-		label.Text = "TOTAL:";
+		label.Text = UWGame.Locale.Text("TOTAL:");
 		label.FitToText();
 		bottomContainer.CenterChildVertically(label);
 		lblTotalProduced = new Label(gui);
@@ -125,12 +125,12 @@ public class Production : LedgerSheet
 
 	private void CreateTooltips()
 	{
-		nameTooltip = CreateTooltip("Name", "Name of product");
-		producedTooltip = CreateTooltip("Produced", "Produced by the colony");
-		usedTooltip = CreateTooltip("Used", "Used in production");
-		wastedTooltip = CreateTooltip("Spoiled", "Degraded into waste");
-		disappearedTooltip = CreateTooltip("Disappeared", "Disappeared");
-		productivityTooltip = CreateTooltip("Productivity", "Mean productivity");
+		nameTooltip = CreateTooltip(UWGame.Locale.Text("Name"), UWGame.Locale.Text("Name of product"));
+		producedTooltip = CreateTooltip(UWGame.Locale.Text("Produced"), UWGame.Locale.Text("Produced by the colony"));
+		usedTooltip = CreateTooltip(UWGame.Locale.Text("Used"), UWGame.Locale.Text("Used in production"));
+		wastedTooltip = CreateTooltip(UWGame.Locale.Text("Spoiled"), UWGame.Locale.Text("Degraded into waste"));
+		disappearedTooltip = CreateTooltip(UWGame.Locale.Text("Disappeared"), UWGame.Locale.Text("Disappeared"));
+		productivityTooltip = CreateTooltip(UWGame.Locale.Text("Productivity"), UWGame.Locale.Text("Mean productivity"));
 	}
 
 	private void ResizeHeight()
@@ -164,12 +164,12 @@ public class Production : LedgerSheet
 		sortingButtons.Position = new Point(0, 0);
 		Add(sortingButtons);
 		sortingButtons.SortClicked += tbSort_Click;
-		sortingButtons.AddTextButton(215, "NAME", ProductionSettings.SortColumns.Name, nameTooltip);
-		sortingButtons.AddTextButton(90, "PROD.", ProductionSettings.SortColumns.Produced, producedTooltip);
-		sortingButtons.AddTextButton(90, "USED", ProductionSettings.SortColumns.UsedInProduction, usedTooltip);
-		sortingButtons.AddTextButton(90, "DEGR.", ProductionSettings.SortColumns.Wasted, wastedTooltip);
-		sortingButtons.AddTextButton(90, "DISAPP.", ProductionSettings.SortColumns.Disappeared, disappearedTooltip);
-		sortingButtons.AddTextButton(90, "PRDCTIV.", ProductionSettings.SortColumns.Productivity, productivityTooltip);
+		sortingButtons.AddTextButton(215, UWGame.Locale.Text("NAME"), ProductionSettings.SortColumns.Name, nameTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("PROD."), ProductionSettings.SortColumns.Produced, producedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("USED"), ProductionSettings.SortColumns.UsedInProduction, usedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("DEGR."), ProductionSettings.SortColumns.Wasted, wastedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("DISAPP."), ProductionSettings.SortColumns.Disappeared, disappearedTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("PRDCTIV."), ProductionSettings.SortColumns.Productivity, productivityTooltip);
 	}
 
 	private void tbSort_Click()
@@ -324,19 +324,19 @@ public class Production : LedgerSheet
 			child5.FitToText();
 			child5.ToolTip = productivityTooltip;
 			StringBuilder stringBuilder = new StringBuilder();
-			Common.AppendHeaderOnLightBG(stringBuilder, "Productivity");
-			Common.Append(stringBuilder, "Mean (average) productivity in the selected timespan.");
+			Common.AppendHeaderOnLightBG(stringBuilder, UWGame.Locale.Text("Productivity"));
+			Common.Append(stringBuilder, UWGame.Locale.Text("Mean (average) productivity in the selected timespan."));
 			Common.AppendDividerOnOwnLine(stringBuilder);
-			Common.Append(stringBuilder, "Tools: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Tools: "));
 			Common.AppendFormat(stringBuilder, "{0:N2}", true, toolProd);
 			Common.AppendLine(stringBuilder);
-			Common.Append(stringBuilder, "Skill: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Skill: "));
 			Common.AppendFormat(stringBuilder, "{0:N2}", true, skillProd);
 			Common.AppendLine(stringBuilder);
-			Common.Append(stringBuilder, "Worker energy: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Worker energy: "));
 			Common.AppendFormat(stringBuilder, "{0:N2}", true, energyProd);
 			Common.AppendDividerOnOwnLine(stringBuilder);
-			Common.Append(stringBuilder, "Total productivity: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Total productivity: "));
 			Common.AppendFormat(stringBuilder, "{0:N2}", true, productivity);
 			child5.ToolTip = stringBuilder.ToString();
 		}

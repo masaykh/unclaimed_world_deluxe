@@ -50,7 +50,7 @@ public class MainPanel
 		DisplayWindow.Show();
 		int buttonLeft = 22;
 		int num2 = 6;
-		tbMain = AddBlackTextButton(buttonLeft, num2, "MENU", "Show the game menu");
+		tbMain = AddBlackTextButton(buttonLeft, num2, UWGame.Locale.Text("MENU"), UWGame.Locale.Text("Show the game menu"));
 		tbMain.ScaleWidthToFitText();
 		tbMain.Click += main_Click;
 		tbMain.DebugTag = "tbMain";
@@ -61,7 +61,7 @@ public class MainPanel
 			btHelp.InitWithIcon(ImageButtonType.Black, "help_button_icon", hasCheckedState: true);
 			btHelp.X = tbMain.Right + 5;
 			btHelp.Y = num2;
-			btHelp.ToolTip = "Show various help topics";
+			btHelp.ToolTip = UWGame.Locale.Text("Show various help topics");
 			btHelp.Click += tbHelp_Click;
 			btHelp.Height = 32;
 			speedGroup = new RadioGroup(The.InGameUI.gui);
@@ -72,10 +72,10 @@ public class MainPanel
 			speedGroup.Width = 128;
 			speedGroup.NewMemberChecked += speedGroup_NewMemberChecked;
 			int num3 = -3;
-			btPause = AddSpeedButton(speedGroup, 0, Speeds.Pause, "II", "Pause the game");
-			btNormalSpeed = AddSpeedButton(speedGroup, btPause.Right + num3, Speeds.Normal, "1X", "Set to normal game speed.");
-			bt2GameSpeed = AddSpeedButton(speedGroup, btNormalSpeed.Right + num3, Speeds.TwiceNormal, "2X", "Set to 2 times the normal game speed.");
-			bt4GameSpeed = AddSpeedButton(speedGroup, bt2GameSpeed.Right + num3, Speeds.FourTimesNormal, "4X", "Set to 4 times the normal game speed.");
+			btPause = AddSpeedButton(speedGroup, 0, Speeds.Pause, UWGame.Locale.Text("II"), UWGame.Locale.Text("Pause the game"));
+			btNormalSpeed = AddSpeedButton(speedGroup, btPause.Right + num3, Speeds.Normal, "1X", UWGame.Locale.Text("Set to normal game speed."));
+			bt2GameSpeed = AddSpeedButton(speedGroup, btNormalSpeed.Right + num3, Speeds.TwiceNormal, "2X", UWGame.Locale.Text("Set to 2 times the normal game speed."));
+			bt4GameSpeed = AddSpeedButton(speedGroup, bt2GameSpeed.Right + num3, Speeds.FourTimesNormal, "4X", UWGame.Locale.Text("Set to 4 times the normal game speed."));
 			pausePosition = default(Rectangle);
 			pauseIcon = The.InGameUI.gui.GUISpriteSheet.GetSourceRectangle("HUD_pause_big");
 			pausePosition.Width = pauseIcon.Width;

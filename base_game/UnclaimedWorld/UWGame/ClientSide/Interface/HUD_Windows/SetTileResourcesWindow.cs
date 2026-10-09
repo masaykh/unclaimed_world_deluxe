@@ -31,7 +31,7 @@ public class SetTileResourcesWindow : HUDWindow
 		outerGrid = HUDWindow.CreateOuterGridForCollapsableLists(The.InGameUI.gui, DisplayWindow.ViewPort);
 		TextButton textButton = new TextButton(gui);
 		Add(textButton);
-		textButton.Text = "Clear";
+		textButton.Text = UWGame.Locale.Text("Clear");
 		textButton.Init(TextButton.TextButtonType.HUD);
 		textButton.Click += btClear_Click;
 		textButton.Y = 162;

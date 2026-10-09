@@ -290,7 +290,7 @@ public class Client : GameScreen
 			Point? mapPosition = entity.MapPosition;
 			if (mapPosition.HasValue && The.Map.TileIsOnMap(mapPosition.Value) && The.Map.GetTile(mapPosition.Value).AllegiancesThatSeeThisTile.Contains(allegiance))
 			{
-				Log.AddLogEvent(The.Client.Log.EconomicEvent, entity, " is no longer functional. It has a broken part.");
+				Log.AddLogEvent(The.Client.Log.EconomicEvent, entity, UWGame.Locale.Text(" is no longer functional. It has a broken part."));
 			}
 		}
 	}
@@ -308,7 +308,7 @@ public class Client : GameScreen
 		{
 			value = UWGame.ClientSide.Log.Priority.High;
 		}
-		AddLogEvent(The.Client.Log.GeneralEvent, targetAsEntity, "was killed by " + attacker.ToLink() + ".", value);
+		AddLogEvent(The.Client.Log.GeneralEvent, targetAsEntity, string.Format(UWGame.Locale.Text("was killed by {0}."), attacker.ToLink()), value);
 	}
 
 	public override void Draw(GameTime gameTime)
@@ -494,7 +494,7 @@ public class Client : GameScreen
 		SetFlashing(detectable);
 		if (detectingEntity != null && (entity != null || flag2) && flag && (entity == null || LogEntity(entity, allegiance)))
 		{
-			AddLogEvent(detectingEntity.Intelligence.Allegiance, The.Client.Log.GeneralEvent, detectingEntity, $"has spotted {detectable.ToLink()}");
+			AddLogEvent(detectingEntity.Intelligence.Allegiance, The.Client.Log.GeneralEvent, detectingEntity, string.Format(UWGame.Locale.Text("has spotted {0}"), detectable.ToLink()));
 		}
 	}
 
@@ -745,7 +745,7 @@ public class Client : GameScreen
 		{
 			decimal amount = UWGame.Mods.DebugMod.CreditsAmount;
 			base.Controller.StoreAndExecuteCommand(new UWGame.SimSide.Commands.AddCredits(The.InGameUI.UIAllegiance.ID, amount));
-			Log.AddLogEvent(Log.EconomicEvent, null, "Debug: " + amount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " trade credits added.");
+			Log.AddLogEvent(Log.EconomicEvent, null, string.Format(UWGame.Locale.Text("Debug: {0} trade credits added."), amount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 		}
 		if (inputData.IsKeyTapped(Keys.F2))
 		{

@@ -28,11 +28,11 @@ public class PatrolWindow : HUDWindow
 	public PatrolWindow()
 		: base(239, 240, hasSurface: true, hasCloseButton: false, isMovable: true, "HUD_window_base", hideWhenMouseExits: false, Level.Bottom)
 	{
-		AddZoneNameAndHeader("", "PATROL", "HUD_icon_patrol", 18, out lblName, out lblHeader, out headerIcon);
+		AddZoneNameAndHeader("", UWGame.Locale.Text("PATROL"), "HUD_icon_patrol", 18, out lblName, out lblHeader, out headerIcon);
 		Label label = new Label(gui);
 		label.Init(Label.LabelType.HUDWindow);
 		Add(label);
-		label.Text = "No. of patrollers:";
+		label.Text = UWGame.Locale.Text("No. of patrollers:");
 		label.X = 18;
 		label.Y = 52;
 		fbNoOfPatrollers = new FillableBar(gui, FillableBar.FillableBarType.HUDSlider, canGrow: false, includeButtons: true, GameData.Instance.GUIConstants.TimeBetweenSliderButtonIncrements, GameData.Instance.GUIConstants.SliderButtonDelay);
@@ -46,22 +46,22 @@ public class PatrolWindow : HUDWindow
 		cbAttackVermin = new CheckBox(gui);
 		Add(cbAttackVermin);
 		cbAttackVermin.Init(CheckBoxType.HUDCheckBox);
-		cbAttackVermin.Text = "Attack vermin";
-		cbAttackVermin.ToolTip = "Select whether vermin should be attacked by the patroller in addition to dangerous animals.";
+		cbAttackVermin.Text = UWGame.Locale.Text("Attack vermin");
+		cbAttackVermin.ToolTip = UWGame.Locale.Text("Select whether vermin should be attacked by the patroller in addition to dangerous animals.");
 		cbAttackVermin.FitToText();
 		cbAttackVermin.X = 18;
 		cbAttackVermin.Y = label.Bottom + 12;
 		cbAttackTargetsOutsideZone = new CheckBox(gui);
 		Add(cbAttackTargetsOutsideZone);
 		cbAttackTargetsOutsideZone.Init(CheckBoxType.HUDCheckBox);
-		cbAttackTargetsOutsideZone.Text = "May leave zone in pursuit";
-		cbAttackTargetsOutsideZone.ToolTip = "Select whether the patroller is permitted to pursue targets far outside the patrol zone.";
+		cbAttackTargetsOutsideZone.Text = UWGame.Locale.Text("May leave zone in pursuit");
+		cbAttackTargetsOutsideZone.ToolTip = UWGame.Locale.Text("Select whether the patroller is permitted to pursue targets far outside the patrol zone.");
 		cbAttackTargetsOutsideZone.FitToText();
 		cbAttackTargetsOutsideZone.X = 18;
 		cbAttackTargetsOutsideZone.Y = cbAttackVermin.Bottom + 12;
 		TextButton textButton = new TextButton(gui);
 		Add(textButton);
-		textButton.Text = "CANCEL";
+		textButton.Text = UWGame.Locale.Text("CANCEL");
 		textButton.Init(TextButton.TextButtonType.HUD);
 		textButton.Click += btCancel_Click;
 		textButton.Width = 72;
@@ -69,7 +69,7 @@ public class PatrolWindow : HUDWindow
 		textButton.X = DisplayWindow.Width - 18 - textButton.Width;
 		btOK = new TextButton(gui);
 		Add(btOK);
-		btOK.Text = "OK";
+		btOK.Text = UWGame.Locale.Text("OK");
 		btOK.Init(TextButton.TextButtonType.HUD);
 		btOK.Click += btOK_Click;
 		btOK.Width = 72;

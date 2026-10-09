@@ -35,12 +35,12 @@ public class LoadReplayPanel : Panel
 	public event EventHandler LoadClick;
 
 	public LoadReplayPanel(CommonInterface intf, Point position)
-		: base(intf, "LOAD REPLAY", position, new Vector2(440f, 560f), Level.Dialogs)
+		: base(intf, UWGame.Locale.Text("LOAD REPLAY"), position, new Vector2(440f, 560f), Level.Dialogs)
 	{
 		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(intf, Window, 160, new Point(16, 60), out display, out lcdSurface, ref lcdScreen);
 		lblMessages = new Label(intf.gui);
 		lcdSurface.Add(lblMessages);
-		lblMessages.Text = "Select a replay to load.";
+		lblMessages.Text = UWGame.Locale.Text("Select a replay to load.");
 		lblMessages.Init(Label.LabelType.LCDNormal);
 		grid = FullLCDPanel.AddGridWithFixedItemHeights(intf.gui, lcdSurface, 30);
 		folderPathLabel = new Label(intf.gui);
@@ -50,7 +50,7 @@ public class LoadReplayPanel : Panel
 		Label label = new Label(intf.gui);
 		Window.Add(label);
 		label.Init(Label.LabelType.PlainPanelNormal);
-		label.Text = "Time (s) to pause:";
+		label.Text = UWGame.Locale.Text("Time (s) to pause:");
 		label.FitToText();
 		label.X = display.X;
 		label.Y = display.Bottom + 12;
@@ -97,8 +97,8 @@ public class LoadReplayPanel : Panel
 		TextButton textButton = new TextButton(Interface.gui);
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
-		textButton.Text = "LOAD";
-		textButton.ToolTip = "Loads a replay.";
+		textButton.Text = UWGame.Locale.Text("LOAD");
+		textButton.ToolTip = UWGame.Locale.Text("Loads a replay.");
 		textButton.Click += buttonLoad_Click;
 		textButton.ScaleWidthToFitText();
 		PlaceRightButtonUnderLCD(textButton);
@@ -106,8 +106,8 @@ public class LoadReplayPanel : Panel
 		Window.Add(textButton2);
 		textButton2.Init(TextButton.TextButtonType.White);
 		PlaceLeftButtonUnderLCD(textButton2);
-		textButton2.Text = "CANCEL";
-		textButton2.ToolTip = "Cancels and closes the dialog.";
+		textButton2.Text = UWGame.Locale.Text("CANCEL");
+		textButton2.ToolTip = UWGame.Locale.Text("Cancels and closes the dialog.");
 		textButton2.ScaleWidthToFitText();
 		textButton2.Click += btCancel_Click;
 	}
@@ -116,7 +116,7 @@ public class LoadReplayPanel : Panel
 	{
 		if (!grid.GetSelectedKey(out var key))
 		{
-			lblMessages.Text = "Select a replay first.";
+			lblMessages.Text = UWGame.Locale.Text("Select a replay first.");
 			return;
 		}
 		string text = key.ToString();
@@ -128,7 +128,7 @@ public class LoadReplayPanel : Panel
 		// Reported as "replay is crashing / just lacks prepared replays in there".
 		if (string.Equals(text, FolderPathRowKey, StringComparison.Ordinal))
 		{
-			lblMessages.Text = "That is the folder, not a replay. Pick one of the entries below it.";
+			lblMessages.Text = UWGame.Locale.Text("That is the folder, not a replay. Pick one of the entries below it.");
 			return;
 		}
 
@@ -139,7 +139,7 @@ public class LoadReplayPanel : Panel
 			|| !File.Exists(Path.Combine(candidate, "Commands.xml"))
 			|| !File.Exists(Path.Combine(candidate, "GameParams.xml")))
 		{
-			lblMessages.Text = "That folder is missing Replay.UWRep, Commands.xml or GameParams.xml.";
+			lblMessages.Text = UWGame.Locale.Text("That folder is missing Replay.UWRep, Commands.xml or GameParams.xml.");
 			return;
 		}
 

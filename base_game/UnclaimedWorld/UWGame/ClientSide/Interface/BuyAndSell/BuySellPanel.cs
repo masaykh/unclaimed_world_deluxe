@@ -155,7 +155,7 @@ public class BuySellPanel : Panel
 		tbExpand = new TextButton(Interface.gui);
 		lcdSurface.Add(tbExpand);
 		tbExpand.Init(TextButton.TextButtonType.LCD);
-		tbExpand.Text = "MORE";
+		tbExpand.Text = UWGame.Locale.Text("MORE");
 		tbExpand.X = 2;
 		tbExpand.Y = 2;
 		tbExpand.Click += Expand_Click;
@@ -205,7 +205,7 @@ public class BuySellPanel : Panel
 		Label label = new Label(Interface.gui);
 		totalsPanel.AddContent(label);
 		label.Init(Label.LabelType.LCDSmallHeadingBanner);
-		label.Text = "TOTAL:";
+		label.Text = UWGame.Locale.Text("TOTAL:");
 		label.Y = 8;
 		label.X = 280;
 		label.FitToText();
@@ -220,9 +220,9 @@ public class BuySellPanel : Panel
 		lblTotalItemCost.AlignRight(priceX);
 		lblTotalItemCost.Y = lblTotalBulk.Y;
 		Panel.AddImage(Interface.gui, totalsPanel.Panel, "lcd_icon_credits_oneCoin", new Point(lblTotalItemCost.Right + 6, lblTotalItemCost.Y + 2)).SetSkinLocation(SkinState.Normal, null, UIComponent.LCDNormal, UIComponent.LCDNormal);
-		btOK = AddLowerButton("OK", "Accepts the order and closes the dialog.", Align.Left);
+		btOK = AddLowerButton(UWGame.Locale.Text("OK"), UWGame.Locale.Text("Accepts the order and closes the dialog."), Align.Left);
 		btOK.Click += btOK_Click;
-		btCancel = AddLowerButton("CANCEL", "Cancels and closes the dialog.", Align.Right);
+		btCancel = AddLowerButton(UWGame.Locale.Text("CANCEL"), UWGame.Locale.Text("Cancels and closes the dialog."), Align.Right);
 		btCancel.Click += btCancel_Click;
 		CreateGridHeaderButtons();
 		RosterPanel.AddTintedBackground(ref backgroundTint, display);
@@ -256,11 +256,11 @@ public class BuySellPanel : Panel
 	{
 		if (expand)
 		{
-			SetMinimizedOrExpandedContentProperties(85, visible: true, "LESS", "Hide search options");
+			SetMinimizedOrExpandedContentProperties(85, visible: true, UWGame.Locale.Text("LESS"), UWGame.Locale.Text("Hide search options"));
 		}
 		else
 		{
-			SetMinimizedOrExpandedContentProperties(26, visible: false, "MORE", "Display search options");
+			SetMinimizedOrExpandedContentProperties(26, visible: false, UWGame.Locale.Text("MORE"), UWGame.Locale.Text("Display search options"));
 		}
 		settings.IsExpanded = expand;
 	}
@@ -290,7 +290,7 @@ public class BuySellPanel : Panel
 		ibList.Click += tbListView_Click;
 		ibList.Y = 0;
 		ibList.X = 0;
-		ibList.ToolTip = "List view";
+		ibList.ToolTip = UWGame.Locale.Text("List view");
 		ibList.Width = 30;
 		ibList.Height = 30;
 		ibList.RecalculateIconPosition();
@@ -300,18 +300,18 @@ public class BuySellPanel : Panel
 		ibCategory.Width = 30;
 		ibCategory.InitWithIcon(ImageButtonType.LCD, "basic_icon_category", hasCheckedState: true);
 		ibCategory.Click += tbCategoryView_Click;
-		ibCategory.ToolTip = "Category view";
+		ibCategory.ToolTip = UWGame.Locale.Text("Category view");
 		ibCategory.Y = 0;
 		ibCategory.X = 30;
 		ibCategory.IsChecked = true;
 		ibCategory.Width = 30;
 		ibCategory.Height = 30;
 		ibCategory.RecalculateIconPosition();
-		sortingButtons.CreateTextButton(0, 185, "NAME", BuySellPanelSettings.SortColumns.Name);
-		sortingButtons.CreateTextButton(179, 99, "AMOUNT", BuySellPanelSettings.SortColumns.Amount);
+		sortingButtons.CreateTextButton(0, 185, UWGame.Locale.Text("NAME"), BuySellPanelSettings.SortColumns.Name);
+		sortingButtons.CreateTextButton(179, 99, UWGame.Locale.Text("AMOUNT"), BuySellPanelSettings.SortColumns.Amount);
 		sortingButtons.CreateTextButton(277, 62, "", BuySellPanelSettings.SortColumns.OfferDemand, "OFFER/DEMAND");
-		sortingButtons.CreateTextButton(336, 62, "", BuySellPanelSettings.SortColumns.Price, "PRICE");
-		sortingButtons.CreateTextButton(397, 90, "BULK", BuySellPanelSettings.SortColumns.Bulk);
+		sortingButtons.CreateTextButton(336, 62, "", BuySellPanelSettings.SortColumns.Price, UWGame.Locale.Text("PRICE"));
+		sortingButtons.CreateTextButton(397, 90, UWGame.Locale.Text("BULK"), BuySellPanelSettings.SortColumns.Bulk);
 	}
 
 	private void UpdateGridYPosition(int filterPanelHeight)
@@ -408,19 +408,19 @@ public class BuySellPanel : Panel
 		switch (mode)
 		{
 		case BuySellDialogMode.ViewSellAtNPC:
-			result = "Willing to buy at ";
+			result = UWGame.Locale.Text("Willing to buy at ");
 			result += buyer.GetAllegiance().Name;
 			break;
 		case BuySellDialogMode.ViewBuyAtNPC:
-			result = "For sale at ";
+			result = UWGame.Locale.Text("For sale at ");
 			result += siteOwner.GetAllegiance().Name;
 			break;
 		case BuySellDialogMode.ActionSellAtPlayer:
-			result = "Sell at ";
+			result = UWGame.Locale.Text("Sell at ");
 			result += siteOwner.GetAllegiance().Name;
 			break;
 		case BuySellDialogMode.ActionBuyAtNPC:
-			result = "For sale at ";
+			result = UWGame.Locale.Text("For sale at ");
 			result += siteOwner.GetAllegiance().Name;
 			break;
 		}
@@ -482,7 +482,7 @@ public class BuySellPanel : Panel
 
 	private void HandleDestroyedEntityGroupOrDataSource()
 	{
-		The.InGameUI.MessageBox.ShowMessage("The terminal no longer exists. It is not possible to continue browsing the items.");
+		The.InGameUI.MessageBox.ShowMessage(UWGame.Locale.Text("The terminal no longer exists. It is not possible to continue browsing the items."));
 		The.InGameUI.MessageBox.OKClick += MessageBoxDestroyedMission_OKClick;
 	}
 
@@ -675,22 +675,22 @@ public class BuySellPanel : Panel
 				{
 					if (settings.FilterPropertySettings.HasActiveFilters())
 					{
-						lblNoWaresNote.Text = "We are not offering anything for trade matching the filters.";
+						lblNoWaresNote.Text = UWGame.Locale.Text("We are not offering anything for trade matching the filters.");
 					}
 					else
 					{
-						lblNoWaresNote.Text = "We are not offering anything for trade.";
-						lblNoWaresNote.ToolTip = "Items have to be placed inside a terminal and be included in the Trade settings to appear here.";
+						lblNoWaresNote.Text = UWGame.Locale.Text("We are not offering anything for trade.");
+						lblNoWaresNote.ToolTip = UWGame.Locale.Text("Items have to be placed inside a terminal and be included in the Trade settings to appear here.");
 					}
 				}
 				else
 				{
-					lblNoWaresNote.Text = "Nothing is available to buy.";
+					lblNoWaresNote.Text = UWGame.Locale.Text("Nothing is available to buy.");
 				}
 			}
 			else
 			{
-				lblNoWaresNote.Text = "Nothing can be sold here.";
+				lblNoWaresNote.Text = UWGame.Locale.Text("Nothing can be sold here.");
 			}
 			lblNoWaresNote.FitToText();
 			lblNoWaresNote.Y = sortingButtonsContainer.Bottom + 6;
@@ -916,17 +916,17 @@ public class BuySellPanel : Panel
 			label.FitToText();
 			if (CargoActionType == CargoActionTypes.Sell)
 			{
-				label.ToolTip = "Current demand: The amount of goods this site is willing to buy right now. This number may gradually rise.";
+				label.ToolTip = UWGame.Locale.Text("Current demand: The amount of goods this site is willing to buy right now. This number may gradually rise.");
 			}
 			else if (CargoActionType == CargoActionTypes.Buy)
 			{
 				if (isPlayerOwnedLocation)
 				{
-					label.ToolTip = "For sale: The amount of goods we can trade right now. Items have to be inside a terminal and included in the Trade settings to appear here.";
+					label.ToolTip = UWGame.Locale.Text("For sale: The amount of goods we can trade right now. Items have to be inside a terminal and included in the Trade settings to appear here.");
 				}
 				else
 				{
-					label.ToolTip = "For sale: The amount of goods this site has for sale right now. This number may gradually rise.";
+					label.ToolTip = UWGame.Locale.Text("For sale: The amount of goods this site has for sale right now. This number may gradually rise.");
 				}
 			}
 			else
@@ -960,7 +960,7 @@ public class BuySellPanel : Panel
 					if (noOfAvailableItems > 0)
 					{
 						fillableBar.Enabled = true;
-						fillableBar.ToolTip = "Drag slider to specify amount to order.";
+						fillableBar.ToolTip = UWGame.Locale.Text("Drag slider to specify amount to order.");
 					}
 					else
 					{
@@ -971,15 +971,15 @@ public class BuySellPanel : Panel
 						}
 						if (CargoActionType == CargoActionTypes.Buy)
 						{
-							fillableBar.ToolTip = "This item is currently not available to buy.";
+							fillableBar.ToolTip = UWGame.Locale.Text("This item is currently not available to buy.");
 						}
 						else if (demandedItems == 0)
 						{
-							fillableBar.ToolTip = "There is no demand for this item.";
+							fillableBar.ToolTip = UWGame.Locale.Text("There is no demand for this item.");
 						}
 						else
 						{
-							fillableBar.ToolTip = "There are no items stored and offered for trade in the terminal building.";
+							fillableBar.ToolTip = UWGame.Locale.Text("There are no items stored and offered for trade in the terminal building.");
 						}
 					}
 				}
@@ -997,16 +997,16 @@ public class BuySellPanel : Panel
 		{
 			label2.Text = num2 + "|" + demandedItems;
 			StringBuilder stringBuilder = new StringBuilder();
-			Common.AppendLine(stringBuilder, "Offer | Demand");
+			Common.AppendLine(stringBuilder, UWGame.Locale.Text("Offer | Demand"));
 			Common.AppendDivider(stringBuilder);
-			Common.Append(stringBuilder, "Amount we are offering for sale: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Amount we are offering for sale: "));
 			Common.Append(stringBuilder, num2.ToString(), tintAsValue: true);
 			Common.AppendLine(stringBuilder);
-			Common.Append(stringBuilder, "Max. amount buyer wants: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Max. amount buyer wants: "));
 			Common.Append(stringBuilder, demandedItems.ToString(), tintAsValue: true);
 			Common.AppendLine(stringBuilder);
 			Common.AppendLine(stringBuilder);
-			Common.Append(stringBuilder, "Max. amount we can sell: ");
+			Common.Append(stringBuilder, UWGame.Locale.Text("Max. amount we can sell: "));
 			Common.Append(stringBuilder, noOfAvailableItems.ToString(), tintAsValue: true);
 			label2.ToolTip = stringBuilder.ToString();
 		}
@@ -1026,15 +1026,15 @@ public class BuySellPanel : Panel
 			label3.AlignRight(GetItemColumn(priceX, isInCategoryPanel));
 			if (isOwnedByUI)
 			{
-				label3.ToolTip = "The price we can sell 1 of these items for";
+				label3.ToolTip = UWGame.Locale.Text("The price we can sell 1 of these items for");
 			}
 			else if (CargoActionType == CargoActionTypes.Sell)
 			{
-				label3.ToolTip = "The price we can sell 1 of these items for";
+				label3.ToolTip = UWGame.Locale.Text("The price we can sell 1 of these items for");
 			}
 			else
 			{
-				label3.ToolTip = "The price we can buy 1 of these items for";
+				label3.ToolTip = UWGame.Locale.Text("The price we can buy 1 of these items for");
 			}
 		}
 		float? bulkOfTradeItem = TradeManager.GetBulkOfTradeItem(entityType);
@@ -1073,7 +1073,7 @@ public class BuySellPanel : Panel
 		if (unavailablePolicy != null)
 		{
 			UIComponent uIComponent = ProductionOrderControl.AddOrGetIcon(unavailablePolicy, list, unattainableColor);
-			text = "Not available. The following policy needs to be enacted first: " + unavailablePolicy.ToString();
+			text = UWGame.Locale.Text("Not available. The following policy needs to be enacted first: ") + unavailablePolicy.ToString();
 			uIComponent.ToolTip = text;
 		}
 		else
@@ -1202,7 +1202,7 @@ public class BuySellPanel : Panel
 		lblTotalBulk.Text = Entity.GetBulkAsString(num);
 		lblTotalBulk.FitToText();
 		lblTotalBulk.AlignRight(bulkX);
-		lblTotalBulk.Text += " BLK";
+		lblTotalBulk.Text += UWGame.Locale.Text(" BLK");
 		lblTotalItemCost.Text = Common.MoneyAsString(amount);
 		lblTotalItemCost.AlignRight(priceX);
 	}

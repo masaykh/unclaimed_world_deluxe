@@ -206,7 +206,7 @@ public class SaveLoadGamePanel : Panel
 		lCDInnerPanel2.AddContentSetFullWidth(label5);
 		label5.Init(Label.LabelType.LCDNormal);
 		label5.Y = label4.Bottom + num2;
-		label5.Text = UWGame.Locale.Text("File size:") + " " + fileLength / 1000000 + " mb";
+		label5.Text = UWGame.Locale.Text("File size:") + " " + fileLength / 1000000 + " " + UWGame.Locale.Text("mb");
 		LCDInnerPanel lCDInnerPanel3 = new LCDInnerPanel(Interface.gui, 148, includeDecor: false);
 		uIComponent.Add(lCDInnerPanel3.Panel);
 		lCDInnerPanel3.Panel.X = lCDInnerPanel2.Panel.Right - 2;

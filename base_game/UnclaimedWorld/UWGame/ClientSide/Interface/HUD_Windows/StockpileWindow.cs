@@ -61,7 +61,7 @@ public class StockpileWindow : HUDWindow
 		DisplayWindow.MinHeight = 200;
 		DisplayWindow.ResizableBorderSize = 6;
 		DisplayWindow.Resize += DisplayWindow_Resize;
-		AddZoneNameAndHeader("", "STOCKPILE", "HUD_icon_stockpile", 18, out lblName, out lblHeader, out headerIcon);
+		AddZoneNameAndHeader("", UWGame.Locale.Text("STOCKPILE"), "HUD_icon_stockpile", 18, out lblName, out lblHeader, out headerIcon);
 		listSurface = new UIComponent(gui);
 		Add(listSurface);
 		listSurface.X = 18;
@@ -72,7 +72,7 @@ public class StockpileWindow : HUDWindow
 		outerGrid.ItemHeight = 36;
 		btCancel = new TextButton(gui);
 		Add(btCancel);
-		btCancel.Text = "CANCEL";
+		btCancel.Text = UWGame.Locale.Text("CANCEL");
 		btCancel.Init(TextButton.TextButtonType.HUD);
 		btCancel.Click += btCancel_Click;
 		btCancel.Width = 72;
@@ -80,7 +80,7 @@ public class StockpileWindow : HUDWindow
 		btCancel.X = DisplayWindow.Width - 18 - btCancel.Width;
 		btOK = new TextButton(gui);
 		Add(btOK);
-		btOK.Text = "OK";
+		btOK.Text = UWGame.Locale.Text("OK");
 		btOK.Init(TextButton.TextButtonType.HUD);
 		btOK.Click += btOk_Click;
 		btOK.Width = 72;
@@ -88,8 +88,8 @@ public class StockpileWindow : HUDWindow
 		btOK.X = btCancel.X - 2 - btOK.Width;
 		tbRemove = new TextButton(gui);
 		Add(tbRemove);
-		tbRemove.Text = "Delete";
-		tbRemove.ToolTip = "Remove the stockpile";
+		tbRemove.Text = UWGame.Locale.Text("Delete");
+		tbRemove.ToolTip = UWGame.Locale.Text("Remove the stockpile");
 		tbRemove.Init(TextButton.TextButtonType.HUD);
 		tbRemove.Click += bt_RemoveClick;
 		tbRemove.Y = 12;
@@ -143,7 +143,7 @@ public class StockpileWindow : HUDWindow
 		Image image = new Image(gui);
 		image.SetSkinLocation(SkinState.Normal, gui.GUISpriteSheet.GetSourceRectangle("HUD_exclamationmark_parenthesis"));
 		image.ResizeControlToFitImage();
-		image.ToolTip = "Some items in the category have overriding settings.";
+		image.ToolTip = UWGame.Locale.Text("Some items in the category have overriding settings.");
 		cpCategory.Add(image);
 		image.X = 256;
 		cpCategory.CenterOnHeader(image);
@@ -157,7 +157,7 @@ public class StockpileWindow : HUDWindow
 		imageButton.Click += cbCategory_Click;
 		imageButton.X = 318;
 		imageButton.EventArgs = eventArgs;
-		imageButton.ToolTip = "Stockpile everything in this category";
+		imageButton.ToolTip = UWGame.Locale.Text("Stockpile everything in this category");
 		imageButton.ID = UIComponent.DataControlID.CurrentCategoryOrders;
 		cpCategory.CenterOnHeader(imageButton);
 		categoryGrid = new Grid(gui, ListBoxType.HUDAndLCD, Label.LabelType.HUDWindow);
@@ -258,7 +258,7 @@ public class StockpileWindow : HUDWindow
 		imageButton.X = 251;
 		uIComponent.CenterChildVertically(imageButton);
 		imageButton.EventArgs = eventArgs;
-		imageButton.ToolTip = "Check the box to allow the item to be stockpiled. This will override the category setting.";
+		imageButton.ToolTip = UWGame.Locale.Text("Check the box to allow the item to be stockpiled. This will override the category setting.");
 		imageButton.ID = UIComponent.DataControlID.CurrentOrders;
 		imageButton.Click += cbItem_Click;
 		FillableBar fillableBar = new FillableBar(gui, FillableBar.FillableBarType.HUDSlider, canGrow: false, includeButtons: true, GameData.Instance.GUIConstants.TimeBetweenSliderButtonIncrements, GameData.Instance.GUIConstants.SliderButtonDelay);
@@ -269,10 +269,10 @@ public class StockpileWindow : HUDWindow
 		fillableBar.ShowMaxValueLabelAtEnd = false;
 		fillableBar.Width = 140;
 		fillableBar.MaxValue = GameData.Instance.GUIConstants.UnlimitedStockpileValue;
-		fillableBar.SliderTooltip = "Set the maximum that can be stockpiled";
-		fillableBar.ButtonTooltip = "Set the maximum that can be stockpiled";
+		fillableBar.SliderTooltip = UWGame.Locale.Text("Set the maximum that can be stockpiled");
+		fillableBar.ButtonTooltip = UWGame.Locale.Text("Set the maximum that can be stockpiled");
 		fillableBar.MaxSliderValueSymbol = "...";
-		fillableBar.MaxSliderValueTooltip = "No limit";
+		fillableBar.MaxSliderValueTooltip = UWGame.Locale.Text("No limit");
 		return uIComponent;
 	}
 
@@ -293,11 +293,11 @@ public class StockpileWindow : HUDWindow
 			image.Visible = true;
 			if (hiddenItemsAreDifferent)
 			{
-				image.ToolTip = "Some hidden item types have overriding settings that are different.";
+				image.ToolTip = UWGame.Locale.Text("Some hidden item types have overriding settings that are different.");
 			}
 			else
 			{
-				image.ToolTip = "Some item types have overriding settings that are different.";
+				image.ToolTip = UWGame.Locale.Text("Some item types have overriding settings that are different.");
 			}
 		}
 		else
@@ -469,11 +469,11 @@ public class StockpileWindow : HUDWindow
 		}
 		if (typeOfStockpile == Stockpile.TypesOfStockpiles.Normal)
 		{
-			lblHeader.Text = "STOCKPILE";
+			lblHeader.Text = UWGame.Locale.Text("STOCKPILE");
 		}
 		else
 		{
-			lblHeader.Text = "TRADE";
+			lblHeader.Text = UWGame.Locale.Text("TRADE");
 		}
 		string zoneName = "";
 		if (mapArea != null && mapArea.Zone != null)

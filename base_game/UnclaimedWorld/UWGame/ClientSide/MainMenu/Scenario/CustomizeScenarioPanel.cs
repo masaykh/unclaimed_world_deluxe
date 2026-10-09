@@ -76,7 +76,7 @@ public class CustomizeScenarioPanel : Panel
 	public event EventHandler CancelClick;
 
 	public CustomizeScenarioPanel(CommonInterface intf, Point position, CustomizeScenarioScreen screen)
-		: base(intf, "CREATE GAME", position, new Vector2(1000f, intf.gui.ScreenHeight - 180), Level.Middle)
+		: base(intf, UWGame.Locale.Text("CREATE GAME"), position, new Vector2(1000f, intf.gui.ScreenHeight - 180), Level.Middle)
 	{
 		this.screen = screen;
 		selectionColumnWidth = 148;
@@ -115,7 +115,7 @@ public class CustomizeScenarioPanel : Panel
 		lblExtraOptions = new Label(intf.gui);
 		pnCustom.Panel.Add(lblExtraOptions);
 		lblExtraOptions.Init(Label.LabelType.LCDSmallHeadingBanner);
-		lblExtraOptions.Text = "EXTRA OPTIONS";
+		lblExtraOptions.Text = UWGame.Locale.Text("EXTRA OPTIONS");
 		lblExtraOptions.Position = new Point(640, y2);
 		grdOptions = new Grid(intf.gui, ListBoxType.LCD, Label.LabelType.LCDNormal);
 		pnCustom.AddContentSetFullWidth(grdOptions);
@@ -148,15 +148,15 @@ public class CustomizeScenarioPanel : Panel
 		Window.Add(btCancel);
 		btCancel.Init(TextButton.TextButtonType.White);
 		btCancel.Position = new Point(displayBoxOptions.X - 2, y4);
-		btCancel.Text = "MAIN";
+		btCancel.Text = UWGame.Locale.Text("MAIN");
 		btCancel.ScaleWidthToFitText();
-		btCancel.ToolTip = "Return to the main menu";
+		btCancel.ToolTip = UWGame.Locale.Text("Return to the main menu");
 		btCancel.Click += btCancel_Click;
 		btStart = new TextButton(intf.gui);
 		Window.Add(btStart);
 		btStart.Init(TextButton.TextButtonType.White);
-		btStart.Text = "START";
-		btStart.ToolTip = "Start the game";
+		btStart.Text = UWGame.Locale.Text("START");
+		btStart.ToolTip = UWGame.Locale.Text("Start the game");
 		btStart.ScaleWidthToFitText();
 		btStart.Position = new Point(displayBoxOptions.Right - btStart.Width + 3, y4);
 		btStart.Click += btStart_Click;
@@ -268,7 +268,7 @@ public class CustomizeScenarioPanel : Panel
 					ComboBox cbOptionSelector = (ComboBox)item.FindChildById(UIComponent.DataControlID.Option);
 					if (cbOptionSelector.SelectedKey == null)
 					{
-						error = "INPUT NEEDED - Please make a selection under the EXTRA OPTIONS column for: " + optionSet2.Name;
+						error = UWGame.Locale.Text("INPUT NEEDED - Please make a selection under the EXTRA OPTIONS column for: ") + optionSet2.Name;
 						return false;
 					}
 					option = optionSet2.Options.First((Option o) => o.KeyName == (string)cbOptionSelector.SelectedKey);
@@ -344,7 +344,7 @@ public class CustomizeScenarioPanel : Panel
 		box.Add(label);
 		label.Init(Label.LabelType.LCDNormalLight);
 		label.X = 14;
-		label.Text = "DIFFICULTY:";
+		label.Text = UWGame.Locale.Text("DIFFICULTY:");
 		label.FitToText();
 		box.CenterChildVertically(label);
 		mainDifficultyRadioGroup = new RadioGroup(Interface.gui);
@@ -363,7 +363,7 @@ public class CustomizeScenarioPanel : Panel
 			rbCustom.Init(CheckBoxType.LCDRadio);
 			rbCustom.X = x;
 			rbCustom.Y = y;
-			rbCustom.Text = "CUSTOM";
+			rbCustom.Text = UWGame.Locale.Text("CUSTOM");
 			rbCustom.Click += rbCustom_Click;
 			x = rbCustom.Right + 12;
 		}
@@ -607,7 +607,7 @@ public class CustomizeScenarioPanel : Panel
 		uIComponent.Add(checkBox);
 		checkBox.Init(CheckBoxType.LCD);
 		checkBox.X = comboBox.Right + 12;
-		checkBox.Text = "RANDOMIZE";
+		checkBox.Text = UWGame.Locale.Text("RANDOMIZE");
 		checkBox.IsChecked = true;
 		checkBox.EventArgs = new CustomDifficultyRandomizeEventArgs
 		{

@@ -37,9 +37,9 @@ public class TileSelectionContextMenu : HUDWindow
 	private TextButton tbConnect;
 
 	private ImageButton btCycle;
-	public const string overlapsWarning = "The area overlaps with an existing stockpile";
+	public static string overlapsWarning => UWGame.Locale.Text("The area overlaps with an existing stockpile");
 
-	public const string notConnectedWarning = "Unable to do this, because the zone is not continuous";
+	public static string notConnectedWarning => UWGame.Locale.Text("Unable to do this, because the zone is not continuous");
 	public Window OpeningWindow;
 
 	public GatherResourcesWindow ZoneGatherResourcesWindow;
@@ -70,8 +70,8 @@ public class TileSelectionContextMenu : HUDWindow
 		Add(btCycle);
 		btCycle.Click += btCycle_Click;
 		tbConnect = new TextButton(gui);
-		tbConnect.Text = "Crop";
-		tbConnect.ToolTip = "Remove the areas that are not connected to the start point";
+		tbConnect.Text = UWGame.Locale.Text("Crop");
+		tbConnect.ToolTip = UWGame.Locale.Text("Remove the areas that are not connected to the start point");
 		tbConnect.Init(TextButton.TextButtonType.HUD);
 		tbConnect.Click += bt_ConnectClick;
 		int num = 2;
@@ -80,15 +80,15 @@ public class TileSelectionContextMenu : HUDWindow
 		btDelete = new ImageButton(gui);
 		Add(btDelete);
 		btDelete.Init(ImageButtonType.HUDDelete);
-		btDelete.ToolTip = "Delete the zone";
+		btDelete.ToolTip = UWGame.Locale.Text("Delete the zone");
 		btDelete.Y = 6;
 		btDelete.X = btCycle.Right + 6;
 		btDelete.Click += bt_DeleteClick;
 		num = 43;
 		tbGather = new TextButton(gui);
 		Add(tbGather);
-		tbGather.Text = "GATHER";
-		tbGather.ToolTip = "Select resources to harvest in the zone";
+		tbGather.Text = UWGame.Locale.Text("GATHER");
+		tbGather.ToolTip = UWGame.Locale.Text("Select resources to harvest in the zone");
 		tbGather.Init(TextButton.TextButtonType.HUDGather);
 		tbGather.Click += btGather_Click;
 		tbGather.Y = num;
@@ -99,8 +99,8 @@ public class TileSelectionContextMenu : HUDWindow
 		num += num3;
 		tbStockpile = new TextButton(gui);
 		Add(tbStockpile);
-		tbStockpile.Text = "STOCKPILE";
-		tbStockpile.ToolTip = "Stockpile items in this zone";
+		tbStockpile.Text = UWGame.Locale.Text("STOCKPILE");
+		tbStockpile.ToolTip = UWGame.Locale.Text("Stockpile items in this zone");
 		tbStockpile.Init(TextButton.TextButtonType.HUDStockpile);
 		tbStockpile.Click += btStockpile_Click;
 		tbStockpile.Y = num;
@@ -110,8 +110,8 @@ public class TileSelectionContextMenu : HUDWindow
 		num += num3;
 		tbScout = new TextButton(gui);
 		Add(tbScout);
-		tbScout.Text = "SCOUT";
-		tbScout.ToolTip = "Explore the zone briefly";
+		tbScout.Text = UWGame.Locale.Text("SCOUT");
+		tbScout.ToolTip = UWGame.Locale.Text("Explore the zone briefly");
 		tbScout.Init(TextButton.TextButtonType.HUDScout);
 		tbScout.Click += btScout_Click;
 		tbScout.Y = num;
@@ -121,8 +121,8 @@ public class TileSelectionContextMenu : HUDWindow
 		num += num3;
 		tbForage = new TextButton(gui);
 		Add(tbForage);
-		tbForage.Text = "EXAMINE";
-		tbForage.ToolTip = "Make a thorough examination of the area to uncover hidden resources";
+		tbForage.Text = UWGame.Locale.Text("EXAMINE");
+		tbForage.ToolTip = UWGame.Locale.Text("Make a thorough examination of the area to uncover hidden resources");
 		tbForage.Init(TextButton.TextButtonType.HUDForage);
 		tbForage.Click += btExamine_Click;
 		tbForage.Y = num;
@@ -132,8 +132,8 @@ public class TileSelectionContextMenu : HUDWindow
 		num += num3;
 		tbPatrol = new TextButton(gui);
 		Add(tbPatrol);
-		tbPatrol.Text = "PATROL";
-		tbPatrol.ToolTip = "Patrol the zone continously and engage any threats that appear (Required stance: Fearless)";
+		tbPatrol.Text = UWGame.Locale.Text("PATROL");
+		tbPatrol.ToolTip = UWGame.Locale.Text("Patrol the zone continously and engage any threats that appear (Required stance: Fearless)");
 		tbPatrol.Init(TextButton.TextButtonType.HUDPatrol);
 		tbPatrol.Click += tbPatrol_Click;
 		tbPatrol.Y = num;
@@ -143,8 +143,8 @@ public class TileSelectionContextMenu : HUDWindow
 		num += num3;
 		tbAttack = new TextButton(gui);
 		Add(tbAttack);
-		tbAttack.Text = "ATTACK";
-		tbAttack.ToolTip = "Do a combat sweep of the area, attacking any entities of the specified type (Required stance: Fearless)";
+		tbAttack.Text = UWGame.Locale.Text("ATTACK");
+		tbAttack.ToolTip = UWGame.Locale.Text("Do a combat sweep of the area, attacking any entities of the specified type (Required stance: Fearless)");
 		tbAttack.Init(TextButton.TextButtonType.HUDAttack);
 		tbAttack.Click += tbAttack_Click;
 		tbAttack.Y = num;
@@ -154,8 +154,8 @@ public class TileSelectionContextMenu : HUDWindow
 		num += num3;
 		tbHunt = new TextButton(gui);
 		Add(tbHunt);
-		tbHunt.Text = "HUNT";
-		tbHunt.ToolTip = "Locate and hunt prey in the zone.";
+		tbHunt.Text = UWGame.Locale.Text("HUNT");
+		tbHunt.ToolTip = UWGame.Locale.Text("Locate and hunt prey in the zone.");
 		tbHunt.Init(TextButton.TextButtonType.HUDHunt);
 		tbHunt.Click += tbHunt_Click;
 		tbHunt.Y = num;
@@ -188,7 +188,7 @@ public class TileSelectionContextMenu : HUDWindow
 	{
 		btCycle = new ImageButton(gui);
 		btCycle.Init(ImageButtonType.HUDCycleEntity);
-		btCycle.ToolTip = "Cycle through entities in the zone";
+		btCycle.ToolTip = UWGame.Locale.Text("Cycle through entities in the zone");
 		btCycle.Y = 6;
 		btCycle.X = xPos;
 	}
@@ -342,19 +342,19 @@ public class TileSelectionContextMenu : HUDWindow
 		if (flag12)
 		{
 			tbStockpile.Enabled = false;
-			tbStockpile.ToolTip = "The area overlaps with an existing stockpile";
+			tbStockpile.ToolTip = UWGame.Locale.Text("The area overlaps with an existing stockpile");
 		}
 		List<TerrainTile> connectedTiles = null;
 		bool flag13 = mapArea.CheckConnectivity(createList: false, ref connectedTiles);
 		if (!flag13 && !flag12)
 		{
 			tbStockpile.Enabled = false;
-			tbStockpile.ToolTip = "Unable to do this, because the zone is not continuous";
+			tbStockpile.ToolTip = UWGame.Locale.Text("Unable to do this, because the zone is not continuous");
 		}
 		if (!flag12 && flag13)
 		{
 			tbStockpile.Enabled = true;
-			tbStockpile.ToolTip = "Stockpile items in this zone";
+			tbStockpile.ToolTip = UWGame.Locale.Text("Stockpile items in this zone");
 		}
 	}
 

@@ -166,16 +166,16 @@ public class EntityCRTContent
 		pnPerson.Height = crtContent.Height;
 		pnPerson.RenderType = RenderType.CRTAndLCD;
 		int yPos = 10;
-		AddCRTCaptionAndLabel(pnPerson, "AGE:", ref lblPersonAge, ref yPos);
-		AddCRTCaptionAndLabel(pnPerson, "SEX:", ref lblPersonSex, ref yPos);
-		AddCRTCaptionAndLabel(pnPerson, "HEIGHT:", ref lblPersonHeight, ref yPos);
-		AddCRTCaptionAndLabel(pnPerson, "WEIGHT:", ref lblPersonWeight, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("AGE:"), ref lblPersonAge, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("SEX:"), ref lblPersonSex, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("HEIGHT:"), ref lblPersonHeight, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("WEIGHT:"), ref lblPersonWeight, ref yPos);
 		yPos += 6;
-		AddCRTCaptionAndLabel(pnPerson, "FAMILY:", ref lblPersonFamily, ref yPos);
-		AddCRTCaptionAndLabel(pnPerson, "HOME:", ref lblPersonHome, ref yPos);
-		AddCRTCaptionAndLabel(pnPerson, "HEALTH:", ref lblPersonHealth, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("FAMILY:"), ref lblPersonFamily, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("HOME:"), ref lblPersonHome, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("HEALTH:"), ref lblPersonHealth, ref yPos);
 		yPos += 6;
-		AddCRTCaptionAndLabel(pnPerson, "CURRENT JOB:", ref lblPersonOccupation, ref yPos);
+		AddCRTCaptionAndLabel(pnPerson, UWGame.Locale.Text("CURRENT JOB:"), ref lblPersonOccupation, ref yPos);
 		yPos += 6;
 		lblFlavourLine1 = new Label(gui);
 		pnPerson.Add(lblFlavourLine1);
@@ -207,10 +207,10 @@ public class EntityCRTContent
 		pnBillboards.Width = crtContent.Width;
 		pnBillboards.Height = crtContent.Height;
 		int yPos = 10;
-		AddCRTCaptionAndLabel(pnStructure, "MATERIALS:", ref lblStructureMaterialsRequired, ref yPos);
+		AddCRTCaptionAndLabel(pnStructure, UWGame.Locale.Text("MATERIALS:"), ref lblStructureMaterialsRequired, ref yPos);
 		yPos += 6;
-		AddCRTCaptionAndLabel(pnStructure, "CONDITION:", ref lblStructureCondition, ref yPos);
-		AddCRTCaptionAndLabel(pnStructure, "ENERGY:", ref lblStructureEnergy, ref yPos);
+		AddCRTCaptionAndLabel(pnStructure, UWGame.Locale.Text("CONDITION:"), ref lblStructureCondition, ref yPos);
+		AddCRTCaptionAndLabel(pnStructure, UWGame.Locale.Text("ENERGY:"), ref lblStructureEnergy, ref yPos);
 		yPos += 6;
 		yPos += 6;
 		yPos += 6;
@@ -231,15 +231,15 @@ public class EntityCRTContent
 		pnVehicle.Height = crtContent.Height;
 		pnVehicle.RenderType = RenderType.CRTAndLCD;
 		int yPos = 10;
-		AddCRTCaptionAndLabel(pnVehicle, "WORK REQD.:", ref lblVehicleWorkRequired, ref yPos);
+		AddCRTCaptionAndLabel(pnVehicle, UWGame.Locale.Text("WORK REQD.:"), ref lblVehicleWorkRequired, ref yPos);
 		yPos += 6;
-		AddCRTCaptionAndLabel(pnVehicle, "CAPACITY:", ref lblVehicleCapacity, ref yPos);
+		AddCRTCaptionAndLabel(pnVehicle, UWGame.Locale.Text("CAPACITY:"), ref lblVehicleCapacity, ref yPos);
 		yPos += 6;
-		AddCRTCaptionAndLabel(pnVehicle, "SPEED:", ref lblVehicleSpeed, ref yPos);
-		AddCRTCaptionAndLabel(pnVehicle, "RANGE:", ref lblVehicleRange, ref yPos);
+		AddCRTCaptionAndLabel(pnVehicle, UWGame.Locale.Text("SPEED:"), ref lblVehicleSpeed, ref yPos);
+		AddCRTCaptionAndLabel(pnVehicle, UWGame.Locale.Text("RANGE:"), ref lblVehicleRange, ref yPos);
 		yPos += 6;
-		AddCRTCaptionAndLabel(pnVehicle, "CONDITION:", ref lblVehicleCondition, ref yPos);
-		AddCRTCaptionAndLabel(pnVehicle, "ENERGY:", ref lblVehicleEnergy, ref yPos);
+		AddCRTCaptionAndLabel(pnVehicle, UWGame.Locale.Text("CONDITION:"), ref lblVehicleCondition, ref yPos);
+		AddCRTCaptionAndLabel(pnVehicle, UWGame.Locale.Text("ENERGY:"), ref lblVehicleEnergy, ref yPos);
 		yPos += 6;
 		yPos += 6;
 		yPos += 6;
@@ -383,11 +383,11 @@ public class EntityCRTContent
 			{
 				if (entity.BiologicalEntity.Mate != null)
 				{
-					lblPersonFamily.Text = "MARRIED";
+					lblPersonFamily.Text = UWGame.Locale.Text("MARRIED");
 				}
 				else
 				{
-					lblPersonFamily.Text = "SINGLE";
+					lblPersonFamily.Text = UWGame.Locale.Text("SINGLE");
 				}
 			}
 			else
@@ -395,10 +395,10 @@ public class EntityCRTContent
 				lblPersonFamily.Text = "-";
 			}
 			lblPersonAge.Text = ((int)entity.BiologicalEntity.AgeGroup.Age).ToString();
-			lblPersonHeight.Text = (int)(100f * entity.BiologicalEntity.AdultTargetHeight) + " CM";
-			lblPersonWeight.Text = (int)entity.BiologicalEntity.AdultTargetWeight + " KG";
-			lblPersonHealth.Text = "EXCELLENT";
-			StringBuilder stringBuilder = new StringBuilder("SKILLS: ");
+			lblPersonHeight.Text = (int)(100f * entity.BiologicalEntity.AdultTargetHeight) + " " + UWGame.Locale.Text("CM");
+			lblPersonWeight.Text = (int)entity.BiologicalEntity.AdultTargetWeight + " " + UWGame.Locale.Text("KG");
+			lblPersonHealth.Text = UWGame.Locale.Text("EXCELLENT");
+			StringBuilder stringBuilder = new StringBuilder(UWGame.Locale.Text("SKILLS:") + " ");
 			string value = "";
 			int num = 0;
 			foreach (KeyValuePair<SkillType, Skill> skill in entity.Intelligence.Skills)
@@ -414,9 +414,9 @@ public class EntityCRTContent
 			}
 			lblFlavourLine1.Text = stringBuilder.ToString();
 			lblFlavourLine1.Width = pnPerson.Width - 68;
-			lblFlavourLine2.Text = "WEALTH: 12000c";
-			lblFlavourLine2.Text += ", CHILDREN: 0";
-			lblFlavourLine2.Text += ", CRIMES: NONE";
+			lblFlavourLine2.Text = UWGame.Locale.Text("WEALTH: 12000c");
+			lblFlavourLine2.Text += UWGame.Locale.Text(", CHILDREN: 0");
+			lblFlavourLine2.Text += UWGame.Locale.Text(", CRIMES: NONE");
 		}
 		else if (entity.Structure != null)
 		{
@@ -426,7 +426,7 @@ public class EntityCRTContent
 			{
 				crtContent.Add(pnBillboards);
 			}
-			lblStructureCondition.Text = "GOOD";
+			lblStructureCondition.Text = UWGame.Locale.Text("GOOD");
 			taStructureDescription.Text = entity.EntityType.Description.ToUpper(Config.Culture);
 		}
 		else if (entity.Vehicle != null)
@@ -434,11 +434,11 @@ public class EntityCRTContent
 			crtContent.Add(pnVehicle);
 			pnVehicle.Y = pnHeading.Y + pnHeading.Height;
 			taVehicleDescription.Text = entity.EntityType.Description.ToUpper(Config.Culture);
-			lblVehicleWorkRequired.Text = "2000 MAN HRS";
-			lblVehicleCapacity.Text = "3 SEATS / MAX 500 KG";
-			lblVehicleCondition.Text = "GOOD";
-			lblVehicleRange.Text = "600 KM";
-			lblVehicleSpeed.Text = "280 KM/H";
+			lblVehicleWorkRequired.Text = UWGame.Locale.Text("2000 MAN HRS");
+			lblVehicleCapacity.Text = UWGame.Locale.Text("3 SEATS / MAX 500 KG");
+			lblVehicleCondition.Text = UWGame.Locale.Text("GOOD");
+			lblVehicleRange.Text = UWGame.Locale.Text("600 KM");
+			lblVehicleSpeed.Text = UWGame.Locale.Text("280 KM/H");
 		}
 	}
 

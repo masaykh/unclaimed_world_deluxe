@@ -165,7 +165,7 @@ public class EventDialog : Panel
 		buttons[index].ScaleWidthToFitText();
 	}
 
-	public void ShowImageAndText(string imageName, string heading, string text, bool showOkButton = true, string okButtonText = "OK", string okButtonTooltip = null, int? okButtonWidth = null, bool showCancelButton = false, string cancelButtonText = "CANCEL", string cancelButtonTooltip = null, int? cancelButtonWidth = null, Mode mode = Mode.NewEvent)
+	public void ShowImageAndText(string imageName, string heading, string text, bool showOkButton = true, string okButtonText = null, string okButtonTooltip = null, int? okButtonWidth = null, bool showCancelButton = false, string cancelButtonText = null, string cancelButtonTooltip = null, int? cancelButtonWidth = null, Mode mode = Mode.NewEvent)
 	{
 		FillImageAndText(imageName, heading, text);
 		dialogOptions = null;
@@ -173,12 +173,12 @@ public class EventDialog : Panel
 		if (showOkButton)
 		{
 			TextButton button = buttons[0];
-			SetupButton(Window, buttonsOnForm, okButtonText, okButtonTooltip, okButtonWidth, button);
+			SetupButton(Window, buttonsOnForm, okButtonText ?? UWGame.Locale.Text("OK"), okButtonTooltip, okButtonWidth, button);
 		}
 		if (showCancelButton)
 		{
 			TextButton button2 = buttons[1];
-			SetupButton(Window, buttonsOnForm, cancelButtonText, cancelButtonTooltip, cancelButtonWidth, button2);
+			SetupButton(Window, buttonsOnForm, cancelButtonText ?? UWGame.Locale.Text("CANCEL"), cancelButtonTooltip, cancelButtonWidth, button2);
 		}
 		ArrangeButtons(buttonsOnForm, buttons, 451, 756);
 	}

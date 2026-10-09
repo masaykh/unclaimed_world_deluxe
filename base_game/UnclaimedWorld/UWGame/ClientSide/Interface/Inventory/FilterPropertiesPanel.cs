@@ -45,7 +45,7 @@ public class FilterPropertiesPanel : UIComponent
 		PopulateFilterSettingsCombo();
 		cbFilter.SelectedIndex = 0;
 		cbFilter.SelectionChanged += cbFilter_SelectionChanged;
-		cbFilter.ToolTip = "Select filter";
+		cbFilter.ToolTip = UWGame.Locale.Text("Select filter");
 		cbFilter.DebugTag = "cbFilter";
 		grdHrzFilterContainer = new Grid(gui, ListBoxType.LCD, Label.LabelType.LCDNormal);
 		grdHrzFilterContainer.FixedItemHeights = false;
@@ -73,7 +73,7 @@ public class FilterPropertiesPanel : UIComponent
 		Add(ibRemoveAllFilters);
 		ibRemoveAllFilters.InitWithIcon(ImageButtonType.LCD, "HUD_icon_trash", hasCheckedState: false);
 		ibRemoveAllFilters.Click += tbRemoveAllFilters_Click;
-		ibRemoveAllFilters.ToolTip = "Remove all filters";
+		ibRemoveAllFilters.ToolTip = UWGame.Locale.Text("Remove all filters");
 		ibRemoveAllFilters.X = 190;
 		ibRemoveAllFilters.Y = 0;
 		ibRemoveAllFilters.Height = 30;
@@ -132,13 +132,13 @@ public class FilterPropertiesPanel : UIComponent
 	{
 		if (ibSearch.IsChecked)
 		{
-			ibSearch.ToolTip = "Click to deactivate the text filter";
+			ibSearch.ToolTip = UWGame.Locale.Text("Click to deactivate the text filter");
 			tbSearch.Enabled = false;
-			tbSearch.ToolTip = $"Search term: '{tbSearch.Text}' The search text cannot be changed when the search button is active.";
+			tbSearch.ToolTip = string.Format(UWGame.Locale.Text("Search term: '{0}' The search text cannot be changed when the search button is active."), tbSearch.Text);
 		}
 		else
 		{
-			ibSearch.ToolTip = "Click to activate the text filter using the text in the search field";
+			ibSearch.ToolTip = UWGame.Locale.Text("Click to activate the text filter using the text in the search field");
 			tbSearch.Enabled = true;
 			tbSearch.ToolTip = "";
 		}
@@ -217,7 +217,7 @@ public class FilterPropertiesPanel : UIComponent
 		textButton.Height = 30;
 		textButton.ID = DataControlID.Filter;
 		textButton.Tag1 = filter;
-		textButton.ToolTip = "Click to remove";
+		textButton.ToolTip = UWGame.Locale.Text("Click to remove");
 		textButton.OrderByTag1 = (float)textButton.Width;
 		hzlFilters.AddEntry(filter, textButton);
 	}
@@ -225,7 +225,7 @@ public class FilterPropertiesPanel : UIComponent
 	private void PopulateFilterSettingsCombo()
 	{
 		Enum.GetValues(typeof(StaticFilterSettings));
-		cbFilter.AddEntry("ADDFILTER", "Add Filter:");
+		cbFilter.AddEntry("ADDFILTER", UWGame.Locale.Text("Add Filter:"));
 		string[] productionFilterSettings = GameData.Instance.GUIConstants.ProductionFilterSettings;
 		foreach (string key in productionFilterSettings)
 		{

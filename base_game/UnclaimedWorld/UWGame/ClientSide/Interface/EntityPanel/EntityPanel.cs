@@ -129,23 +129,23 @@ public class EntityPanel : ExpandedPanel
 		{
 			if (SelectedEntity.Intelligence != null && SelectedEntity.Locomotor.LeggedLocomotor != null)
 			{
-				tabButtonPanel.AddButton("STATS", "", SkillsAndAttributes, 3);
+				tabButtonPanel.AddButton(UWGame.Locale.Text("STATS"), "", SkillsAndAttributes, 3);
 			}
 			if (SelectedEntity.PersonEntity != null)
 			{
-				tabButtonPanel.AddButton("HOUSEHOLD", "", History, 2);
+				tabButtonPanel.AddButton(UWGame.Locale.Text("HOUSEHOLD"), "", History, 2);
 			}
 			if (SelectedEntity.BiologicalEntity != null)
 			{
-				tabButtonPanel.AddButton("HEALTH", "", History, 1);
+				tabButtonPanel.AddButton(UWGame.Locale.Text("HEALTH"), "", History, 1);
 			}
 			if (SelectedEntity.Intelligence != null && SelectedEntity.EntityType.IntelligenceType.AttackTypes != null && SelectedEntity.EntityType.IntelligenceType.AttackTypes.Count > 0)
 			{
-				tabButtonPanel.AddButton("COMBAT", "", CombatHistory, 4);
+				tabButtonPanel.AddButton(UWGame.Locale.Text("COMBAT"), "", CombatHistory, 4);
 			}
 			if (SelectedEntity.Intelligence != null)
 			{
-				tabButtonPanel.AddButton("HISTORY", "", History, 4);
+				tabButtonPanel.AddButton(UWGame.Locale.Text("HISTORY"), "", History, 4);
 			}
 			TabButtonContainer buttonContainer = tabButtonPanel.GetButtonContainer(CurrentTab);
 			if (tabButtonPanel.GetListOfButtons().Count == 0)

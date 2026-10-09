@@ -32,9 +32,9 @@ public class Kills : LedgerSheet
 
 	private int gridYPos;
 
-	public override string DisplayName => "Kills";
+	public override string DisplayName => UWGame.Locale.Text("Kills");
 
-	public override string Tooltip => "Shows the number of killed creatures.";
+	public override string Tooltip => UWGame.Locale.Text("Shows the number of killed creatures.");
 
 	public override bool ShowRangeSelector => false;
 
@@ -68,7 +68,7 @@ public class Kills : LedgerSheet
 		bottomContainer.Add(label);
 		label.Init(Label.LabelType.LCDNormal);
 		label.X = 30;
-		label.Text = "TOTAL:";
+		label.Text = UWGame.Locale.Text("TOTAL:");
 		label.FitToText();
 		bottomContainer.CenterChildVertically(label);
 		lblTotalKilled = new Label(gui);
@@ -80,8 +80,8 @@ public class Kills : LedgerSheet
 
 	private void CreateTooltips()
 	{
-		nameTooltip = CreateTooltip("Name", "Name of product");
-		killedTooltip = CreateTooltip("Killed", "Killed by the colony");
+		nameTooltip = CreateTooltip(UWGame.Locale.Text("Name"), UWGame.Locale.Text("Name of product"));
+		killedTooltip = CreateTooltip(UWGame.Locale.Text("Killed"), UWGame.Locale.Text("Killed by the colony"));
 	}
 
 	private void ResizeHeight()
@@ -110,8 +110,8 @@ public class Kills : LedgerSheet
 		sortingButtons.Position = new Point(0, 0);
 		Add(sortingButtons);
 		sortingButtons.SortClicked += tbSort_Click;
-		sortingButtons.AddTextButton(215, "NAME", KillsSettings.SortColumns.Name, nameTooltip);
-		sortingButtons.AddTextButton(90, "KILLED.", KillsSettings.SortColumns.Kills, killedTooltip);
+		sortingButtons.AddTextButton(215, UWGame.Locale.Text("NAME"), KillsSettings.SortColumns.Name, nameTooltip);
+		sortingButtons.AddTextButton(90, UWGame.Locale.Text("KILLED."), KillsSettings.SortColumns.Kills, killedTooltip);
 	}
 
 	private void tbSort_Click()

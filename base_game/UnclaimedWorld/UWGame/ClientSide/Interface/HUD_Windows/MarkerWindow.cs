@@ -113,7 +113,7 @@ public class MarkerWindow : HUDWindow
 		buttonExpand.Init(ImageButtonType.HUDArrowRight);
 		buttonExpand.Click += expandButton_Click;
 		buttonExpand.X = DisplayWindow.Width - buttonExpand.Width - 6;
-		buttonExpand.ToolTip = "Click to see the actions that can be taken";
+		buttonExpand.ToolTip = UWGame.Locale.Text("Click to see the actions that can be taken");
 		buttonExpand.ZOrder = 1f;
 		DisplayWindow.CenterChildVertically(buttonExpand);
 		DisplayWindow.ViewPort.MouseOver += ViewPort_MouseOver;
@@ -666,15 +666,15 @@ public class MarkerWindow : HUDWindow
 		{
 			if (blockedByThreat)
 			{
-				image.ToolTip = "Dangerous area. To enter the area, a person must have Fearless stance. (Use a PATROL zone to clear the area of threats.)";
+				image.ToolTip = UWGame.Locale.Text("Dangerous area. To enter the area, a person must have Fearless stance. (Use a PATROL zone to clear the area of threats.)");
 			}
 			else if (jobIsInaccessible)
 			{
-				image.ToolTip = "Task cannot be completed because area is inaccessible - due to terrain or obstacles blocking the way";
+				image.ToolTip = UWGame.Locale.Text("Task cannot be completed because area is inaccessible - due to terrain or obstacles blocking the way");
 			}
 			else
 			{
-				image.ToolTip = "No camp members can do this dangerous task (Required stance: Fearless)";
+				image.ToolTip = UWGame.Locale.Text("No camp members can do this dangerous task (Required stance: Fearless)");
 			}
 			image.Color = Color.Red;
 		}

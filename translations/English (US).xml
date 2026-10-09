@@ -113,6 +113,10 @@
     <Value>{0} CHANGED|{0} CHANGED</Value>
   </String>
   <String>
+    <Key>(COUNT){0} Passengers</Key>
+    <Value>{0} Passenger|{0} Passengers</Value>
+  </String>
+  <String>
     <Key>(CREATURE DESCRIPTION)entity:bajingan</Key>
     <Value>
  FEEDING CLASSIFICATION: Omnivore.
@@ -1990,92 +1994,1154 @@ SANTILLA: Can't wait.
     <Value>The Wharf</Value>
   </String>
   <String>
+    <Key>(GUI CONSTANTS FIRSTTOOLOPTION)guiConstants</Key>
+    <Value>PRIMARY TOOL OPTIONS:</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS SECONDTOOLOPTION)guiConstants</Key>
+    <Value>SECONDARY TOOL OPTIONS:</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS THIRDTOOLOPTION)guiConstants</Key>
+    <Value>THIRD TOOL OPTIONS:</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[0].DisplayName</Key>
+    <Value>Outside</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[1].DisplayName</Key>
+    <Value>Outside (protected part)</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[1].Tooltip</Key>
+    <Value>Used as a part in a structure that provides some protection against the environment</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[2].DisplayName</Key>
+    <Value>Inside</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[3].DisplayName</Key>
+    <Value>Earth cooled</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[4].DisplayName</Key>
+    <Value>Refrigerated</Value>
+  </String>
+  <String>
+    <Key>(GUI CONSTANTS)guiConstants/StorageDurationToDisplay[5].DisplayName</Key>
+    <Value>Freezer</Value>
+  </String>
+  <String>
+    <Key>(GUI)
+ 
+Click to see the list</Key>
+    <Value>
+ 
+Click to see the list</Value>
+  </String>
+  <String>
+    <Key>(GUI)
+ Input for:
+</Key>
+    <Value>
+ Input for:
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)
+ Output from:
+</Key>
+    <Value>
+ Output from:
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)
+ Tool for making:
+</Key>
+    <Value>
+ Tool for making:
+</Value>
+  </String>
+  <String>
+    <Key>(GUI) (HIRED)</Key>
+    <Value> (HIRED)</Value>
+  </String>
+  <String>
+    <Key>(GUI) (trading)</Key>
+    <Value> (trading)</Value>
+  </String>
+  <String>
+    <Key>(GUI) / Needed: </Key>
+    <Value> / Needed: </Value>
+  </String>
+  <String>
+    <Key>(GUI) BLK</Key>
+    <Value> BLK</Value>
+  </String>
+  <String>
+    <Key>(GUI) is no longer functional. It has a broken part.</Key>
+    <Value> is no longer functional. It has a broken part.</Value>
+  </String>
+  <String>
+    <Key>(GUI) items are available.</Key>
+    <Value> items are available.</Value>
+  </String>
+  <String>
+    <Key>(GUI) items are being produced</Key>
+    <Value> items are being produced</Value>
+  </String>
+  <String>
+    <Key>(GUI) items are off-site</Key>
+    <Value> items are off-site</Value>
+  </String>
+  <String>
+    <Key>(GUI) items are owned by others</Key>
+    <Value> items are owned by others</Value>
+  </String>
+  <String>
+    <Key>(GUI) items are parts</Key>
+    <Value> items are parts</Value>
+  </String>
+  <String>
+    <Key>(GUI) items in inventory.</Key>
+    <Value> items in inventory.</Value>
+  </String>
+  <String>
+    <Key>(GUI)'ATTAINABLE': Also lists objects that can be made in the future, based on the resource types that have been discovered.</Key>
+    <Value>'ATTAINABLE': Also lists objects that can be made in the future, based on the resource types that have been discovered.</Value>
+  </String>
+  <String>
+    <Key>(GUI)'AVAILABLE NOW': Lists only objects that are owned by the colony now or can be made in one step.</Key>
+    <Value>'AVAILABLE NOW': Lists only objects that are owned by the colony now or can be made in one step.</Value>
+  </String>
+  <String>
+    <Key>(GUI)'ENCYCLOPEDIA': Shows all known blueprints of every item/process currently stored in the PPU</Key>
+    <Value>'ENCYCLOPEDIA': Shows all known blueprints of every item/process currently stored in the PPU</Value>
+  </String>
+  <String>
     <Key>(GUI)(Missing)</Key>
     <Value>(Missing)</Value>
+  </String>
+  <String>
+    <Key>(GUI)(last known status)</Key>
+    <Value>(last known status)</Value>
+  </String>
+  <String>
+    <Key>(GUI)*:part of this item.</Key>
+    <Value>*:part of this item.</Value>
+  </String>
+  <String>
+    <Key>(GUI), CHILDREN: 0</Key>
+    <Value>, CHILDREN: 0</Value>
+  </String>
+  <String>
+    <Key>(GUI), CRIMES: NONE</Key>
+    <Value>, CRIMES: NONE</Value>
+  </String>
+  <String>
+    <Key>(GUI), customPanel.Category: null</Key>
+    <Value>, customPanel.Category: null</Value>
+  </String>
+  <String>
+    <Key>(GUI), customPanel: null</Key>
+    <Value>, customPanel: null</Value>
+  </String>
+  <String>
+    <Key>(GUI), entityExists: </Key>
+    <Value>, entityExists: </Value>
+  </String>
+  <String>
+    <Key>(GUI), for example: </Key>
+    <Value>, for example: </Value>
+  </String>
+  <String>
+    <Key>(GUI), outerGrid: not null</Key>
+    <Value>, outerGrid: not null</Value>
+  </String>
+  <String>
+    <Key>(GUI), outerGrid: null</Key>
+    <Value>, outerGrid: null</Value>
+  </String>
+  <String>
+    <Key>(GUI), panelHasData: </Key>
+    <Value>, panelHasData: </Value>
+  </String>
+  <String>
+    <Key>(GUI). Colonists will not eat these and workshops will not use them, unless someone is starving. </Key>
+    <Value>. Colonists will not eat these and workshops will not use them, unless someone is starving. </Value>
+  </String>
+  <String>
+    <Key>(GUI)...Used for more objects than shown!</Key>
+    <Value>...Used for more objects than shown!</Value>
+  </String>
+  <String>
+    <Key>(GUI)/ KM</Key>
+    <Value>/ KM</Value>
+  </String>
+  <String>
+    <Key>(GUI)0 (at max.)</Key>
+    <Value>0 (at max.)</Value>
+  </String>
+  <String>
+    <Key>(GUI)1. Let the inhabitants grow accustomed to a higher {0} rating.</Key>
+    <Value>1. Let the inhabitants grow accustomed to a higher {0} rating.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2. Attract immigrants with high {0} principles.</Key>
+    <Value>2. Attract immigrants with high {0} principles.</Value>
+  </String>
+  <String>
+    <Key>(GUI)2000 MAN HRS</Key>
+    <Value>2000 MAN HRS</Value>
+  </String>
+  <String>
+    <Key>(GUI)280 KM/H</Key>
+    <Value>280 KM/H</Value>
+  </String>
+  <String>
+    <Key>(GUI)3 SEATS / MAX 500 KG</Key>
+    <Value>3 SEATS / MAX 500 KG</Value>
+  </String>
+  <String>
+    <Key>(GUI)4      Night piper (2), Tree dragon (1), Hecatonth (1)</Key>
+    <Value>4      Night piper (2), Tree dragon (1), Hecatonth (1)</Value>
+  </String>
+  <String>
+    <Key>(GUI)600 KM</Key>
+    <Value>600 KM</Value>
+  </String>
+  <String>
+    <Key>(GUI)A worker with '{0}' skill is needed</Key>
+    <Value>A worker with '{0}' skill is needed</Value>
+  </String>
+  <String>
+    <Key>(GUI)ABANDON</Key>
+    <Value>ABANDON</Value>
+  </String>
+  <String>
+    <Key>(GUI)ABANDON. Stop using this structure</Key>
+    <Value>ABANDON. Stop using this structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)ADD ACTION</Key>
+    <Value>ADD ACTION</Value>
+  </String>
+  <String>
+    <Key>(GUI)AGE:</Key>
+    <Value>AGE:</Value>
+  </String>
+  <String>
+    <Key>(GUI)AGE: 34</Key>
+    <Value>AGE: 34</Value>
+  </String>
+  <String>
+    <Key>(GUI)AGE: {0}</Key>
+    <Value>AGE: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)ALPHA</Key>
+    <Value>ALPHA</Value>
+  </String>
+  <String>
+    <Key>(GUI)AMMO USAGE</Key>
+    <Value>AMMO USAGE</Value>
+  </String>
+  <String>
+    <Key>(GUI)AMMUNITION:</Key>
+    <Value>AMMUNITION:</Value>
+  </String>
+  <String>
+    <Key>(GUI)AMOUNT</Key>
+    <Value>AMOUNT</Value>
+  </String>
+  <String>
+    <Key>(GUI)AND</Key>
+    <Value>AND</Value>
+  </String>
+  <String>
+    <Key>(GUI)ANIMALS</Key>
+    <Value>ANIMALS</Value>
+  </String>
+  <String>
+    <Key>(GUI)ATTACK</Key>
+    <Value>ATTACK</Value>
+  </String>
+  <String>
+    <Key>(GUI)ATTRIBUTES</Key>
+    <Value>ATTRIBUTES</Value>
+  </String>
+  <String>
+    <Key>(GUI)AVAILABLE</Key>
+    <Value>AVAILABLE</Value>
   </String>
   <String>
     <Key>(GUI)Accepts the changes and closes the dialog.</Key>
     <Value>Accepts the changes and closes the dialog.</Value>
   </String>
   <String>
+    <Key>(GUI)Accepts the order and closes the dialog.</Key>
+    <Value>Accepts the order and closes the dialog.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Action already exists.</Key>
+    <Value>Action already exists.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Activate the SCAN button to highlight resources in the terrain view</Key>
+    <Value>Activate the SCAN button to highlight resources in the terrain view</Value>
+  </String>
+  <String>
+    <Key>(GUI)Add Filter:</Key>
+    <Value>Add Filter:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Affects comfort rating</Key>
+    <Value>Affects comfort rating</Value>
+  </String>
+  <String>
+    <Key>(GUI)Affects food rating</Key>
+    <Value>Affects food rating</Value>
+  </String>
+  <String>
+    <Key>(GUI)Affects security rating</Key>
+    <Value>Affects security rating</Value>
+  </String>
+  <String>
+    <Key>(GUI)After increasing {0} to {1} the estimated time to reach majority is: {2}</Key>
+    <Value>After increasing {0} to {1} the estimated time to reach majority is: {2}</Value>
+  </String>
+  <String>
+    <Key>(GUI)All</Key>
+    <Value>All</Value>
+  </String>
+  <String>
+    <Key>(GUI)Also attack vermin</Key>
+    <Value>Also attack vermin</Value>
+  </String>
+  <String>
+    <Key>(GUI)Amount of cargo bulk packed into the vehicle.</Key>
+    <Value>Amount of cargo bulk packed into the vehicle.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Amount we are offering for sale: </Key>
+    <Value>Amount we are offering for sale: </Value>
+  </String>
+  <String>
+    <Key>(GUI)An error occurred:</Key>
+    <Value>An error occurred:</Value>
+  </String>
+  <String>
+    <Key>(GUI)An upgrade is selected</Key>
+    <Value>An upgrade is selected</Value>
+  </String>
+  <String>
+    <Key>(GUI)Animals that die within the camp's hunting radius with nobody to claim them - killed by our people, dogs or sentries outside a hunt, by wildlife, or starved - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.</Key>
+    <Value>Animals that die within the camp's hunting radius with nobody to claim them - killed by our people, dogs or sentries outside a hunt, by wildlife, or starved - become ours and are hauled in, as if claimed by hand. Bodies of people are never claimed this way.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Area not accessible</Key>
+    <Value>Area not accessible</Value>
+  </String>
+  <String>
+    <Key>(GUI)Area not cleared</Key>
+    <Value>Area not cleared</Value>
+  </String>
+  <String>
+    <Key>(GUI)Arrange an off-map trade mission and transport</Key>
+    <Value>Arrange an off-map trade mission and transport</Value>
+  </String>
+  <String>
+    <Key>(GUI)At least one character has the sufficent level in this skill (more than 0.1)</Key>
+    <Value>At least one character has the sufficent level in this skill (more than 0.1)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Attack vermin</Key>
+    <Value>Attack vermin</Value>
+  </String>
+  <String>
+    <Key>(GUI)Attainable from salvaging items or structures</Key>
+    <Value>Attainable from salvaging items or structures</Value>
+  </String>
+  <String>
+    <Key>(GUI)Attainable, but inputs are needed. Examine the tooltip to determine what is missing.</Key>
+    <Value>Attainable, but inputs are needed. Examine the tooltip to determine what is missing.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Attainable, but needs to be harvested from a resource with the GATHER action. Examine the tooltip to see the resource.</Key>
+    <Value>Attainable, but needs to be harvested from a resource with the GATHER action. Examine the tooltip to see the resource.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Attainable, but some tools are needed. Examine the tooltip to determine what is missing.</Key>
+    <Value>Attainable, but some tools are needed. Examine the tooltip to determine what is missing.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Available trade credits</Key>
+    <Value>Available trade credits</Value>
+  </String>
+  <String>
+    <Key>(GUI)Available: </Key>
+    <Value>Available: </Value>
+  </String>
+  <String>
+    <Key>(GUI)BEGIN</Key>
+    <Value>BEGIN</Value>
+  </String>
+  <String>
     <Key>(GUI)BORDER</Key>
     <Value>BORDER</Value>
+  </String>
+  <String>
+    <Key>(GUI)BROKEN</Key>
+    <Value>BROKEN</Value>
+  </String>
+  <String>
+    <Key>(GUI)BUILDABLE AREA</Key>
+    <Value>BUILDABLE AREA</Value>
+  </String>
+  <String>
+    <Key>(GUI)BULK</Key>
+    <Value>BULK</Value>
+  </String>
+  <String>
+    <Key>(GUI)Being tracked</Key>
+    <Value>Being tracked</Value>
+  </String>
+  <String>
+    <Key>(GUI)Better tools</Key>
+    <Value>Better tools</Value>
   </String>
   <String>
     <Key>(GUI)Both width and height is required.</Key>
     <Value>Both width and height is required.</Value>
   </String>
   <String>
+    <Key>(GUI)Build: Click the button, then place the structure on the terrain</Key>
+    <Value>Build: Click the button, then place the structure on the terrain</Value>
+  </String>
+  <String>
+    <Key>(GUI)Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made</Key>
+    <Value>Build: not all materials are in yet. Place the structure, and colonists will haul them to it as they are gathered or made</Value>
+  </String>
+  <String>
+    <Key>(GUI)Buy is unavailable here:</Key>
+    <Value>Buy is unavailable here:</Value>
+  </String>
+  <String>
+    <Key>(GUI)CAN PRODUCE</Key>
+    <Value>CAN PRODUCE</Value>
+  </String>
+  <String>
     <Key>(GUI)CANCEL</Key>
     <Value>CANCEL</Value>
+  </String>
+  <String>
+    <Key>(GUI)CANCEL RUN</Key>
+    <Value>CANCEL RUN</Value>
+  </String>
+  <String>
+    <Key>(GUI)CANNOT VOTE</Key>
+    <Value>CANNOT VOTE</Value>
+  </String>
+  <String>
+    <Key>(GUI)CAPACITY:</Key>
+    <Value>CAPACITY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)CARRYING</Key>
+    <Value>CARRYING</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLAIM</Key>
+    <Value>CLAIM</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLAIM ANIMALS THAT DIE IN CAMP</Key>
+    <Value>CLAIM ANIMALS THAT DIE IN CAMP</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLAIM. Include this item in the colony's possessions</Key>
+    <Value>CLAIM. Include this item in the colony's possessions</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLAIM. Start using this structure</Key>
+    <Value>CLAIM. Start using this structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLEAR!</Key>
+    <Value>CLEAR!</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLICK TO ADOPT THIS POLICY</Key>
+    <Value>CLICK TO ADOPT THIS POLICY</Value>
+  </String>
+  <String>
+    <Key>(GUI)CLOSE</Key>
+    <Value>CLOSE</Value>
+  </String>
+  <String>
+    <Key>(GUI)CM</Key>
+    <Value>CM</Value>
+  </String>
+  <String>
+    <Key>(GUI)COLONY MEMBERS</Key>
+    <Value>COLONY MEMBERS</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMBAT</Key>
+    <Value>COMBAT</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMBAT STATISTICS</Key>
+    <Value>COMBAT STATISTICS</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMFORT LEVEL: {0}</Key>
+    <Value>COMFORT LEVEL: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMFORT:</Key>
+    <Value>COMFORT:</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMMUNICATION</Key>
+    <Value>COMMUNICATION</Value>
+  </String>
+  <String>
+    <Key>(GUI)COMPLETION</Key>
+    <Value>COMPLETION</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONDITION:</Key>
+    <Value>CONDITION:</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONS.</Key>
+    <Value>CONS.</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONSULT DATASHEET</Key>
+    <Value>CONSULT DATASHEET</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONTACTS</Key>
+    <Value>CONTACTS</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONTAINS</Key>
+    <Value>CONTAINS</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONTINUE</Key>
+    <Value>CONTINUE</Value>
+  </String>
+  <String>
+    <Key>(GUI)CONTINUE RUN</Key>
+    <Value>CONTINUE RUN</Value>
+  </String>
+  <String>
+    <Key>(GUI)COORDINATES</Key>
+    <Value>COORDINATES</Value>
+  </String>
+  <String>
+    <Key>(GUI)COST / KM</Key>
+    <Value>COST / KM</Value>
+  </String>
+  <String>
+    <Key>(GUI)COST TO HIRE: {0}</Key>
+    <Value>COST TO HIRE: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)CREATE GAME</Key>
+    <Value>CREATE GAME</Value>
+  </String>
+  <String>
+    <Key>(GUI)CREATE NEW RUN</Key>
+    <Value>CREATE NEW RUN</Value>
   </String>
   <String>
     <Key>(GUI)CREDITS</Key>
     <Value>CREDITS</Value>
   </String>
   <String>
+    <Key>(GUI)CURRENT JOB:</Key>
+    <Value>CURRENT JOB:</Value>
+  </String>
+  <String>
+    <Key>(GUI)CUSTOM</Key>
+    <Value>CUSTOM</Value>
+  </String>
+  <String>
     <Key>(GUI)CUSTOM:</Key>
     <Value>CUSTOM:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Can only be built at a special location, by using its action menu</Key>
+    <Value>Can only be built at a special location, by using its action menu</Value>
+  </String>
+  <String>
+    <Key>(GUI)Cancel all gathering</Key>
+    <Value>Cancel all gathering</Value>
+  </String>
+  <String>
+    <Key>(GUI)Cancel this task</Key>
+    <Value>Cancel this task</Value>
   </String>
   <String>
     <Key>(GUI)Cancels and closes the dialog.</Key>
     <Value>Cancels and closes the dialog.</Value>
   </String>
   <String>
+    <Key>(GUI)Cannot adopt: </Key>
+    <Value>Cannot adopt: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Cannot be selected. The item is off site.</Key>
+    <Value>Cannot be selected. The item is off site.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Cannot cancel this ongoing task.</Key>
+    <Value>Cannot cancel this ongoing task.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Category view</Key>
+    <Value>Category view</Value>
+  </String>
+  <String>
+    <Key>(GUI)Change terrain height</Key>
+    <Value>Change terrain height</Value>
+  </String>
+  <String>
     <Key>(GUI)Changes what a save contains: saves made with it on are marked MODDED.</Key>
     <Value>Changes what a save contains: saves made with it on are marked MODDED.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Check the box to allow the item to be stockpiled. This will override the category setting.</Key>
+    <Value>Check the box to allow the item to be stockpiled. This will override the category setting.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Choose improvements for the structure</Key>
+    <Value>Choose improvements for the structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)Choose the types of items that can be offered for trade in this structure</Key>
+    <Value>Choose the types of items that can be offered for trade in this structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)Choose the types of items that can be stored in this structure</Key>
+    <Value>Choose the types of items that can be stored in this structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)Claim the item not owned by anyone</Key>
+    <Value>Claim the item not owned by anyone</Value>
+  </String>
+  <String>
+    <Key>(GUI)Claim this object which is not owned by anyone</Key>
+    <Value>Claim this object which is not owned by anyone</Value>
+  </String>
+  <String>
+    <Key>(GUI)Clear</Key>
+    <Value>Clear</Value>
+  </String>
+  <String>
+    <Key>(GUI)Clears the contents of the tile you click on.</Key>
+    <Value>Clears the contents of the tile you click on.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click on terrain to designate a new spot for the camp</Key>
+    <Value>Click on terrain to designate a new spot for the camp</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click or hold the mouse button to change the amount to produce.</Key>
+    <Value>Click or hold the mouse button to change the amount to produce.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to activate the text filter using the text in the search field</Key>
+    <Value>Click to activate the text filter using the text in the search field</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to add a Buy action</Key>
+    <Value>Click to add a Buy action</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to add a Sell action</Key>
+    <Value>Click to add a Sell action</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to add an Embark action</Key>
+    <Value>Click to add an Embark action</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to adopt this policy. We will then be able to buy and produce items from this tier. 
+ 
+NOTE: When adopting this policy, those who are against will have their principles raised to this level ({0}). This can increase their unhappiness unless conditions are quickly improved.</Key>
+    <Value>Click to adopt this policy. We will then be able to buy and produce items from this tier. 
+ 
+NOTE: When adopting this policy, those who are against will have their principles raised to this level ({0}). This can increase their unhappiness unless conditions are quickly improved.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to begin</Key>
+    <Value>Click to begin</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to cancel this run</Key>
+    <Value>Click to cancel this run</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to deactivate the text filter</Key>
+    <Value>Click to deactivate the text filter</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to edit</Key>
+    <Value>Click to edit</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to remove</Key>
+    <Value>Click to remove</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to see more detailed options</Key>
+    <Value>Click to see more detailed options</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to see the actions that can be taken</Key>
+    <Value>Click to see the actions that can be taken</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to see the comfort graph</Key>
+    <Value>Click to see the comfort graph</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to see the list of items</Key>
+    <Value>Click to see the list of items</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to see the nutrition graph</Key>
+    <Value>Click to see the nutrition graph</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to see the security graph</Key>
+    <Value>Click to see the security graph</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to select</Key>
+    <Value>Click to select</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to set this priority as the default for all current and future tasks of this type ({0})</Key>
+    <Value>Click to set this priority as the default for all current and future tasks of this type ({0})</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to start this run</Key>
+    <Value>Click to start this run</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to view options and details.</Key>
+    <Value>Click to view options and details.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Click to view the next production process</Key>
+    <Value>Click to view the next production process</Value>
   </String>
   <String>
     <Key>(GUI)Click, then press the new key. Escape cancels.</Key>
     <Value>Click, then press the new key. Escape cancels.</Value>
   </String>
   <String>
+    <Key>(GUI)Click, then use the slider to set the reserve.</Key>
+    <Value>Click, then use the slider to set the reserve.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Close</Key>
+    <Value>Close</Value>
+  </String>
+  <String>
+    <Key>(GUI)Close this window</Key>
+    <Value>Close this window</Value>
+  </String>
+  <String>
     <Key>(GUI)Closes the dialog without applying the changes.</Key>
     <Value>Closes the dialog without applying the changes.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Closes the panel</Key>
+    <Value>Closes the panel</Value>
+  </String>
+  <String>
+    <Key>(GUI)Cloudy/Light breeze</Key>
+    <Value>Cloudy/Light breeze</Value>
+  </String>
+  <String>
+    <Key>(GUI)Cloudy/Windy</Key>
+    <Value>Cloudy/Windy</Value>
+  </String>
+  <String>
+    <Key>(GUI)Collapse all</Key>
+    <Value>Collapse all</Value>
+  </String>
+  <String>
+    <Key>(GUI)Collapse the list of tools</Key>
+    <Value>Collapse the list of tools</Value>
+  </String>
+  <String>
+    <Key>(GUI)Collapse this part</Key>
+    <Value>Collapse this part</Value>
+  </String>
+  <String>
+    <Key>(GUI)Colony members</Key>
+    <Value>Colony members</Value>
+  </String>
+  <String>
+    <Key>(GUI)Colony {0} conditions</Key>
+    <Value>Colony {0} conditions</Value>
+  </String>
+  <String>
+    <Key>(GUI)Communication is established with this location.</Key>
+    <Value>Communication is established with this location.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Construction of this upgrade was started but not finished. It cannot be used.</Key>
+    <Value>Construction of this upgrade was started but not finished. It cannot be used.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Consumed</Key>
+    <Value>Consumed</Value>
+  </String>
+  <String>
+    <Key>(GUI)Consumed by colony members</Key>
+    <Value>Consumed by colony members</Value>
+  </String>
+  <String>
+    <Key>(GUI)Containers </Key>
+    <Value>Containers </Value>
   </String>
   <String>
     <Key>(GUI)Content changes apply at the next game start!</Key>
     <Value>Content changes apply at the next game start!</Value>
   </String>
   <String>
+    <Key>(GUI)Cost of bought items: </Key>
+    <Value>Cost of bought items: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Cost per kilometer: </Key>
+    <Value>Cost per kilometer: </Value>
+  </String>
+  <String>
     <Key>(GUI)Could not delete the file. Message:</Key>
     <Value>Could not delete the file. Message:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Creates these output types and amounts</Key>
+    <Value>Creates these output types and amounts</Value>
+  </String>
+  <String>
+    <Key>(GUI)Crop</Key>
+    <Value>Crop</Value>
+  </String>
+  <String>
+    <Key>(GUI)Current demand: The amount of goods this site is willing to buy right now. This number may gradually rise.</Key>
+    <Value>Current demand: The amount of goods this site is willing to buy right now. This number may gradually rise.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Current members of the colony</Key>
+    <Value>Current members of the colony</Value>
+  </String>
+  <String>
+    <Key>(GUI)Current regrowth per year: </Key>
+    <Value>Current regrowth per year: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Current time to reach majority: {0}</Key>
+    <Value>Current time to reach majority: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Current: </Key>
+    <Value>Current: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Currently stored</Key>
+    <Value>Currently stored</Value>
+  </String>
+  <String>
+    <Key>(GUI)Custom panel error #1 
+</Key>
+    <Value>Custom panel error #1 
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)Cycle through entities in the zone</Key>
+    <Value>Cycle through entities in the zone</Value>
+  </String>
+  <String>
+    <Key>(GUI)DATA</Key>
+    <Value>DATA</Value>
+  </String>
+  <String>
+    <Key>(GUI)DATA:</Key>
+    <Value>DATA:</Value>
+  </String>
+  <String>
+    <Key>(GUI)DAYS</Key>
+    <Value>DAYS</Value>
+  </String>
+  <String>
+    <Key>(GUI)DECIDE NOW?</Key>
+    <Value>DECIDE NOW?</Value>
   </String>
   <String>
     <Key>(GUI)DEFAULT KEYS</Key>
     <Value>DEFAULT KEYS</Value>
   </String>
   <String>
+    <Key>(GUI)DEGR.</Key>
+    <Value>DEGR.</Value>
+  </String>
+  <String>
+    <Key>(GUI)DEL</Key>
+    <Value>DEL</Value>
+  </String>
+  <String>
     <Key>(GUI)DELETE</Key>
     <Value>DELETE</Value>
+  </String>
+  <String>
+    <Key>(GUI)DESTINATION:</Key>
+    <Value>DESTINATION:</Value>
+  </String>
+  <String>
+    <Key>(GUI)DEV OPTIONS</Key>
+    <Value>DEV OPTIONS</Value>
   </String>
   <String>
     <Key>(GUI)DIFFERENT MODS</Key>
     <Value>DIFFERENT MODS</Value>
   </String>
   <String>
+    <Key>(GUI)DIFFICULTY:</Key>
+    <Value>DIFFICULTY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)DISAPP.</Key>
+    <Value>DISAPP.</Value>
+  </String>
+  <String>
+    <Key>(GUI)DISCARD</Key>
+    <Value>DISCARD</Value>
+  </String>
+  <String>
+    <Key>(GUI)DISCARD. Exclude this item from the colony's possessions.</Key>
+    <Value>DISCARD. Exclude this item from the colony's possessions.</Value>
+  </String>
+  <String>
+    <Key>(GUI)DISTANCE:</Key>
+    <Value>DISTANCE:</Value>
+  </String>
+  <String>
+    <Key>(GUI)DONE</Key>
+    <Value>DONE</Value>
+  </String>
+  <String>
+    <Key>(GUI)DURABILITY:</Key>
+    <Value>DURABILITY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Dangerous area</Key>
+    <Value>Dangerous area</Value>
+  </String>
+  <String>
+    <Key>(GUI)Dangerous area. To enter the area, a person must have Fearless stance. (Use a PATROL zone to clear the area of threats.)</Key>
+    <Value>Dangerous area. To enter the area, a person must have Fearless stance. (Use a PATROL zone to clear the area of threats.)</Value>
+  </String>
+  <String>
     <Key>(GUI)Date:</Key>
     <Value>Date:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Days left</Key>
+    <Value>Days left</Value>
+  </String>
+  <String>
+    <Key>(GUI)Debug: {0} trade credits added.</Key>
+    <Value>Debug: {0} trade credits added.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Degraded into waste</Key>
+    <Value>Degraded into waste</Value>
+  </String>
+  <String>
+    <Key>(GUI)Delete</Key>
+    <Value>Delete</Value>
+  </String>
+  <String>
+    <Key>(GUI)Delete the zone</Key>
+    <Value>Delete the zone</Value>
+  </String>
+  <String>
+    <Key>(GUI)Delete this action</Key>
+    <Value>Delete this action</Value>
   </String>
   <String>
     <Key>(GUI)Deletes this saved game file</Key>
     <Value>Deletes this saved game file</Value>
   </String>
   <String>
+    <Key>(GUI)Disappeared</Key>
+    <Value>Disappeared</Value>
+  </String>
+  <String>
+    <Key>(GUI)Disassemble the object: All its parts will be retrieved. See the process tooltip for more info.</Key>
+    <Value>Disassemble the object: All its parts will be retrieved. See the process tooltip for more info.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Discard the item</Key>
+    <Value>Discard the item</Value>
+  </String>
+  <String>
+    <Key>(GUI)Discard the object</Key>
+    <Value>Discard the object</Value>
+  </String>
+  <String>
+    <Key>(GUI)Display event archive</Key>
+    <Value>Display event archive</Value>
+  </String>
+  <String>
+    <Key>(GUI)Display only the items that are in ALL of the selected filters</Key>
+    <Value>Display only the items that are in ALL of the selected filters</Value>
+  </String>
+  <String>
+    <Key>(GUI)Display only the items that are in AT LEAST ONE of the selected filters</Key>
+    <Value>Display only the items that are in AT LEAST ONE of the selected filters</Value>
+  </String>
+  <String>
+    <Key>(GUI)Display search options</Key>
+    <Value>Display search options</Value>
+  </String>
+  <String>
+    <Key>(GUI)Distance cost: </Key>
+    <Value>Distance cost: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Distance: </Key>
+    <Value>Distance: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Do a combat sweep of the area, attacking any entities of the specified type (Required stance: Fearless)</Key>
+    <Value>Do a combat sweep of the area, attacking any entities of the specified type (Required stance: Fearless)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Do one or both of the following:</Key>
+    <Value>Do one or both of the following:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Drag slider to specify amount to order.</Key>
+    <Value>Drag slider to specify amount to order.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Drag slider to specify amount to produce.</Key>
+    <Value>Drag slider to specify amount to produce.</Value>
+  </String>
+  <String>
+    <Key>(GUI)EDIBLE BY HUMANS:</Key>
+    <Value>EDIBLE BY HUMANS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)EDIBLE TO {0}</Key>
+    <Value>EDIBLE TO {0}</Value>
+  </String>
+  <String>
     <Key>(GUI)EDIT</Key>
     <Value>EDIT</Value>
+  </String>
+  <String>
+    <Key>(GUI)EFFECTIVE AGAINST: {0}</Key>
+    <Value>EFFECTIVE AGAINST: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)EFFECTS:</Key>
+    <Value>EFFECTS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)ENERGY:</Key>
+    <Value>ENERGY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)ETA</Key>
+    <Value>ETA</Value>
+  </String>
+  <String>
+    <Key>(GUI)EVENT ARCHIVE</Key>
+    <Value>EVENT ARCHIVE</Value>
+  </String>
+  <String>
+    <Key>(GUI)EXAMINE</Key>
+    <Value>EXAMINE</Value>
+  </String>
+  <String>
+    <Key>(GUI)EXCELLENT</Key>
+    <Value>EXCELLENT</Value>
+  </String>
+  <String>
+    <Key>(GUI)EXERTION LEVEL: {0}</Key>
+    <Value>EXERTION LEVEL: {0}</Value>
   </String>
   <String>
     <Key>(GUI)EXIT</Key>
     <Value>EXIT</Value>
   </String>
   <String>
+    <Key>(GUI)EXPEDITION</Key>
+    <Value>EXPEDITION</Value>
+  </String>
+  <String>
+    <Key>(GUI)EXTRA OPTIONS</Key>
+    <Value>EXTRA OPTIONS</Value>
+  </String>
+  <String>
+    <Key>(GUI)Eaten by creatures</Key>
+    <Value>Eaten by creatures</Value>
+  </String>
+  <String>
+    <Key>(GUI)Embark is unavailable here:</Key>
+    <Value>Embark is unavailable here:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Eraser. This tool removes/erases.</Key>
+    <Value>Eraser. This tool removes/erases.</Value>
+  </String>
+  <String>
     <Key>(GUI)Error occurred:</Key>
     <Value>Error occurred:</Value>
   </String>
   <String>
+    <Key>(GUI)Estimated time of arrival at {0}{1}.</Key>
+    <Value>Estimated time of arrival at {0}{1}.</Value>
+  </String>
+  <String>
     <Key>(GUI)Every key back to its default. Nothing is applied until OK.</Key>
     <Value>Every key back to its default. Nothing is applied until OK.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Expand all</Key>
+    <Value>Expand all</Value>
+  </String>
+  <String>
+    <Key>(GUI)Expand the list of tools</Key>
+    <Value>Expand the list of tools</Value>
+  </String>
+  <String>
+    <Key>(GUI)Expand to show more information</Key>
+    <Value>Expand to show more information</Value>
+  </String>
+  <String>
+    <Key>(GUI)Explore the zone briefly</Key>
+    <Value>Explore the zone briefly</Value>
+  </String>
+  <String>
+    <Key>(GUI)FAMILY:</Key>
+    <Value>FAMILY:</Value>
   </String>
   <String>
     <Key>(GUI)FILE EXISTS</Key>
@@ -2086,8 +3152,24 @@ SANTILLA: Can't wait.
     <Value>FIXED:</Value>
   </String>
   <String>
+    <Key>(GUI)FLIPPED</Key>
+    <Value>FLIPPED</Value>
+  </String>
+  <String>
+    <Key>(GUI)FUEL CONSUMPTION:</Key>
+    <Value>FUEL CONSUMPTION:</Value>
+  </String>
+  <String>
     <Key>(GUI)FULL SCREEN</Key>
     <Value>FULL SCREEN</Value>
+  </String>
+  <String>
+    <Key>(GUI)Female</Key>
+    <Value>Female</Value>
+  </String>
+  <String>
+    <Key>(GUI)Field: {0}</Key>
+    <Value>Field: {0}</Value>
   </String>
   <String>
     <Key>(GUI)File not found.</Key>
@@ -2098,8 +3180,64 @@ SANTILLA: Can't wait.
     <Value>File size:</Value>
   </String>
   <String>
+    <Key>(GUI)First select a transportation, then add actions to each stop.</Key>
+    <Value>First select a transportation, then add actions to each stop.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Food production</Key>
+    <Value>Food production</Value>
+  </String>
+  <String>
+    <Key>(GUI)For sale at </Key>
+    <Value>For sale at </Value>
+  </String>
+  <String>
+    <Key>(GUI)For sale: The amount of goods this site has for sale right now. This number may gradually rise.</Key>
+    <Value>For sale: The amount of goods this site has for sale right now. This number may gradually rise.</Value>
+  </String>
+  <String>
+    <Key>(GUI)For sale: The amount of goods we can trade right now. Items have to be inside a terminal and included in the Trade settings to appear here.</Key>
+    <Value>For sale: The amount of goods we can trade right now. Items have to be inside a terminal and included in the Trade settings to appear here.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Fuel</Key>
+    <Value>Fuel</Value>
+  </String>
+  <String>
+    <Key>(GUI)GAME END</Key>
+    <Value>GAME END</Value>
+  </String>
+  <String>
+    <Key>(GUI)GAME WON</Key>
+    <Value>GAME WON</Value>
+  </String>
+  <String>
+    <Key>(GUI)GATHER</Key>
+    <Value>GATHER</Value>
+  </String>
+  <String>
+    <Key>(GUI)GATHERED FROM:</Key>
+    <Value>GATHERED FROM:</Value>
+  </String>
+  <String>
+    <Key>(GUI)GOOD</Key>
+    <Value>GOOD</Value>
+  </String>
+  <String>
     <Key>(GUI)GRAPHICS</Key>
     <Value>GRAPHICS</Value>
+  </String>
+  <String>
+    <Key>(GUI)GRAPHS</Key>
+    <Value>GRAPHS</Value>
+  </String>
+  <String>
+    <Key>(GUI)GROWN</Key>
+    <Value>GROWN</Value>
+  </String>
+  <String>
+    <Key>(GUI)Gather all resources</Key>
+    <Value>Gather all resources</Value>
   </String>
   <String>
     <Key>(GUI)H:</Key>
@@ -2108,6 +3246,118 @@ SANTILLA: Can't wait.
   <String>
     <Key>(GUI)HARDWARE MODE SWITCH</Key>
     <Value>HARDWARE MODE SWITCH</Value>
+  </String>
+  <String>
+    <Key>(GUI)HEALTH</Key>
+    <Value>HEALTH</Value>
+  </String>
+  <String>
+    <Key>(GUI)HEALTH:</Key>
+    <Value>HEALTH:</Value>
+  </String>
+  <String>
+    <Key>(GUI)HEIGHT:</Key>
+    <Value>HEIGHT:</Value>
+  </String>
+  <String>
+    <Key>(GUI)HIDE</Key>
+    <Value>HIDE</Value>
+  </String>
+  <String>
+    <Key>(GUI)HISTORY</Key>
+    <Value>HISTORY</Value>
+  </String>
+  <String>
+    <Key>(GUI)HOME:</Key>
+    <Value>HOME:</Value>
+  </String>
+  <String>
+    <Key>(GUI)HOUSEHOLD</Key>
+    <Value>HOUSEHOLD</Value>
+  </String>
+  <String>
+    <Key>(GUI)HUNT</Key>
+    <Value>HUNT</Value>
+  </String>
+  <String>
+    <Key>(GUI)Hide search options</Key>
+    <Value>Hide search options</Value>
+  </String>
+  <String>
+    <Key>(GUI)High</Key>
+    <Value>High</Value>
+  </String>
+  <String>
+    <Key>(GUI)High in {0}</Key>
+    <Value>High in {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Highest</Key>
+    <Value>Highest</Value>
+  </String>
+  <String>
+    <Key>(GUI)Hired transport cost</Key>
+    <Value>Hired transport cost</Value>
+  </String>
+  <String>
+    <Key>(GUI)How many days the current store will last</Key>
+    <Value>How many days the current store will last</Value>
+  </String>
+  <String>
+    <Key>(GUI)Hunt this animal</Key>
+    <Value>Hunt this animal</Value>
+  </String>
+  <String>
+    <Key>(GUI)IDs</Key>
+    <Value>IDs</Value>
+  </String>
+  <String>
+    <Key>(GUI)II</Key>
+    <Value>II</Value>
+  </String>
+  <String>
+    <Key>(GUI)IN</Key>
+    <Value>IN</Value>
+  </String>
+  <String>
+    <Key>(GUI)IN COMM RANGE</Key>
+    <Value>IN COMM RANGE</Value>
+  </String>
+  <String>
+    <Key>(GUI)IN STOCK</Key>
+    <Value>IN STOCK</Value>
+  </String>
+  <String>
+    <Key>(GUI)IN STOCK / ORDERS:</Key>
+    <Value>IN STOCK / ORDERS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)INEDIBLE TO {0} IN THIS CONDITION</Key>
+    <Value>INEDIBLE TO {0} IN THIS CONDITION</Value>
+  </String>
+  <String>
+    <Key>(GUI)INPUT NEEDED - Please make a selection under the EXTRA OPTIONS column for: </Key>
+    <Value>INPUT NEEDED - Please make a selection under the EXTRA OPTIONS column for: </Value>
+  </String>
+  <String>
+    <Key>(GUI)INSTALLED</Key>
+    <Value>INSTALLED</Value>
+  </String>
+  <String>
+    <Key>(GUI)INTEREST</Key>
+    <Value>INTEREST</Value>
+  </String>
+  <String>
+    <Key>(GUI)ITEM: </Key>
+    <Value>ITEM: </Value>
+  </String>
+  <String>
+    <Key>(GUI)ITEMS</Key>
+    <Value>ITEMS</Value>
+  </String>
+  <String>
+    <Key>(GUI)Idling</Key>
+    <Value>Idling</Value>
   </String>
   <String>
     <Key>(GUI)If selected, the game attempts to switch the screen resolution when in fullscreen. If not selected, only the desktop resolution is available for fullscreen. Is selected by default.</Key>
@@ -2130,8 +3380,72 @@ SANTILLA: Can't wait.
     <Value>Illegal width entered. {0} is maximum.</Value>
   </String>
   <String>
+    <Key>(GUI)In inventory</Key>
+    <Value>In inventory</Value>
+  </String>
+  <String>
+    <Key>(GUI)Include salvageable materials from items and structures when determining what is ATTAINABLE / NOT ATTAINABLE to produce</Key>
+    <Value>Include salvageable materials from items and structures when determining what is ATTAINABLE / NOT ATTAINABLE to produce</Value>
+  </String>
+  <String>
+    <Key>(GUI)Info: </Key>
+    <Value>Info: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Items</Key>
+    <Value>Items</Value>
+  </String>
+  <String>
+    <Key>(GUI)Items have to be placed inside a terminal and be included in the Trade settings to appear here.</Key>
+    <Value>Items have to be placed inside a terminal and be included in the Trade settings to appear here.</Value>
+  </String>
+  <String>
     <Key>(GUI)KEYS</Key>
     <Value>KEYS</Value>
+  </String>
+  <String>
+    <Key>(GUI)KG</Key>
+    <Value>KG</Value>
+  </String>
+  <String>
+    <Key>(GUI)KILLED.</Key>
+    <Value>KILLED.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Killed</Key>
+    <Value>Killed</Value>
+  </String>
+  <String>
+    <Key>(GUI)Killed by the colony</Key>
+    <Value>Killed by the colony</Value>
+  </String>
+  <String>
+    <Key>(GUI)Kills</Key>
+    <Value>Kills</Value>
+  </String>
+  <String>
+    <Key>(GUI)L BRUSH</Key>
+    <Value>L BRUSH</Value>
+  </String>
+  <String>
+    <Key>(GUI)LAND</Key>
+    <Value>LAND</Value>
+  </String>
+  <String>
+    <Key>(GUI)LEDGER</Key>
+    <Value>LEDGER</Value>
+  </String>
+  <String>
+    <Key>(GUI)LESS</Key>
+    <Value>LESS</Value>
+  </String>
+  <String>
+    <Key>(GUI)LMB: Select the link target.
+ RMB: Center on target.
+ Double click: Select and center.</Key>
+    <Value>LMB: Select the link target.
+ RMB: Center on target.
+ Double click: Select and center.</Value>
   </String>
   <String>
     <Key>(GUI)LOAD</Key>
@@ -2142,12 +3456,144 @@ SANTILLA: Can't wait.
     <Value>LOAD GAME</Value>
   </String>
   <String>
+    <Key>(GUI)LOAD REPLAY</Key>
+    <Value>LOAD REPLAY</Value>
+  </String>
+  <String>
+    <Key>(GUI)LOCATION</Key>
+    <Value>LOCATION</Value>
+  </String>
+  <String>
+    <Key>(GUI)LOCATION:</Key>
+    <Value>LOCATION:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Last seen here</Key>
+    <Value>Last seen here</Value>
+  </String>
+  <String>
+    <Key>(GUI)Left click to center on the selected entity. Right click to track the entity.</Key>
+    <Value>Left click to center on the selected entity. Right click to track the entity.</Value>
+  </String>
+  <String>
+    <Key>(GUI)List view</Key>
+    <Value>List view</Value>
+  </String>
+  <String>
+    <Key>(GUI)Load replay</Key>
+    <Value>Load replay</Value>
+  </String>
+  <String>
+    <Key>(GUI)Loading game, please wait...</Key>
+    <Value>Loading game, please wait...</Value>
+  </String>
+  <String>
     <Key>(GUI)Loading it without the same content may fail, because a save names the recipes and items it contains.</Key>
     <Value>Loading it without the same content may fail, because a save names the recipes and items it contains.</Value>
   </String>
   <String>
+    <Key>(GUI)Loading. Please wait... </Key>
+    <Value>Loading. Please wait... </Value>
+  </String>
+  <String>
+    <Key>(GUI)Loads a new map.</Key>
+    <Value>Loads a new map.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Loads a replay.</Key>
+    <Value>Loads a replay.</Value>
+  </String>
+  <String>
     <Key>(GUI)Loads the game.</Key>
     <Value>Loads the game.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Locate and hunt prey in the zone.</Key>
+    <Value>Locate and hunt prey in the zone.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Low</Key>
+    <Value>Low</Value>
+  </String>
+  <String>
+    <Key>(GUI)MADE BY REFACTORED GAMES 
+/////////////////////////// 
+ 
+LEAD PROGRAMMING: Lars Pedersen 
+ 
+ART DIRECTION: Morten Pedersen 
+ 
+PROJECT MANAGEMENT ON PROTOTYPE: 
+Hans von Knut Skovfoged 
+ 
+PROGRAMMING: Mark Lorenzen 
+ 
+JUNIOR PROGRAMMER: Andreas Broqvist 
+ 
+3D MODEL PIPELINE: Tobias Jacobsen 
+ 
+INTERNS// 
+ 
+MUSIC: Martin Hasseldam, Jesper Lundager 
+ 
+PROGRAMMING: Finn Axel Simon Broman, Martin Juul Petersen, Jakob Sigvard, Olivér Árnits 
+ 
+SCRIPTING: Thor-Bjørn Böhme, Benjamin Størup Olsen 
+ 
+3D ART: Anchelika Skjødt 
+ 
+GAME DESIGN: Stefan Ort Mortensen, Nicklas Andersen, Aleksander Fjellvang 
+ 
+LEVEL DESIGN: Matteo Martinelli 
+ 
+SOUND DESIGN: Morten Skouboe 
+ 
+IN-HOUSE TESTING: Lukasz Maliglowka, Daniel Voss, Tommy Christensen 
+ 
+THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samuel Blantz, Bjarke Larsen (WRITING), Carl Trägårdh (3D), Leo Claxton (SOUND), Gavin 'DrTssha' Craig and Daniel Pena 
+ 
+</Key>
+    <Value>MADE BY REFACTORED GAMES 
+/////////////////////////// 
+ 
+LEAD PROGRAMMING: Lars Pedersen 
+ 
+ART DIRECTION: Morten Pedersen 
+ 
+PROJECT MANAGEMENT ON PROTOTYPE: 
+Hans von Knut Skovfoged 
+ 
+PROGRAMMING: Mark Lorenzen 
+ 
+JUNIOR PROGRAMMER: Andreas Broqvist 
+ 
+3D MODEL PIPELINE: Tobias Jacobsen 
+ 
+INTERNS// 
+ 
+MUSIC: Martin Hasseldam, Jesper Lundager 
+ 
+PROGRAMMING: Finn Axel Simon Broman, Martin Juul Petersen, Jakob Sigvard, Olivér Árnits 
+ 
+SCRIPTING: Thor-Bjørn Böhme, Benjamin Størup Olsen 
+ 
+3D ART: Anchelika Skjødt 
+ 
+GAME DESIGN: Stefan Ort Mortensen, Nicklas Andersen, Aleksander Fjellvang 
+ 
+LEVEL DESIGN: Matteo Martinelli 
+ 
+SOUND DESIGN: Morten Skouboe 
+ 
+IN-HOUSE TESTING: Lukasz Maliglowka, Daniel Voss, Tommy Christensen 
+ 
+THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samuel Blantz, Bjarke Larsen (WRITING), Carl Trägårdh (3D), Leo Claxton (SOUND), Gavin 'DrTssha' Craig and Daniel Pena 
+ 
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)MADE FROM:</Key>
+    <Value>MADE FROM:</Value>
   </String>
   <String>
     <Key>(GUI)MADE WITH:</Key>
@@ -2158,12 +3604,48 @@ SANTILLA: Can't wait.
     <Value>MAGNIFICATION:</Value>
   </String>
   <String>
+    <Key>(GUI)MAIN</Key>
+    <Value>MAIN</Value>
+  </String>
+  <String>
     <Key>(GUI)MAIN MENU</Key>
     <Value>MAIN MENU</Value>
   </String>
   <String>
+    <Key>(GUI)MALE</Key>
+    <Value>MALE</Value>
+  </String>
+  <String>
+    <Key>(GUI)MANUAL LABORER</Key>
+    <Value>MANUAL LABORER</Value>
+  </String>
+  <String>
+    <Key>(GUI)MARRIED</Key>
+    <Value>MARRIED</Value>
+  </String>
+  <String>
+    <Key>(GUI)MATERIALS</Key>
+    <Value>MATERIALS</Value>
+  </String>
+  <String>
+    <Key>(GUI)MATERIALS:</Key>
+    <Value>MATERIALS:</Value>
+  </String>
+  <String>
     <Key>(GUI)MENU</Key>
     <Value>MENU</Value>
+  </String>
+  <String>
+    <Key>(GUI)MESSAGE</Key>
+    <Value>MESSAGE</Value>
+  </String>
+  <String>
+    <Key>(GUI)MIGRTE FACTOR</Key>
+    <Value>MIGRTE FACTOR</Value>
+  </String>
+  <String>
+    <Key>(GUI)MISSIONS</Key>
+    <Value>MISSIONS</Value>
   </String>
   <String>
     <Key>(GUI)MODDED</Key>
@@ -2174,6 +3656,14 @@ SANTILLA: Can't wait.
     <Value>MODS</Value>
   </String>
   <String>
+    <Key>(GUI)MORE</Key>
+    <Value>MORE</Value>
+  </String>
+  <String>
+    <Key>(GUI)MOVE CAMP</Key>
+    <Value>MOVE CAMP</Value>
+  </String>
+  <String>
     <Key>(GUI)MUSIC</Key>
     <Value>MUSIC</Value>
   </String>
@@ -2182,16 +3672,332 @@ SANTILLA: Can't wait.
     <Value>Made with modded content</Value>
   </String>
   <String>
+    <Key>(GUI)Make a thorough examination of the area to uncover hidden resources</Key>
+    <Value>Make a thorough examination of the area to uncover hidden resources</Value>
+  </String>
+  <String>
+    <Key>(GUI)Male</Key>
+    <Value>Male</Value>
+  </String>
+  <String>
+    <Key>(GUI)Map size:</Key>
+    <Value>Map size:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Max. amount buyer wants: </Key>
+    <Value>Max. amount buyer wants: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Max. amount we can sell: </Key>
+    <Value>Max. amount we can sell: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Maximum number of structures we can build</Key>
+    <Value>Maximum number of structures we can build</Value>
+  </String>
+  <String>
+    <Key>(GUI)Maximum regrowth per year: </Key>
+    <Value>Maximum regrowth per year: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Maximum: </Key>
+    <Value>Maximum: </Value>
+  </String>
+  <String>
+    <Key>(GUI)May leave zone in pursuit</Key>
+    <Value>May leave zone in pursuit</Value>
+  </String>
+  <String>
+    <Key>(GUI)Mean (average) productivity in the selected timespan.</Key>
+    <Value>Mean (average) productivity in the selected timespan.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Mean productivity</Key>
+    <Value>Mean productivity</Value>
+  </String>
+  <String>
+    <Key>(GUI)Members against:</Key>
+    <Value>Members against:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Members for:</Key>
+    <Value>Members for:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Middle</Key>
+    <Value>Middle</Value>
+  </String>
+  <String>
+    <Key>(GUI)Min/max:</Key>
+    <Value>Min/max:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Missing Windows Media Player</Key>
+    <Value>Missing Windows Media Player</Value>
+  </String>
+  <String>
     <Key>(GUI)Modded content is on; saves made with it are marked MODDED.</Key>
     <Value>Modded content is on; saves made with it are marked MODDED.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Modifier: </Key>
+    <Value>Modifier: </Value>
+  </String>
+  <String>
+    <Key>(GUI)NAME</Key>
+    <Value>NAME</Value>
+  </String>
+  <String>
+    <Key>(GUI)NEW</Key>
+    <Value>NEW</Value>
   </String>
   <String>
     <Key>(GUI)NEW GAME</Key>
     <Value>NEW GAME</Value>
   </String>
   <String>
+    <Key>(GUI)NEW RUN</Key>
+    <Value>NEW RUN</Value>
+  </String>
+  <String>
     <Key>(GUI)NEW SAVE</Key>
     <Value>NEW SAVE</Value>
+  </String>
+  <String>
+    <Key>(GUI)NEXT STOP</Key>
+    <Value>NEXT STOP</Value>
+  </String>
+  <String>
+    <Key>(GUI)NO COMM</Key>
+    <Value>NO COMM</Value>
+  </String>
+  <String>
+    <Key>(GUI)NO MAJORITY</Key>
+    <Value>NO MAJORITY</Value>
+  </String>
+  <String>
+    <Key>(GUI)NO ONE ASSIGNED</Key>
+    <Value>NO ONE ASSIGNED</Value>
+  </String>
+  <String>
+    <Key>(GUI)NONE</Key>
+    <Value>NONE</Value>
+  </String>
+  <String>
+    <Key>(GUI)NOT READY</Key>
+    <Value>NOT READY</Value>
+  </String>
+  <String>
+    <Key>(GUI)NOT WIELDABLE</Key>
+    <Value>NOT WIELDABLE</Value>
+  </String>
+  <String>
+    <Key>(GUI)Name</Key>
+    <Value>Name</Value>
+  </String>
+  <String>
+    <Key>(GUI)Name of food nutrient type</Key>
+    <Value>Name of food nutrient type</Value>
+  </String>
+  <String>
+    <Key>(GUI)Name of food type</Key>
+    <Value>Name of food type</Value>
+  </String>
+  <String>
+    <Key>(GUI)Name of product</Key>
+    <Value>Name of product</Value>
+  </String>
+  <String>
+    <Key>(GUI)Needed amount</Key>
+    <Value>Needed amount</Value>
+  </String>
+  <String>
+    <Key>(GUI)Needs one of the tools from the group below. Expand the list to see more tool options. NOTE: There can be even more options than the ones shown</Key>
+    <Value>Needs one of the tools from the group below. Expand the list to see more tool options. NOTE: There can be even more options than the ones shown</Value>
+  </String>
+  <String>
+    <Key>(GUI)Needs to be gathered from a resource</Key>
+    <Value>Needs to be gathered from a resource</Value>
+  </String>
+  <String>
+    <Key>(GUI)Next event</Key>
+    <Value>Next event</Value>
+  </String>
+  <String>
+    <Key>(GUI)No camp members can do this dangerous task (Required stance: Fearless)</Key>
+    <Value>No camp members can do this dangerous task (Required stance: Fearless)</Value>
+  </String>
+  <String>
+    <Key>(GUI)No communication</Key>
+    <Value>No communication</Value>
+  </String>
+  <String>
+    <Key>(GUI)No communication with Destination allegiance.</Key>
+    <Value>No communication with Destination allegiance.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No communication with Start allegiance.</Key>
+    <Value>No communication with Start allegiance.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No communication with the Start allegiance.</Key>
+    <Value>No communication with the Start allegiance.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No communication with this allegiance</Key>
+    <Value>No communication with this allegiance</Value>
+  </String>
+  <String>
+    <Key>(GUI)No communication with this location. Both locations need a functioning radio or satellite station.</Key>
+    <Value>No communication with this location. Both locations need a functioning radio or satellite station.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No limit</Key>
+    <Value>No limit</Value>
+  </String>
+  <String>
+    <Key>(GUI)No majority</Key>
+    <Value>No majority</Value>
+  </String>
+  <String>
+    <Key>(GUI)No majority. Learn more by hovering on the NO MAJORITY text.</Key>
+    <Value>No majority. Learn more by hovering on the NO MAJORITY text.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No modes of transport are available from Start to Destination.</Key>
+    <Value>No modes of transport are available from Start to Destination.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No more objects can be tracked, cancel some of the other tracked objects first.</Key>
+    <Value>No more objects can be tracked, cancel some of the other tracked objects first.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No one has sufficent level in this skill (more than 0.1)</Key>
+    <Value>No one has sufficent level in this skill (more than 0.1)</Value>
+  </String>
+  <String>
+    <Key>(GUI)No one is against adopting this.</Key>
+    <Value>No one is against adopting this.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No one is for adopting this.</Key>
+    <Value>No one is for adopting this.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No production info available for this</Key>
+    <Value>No production info available for this</Value>
+  </String>
+  <String>
+    <Key>(GUI)No reserve. </Key>
+    <Value>No reserve. </Value>
+  </String>
+  <String>
+    <Key>(GUI)No suitable weapon is available for this task.</Key>
+    <Value>No suitable weapon is available for this task.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No terminal</Key>
+    <Value>No terminal</Value>
+  </String>
+  <String>
+    <Key>(GUI)No vehicle available.</Key>
+    <Value>No vehicle available.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No weapon available</Key>
+    <Value>No weapon available</Value>
+  </String>
+  <String>
+    <Key>(GUI)No workers are currently willing to move near danger, perhaps because of injuries and/or low morale</Key>
+    <Value>No workers are currently willing to move near danger, perhaps because of injuries and/or low morale</Value>
+  </String>
+  <String>
+    <Key>(GUI)No workers have the speed to hunt down this animal after it has spotted us.</Key>
+    <Value>No workers have the speed to hunt down this animal after it has spotted us.</Value>
+  </String>
+  <String>
+    <Key>(GUI)No. of attackers:</Key>
+    <Value>No. of attackers:</Value>
+  </String>
+  <String>
+    <Key>(GUI)No. of patrollers:</Key>
+    <Value>No. of patrollers:</Value>
+  </String>
+  <String>
+    <Key>(GUI)None</Key>
+    <Value>None</Value>
+  </String>
+  <String>
+    <Key>(GUI)Noon</Key>
+    <Value>Noon</Value>
+  </String>
+  <String>
+    <Key>(GUI)Noone dares go near</Key>
+    <Value>Noone dares go near</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. </Key>
+    <Value>Not attainable. </Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. No one has the needed skill: </Key>
+    <Value>Not attainable. No one has the needed skill: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. One of these tools is needed, but they are not attainable either: 
+</Key>
+    <Value>Not attainable. One of these tools is needed, but they are not attainable either: 
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. The following inputs (materials/ingredients) are needed, but are also not attainable: 
+</Key>
+    <Value>Not attainable. The following inputs (materials/ingredients) are needed, but are also not attainable: 
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. The following resource is needed, but has not been discovered (exploration may help): </Key>
+    <Value>Not attainable. The following resource is needed, but has not been discovered (exploration may help): </Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. The following special site is needed, but has not been discovered (exploration may help): </Key>
+    <Value>Not attainable. The following special site is needed, but has not been discovered (exploration may help): </Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. We have no way of producing this (HOWEVER: There may/may not be salvage options available!)</Key>
+    <Value>Not attainable. We have no way of producing this (HOWEVER: There may/may not be salvage options available!)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not attainable. We have no way of producing this.</Key>
+    <Value>Not attainable. We have no way of producing this.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not available at this time.</Key>
+    <Value>Not available at this time.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not available. The following policy needs to be enacted first: </Key>
+    <Value>Not available. The following policy needs to be enacted first: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Not in inventory</Key>
+    <Value>Not in inventory</Value>
+  </String>
+  <String>
+    <Key>(GUI)Not possible to set default priority for this task type</Key>
+    <Value>Not possible to set default priority for this task type</Value>
+  </String>
+  <String>
+    <Key>(GUI)Nothing can be sold here.</Key>
+    <Value>Nothing can be sold here.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Nothing is available to buy.</Key>
+    <Value>Nothing is available to buy.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Nutrients</Key>
+    <Value>Nutrients</Value>
   </String>
   <String>
     <Key>(GUI)OK</Key>
@@ -2210,20 +4016,224 @@ ASK ABOUT MODS WHEN LOADING, in the options,
 turns this off.</Value>
   </String>
   <String>
+    <Key>(GUI)OPINION</Key>
+    <Value>OPINION</Value>
+  </String>
+  <String>
     <Key>(GUI)OPTIONS</Key>
     <Value>OPTIONS</Value>
+  </String>
+  <String>
+    <Key>(GUI)OR</Key>
+    <Value>OR</Value>
   </String>
   <String>
     <Key>(GUI)OTHER</Key>
     <Value>OTHER</Value>
   </String>
   <String>
+    <Key>(GUI)OUT</Key>
+    <Value>OUT</Value>
+  </String>
+  <String>
+    <Key>(GUI)OUTPUT:</Key>
+    <Value>OUTPUT:</Value>
+  </String>
+  <String>
+    <Key>(GUI)OVER.</Key>
+    <Value>OVER.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Of recommended daily intake for an adult human</Key>
+    <Value>Of recommended daily intake for an adult human</Value>
+  </String>
+  <String>
+    <Key>(GUI)Offer | Demand</Key>
+    <Value>Offer | Demand</Value>
+  </String>
+  <String>
+    <Key>(GUI)On foot</Key>
+    <Value>On foot</Value>
+  </String>
+  <String>
+    <Key>(GUI)On site</Key>
+    <Value>On site</Value>
+  </String>
+  <String>
+    <Key>(GUI)One day</Key>
+    <Value>One day</Value>
+  </String>
+  <String>
+    <Key>(GUI)One day ago</Key>
+    <Value>One day ago</Value>
+  </String>
+  <String>
+    <Key>(GUI)One of the following fuel or energy types is required</Key>
+    <Value>One of the following fuel or energy types is required</Value>
+  </String>
+  <String>
+    <Key>(GUI)One of the travel locations no longer exists. It is not possible to continue editing the mission.</Key>
+    <Value>One of the travel locations no longer exists. It is not possible to continue editing the mission.</Value>
+  </String>
+  <String>
+    <Key>(GUI)One season</Key>
+    <Value>One season</Value>
+  </String>
+  <String>
+    <Key>(GUI)One season ago</Key>
+    <Value>One season ago</Value>
+  </String>
+  <String>
+    <Key>(GUI)One year</Key>
+    <Value>One year</Value>
+  </String>
+  <String>
+    <Key>(GUI)One year ago</Key>
+    <Value>One year ago</Value>
+  </String>
+  <String>
+    <Key>(GUI)Ordered</Key>
+    <Value>Ordered</Value>
+  </String>
+  <String>
+    <Key>(GUI)Ordered / available</Key>
+    <Value>Ordered / available</Value>
+  </String>
+  <String>
+    <Key>(GUI)Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.</Key>
+    <Value>Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Overconsumed</Key>
+    <Value>Overconsumed</Value>
+  </String>
+  <String>
+    <Key>(GUI)Owned</Key>
+    <Value>Owned</Value>
+  </String>
+  <String>
+    <Key>(GUI)PART-BUILT</Key>
+    <Value>PART-BUILT</Value>
+  </String>
+  <String>
+    <Key>(GUI)PATROL</Key>
+    <Value>PATROL</Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSON DATA</Key>
+    <Value>PERSON DATA</Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONNEL</Key>
+    <Value>PERSONNEL</Value>
+  </String>
+  <String>
+    <Key>(GUI)PERSONS</Key>
+    <Value>PERSONS</Value>
+  </String>
+  <String>
+    <Key>(GUI)PLANTS</Key>
+    <Value>PLANTS</Value>
+  </String>
+  <String>
+    <Key>(GUI)POLICY</Key>
+    <Value>POLICY</Value>
+  </String>
+  <String>
+    <Key>(GUI)POLICY:</Key>
+    <Value>POLICY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)POTENTIAL NUTRITIONAL CONTENT:</Key>
+    <Value>POTENTIAL NUTRITIONAL CONTENT:</Value>
+  </String>
+  <String>
+    <Key>(GUI)PRDCTIV.</Key>
+    <Value>PRDCTIV.</Value>
+  </String>
+  <String>
     <Key>(GUI)PRESS A KEY...</Key>
     <Value>PRESS A KEY...</Value>
   </String>
   <String>
+    <Key>(GUI)PRICE</Key>
+    <Value>PRICE</Value>
+  </String>
+  <String>
+    <Key>(GUI)PRIORITY</Key>
+    <Value>PRIORITY</Value>
+  </String>
+  <String>
+    <Key>(GUI)PROD.</Key>
+    <Value>PROD.</Value>
+  </String>
+  <String>
+    <Key>(GUI)PRODUCTION</Key>
+    <Value>PRODUCTION</Value>
+  </String>
+  <String>
+    <Key>(GUI)Paint terrain properties</Key>
+    <Value>Paint terrain properties</Value>
+  </String>
+  <String>
+    <Key>(GUI)Paintbrush. This tool draws with a soft edge.</Key>
+    <Value>Paintbrush. This tool draws with a soft edge.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Path: </Key>
+    <Value>Path: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Patrol the zone continously and engage any threats that appear (Required stance: Fearless)</Key>
+    <Value>Patrol the zone continously and engage any threats that appear (Required stance: Fearless)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Pause the game</Key>
+    <Value>Pause the game</Value>
+  </String>
+  <String>
+    <Key>(GUI)Pencil. This tool draws with a sharp edge.</Key>
+    <Value>Pencil. This tool draws with a sharp edge.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Pin this window so it stays open</Key>
+    <Value>Pin this window so it stays open</Value>
+  </String>
+  <String>
+    <Key>(GUI)Place map assets</Key>
+    <Value>Place map assets</Value>
+  </String>
+  <String>
     <Key>(GUI)Please enter a name for the new save file.</Key>
     <Value>Please enter a name for the new save file.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Previous event</Key>
+    <Value>Previous event</Value>
+  </String>
+  <String>
+    <Key>(GUI)Price of sold items: </Key>
+    <Value>Price of sold items: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Produced</Key>
+    <Value>Produced</Value>
+  </String>
+  <String>
+    <Key>(GUI)Produced by the colony</Key>
+    <Value>Produced by the colony</Value>
+  </String>
+  <String>
+    <Key>(GUI)Production</Key>
+    <Value>Production</Value>
+  </String>
+  <String>
+    <Key>(GUI)Productivity</Key>
+    <Value>Productivity</Value>
+  </String>
+  <String>
+    <Key>(GUI)Productivity rating</Key>
+    <Value>Productivity rating</Value>
   </String>
   <String>
     <Key>(GUI)QUIT TO DESKTOP</Key>
@@ -2234,16 +4244,104 @@ turns this off.</Value>
     <Value>QUIT TO TITLE SCREEN</Value>
   </String>
   <String>
+    <Key>(GUI)RANDOM</Key>
+    <Value>RANDOM</Value>
+  </String>
+  <String>
+    <Key>(GUI)RANDOMIZE</Key>
+    <Value>RANDOMIZE</Value>
+  </String>
+  <String>
+    <Key>(GUI)RANGE:</Key>
+    <Value>RANGE:</Value>
+  </String>
+  <String>
+    <Key>(GUI)REQUIRED SKILL:</Key>
+    <Value>REQUIRED SKILL:</Value>
+  </String>
+  <String>
+    <Key>(GUI)REQUIREMENTS</Key>
+    <Value>REQUIREMENTS</Value>
+  </String>
+  <String>
     <Key>(GUI)RESOLUTION</Key>
     <Value>RESOLUTION</Value>
+  </String>
+  <String>
+    <Key>(GUI)RESOURCES</Key>
+    <Value>RESOURCES</Value>
   </String>
   <String>
     <Key>(GUI)RESUME GAME</Key>
     <Value>RESUME GAME</Value>
   </String>
   <String>
+    <Key>(GUI)ROBOTS</Key>
+    <Value>ROBOTS</Value>
+  </String>
+  <String>
+    <Key>(GUI)Ranged weapon needed</Key>
+    <Value>Ranged weapon needed</Value>
+  </String>
+  <String>
+    <Key>(GUI)Rating of the amount of prepared food items in stock and the intake of food and nutrients among the members. Starvation will have a big negative influence on the rating.</Key>
+    <Value>Rating of the amount of prepared food items in stock and the intake of food and nutrients among the members. Starvation will have a big negative influence on the rating.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Rating of the number and quality of hand weapons available (in proportion to the colony size), the number and quality of defenders, and the occurrance of attacks by wildlife.</Key>
+    <Value>Rating of the number and quality of hand weapons available (in proportion to the colony size), the number and quality of defenders, and the occurrance of attacks by wildlife.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Regrowth</Key>
+    <Value>Regrowth</Value>
+  </String>
+  <String>
+    <Key>(GUI)Regrowth rate</Key>
+    <Value>Regrowth rate</Value>
+  </String>
+  <String>
+    <Key>(GUI)Remove all filters</Key>
+    <Value>Remove all filters</Value>
+  </String>
+  <String>
+    <Key>(GUI)Remove the areas that are not connected to the start point</Key>
+    <Value>Remove the areas that are not connected to the start point</Value>
+  </String>
+  <String>
+    <Key>(GUI)Remove the stockpile</Key>
+    <Value>Remove the stockpile</Value>
+  </String>
+  <String>
+    <Key>(GUI)Requires 64 bit, not available under 32 bit.</Key>
+    <Value>Requires 64 bit, not available under 32 bit.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Requires a character with sufficient level in this skill (more than 0.1)</Key>
+    <Value>Requires a character with sufficient level in this skill (more than 0.1)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Requires a policy to be enacted</Key>
+    <Value>Requires a policy to be enacted</Value>
+  </String>
+  <String>
+    <Key>(GUI)Reserve: click, then use the slider to set an amount colonists will not eat and workshops will not use.</Key>
+    <Value>Reserve: click, then use the slider to set an amount colonists will not eat and workshops will not use.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Reserved: </Key>
+    <Value>Reserved: </Value>
+  </String>
+  <String>
     <Key>(GUI)Restart the game to apply Graphics changes!</Key>
     <Value>Restart the game to apply Graphics changes!</Value>
+  </String>
+  <String>
+    <Key>(GUI)Return to the main menu</Key>
+    <Value>Return to the main menu</Value>
+  </String>
+  <String>
+    <Key>(GUI)S BRUSH</Key>
+    <Value>S BRUSH</Value>
   </String>
   <String>
     <Key>(GUI)SAVE</Key>
@@ -2262,8 +4360,72 @@ turns this off.</Value>
     <Value>SAVE MAP</Value>
   </String>
   <String>
+    <Key>(GUI)SAVE!</Key>
+    <Value>SAVE!</Value>
+  </String>
+  <String>
+    <Key>(GUI)SCENARIOS</Key>
+    <Value>SCENARIOS</Value>
+  </String>
+  <String>
+    <Key>(GUI)SCOUT</Key>
+    <Value>SCOUT</Value>
+  </String>
+  <String>
+    <Key>(GUI)SECURITY RATING: {0:N2} ({1})</Key>
+    <Value>SECURITY RATING: {0:N2} ({1})</Value>
+  </String>
+  <String>
+    <Key>(GUI)SELECT</Key>
+    <Value>SELECT</Value>
+  </String>
+  <String>
+    <Key>(GUI)SET PRIORITY:</Key>
+    <Value>SET PRIORITY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)SEX:</Key>
+    <Value>SEX:</Value>
+  </String>
+  <String>
+    <Key>(GUI)SHOW</Key>
+    <Value>SHOW</Value>
+  </String>
+  <String>
+    <Key>(GUI)SINGLE</Key>
+    <Value>SINGLE</Value>
+  </String>
+  <String>
+    <Key>(GUI)SITE: {0}</Key>
+    <Value>SITE: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)SIZE</Key>
+    <Value>SIZE</Value>
+  </String>
+  <String>
+    <Key>(GUI)SKILLS</Key>
+    <Value>SKILLS</Value>
+  </String>
+  <String>
+    <Key>(GUI)SKILLS:</Key>
+    <Value>SKILLS:</Value>
+  </String>
+  <String>
     <Key>(GUI)SOUND</Key>
     <Value>SOUND</Value>
+  </String>
+  <String>
+    <Key>(GUI)SPECIAL LOCATION:</Key>
+    <Value>SPECIAL LOCATION:</Value>
+  </String>
+  <String>
+    <Key>(GUI)SPEED:</Key>
+    <Value>SPEED:</Value>
+  </String>
+  <String>
+    <Key>(GUI)SPOIL.</Key>
+    <Value>SPOIL.</Value>
   </String>
   <String>
     <Key>(GUI)STABLE</Key>
@@ -2272,6 +4434,70 @@ turns this off.</Value>
   <String>
     <Key>(GUI)STABLE - confirmed in play.</Key>
     <Value>STABLE - confirmed in play.</Value>
+  </String>
+  <String>
+    <Key>(GUI)START</Key>
+    <Value>START</Value>
+  </String>
+  <String>
+    <Key>(GUI)START RUN</Key>
+    <Value>START RUN</Value>
+  </String>
+  <String>
+    <Key>(GUI)START:</Key>
+    <Value>START:</Value>
+  </String>
+  <String>
+    <Key>(GUI)STATS</Key>
+    <Value>STATS</Value>
+  </String>
+  <String>
+    <Key>(GUI)STATUS</Key>
+    <Value>STATUS</Value>
+  </String>
+  <String>
+    <Key>(GUI)STATUS:</Key>
+    <Value>STATUS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)STATUS: {0}</Key>
+    <Value>STATUS: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)STOCKPILE</Key>
+    <Value>STOCKPILE</Value>
+  </String>
+  <String>
+    <Key>(GUI)STORAGE:</Key>
+    <Value>STORAGE:</Value>
+  </String>
+  <String>
+    <Key>(GUI)STORED</Key>
+    <Value>STORED</Value>
+  </String>
+  <String>
+    <Key>(GUI)STRUCTURES</Key>
+    <Value>STRUCTURES</Value>
+  </String>
+  <String>
+    <Key>(GUI)SUGGESTED STRATEGY:</Key>
+    <Value>SUGGESTED STRATEGY:</Value>
+  </String>
+  <String>
+    <Key>(GUI)SUMR</Key>
+    <Value>SUMR</Value>
+  </String>
+  <String>
+    <Key>(GUI)SUPPLY NEEDS</Key>
+    <Value>SUPPLY NEEDS</Value>
+  </String>
+  <String>
+    <Key>(GUI)Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.</Key>
+    <Value>Salvage the object: When breaking this apart, some parts will be retrieved, some will be lost. See the process tooltip for more info.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Save</Key>
+    <Value>Save</Value>
   </String>
   <String>
     <Key>(GUI)Save files may become obsolete when they are older than the current version {0} of the game. To load those, you must change to the corresponding version of the game using the Steam library list. For more info, go to the Unclaimed World forum on Steam.</Key>
@@ -2286,12 +4512,64 @@ turns this off.</Value>
     <Value>Saves the game in a new file.</Value>
   </String>
   <String>
+    <Key>(GUI)Saves the map data.</Key>
+    <Value>Saves the map data.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Saves the map.</Key>
+    <Value>Saves the map.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Saving (1/2). Please wait... </Key>
+    <Value>Saving (1/2). Please wait... </Value>
+  </String>
+  <String>
+    <Key>(GUI)Saving (2/2). Please wait... </Key>
+    <Value>Saving (2/2). Please wait... </Value>
+  </String>
+  <String>
     <Key>(GUI)Saving. Please wait</Key>
     <Value>Saving. Please wait</Value>
   </String>
   <String>
+    <Key>(GUI)Saving. Please wait...</Key>
+    <Value>Saving. Please wait...</Value>
+  </String>
+  <String>
     <Key>(GUI)Scenario:</Key>
     <Value>Scenario:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Screenbounds is null</Key>
+    <Value>Screenbounds is null</Value>
+  </String>
+  <String>
+    <Key>(GUI)Scroll down in the list of tools</Key>
+    <Value>Scroll down in the list of tools</Value>
+  </String>
+  <String>
+    <Key>(GUI)Scroll up in the list of tools</Key>
+    <Value>Scroll up in the list of tools</Value>
+  </String>
+  <String>
+    <Key>(GUI)Search term: '{0}' The search text cannot be changed when the search button is active.</Key>
+    <Value>Search term: '{0}' The search text cannot be changed when the search button is active.</Value>
+  </String>
+  <String>
+    <Key>(GUI)See general data/info about this</Key>
+    <Value>See general data/info about this</Value>
+  </String>
+  <String>
+    <Key>(GUI)See people at this location who are interested in migrating</Key>
+    <Value>See people at this location who are interested in migrating</Value>
+  </String>
+  <String>
+    <Key>(GUI)See production/process information about this</Key>
+    <Value>See production/process information about this</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a destination for the mission!</Key>
+    <Value>Select a destination for the mission!</Value>
   </String>
   <String>
     <Key>(GUI)Select a game to load. 
@@ -2300,8 +4578,74 @@ Save files with a version number lower than the current version {0} of the game 
 Save files with a version number lower than the current version {0} of the game may not work. To load those, you must change to the corresponding version of the game using the Steam library list. For more info, go to the Unclaimed World forum on Steam.</Value>
   </String>
   <String>
+    <Key>(GUI)Select a map to load.</Key>
+    <Value>Select a map to load.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a replay first.</Key>
+    <Value>Select a replay first.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a replay to load.</Key>
+    <Value>Select a replay to load.</Value>
+  </String>
+  <String>
     <Key>(GUI)Select a resolution from the list.</Key>
     <Value>Select a resolution from the list.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a starting location for the mission!</Key>
+    <Value>Select a starting location for the mission!</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a starting point first.</Key>
+    <Value>Select a starting point first.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a task type to view or set its priority</Key>
+    <Value>Select a task type to view or set its priority</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select a tracked object to view its options</Key>
+    <Value>Select a tracked object to view its options</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select all / Deselect all</Key>
+    <Value>Select all / Deselect all</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select an existing map file to overwrite or enter a new name in the box below.</Key>
+    <Value>Select an existing map file to overwrite or enter a new name in the box below.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select filter</Key>
+    <Value>Select filter</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select how many armed colony members should participate in the attack. 
+When all threats are eliminated, the task will be canceled automatically</Key>
+    <Value>Select how many armed colony members should participate in the attack. 
+When all threats are eliminated, the task will be canceled automatically</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select resources to harvest in the zone</Key>
+    <Value>Select resources to harvest in the zone</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select task type:</Key>
+    <Value>Select task type:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select the destination point for the mission</Key>
+    <Value>Select the destination point for the mission</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select the starting point for the mission</Key>
+    <Value>Select the starting point for the mission</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select this location</Key>
+    <Value>Select this location</Value>
   </String>
   <String>
     <Key>(GUI)Select this option to enter a custom window size. Not available in fullscreen.</Key>
@@ -2312,24 +4656,336 @@ Save files with a version number lower than the current version {0} of the game 
     <Value>Select this option to select a fixed resolution among those supported by the video card.</Value>
   </String>
   <String>
+    <Key>(GUI)Select what to display on the mini-map and the terrain view</Key>
+    <Value>Select what to display on the mini-map and the terrain view</Value>
+  </String>
+  <String>
     <Key>(GUI)Select whether the application window should have a border.</Key>
     <Value>Select whether the application window should have a border.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select whether the patroller is permitted to pursue targets far outside the patrol zone.</Key>
+    <Value>Select whether the patroller is permitted to pursue targets far outside the patrol zone.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select whether vermin should be attacked by the patroller in addition to dangerous animals.</Key>
+    <Value>Select whether vermin should be attacked by the patroller in addition to dangerous animals.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select whether vermin should be attacked by the patrollers in addition to dangerous animals.</Key>
+    <Value>Select whether vermin should be attacked by the patrollers in addition to dangerous animals.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.</Key>
+    <Value>Select whether we allow this ammunition type to be used against vermin, or if it can only be used against threats and other targets.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Sell at </Key>
+    <Value>Sell at </Value>
+  </String>
+  <String>
+    <Key>(GUI)Sell is unavailable here:</Key>
+    <Value>Sell is unavailable here:</Value>
   </String>
   <String>
     <Key>(GUI)Set the magnification (pixel zoom) level. Restart the game to see the effect. WARNING: Setting a high magnification level may cause the interface to be truncated. In case of problems, use the ZoomFactor property in Options.xml to revert.</Key>
     <Value>Set the magnification (pixel zoom) level. Restart the game to see the effect. WARNING: Setting a high magnification level may cause the interface to be truncated. In case of problems, use the ZoomFactor property in Options.xml to revert.</Value>
   </String>
   <String>
+    <Key>(GUI)Set the maximum that can be stockpiled</Key>
+    <Value>Set the maximum that can be stockpiled</Value>
+  </String>
+  <String>
     <Key>(GUI)Set the music volume.</Key>
     <Value>Set the music volume.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set the priority for this task</Key>
+    <Value>Set the priority for this task</Value>
   </String>
   <String>
     <Key>(GUI)Set the sound effects volume.</Key>
     <Value>Set the sound effects volume.</Value>
   </String>
   <String>
+    <Key>(GUI)Set to 2 times the normal game speed.</Key>
+    <Value>Set to 2 times the normal game speed.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set to 4 times the normal game speed.</Key>
+    <Value>Set to 4 times the normal game speed.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set to high priority. This will affect all current and future tasks of this type.</Key>
+    <Value>Set to high priority. This will affect all current and future tasks of this type.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set to low priority. This will affect all current and future tasks of this type.</Key>
+    <Value>Set to low priority. This will affect all current and future tasks of this type.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set to normal game speed.</Key>
+    <Value>Set to normal game speed.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set to normal priority. This will affect all current and future tasks of this type.</Key>
+    <Value>Set to normal priority. This will affect all current and future tasks of this type.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set/view current tiers</Key>
+    <Value>Set/view current tiers</Value>
+  </String>
+  <String>
+    <Key>(GUI)Set/view weapon policies</Key>
+    <Value>Set/view weapon policies</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shaders not set up</Key>
+    <Value>Shaders not set up</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show animal</Key>
+    <Value>Show animal</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show details about the selected entity</Key>
+    <Value>Show details about the selected entity</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show details about the selected zone</Key>
+    <Value>Show details about the selected zone</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show graphs</Key>
+    <Value>Show graphs</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show ledger</Key>
+    <Value>Show ledger</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show more details</Key>
+    <Value>Show more details</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show places of interest</Key>
+    <Value>Show places of interest</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show resource</Key>
+    <Value>Show resource</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show structure</Key>
+    <Value>Show structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show the game menu</Key>
+    <Value>Show the game menu</Value>
+  </String>
+  <String>
+    <Key>(GUI)Show various help topics</Key>
+    <Value>Show various help topics</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows entity IDs</Key>
+    <Value>Shows entity IDs</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows food nutrients produced and consumed.</Key>
+    <Value>Shows food nutrients produced and consumed.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows food produced, consumed and wasted. Listed by food types.</Key>
+    <Value>Shows food produced, consumed and wasted. Listed by food types.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows how long the object will last under different conditions. 
+Structures can have their lifespan extended with regular maintenance. Items CANNOT.</Key>
+    <Value>Shows how long the object will last under different conditions. 
+Structures can have their lifespan extended with regular maintenance. Items CANNOT.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows production details including productivity.</Key>
+    <Value>Shows production details including productivity.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows terrain division</Key>
+    <Value>Shows terrain division</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the % of colony members that are lacking a type of nutrient</Key>
+    <Value>Shows the % of colony members that are lacking a type of nutrient</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the areas considered dangerous by the colonists because threats have been spotted there. Threats can sometimes be removed with the ATTACK action.</Key>
+    <Value>Shows the areas considered dangerous by the colonists because threats have been spotted there. Threats can sometimes be removed with the ATTACK action.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas.</Key>
+    <Value>Shows the areas that can be built on, and where characters can go. Structures cannot be built on the red and yellow areas.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the current members and the maximum we can accept. (The current members do not want the community to grow too large, making their votes count less)</Key>
+    <Value>Shows the current members and the maximum we can accept. (The current members do not want the community to grow too large, making their votes count less)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the expected yearly regrowth of {0} in the zone.</Key>
+    <Value>Shows the expected yearly regrowth of {0} in the zone.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the number of killed creatures.</Key>
+    <Value>Shows the number of killed creatures.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the outputs for the process</Key>
+    <Value>Shows the outputs for the process</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the overall migration pull factor between this allegiance and our own. If the number is positive, we could receive more migrants.</Key>
+    <Value>Shows the overall migration pull factor between this allegiance and our own. If the number is positive, we could receive more migrants.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows the size of the colony over time</Key>
+    <Value>Shows the size of the colony over time</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows tile coordinates and world coordinates on each tile</Key>
+    <Value>Shows tile coordinates and world coordinates on each tile</Value>
+  </String>
+  <String>
+    <Key>(GUI)Shows where the colony members are on the minimap</Key>
+    <Value>Shows where the colony members are on the minimap</Value>
+  </String>
+  <String>
+    <Key>(GUI)Skill: </Key>
+    <Value>Skill: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Soil</Key>
+    <Value>Soil</Value>
+  </String>
+  <String>
+    <Key>(GUI)Some hidden item types have overriding settings that are different.</Key>
+    <Value>Some hidden item types have overriding settings that are different.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Some item types have overriding settings that are different.</Key>
+    <Value>Some item types have overriding settings that are different.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Some items in the category have overriding settings.</Key>
+    <Value>Some items in the category have overriding settings.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Some members are busy or sleeping. Everyone must be able to participate in the vote.</Key>
+    <Value>Some members are busy or sleeping. Everyone must be able to participate in the vote.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Sort by:</Key>
+    <Value>Sort by:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Specify what the ammunition may be used for</Key>
+    <Value>Specify what the ammunition may be used for</Value>
+  </String>
+  <String>
+    <Key>(GUI)Spoiled</Key>
+    <Value>Spoiled</Value>
+  </String>
+  <String>
+    <Key>(GUI)Spoiled/degraded into waste</Key>
+    <Value>Spoiled/degraded into waste</Value>
+  </String>
+  <String>
+    <Key>(GUI)Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. 
+Click to switch back to direct order mode.</Key>
+    <Value>Standing order mode. In this mode, production will start and continue whenever the inventory is below the slider value. 
+Click to switch back to direct order mode.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Start of spring</Key>
+    <Value>Start of spring</Value>
+  </String>
+  <String>
+    <Key>(GUI)Start the game</Key>
+    <Value>Start the game</Value>
+  </String>
+  <String>
+    <Key>(GUI)Starting fee: </Key>
+    <Value>Starting fee: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.</Key>
+    <Value>Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Stockpile everything in this category</Key>
+    <Value>Stockpile everything in this category</Value>
+  </String>
+  <String>
+    <Key>(GUI)Stockpile items in this zone</Key>
+    <Value>Stockpile items in this zone</Value>
+  </String>
+  <String>
+    <Key>(GUI)Stockpile {0}</Key>
+    <Value>Stockpile {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)Stop tracking this object</Key>
+    <Value>Stop tracking this object</Value>
+  </String>
+  <String>
+    <Key>(GUI)Storage </Key>
+    <Value>Storage </Value>
+  </String>
+  <String>
+    <Key>(GUI)Stored</Key>
+    <Value>Stored</Value>
+  </String>
+  <String>
+    <Key>(GUI)Structures</Key>
+    <Value>Structures</Value>
+  </String>
+  <String>
+    <Key>(GUI)Switch to standing order mode.</Key>
+    <Value>Switch to standing order mode.</Value>
+  </String>
+  <String>
+    <Key>(GUI)TASK TYPE</Key>
+    <Value>TASK TYPE</Value>
+  </String>
+  <String>
+    <Key>(GUI)TASKS</Key>
+    <Value>TASKS</Value>
+  </String>
+  <String>
+    <Key>(GUI)TECH:</Key>
+    <Value>TECH:</Value>
+  </String>
+  <String>
+    <Key>(GUI)TECHNOLOGY TIERS</Key>
+    <Value>TECHNOLOGY TIERS</Value>
+  </String>
+  <String>
+    <Key>(GUI)TERMINAL</Key>
+    <Value>TERMINAL</Value>
+  </String>
+  <String>
+    <Key>(GUI)TERRAIN</Key>
+    <Value>TERRAIN</Value>
+  </String>
+  <String>
+    <Key>(GUI)TERRAIN DIVISION</Key>
+    <Value>TERRAIN DIVISION</Value>
+  </String>
+  <String>
     <Key>(GUI)TEST MAP</Key>
     <Value>TEST MAP</Value>
+  </String>
+  <String>
+    <Key>(GUI)TEST SCENARIO</Key>
+    <Value>TEST SCENARIO</Value>
   </String>
   <String>
     <Key>(GUI)TESTING</Key>
@@ -2340,36 +4996,808 @@ Save files with a version number lower than the current version {0} of the game 
     <Value>TESTING - not yet confirmed in play.</Value>
   </String>
   <String>
+    <Key>(GUI)THREATS</Key>
+    <Value>THREATS</Value>
+  </String>
+  <String>
+    <Key>(GUI)TIMELINE: 
+ 
+2034 
+Telescopes detect animal life on Tau Ceti b, a nearby extrasolar planet. Plans for an exploration mission are drawn up, but are soon abandoned because of the immense cost. 
+ 
+ 
+2080 
+A comet strikes the Atlantic Ocean, killing around 500 million in the subsequent natural disasters. 
+After rebuilding, Earth's nations agree to prevent a possible extermination of humankind in the future. They decide to preserve the human species by starting a colony on Tau Ceti b, which has been dubbed Antheia. 
+ 
+ 
+2080-2129 
+Earth's nations collaborate to construct a starship and develop new technologies such as hibernation and self-replicating machines. 
+ 
+ 
+2130 
+Building of the starship Exigence is complete. The Earth celebrates its space pioneers: 2100 of the best and brightest have been chosen. They board the ship and enter hibernation as they begin a century long journey. 
+ 
+ 
+2130-2238 
+To eliminate risks of natural or man-made disasters, Earth gradually develops a high surveillance society. The Solar system is intensely monitored as well as each individual's thoughts and actions. The concept of labor loses its meaning as robots fulfil people's needs so they can live a life of leisure. 
+ 
+ 
+2238 
+The Exigence reaches Antheia. However, news of its arrival is received with indifference on Earth. During the long voyage the mission has lost its relevance and Earth's populations are immersed in virtual worlds. The pioneers realize that they are alone in facing the tasks ahead. 
+ 
+ 
+ 
+The PRECOL mission: 
+An exploration mission that took place before the main landing operation. A select group of 60 specialists examined the planet to find the most suitable place for the first colony. After they decided on a location, the 2040 remaining colonists were awakened to come down from orbit. But during the landing, the ground team was caught in the swarming event of a highly dangerous predator species. They were overwhelmed and either lost or scattered in the surroundings. Meanwhile, the arriving colonists were forced to land on a separate continent.</Key>
+    <Value>TIMELINE: 
+ 
+2034 
+Telescopes detect animal life on Tau Ceti b, a nearby extrasolar planet. Plans for an exploration mission are drawn up, but are soon abandoned because of the immense cost. 
+ 
+ 
+2080 
+A comet strikes the Atlantic Ocean, killing around 500 million in the subsequent natural disasters. 
+After rebuilding, Earth's nations agree to prevent a possible extermination of humankind in the future. They decide to preserve the human species by starting a colony on Tau Ceti b, which has been dubbed Antheia. 
+ 
+ 
+2080-2129 
+Earth's nations collaborate to construct a starship and develop new technologies such as hibernation and self-replicating machines. 
+ 
+ 
+2130 
+Building of the starship Exigence is complete. The Earth celebrates its space pioneers: 2100 of the best and brightest have been chosen. They board the ship and enter hibernation as they begin a century long journey. 
+ 
+ 
+2130-2238 
+To eliminate risks of natural or man-made disasters, Earth gradually develops a high surveillance society. The Solar system is intensely monitored as well as each individual's thoughts and actions. The concept of labor loses its meaning as robots fulfil people's needs so they can live a life of leisure. 
+ 
+ 
+2238 
+The Exigence reaches Antheia. However, news of its arrival is received with indifference on Earth. During the long voyage the mission has lost its relevance and Earth's populations are immersed in virtual worlds. The pioneers realize that they are alone in facing the tasks ahead. 
+ 
+ 
+ 
+The PRECOL mission: 
+An exploration mission that took place before the main landing operation. A select group of 60 specialists examined the planet to find the most suitable place for the first colony. After they decided on a location, the 2040 remaining colonists were awakened to come down from orbit. But during the landing, the ground team was caught in the swarming event of a highly dangerous predator species. They were overwhelmed and either lost or scattered in the surroundings. Meanwhile, the arriving colonists were forced to land on a separate continent.</Value>
+  </String>
+  <String>
+    <Key>(GUI)TOOLS</Key>
+    <Value>TOOLS</Value>
+  </String>
+  <String>
+    <Key>(GUI)TOTAL CARGO:</Key>
+    <Value>TOTAL CARGO:</Value>
+  </String>
+  <String>
+    <Key>(GUI)TOTAL COST:</Key>
+    <Value>TOTAL COST:</Value>
+  </String>
+  <String>
+    <Key>(GUI)TOTAL:</Key>
+    <Value>TOTAL:</Value>
+  </String>
+  <String>
+    <Key>(GUI)TRACKED</Key>
+    <Value>TRACKED</Value>
+  </String>
+  <String>
+    <Key>(GUI)TRADE</Key>
+    <Value>TRADE</Value>
+  </String>
+  <String>
+    <Key>(GUI)TRANSPORT</Key>
+    <Value>TRANSPORT</Value>
+  </String>
+  <String>
+    <Key>(GUI)TRANSPORT:</Key>
+    <Value>TRANSPORT:</Value>
+  </String>
+  <String>
+    <Key>(GUI)TRAVEL TIME:</Key>
+    <Value>TRAVEL TIME:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Task cannot be completed because area is inaccessible - due to terrain or obstacles blocking the way</Key>
+    <Value>Task cannot be completed because area is inaccessible - due to terrain or obstacles blocking the way</Value>
+  </String>
+  <String>
+    <Key>(GUI)Ten years</Key>
+    <Value>Ten years</Value>
+  </String>
+  <String>
+    <Key>(GUI)Ten years ago</Key>
+    <Value>Ten years ago</Value>
+  </String>
+  <String>
+    <Key>(GUI)Terrain</Key>
+    <Value>Terrain</Value>
+  </String>
+  <String>
+    <Key>(GUI)That folder is missing Replay.UWRep, Commands.xml or GameParams.xml.</Key>
+    <Value>That folder is missing Replay.UWRep, Commands.xml or GameParams.xml.</Value>
+  </String>
+  <String>
+    <Key>(GUI)That is the folder, not a replay. Pick one of the entries below it.</Key>
+    <Value>That is the folder, not a replay. Pick one of the entries below it.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The age of the person</Key>
+    <Value>The age of the person</Value>
+  </String>
+  <String>
+    <Key>(GUI)The allegiance can be reached with the communication equipment ({0}) that is currently deployed</Key>
+    <Value>The allegiance can be reached with the communication equipment ({0}) that is currently deployed</Value>
+  </String>
+  <String>
+    <Key>(GUI)The ammunition type</Key>
+    <Value>The ammunition type</Value>
+  </String>
+  <String>
+    <Key>(GUI)The amount of ammunition available</Key>
+    <Value>The amount of ammunition available</Value>
+  </String>
+  <String>
+    <Key>(GUI)The amount of materials that are needed</Key>
+    <Value>The amount of materials that are needed</Value>
+  </String>
+  <String>
+    <Key>(GUI)The amount that will be produced</Key>
+    <Value>The amount that will be produced</Value>
+  </String>
+  <String>
+    <Key>(GUI)The area causing the most unhappiness for the character: </Key>
+    <Value>The area causing the most unhappiness for the character: </Value>
+  </String>
+  <String>
+    <Key>(GUI)The area is geographically inaccessible because of terrain or structures blocking the way</Key>
+    <Value>The area is geographically inaccessible because of terrain or structures blocking the way</Value>
+  </String>
+  <String>
+    <Key>(GUI)The area overlaps with an existing stockpile</Key>
+    <Value>The area overlaps with an existing stockpile</Value>
+  </String>
+  <String>
+    <Key>(GUI)The base comfort level when in perfect condition, and without upgrades</Key>
+    <Value>The base comfort level when in perfect condition, and without upgrades</Value>
+  </String>
+  <String>
+    <Key>(GUI)The colony rating has to reach </Key>
+    <Value>The colony rating has to reach </Value>
+  </String>
+  <String>
+    <Key>(GUI)The colony's comfort conditions are a rating of its housing quality and how well it satisfies its inhabitants' need for stimulants (alcohol, coffee etc.)</Key>
+    <Value>The colony's comfort conditions are a rating of its housing quality and how well it satisfies its inhabitants' need for stimulants (alcohol, coffee etc.)</Value>
+  </String>
+  <String>
+    <Key>(GUI)The construction area contains items that must be removed first.</Key>
+    <Value>The construction area contains items that must be removed first.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The cost of transportation / km</Key>
+    <Value>The cost of transportation / km</Value>
+  </String>
+  <String>
+    <Key>(GUI)The following ammunition type is required. 
+NOTE: A ranged weapon will not count in the colony Security rating unless it has ammunition available.</Key>
+    <Value>The following ammunition type is required. 
+NOTE: A ranged weapon will not count in the colony Security rating unless it has ammunition available.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The following members are not ready to vote right now:</Key>
+    <Value>The following members are not ready to vote right now:</Value>
+  </String>
+  <String>
+    <Key>(GUI)The following structures can be upgraded with this item (using the UPGRADE action)</Key>
+    <Value>The following structures can be upgraded with this item (using the UPGRADE action)</Value>
+  </String>
+  <String>
+    <Key>(GUI)The map size gives a hint about the hardware requirements for the AI to function properly. Larger maps usually have higher CPU demands.</Key>
+    <Value>The map size gives a hint about the hardware requirements for the AI to function properly. Larger maps usually have higher CPU demands.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The map was saved.</Key>
+    <Value>The map was saved.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The mission can be reached with the communication equipment ({0}) that is currently deployed</Key>
+    <Value>The mission can be reached with the communication equipment ({0}) that is currently deployed</Value>
+  </String>
+  <String>
+    <Key>(GUI)The number of days the object will last when exposed to this condition. 
+Structures can often have their lifespan extended with regular maintenance. Items CANNOT.</Key>
+    <Value>The number of days the object will last when exposed to this condition. 
+Structures can often have their lifespan extended with regular maintenance. Items CANNOT.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The person is not willing to join our colony at this time.</Key>
+    <Value>The person is not willing to join our colony at this time.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The person is willing to join our colony right now.</Key>
+    <Value>The person is willing to join our colony right now.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The person's rating of our colony.</Key>
+    <Value>The person's rating of our colony.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The person's willingness to join our colony. 
+</Key>
+    <Value>The person's willingness to join our colony. 
+</Value>
+  </String>
+  <String>
+    <Key>(GUI)The price we can buy 1 of these items for</Key>
+    <Value>The price we can buy 1 of these items for</Value>
+  </String>
+  <String>
+    <Key>(GUI)The price we can sell 1 of these items for</Key>
+    <Value>The price we can sell 1 of these items for</Value>
+  </String>
+  <String>
+    <Key>(GUI)The resulting effects</Key>
+    <Value>The resulting effects</Value>
+  </String>
+  <String>
+    <Key>(GUI)The slider sets the reserve. Click the button again to go back to ordering.</Key>
+    <Value>The slider sets the reserve. Click the button again to go back to ordering.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The storage capacity in BLK</Key>
+    <Value>The storage capacity in BLK</Value>
+  </String>
+  <String>
+    <Key>(GUI)The storage conditions and capacity offered by this object</Key>
+    <Value>The storage conditions and capacity offered by this object</Value>
+  </String>
+  <String>
+    <Key>(GUI)The structure has these optional upgrades (using the UPGRADE action)</Key>
+    <Value>The structure has these optional upgrades (using the UPGRADE action)</Value>
+  </String>
+  <String>
+    <Key>(GUI)The structure is broken and is unusable for stockpiling.</Key>
+    <Value>The structure is broken and is unusable for stockpiling.</Value>
+  </String>
+  <String>
     <Key>(GUI)The studio's binding, saved in Options.xml.</Key>
     <Value>The studio's binding, saved in Options.xml.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The target is too far away from the camp.</Key>
+    <Value>The target is too far away from the camp.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The task has no location yet.</Key>
+    <Value>The task has no location yet.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The task is located in a dangerous spot. Suggestion: First secure the area with PATROL/ATTACK zones. Use the THREAT overlay (next to the minimap) to highlight dangerous areas.</Key>
+    <Value>The task is located in a dangerous spot. Suggestion: First secure the area with PATROL/ATTACK zones. Use the THREAT overlay (next to the minimap) to highlight dangerous areas.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The terminal no longer exists. It is not possible to continue browsing the items.</Key>
+    <Value>The terminal no longer exists. It is not possible to continue browsing the items.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The total cost of the mission.</Key>
+    <Value>The total cost of the mission.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The upgrade can be installed now.</Key>
+    <Value>The upgrade can be installed now.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The upgrade is installed but broken. It cannot be used.</Key>
+    <Value>The upgrade is installed but broken. It cannot be used.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The upgrade is installed.</Key>
+    <Value>The upgrade is installed.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The vehicle is not owned by us, but we can hire it for a price.</Key>
+    <Value>The vehicle is not owned by us, but we can hire it for a price.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The weapon is a part of a structure/robot and cannot be used directly by characters.</Key>
+    <Value>The weapon is a part of a structure/robot and cannot be used directly by characters.</Value>
+  </String>
+  <String>
+    <Key>(GUI)The yearly regrowth of each resource in the zone</Key>
+    <Value>The yearly regrowth of each resource in the zone</Value>
+  </String>
+  <String>
+    <Key>(GUI)The zone is in this creature's habitat</Key>
+    <Value>The zone is in this creature's habitat</Value>
+  </String>
+  <String>
+    <Key>(GUI)There are no colony members with this skill (Requirement: Skill level above {0:N1})</Key>
+    <Value>There are no colony members with this skill (Requirement: Skill level above {0:N1})</Value>
+  </String>
+  <String>
+    <Key>(GUI)There are no items stored and offered for trade in the terminal building.</Key>
+    <Value>There are no items stored and offered for trade in the terminal building.</Value>
   </String>
   <String>
     <Key>(GUI)There is already a save file with that name. Overwrite?</Key>
     <Value>There is already a save file with that name. Overwrite?</Value>
   </String>
   <String>
+    <Key>(GUI)There is more than one way of producing this item, but none of them are attainable.</Key>
+    <Value>There is more than one way of producing this item, but none of them are attainable.</Value>
+  </String>
+  <String>
+    <Key>(GUI)There is no demand for this item.</Key>
+    <Value>There is no demand for this item.</Value>
+  </String>
+  <String>
+    <Key>(GUI)There is no majority for this policy yet.</Key>
+    <Value>There is no majority for this policy yet.</Value>
+  </String>
+  <String>
+    <Key>(GUI)These nutrients were consumed but were not needed. To reduce this waste, make sure there is food with different nutrient profiles available.</Key>
+    <Value>These nutrients were consumed but were not needed. To reduce this waste, make sure there is food with different nutrient profiles available.</Value>
+  </String>
+  <String>
+    <Key>(GUI)They will slowly change their principles above the rating.</Key>
+    <Value>They will slowly change their principles above the rating.</Value>
+  </String>
+  <String>
+    <Key>(GUI)This cannot be selected as a starting location since there is no transportation currently available from this site.</Key>
+    <Value>This cannot be selected as a starting location since there is no transportation currently available from this site.</Value>
+  </String>
+  <String>
+    <Key>(GUI)This column shows a summary of the resources being gathered</Key>
+    <Value>This column shows a summary of the resources being gathered</Value>
+  </String>
+  <String>
+    <Key>(GUI)This column shows the status of the needed input materials</Key>
+    <Value>This column shows the status of the needed input materials</Value>
+  </String>
+  <String>
+    <Key>(GUI)This is a pseudo process. Each pseudo process yields its product in a special way. Examine the tooltip to find out how to produce the item</Key>
+    <Value>This is a pseudo process. Each pseudo process yields its product in a special way. Examine the tooltip to find out how to produce the item</Value>
+  </String>
+  <String>
+    <Key>(GUI)This is an upgrade and it is constructed with the UPGRADE action. Examine the tooltip to see the objects that can be upgraded.</Key>
+    <Value>This is an upgrade and it is constructed with the UPGRADE action. Examine the tooltip to see the objects that can be upgraded.</Value>
+  </String>
+  <String>
+    <Key>(GUI)This is where we are</Key>
+    <Value>This is where we are</Value>
+  </String>
+  <String>
+    <Key>(GUI)This is where we are.</Key>
+    <Value>This is where we are.</Value>
+  </String>
+  <String>
+    <Key>(GUI)This item is currently not available to buy.</Key>
+    <Value>This item is currently not available to buy.</Value>
+  </String>
+  <String>
+    <Key>(GUI)This item is gathered from a resource</Key>
+    <Value>This item is gathered from a resource</Value>
+  </String>
+  <String>
+    <Key>(GUI)This item is:</Key>
+    <Value>This item is:</Value>
+  </String>
+  <String>
+    <Key>(GUI)This location is already selected</Key>
+    <Value>This location is already selected</Value>
+  </String>
+  <String>
+    <Key>(GUI)This number is used in the colony's Security rating. The more highly rated weapons the colony has (up to 2 per person), the higher the colony's Security rating</Key>
+    <Value>This number is used in the colony's Security rating. The more highly rated weapons the colony has (up to 2 per person), the higher the colony's Security rating</Value>
+  </String>
+  <String>
+    <Key>(GUI)This task is ongoing. Use the task panel to view or cancel it</Key>
+    <Value>This task is ongoing. Use the task panel to view or cancel it</Value>
+  </String>
+  <String>
+    <Key>(GUI)This will more quickly gain a majority.</Key>
+    <Value>This will more quickly gain a majority.</Value>
+  </String>
+  <String>
+    <Key>(GUI)This worker supplies the needed '{0}' skill</Key>
+    <Value>This worker supplies the needed '{0}' skill</Value>
+  </String>
+  <String>
+    <Key>(GUI)Time (s) to pause:</Key>
+    <Value>Time (s) to pause:</Value>
+  </String>
+  <String>
+    <Key>(GUI)To adopt this policy, more colonists with higher principles are needed</Key>
+    <Value>To adopt this policy, more colonists with higher principles are needed</Value>
+  </String>
+  <String>
+    <Key>(GUI)To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option.</Key>
+    <Value>To hire transports from another allegiance, we need to establish communication first. A ground satellite station is a good option.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Toggle the mini-map on/off</Key>
+    <Value>Toggle the mini-map on/off</Value>
+  </String>
+  <String>
+    <Key>(GUI)Toggle tracking this item</Key>
+    <Value>Toggle tracking this item</Value>
+  </String>
+  <String>
+    <Key>(GUI)Too far away from camp</Key>
+    <Value>Too far away from camp</Value>
+  </String>
+  <String>
+    <Key>(GUI)Tools are broken and unusable</Key>
+    <Value>Tools are broken and unusable</Value>
+  </String>
+  <String>
+    <Key>(GUI)Tools not in inventory</Key>
+    <Value>Tools not in inventory</Value>
+  </String>
+  <String>
+    <Key>(GUI)Tools owned but currently in use</Key>
+    <Value>Tools owned but currently in use</Value>
+  </String>
+  <String>
+    <Key>(GUI)Tools: </Key>
+    <Value>Tools: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Total amount of available Credits.</Key>
+    <Value>Total amount of available Credits.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Total amount of cargo bulk that the vehicle can transport.</Key>
+    <Value>Total amount of cargo bulk that the vehicle can transport.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Total bulk of the cargo</Key>
+    <Value>Total bulk of the cargo</Value>
+  </String>
+  <String>
+    <Key>(GUI)Total cost: </Key>
+    <Value>Total cost: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Total earned: </Key>
+    <Value>Total earned: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Total expenses (in trade credits) for starting this run. A negative number here means we will earn credits.</Key>
+    <Value>Total expenses (in trade credits) for starting this run. A negative number here means we will earn credits.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Total productivity: </Key>
+    <Value>Total productivity: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Track TOOLS that can be USED TO CREATE this object</Key>
+    <Value>Track TOOLS that can be USED TO CREATE this object</Value>
+  </String>
+  <String>
+    <Key>(GUI)Track objects that are NEEDED TO CREATE this object</Key>
+    <Value>Track objects that are NEEDED TO CREATE this object</Value>
+  </String>
+  <String>
+    <Key>(GUI)Track objects that can be CREATED FROM this object</Key>
+    <Value>Track objects that can be CREATED FROM this object</Value>
+  </String>
+  <String>
+    <Key>(GUI)Track this item/structure</Key>
+    <Value>Track this item/structure</Value>
+  </String>
+  <String>
+    <Key>(GUI)Transport cost: </Key>
+    <Value>Transport cost: </Value>
+  </String>
+  <String>
+    <Key>(GUI)Travelling</Key>
+    <Value>Travelling</Value>
+  </String>
+  <String>
+    <Key>(GUI)Trees</Key>
+    <Value>Trees</Value>
+  </String>
+  <String>
+    <Key>(GUI)Type</Key>
+    <Value>Type</Value>
+  </String>
+  <String>
+    <Key>(GUI)UNKNOWN</Key>
+    <Value>UNKNOWN</Value>
+  </String>
+  <String>
+    <Key>(GUI)UPGRADE</Key>
+    <Value>UPGRADE</Value>
+  </String>
+  <String>
+    <Key>(GUI)UPGRADE FOR:</Key>
+    <Value>UPGRADE FOR:</Value>
+  </String>
+  <String>
+    <Key>(GUI)UPGRADE OPTIONS:</Key>
+    <Value>UPGRADE OPTIONS:</Value>
+  </String>
+  <String>
+    <Key>(GUI)UPGRADE. Cannot upgrade a broken structure.</Key>
+    <Value>UPGRADE. Cannot upgrade a broken structure.</Value>
+  </String>
+  <String>
+    <Key>(GUI)UPGRADE. View or set the possible upgrades.</Key>
+    <Value>UPGRADE. View or set the possible upgrades.</Value>
+  </String>
+  <String>
+    <Key>(GUI)USED</Key>
+    <Value>USED</Value>
+  </String>
+  <String>
+    <Key>(GUI)USED FOR:</Key>
+    <Value>USED FOR:</Value>
+  </String>
+  <String>
+    <Key>(GUI)USED IN:</Key>
+    <Value>USED IN:</Value>
+  </String>
+  <String>
+    <Key>(GUI)Unable to do this, because the zone is not continuous</Key>
+    <Value>Unable to do this, because the zone is not continuous</Value>
+  </String>
+  <String>
+    <Key>(GUI)Unpin this window so it will be hidden as normal</Key>
+    <Value>Unpin this window so it will be hidden as normal</Value>
+  </String>
+  <String>
     <Key>(GUI)Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK.</Key>
     <Value>Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK.</Value>
+  </String>
+  <String>
+    <Key>(GUI)Usable as weapon</Key>
+    <Value>Usable as weapon</Value>
+  </String>
+  <String>
+    <Key>(GUI)Use against vermin</Key>
+    <Value>Use against vermin</Value>
+  </String>
+  <String>
+    <Key>(GUI)Used</Key>
+    <Value>Used</Value>
+  </String>
+  <String>
+    <Key>(GUI)Used as a material in these objects</Key>
+    <Value>Used as a material in these objects</Value>
+  </String>
+  <String>
+    <Key>(GUI)Used as a material input for making these objects (max {0} items are shown)</Key>
+    <Value>Used as a material input for making these objects (max {0} items are shown)</Value>
+  </String>
+  <String>
+    <Key>(GUI)Used as a tool for making these objects</Key>
+    <Value>Used as a tool for making these objects</Value>
+  </String>
+  <String>
+    <Key>(GUI)Used in production</Key>
+    <Value>Used in production</Value>
+  </String>
+  <String>
+    <Key>(GUI)VERMIN</Key>
+    <Value>VERMIN</Value>
+  </String>
+  <String>
+    <Key>(GUI)Vegetation</Key>
+    <Value>Vegetation</Value>
+  </String>
+  <String>
+    <Key>(GUI)Vermin</Key>
+    <Value>Vermin</Value>
   </String>
   <String>
     <Key>(GUI)Version:</Key>
     <Value>Version:</Value>
   </String>
   <String>
+    <Key>(GUI)Very low</Key>
+    <Value>Very low</Value>
+  </String>
+  <String>
+    <Key>(GUI)View current tasks and set priorities</Key>
+    <Value>View current tasks and set priorities</Value>
+  </String>
+  <String>
+    <Key>(GUI)View or change the colony's policies</Key>
+    <Value>View or change the colony's policies</Value>
+  </String>
+  <String>
+    <Key>(GUI)View prices and goods for sale at this location</Key>
+    <Value>View prices and goods for sale at this location</Value>
+  </String>
+  <String>
+    <Key>(GUI)View prices for goods this location is willing to buy</Key>
+    <Value>View prices for goods this location is willing to buy</Value>
+  </String>
+  <String>
+    <Key>(GUI)View the inventory and give production orders</Key>
+    <Value>View the inventory and give production orders</Value>
+  </String>
+  <String>
+    <Key>(GUI)View the list of colony members</Key>
+    <Value>View the list of colony members</Value>
+  </String>
+  <String>
+    <Key>(GUI)View the world map</Key>
+    <Value>View the world map</Value>
+  </String>
+  <String>
     <Key>(GUI)W:</Key>
     <Value>W:</Value>
+  </String>
+  <String>
+    <Key>(GUI)WALKING</Key>
+    <Value>WALKING</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEALTH: 12000c</Key>
+    <Value>WEALTH: 12000c</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEAPON DATA:</Key>
+    <Value>WEAPON DATA:</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEAPONS POLICY</Key>
+    <Value>WEAPONS POLICY</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEATHER AHEAD:</Key>
+    <Value>WEATHER AHEAD:</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEATHER NOW:</Key>
+    <Value>WEATHER NOW:</Value>
+  </String>
+  <String>
+    <Key>(GUI)WEIGHT:</Key>
+    <Value>WEIGHT:</Value>
+  </String>
+  <String>
+    <Key>(GUI)WITR</Key>
+    <Value>WITR</Value>
+  </String>
+  <String>
+    <Key>(GUI)WORK REQD.:</Key>
+    <Value>WORK REQD.:</Value>
+  </String>
+  <String>
+    <Key>(GUI)WORLD MAP</Key>
+    <Value>WORLD MAP</Value>
   </String>
   <String>
     <Key>(GUI)Warning: Steam has not initialized correctly. Achievements cannot be unlocked in this session!</Key>
     <Value>Warning: Steam has not initialized correctly. Achievements cannot be unlocked in this session!</Value>
   </String>
   <String>
+    <Key>(GUI)We are not in communication with the mission.</Key>
+    <Value>We are not in communication with the mission.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We are not in communication with the mission. Estimated from its route and speed: arrival at {0}{1}.</Key>
+    <Value>We are not in communication with the mission. Estimated from its route and speed: arrival at {0}{1}.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We are not offering anything for trade matching the filters.</Key>
+    <Value>We are not offering anything for trade matching the filters.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We are not offering anything for trade.</Key>
+    <Value>We are not offering anything for trade.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We currently have no way to communicate with the allegiance.</Key>
+    <Value>We currently have no way to communicate with the allegiance.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We currently have no way to communicate with the mission. ETA and location are not up to date.</Key>
+    <Value>We currently have no way to communicate with the mission. ETA and location are not up to date.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We do not have the needed amount of this input.</Key>
+    <Value>We do not have the needed amount of this input.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We don't have all the needed materials or tools to begin this</Key>
+    <Value>We don't have all the needed materials or tools to begin this</Value>
+  </String>
+  <String>
+    <Key>(GUI)We have </Key>
+    <Value>We have </Value>
+  </String>
+  <String>
+    <Key>(GUI)We have already adopted this policy.</Key>
+    <Value>We have already adopted this policy.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We have the needed amount of this input.</Key>
+    <Value>We have the needed amount of this input.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We have the needed policy: {0}</Key>
+    <Value>We have the needed policy: {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)We need all of the below materials, in the given amounts</Key>
+    <Value>We need all of the below materials, in the given amounts</Value>
+  </String>
+  <String>
+    <Key>(GUI)We need to adopt a policy first.</Key>
+    <Value>We need to adopt a policy first.</Value>
+  </String>
+  <String>
+    <Key>(GUI)We need to adopt the lower tier areas first.</Key>
+    <Value>We need to adopt the lower tier areas first.</Value>
+  </String>
+  <String>
+    <Key>(GUI)When activating the SCAN button, these resources will also be visible in the terrain view.</Key>
+    <Value>When activating the SCAN button, these resources will also be visible in the terrain view.</Value>
+  </String>
+  <String>
+    <Key>(GUI)When selected, the upgrade will be installed as soon as possible. If it breaks, a new upgrade will be installed. If unselected, the upgrade will be removed again.</Key>
+    <Value>When selected, the upgrade will be installed as soon as possible. If it breaks, a new upgrade will be installed. If unselected, the upgrade will be removed again.</Value>
+  </String>
+  <String>
     <Key>(GUI)Width: {0} Height: {1}</Key>
     <Value>Width: {0} Height: {1}</Value>
   </String>
   <String>
+    <Key>(GUI)Willing to buy at </Key>
+    <Value>Willing to buy at </Value>
+  </String>
+  <String>
+    <Key>(GUI)Worker energy: </Key>
+    <Value>Worker energy: </Value>
+  </String>
+  <String>
+    <Key>(GUI)YIELDED FROM:</Key>
+    <Value>YIELDED FROM:</Value>
+  </String>
+  <String>
+    <Key>(GUI)YIELDS:</Key>
+    <Value>YIELDS:</Value>
+  </String>
+  <String>
     <Key>(GUI)YOU ARE RUNNING:</Key>
     <Value>YOU ARE RUNNING:</Value>
+  </String>
+  <String>
+    <Key>(GUI)YOUNG</Key>
+    <Value>YOUNG</Value>
+  </String>
+  <String>
+    <Key>(GUI)Yields these products</Key>
+    <Value>Yields these products</Value>
+  </String>
+  <String>
+    <Key>(GUI)Zone is null</Key>
+    <Value>Zone is null</Value>
+  </String>
+  <String>
+    <Key>(GUI)customPanel.Category name: </Key>
+    <Value>customPanel.Category name: </Value>
+  </String>
+  <String>
+    <Key>(GUI)entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()</Key>
+    <Value>entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()</Value>
+  </String>
+  <String>
+    <Key>(GUI)has spotted {0}</Key>
+    <Value>has spotted {0}</Value>
+  </String>
+  <String>
+    <Key>(GUI)max.</Key>
+    <Value>max.</Value>
+  </String>
+  <String>
+    <Key>(GUI)mb</Key>
+    <Value>mb</Value>
   </String>
   <String>
     <Key>(GUI)not installed</Key>
@@ -2382,6 +5810,34 @@ Save files with a version number lower than the current version {0} of the game 
   <String>
     <Key>(GUI)nothing - a stock save</Key>
     <Value>nothing - a stock save</Value>
+  </String>
+  <String>
+    <Key>(GUI)stops chasing vermin: {0} threatens the colony.</Key>
+    <Value>stops chasing vermin: {0} threatens the colony.</Value>
+  </String>
+  <String>
+    <Key>(GUI)was killed by {0}.</Key>
+    <Value>was killed by {0}.</Value>
+  </String>
+  <String>
+    <Key>(GUI)zone.MapArea is null</Key>
+    <Value>zone.MapArea is null</Value>
+  </String>
+  <String>
+    <Key>(GUI)zone.MapArea.BottomLeftTile is null</Key>
+    <Value>zone.MapArea.BottomLeftTile is null</Value>
+  </String>
+  <String>
+    <Key>(GUI){0:N1} km</Key>
+    <Value>{0:N1} km</Value>
+  </String>
+  <String>
+    <Key>(GUI){0} must first be selected, then the item can be built from the action menu</Key>
+    <Value>{0} must first be selected, then the item can be built from the action menu</Value>
+  </String>
+  <String>
+    <Key>(GUI){0}: Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.</Key>
+    <Value>{0}: Ordering many single items can take a while to produce. Try to look for ways to produce in larger batches, as this cuts down on the production time.</Value>
   </String>
   <String>
     <Key>(GUI)© 2012-16 Refactored Games OÜ, all rights reserved. Supported by: </Key>

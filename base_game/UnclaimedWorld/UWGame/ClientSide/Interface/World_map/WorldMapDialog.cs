@@ -30,7 +30,7 @@ public class WorldMapDialog : Panel
 	public event EventHandler CancelClick;
 
 	public WorldMapDialog(CommonInterface intf, Point position)
-		: base(intf, "WORLD MAP", position, new Vector2(590f, Math.Min(617, The.InGameUI.rosterPanelHeight)), Level.Dialogs)
+		: base(intf, UWGame.Locale.Text("WORLD MAP"), position, new Vector2(590f, Math.Min(617, The.InGameUI.rosterPanelHeight)), Level.Dialogs)
 	{
 		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out display, out lcdSurface, ref lcdScreen);
 		lcdSurface.DebugTag = "worldmapDlgLcdSurface";
@@ -49,7 +49,7 @@ public class WorldMapDialog : Panel
 		lblInfo.Init(Label.LabelType.LCDNormal);
 		lblInfo.Y = lCDInnerPanel.Panel.Y + 10;
 		lblInfo.X = 10;
-		AddLowerButton("CANCEL", "Cancels and closes the dialog.", Align.Right).Click += btCancel_Click;
+		AddLowerButton(UWGame.Locale.Text("CANCEL"), UWGame.Locale.Text("Cancels and closes the dialog."), Align.Right).Click += btCancel_Click;
 	}
 
 	public void ShowModalOverlay()
@@ -119,11 +119,11 @@ public class WorldMapDialog : Panel
 	{
 		if (The.InGameUI.CreateMissionPanel.worldMapDialogSource == CreateMissionPanel.WorldMapDialogSource.Start)
 		{
-			lblInfo.Text = "Select a starting location for the mission!";
+			lblInfo.Text = UWGame.Locale.Text("Select a starting location for the mission!");
 		}
 		else
 		{
-			lblInfo.Text = "Select a destination for the mission!";
+			lblInfo.Text = UWGame.Locale.Text("Select a destination for the mission!");
 		}
 		worldMap.Fill(The.Sim.World, buyer, isMissionAction: true);
 	}
