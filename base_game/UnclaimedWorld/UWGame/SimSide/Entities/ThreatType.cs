@@ -1,6 +1,18 @@
-namespace UWGame.SimSide.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-public class ThreatType
+namespace UWGame.SimSide.Entities
 {
-	public StrengthRating StrengthRating;
+    /// <summary>
+    /// can be filled to make non-agents be seen as threats to other allegiances (like nests... other examples?)
+    /// </summary>
+    public class ThreatType
+    {
+        /// <summary>
+        /// how big a threat is this...
+        /// </summary>
+        public StrengthRating StrengthRating;
+    }
 }
