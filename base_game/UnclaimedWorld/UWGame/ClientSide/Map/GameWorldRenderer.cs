@@ -1323,21 +1323,21 @@ namespace UWGame.ClientSide.Map
             
             bool drawLightSources = true;
             /*
-#if DEBUG || PROFILE
+#if DEBUG
             drawLightSources = Kensei.Dev.Options.GetOption("Rendering.Render light sources");
 #endif*/
 
 
             bool drawBillboards = true;
             /*
-#if DEBUG || PROFILE
+#if DEBUG
             drawBillboards = Kensei.Dev.Options.GetOption("Rendering.Render billboards");
 #endif*/
 
            
             bool drawItems = true; 
             /**
-#if DEBUG || PROFILE
+#if DEBUG
             drawItems = Kensei.Dev.Options.GetOption("Rendering.Render items");
 #endif
 */
@@ -1569,7 +1569,7 @@ namespace UWGame.ClientSide.Map
 
         private void DrawInvisibleEntitiesForDebugOrEditor()
         {
-//#if DEBUG || PROFILE
+//#if DEBUG
 //            // draw invisible entities (ambients, fog emitters etc.)
 
 //            bool drawMarkers = Kensei.Dev.Options.GetOption("Overlays.Markers");
@@ -2322,7 +2322,7 @@ namespace UWGame.ClientSide.Map
 
 
 
-//#if DEBUG || PROFILE
+//#if DEBUG
 //            if (Kensei.Dev.Options.GetOption("Rendering.Render terrain"))
 //            {
 //                // terrainSlicedMap.Draw(null);
@@ -2347,7 +2347,7 @@ namespace UWGame.ClientSide.Map
 
 //            if (isThereWaterInView)
 //            {
-//#if DEBUG || PROFILE
+//#if DEBUG
 //                if (Kensei.Dev.Options.GetOption("Rendering.Render water"))
 //                {
 
@@ -2368,12 +2368,12 @@ namespace UWGame.ClientSide.Map
 
 
 //            bool drawModels = true;
-//#if DEBUG || PROFILE
+//#if DEBUG
 //            drawModels = Kensei.Dev.Options.GetOption("Rendering.Render models");
 //#endif
 
 //            bool drawShadows = true;
-//#if DEBUG || PROFILE
+//#if DEBUG
 //            drawShadows = Kensei.Dev.Options.GetOption("Rendering.Render shadows");
 //#endif
 
@@ -2408,7 +2408,7 @@ namespace UWGame.ClientSide.Map
 
 //            #region Draw debug markers
 
-//#if DEBUG || PROFILE
+//#if DEBUG
 //            The.MapUI.DrawDebugInfo();
 //#endif
 
@@ -2558,13 +2558,13 @@ namespace UWGame.ClientSide.Map
             bool drawTrees = true;
 
             /*
-#if DEBUG || PROFILE
+#if DEBUG
             drawTrees = Kensei.Dev.Options.GetOption("Rendering.Render trees");
 #endif*/
             bool drawItems = true;
 
             /*
-#if DEBUG || PROFILE
+#if DEBUG
             drawItems = Kensei.Dev.Options.GetOption("Rendering.Render items");
 #endif
             */
@@ -2831,7 +2831,7 @@ namespace UWGame.ClientSide.Map
             bool drawGroundSprites = true;
 
             /*
-#if DEBUG || PROFILE
+#if DEBUG
             drawGroundSprites = Kensei.Dev.Options.GetOption("Rendering.Render ground sprites");
 #endif
             */
@@ -3686,7 +3686,7 @@ namespace UWGame.ClientSide.Map
             else
             {
                 /*
-#if DEBUG || PROFILE
+#if DEBUG
                 if (Kensei.Dev.Options.GetOption("Overlays.Terrain division")) // only has an effect at startup because we cache the rsult
                 {
                     useWireframe = true; // The.Client.GraphicsDevice.RasterizerState = rasterizerStateWireframe;
@@ -3751,7 +3751,7 @@ namespace UWGame.ClientSide.Map
                 {
 
                     /*
-#if DEBUG || PROFILE
+#if DEBUG
                     if (Kensei.Dev.Options.GetOption("Rendering.Show light amount"))
                     {
                         terrainEffect.CurrentTechnique = terrainEffect.Techniques["DebugRenderRocksSingleLayer" + batch.terrainInBatch[0].GetPerlinNoiseChannel().ToString()];
@@ -3927,7 +3927,7 @@ namespace UWGame.ClientSide.Map
             //    The.Client.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
             /*
-#if DEBUG || PROFILE
+#if DEBUG
             if (Kensei.Dev.Options.GetOption("Rendering.Show light amount"))
             {
                 GroundFeatureEffect.CurrentTechnique = GroundFeatureEffect.Techniques["RenderGroundSpritesDebugLighting"];
@@ -3936,7 +3936,7 @@ namespace UWGame.ClientSide.Map
             {
 #endif*/
                 GroundFeatureEffect.CurrentTechnique = GroundFeatureEffect.Techniques["RenderGroundSprites"]; //0]; //"RoadsAndPaths"];
-/*#if DEBUG || PROFILE
+/*#if DEBUG
             }
 #endif*/
             // for normal mapping light effect:
@@ -4203,7 +4203,7 @@ namespace UWGame.ClientSide.Map
 
 //            // uses EdgeDetectNormalDepthRenderTarget as parameter
 //            bool drawOutlines = true;
-//#if DEBUG || PROFILE
+//#if DEBUG
 //            drawOutlines = Kensei.Dev.Options.GetOption("Rendering.Draw outlines");
 //#endif
 //            if (drawOutlines)
@@ -4501,7 +4501,7 @@ namespace UWGame.ClientSide.Map
         //            bool drawInfo = false;
         //            bool drawMarkers = false;
 
-        //#if DEBUG || PROFILE
+        //#if DEBUG
 
         //            drawInfo = Kensei.Dev.Options.GetOption("Dev.Show hitpoints");
         //            drawMarkers = Kensei.Dev.Options.GetOption("Overlays.Markers");
@@ -4513,7 +4513,7 @@ namespace UWGame.ClientSide.Map
         //                foreach (var drawObject in sortedList)
         //                {
 
-        //#if DEBUG || PROFILE
+        //#if DEBUG
         //                    // TODO: also draw invisible enitites (fog emitter)
         //                    if (drawMarkers)
         //                    {
@@ -4587,7 +4587,7 @@ namespace UWGame.ClientSide.Map
         //                            PrintEditorData(objectAsEntity, renderIds); //, The.InGameUI.SidePanelEdit.PrintResources);
         //                        }
 
-        //#if DEBUG || PROFILE
+        //#if DEBUG
         //                        // TODO: also draw invisible enitites (fog emitter)
         //                        DrawEntityDebugText(objectAsEntity, drawInfo);
 
@@ -5343,7 +5343,7 @@ namespace UWGame.ClientSide.Map
                 {   // render in daylight
 
                     /*
-#if DEBUG || PROFILE
+#if DEBUG
                     if (Kensei.Dev.Options.GetOption("Rendering.Show light amount"))
                     {
                         billboardEffect.CurrentTechnique = billboardEffect.Techniques["StandardDebugLighting"];
