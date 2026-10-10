@@ -96,6 +96,14 @@ internal static class Program
 		// port's own entries are registered either way; the bundled mod's only when it is present
 		// and on, so -nomods leaves no trace of it in the file or the menu.
 		UWGame.Mods.ModSettings.Load(UnclaimedWorld.LogError);
+		// The bundled mod switched off in SELECT MODS is off as -nomods makes it - its content
+		// hooks included, not only its switches - so from the start of the game. It is still
+		// listed there (Describe), to be switched on again.
+		UWGame.Mods.UnhiddenMod.Describe();
+		if (!UWGame.Mods.ModSettings.IsModEnabled(UWGame.Mods.UnhiddenMod.ModId))
+		{
+			UWGame.Mods.UnhiddenMod.Disable();
+		}
 		UWGame.Mods.PortSettings.RegisterSettings();
 		// The mods that ship as their own file, each answering one request. Always registered:
 		// unlike the bundled Unhidden Mod they are not a build-time feature, so their switches are

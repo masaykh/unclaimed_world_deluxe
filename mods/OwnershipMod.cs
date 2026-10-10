@@ -80,6 +80,10 @@ public static class OwnershipMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Households are paid in food and cook for themselves - the first step from a communal expedition towards private ownership.",
+            "HUD_thumbnail_storageCanopy");
         ModSettings.SetCategoryLabel(ModId, "OWNERSHIP");
         _ = EnabledSetting;
         _ = DaysOfFoodSetting;

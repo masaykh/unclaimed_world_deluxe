@@ -95,6 +95,10 @@ public static class DiscomfortMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Stink and noise near where a colonist sleeps cost Comfort - waste, fresh hides and busy workshops are better kept away from the beds - and the colonists say so.",
+            "HUD_thumbnail_compostHeap");
         ModSettings.SetCategoryLabel(ModId, "DISCOMFORT");
         _ = EnabledSetting;
         _ = DistanceSetting;

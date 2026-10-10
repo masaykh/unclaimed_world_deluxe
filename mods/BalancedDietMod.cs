@@ -97,6 +97,10 @@ public static class BalancedDietMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Meat carries protein, plants carry vitamins, and only a cooked meal carries both. Preserved food keeps fewer vitamins, and the same dish every day wears down food morale - a varied diet and a kitchen become worth having.",
+            "HUD_thumbnail_cookhouse");
         _ = SpecialiseRawFood;
         _ = PreservedLosesVitamins;
         _ = AlcoholHasEnergy;

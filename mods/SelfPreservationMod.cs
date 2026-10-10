@@ -149,6 +149,10 @@ public static class SelfPreservationMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Colonists stop walking into fights nobody sent them to - by being reluctant to take the job, not by being forbidden from it - and the badly injured stay out of danger.",
+            "HUD_thumbnail_sentry");
         ModSettings.SetCategoryLabel(ModId, "SELF-PRESERVATION");
         _ = UnorderedThreats;
         _ = InjuredStayOut;

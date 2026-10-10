@@ -107,6 +107,13 @@ public class MainMenuScreen : GameScreen
 		base.Controller.AddScreen(new SelectScenarioScreen(base.Controller));
 	}
 
+	/// <summary>PORT: SELECT MODS, from the MODDING window (ModdingDialog).</summary>
+	public void ShowSelectMods()
+	{
+		ExitScreen();
+		base.Controller.AddScreen(new UWGame.ClientSide.MainMenu.Mods.SelectModsScreen(base.Controller));
+	}
+
 	public void TestMap()
 	{
 		LoadingScreen.StartTransition(base.Controller, ShowTestGameScreen, loadingIsSlow: false);

@@ -63,6 +63,10 @@ public static class HealingMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Wounds heal all the way, and how fast depends on how well someone is looked after - food, sleep and morale - not on muscle energy alone.",
+            "HUD_thumbnail_marshcot");
         _ = FullRecovery;
         _ = NeedsDrivenRate;
     }

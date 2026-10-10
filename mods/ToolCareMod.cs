@@ -118,6 +118,10 @@ public static class ToolCareMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Colonists don't leave good tools and weapons lying in the woods: when a job needs their hands, they put the tool back where they took it from.",
+            "HUD_thumbnail_workbenchImprovised");
         ModSettings.SetCategoryLabel(ModId, "TOOL CARE");
         _ = EnabledSetting;
         _ = LookAfter;

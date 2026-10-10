@@ -133,6 +133,10 @@ public static class DangerousFaunaMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Tune how dangerous each dangerous animal is: a multiplier per species for how often it hits, how hard, how far away it notices you, how fast it moves and how much it takes to bring down.",
+            "HUD_thumbnail_ursinix");
         ModSettings.SetCategoryLabel(ModId, "DANGEROUS FAUNA");
         if (byKey != null)
         {

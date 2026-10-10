@@ -162,6 +162,10 @@ public static class DebugMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Turns the studio's own developer tools back on: the map overlays, the dev panel with its prepared test situations, session recording for replay, and a key that adds trade credits.",
+            "HUD_thumbnail_fieldLab");
         _ = TestScenario;
         _ = RecordGameSetting;
         _ = ShowMainMenuDevPanelSetting;

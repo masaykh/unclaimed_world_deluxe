@@ -235,7 +235,7 @@ platform, then rebuild the probe.
 ## Procedural maps
 
 `MapGenMod` (in `mods/`) writes an ordinary map folder, `MapData.xml` plus its PNG layers, which
-EDIT and TEST MAP open like a shipped map. Run it against your game folder:
+MODDING → MAP EDITOR and TEST SCENE open like a shipped map. Run it against your game folder:
 
 ```sh
 artifacts/bin/DataExport/release/dataexport.exe "<game>" --generate-map=MyMap --seed=42 --size=80

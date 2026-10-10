@@ -2064,12 +2064,12 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>EXIT</Value>
   </String>
   <String>
-    <Key>GuiEDIT</Key>
-    <Value>EDIT</Value>
+    <Key>GuiMODDING</Key>
+    <Value>MODDING</Value>
   </String>
   <String>
-    <Key>GuiTESTMAP</Key>
-    <Value>TEST MAP</Value>
+    <Key>GuiSelectModsOpenTheMapEditorOrTryAMap_6c5b28180f19</Key>
+    <Value>Select mods, open the map editor, or try a map.</Value>
   </String>
   <!-- ClientSide/Interface/MainPanel.cs -->
   <String>
@@ -2436,6 +2436,39 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>GuiWeAreNotInCommunicationWithTheMissionEstimatedF_1e835b7f45f1</Key>
     <Value>We are not in communication with the mission. Estimated from its route and speed: arrival at {0}{1}.</Value>
+  </String>
+  <!-- ClientSide/Interface/ModdingDialog.cs -->
+  <String>
+    <Key>GuiSwitchedOffOPTIONSMODSUNHIDDENMODMAPEDITORBUTTO_e8e373692836</Key>
+    <Value>Switched off: OPTIONS -&gt; MODS -&gt; UNHIDDEN MOD -&gt; MAP EDITOR BUTTONS.</Value>
+  </String>
+  <String>
+    <Key>GuiComesWithTheUnhiddenModWhichIsSwitchedOffSELECT_7c7c266eebbf</Key>
+    <Value>Comes with the Unhidden Mod, which is switched off: SELECT MODS.</Value>
+  </String>
+  <String>
+    <Key>GuiEveryModWhatItDoesWhoMadeItAndASwitchForEach_c541542fcf72</Key>
+    <Value>Every mod: what it does, who made it, and a switch for each.</Value>
+  </String>
+  <String>
+    <Key>GuiSELECTMODS</Key>
+    <Value>SELECT MODS</Value>
+  </String>
+  <String>
+    <Key>GuiMAPEDITOR</Key>
+    <Value>MAP EDITOR</Value>
+  </String>
+  <String>
+    <Key>GuiOpenAMapInTheEditorTerrainHeightSoilVegetationA_66a0ac0e20d1</Key>
+    <Value>Open a map in the editor: terrain, height, soil, vegetation, assets and resources.</Value>
+  </String>
+  <String>
+    <Key>GuiPickAMapAndWalkAroundItNoColonistsNothingAtStak_0b1499f4505e</Key>
+    <Value>Pick a map and walk around it: no colonists, nothing at stake.</Value>
+  </String>
+  <String>
+    <Key>GuiTESTSCENE</Key>
+    <Value>TEST SCENE</Value>
   </String>
   <!-- ClientSide/Interface/OptionsDialog.cs -->
   <String>
@@ -3692,6 +3725,79 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Key>GuiEntityEntityTypeDescriptionToUpperEntityEntityT_87b3bffbad43</Key>
     <Value>entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()</Value>
   </String>
+  <!-- ClientSide/MainMenu/Mods/SelectModsPanel.cs -->
+  <String>
+    <Key>GuiStartedWithNomodsEveryModIsOffForThisSessionWha_7e7bf1cdd5f2</Key>
+    <Value>Started with -nomods: every mod is off for this session. What you switch here is kept for the next start.</Value>
+  </String>
+  <String>
+    <Key>GuiSwitchAModOnOrOffWithTheBoxOnItsLeftChangeItsSe_8b02441ba76d</Key>
+    <Value>Switch a mod on or off with the box on its left; change its settings in OPTIONS -&gt; MODS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
+  </String>
+  <String>
+    <Key>GuiTick0OnUntickOffItsSettingsActAsTheStudioSGameA_07de7e1335da</Key>
+    <Value>Tick: {0} on. Untick: off - its settings act as the studio's game, and come back as you left them when it is switched on again.</Value>
+  </String>
+  <String>
+    <Key>GuiNotNowTheGameWasStartedWithNomodsOrWithoutTheMo_ad5776ae1ca2</Key>
+    <Value>Not now: the game was started with -nomods, or without the mod loader.</Value>
+  </String>
+  <String>
+    <Key>GuiBy0_97b5389b29fb</Key>
+    <Value>by {0}</Value>
+  </String>
+  <String>
+    <Key>GuiON</Key>
+    <Value>ON</Value>
+  </String>
+  <String>
+    <Key>GuiOFF</Key>
+    <Value>OFF</Value>
+  </String>
+  <String>
+    <Key>GuiOFFTHISSESSION</Key>
+    <Value>OFF THIS SESSION</Value>
+  </String>
+  <String>
+    <Key>GuiFAILED</Key>
+    <Value>FAILED</Value>
+  </String>
+  <String>
+    <Key>GuiOFFATNEXTSTART</Key>
+    <Value>OFF AT NEXT START</Value>
+  </String>
+  <String>
+    <Key>GuiONATNEXTSTART</Key>
+    <Value>ON AT NEXT START</Value>
+  </String>
+  <String>
+    <Key>GuiNoDescription_3290237a0e97</Key>
+    <Value>No description.</Value>
+  </String>
+  <String>
+    <Key>GuiMadeBy0_a8548e33e80a</Key>
+    <Value>Made by: {0}</Value>
+  </String>
+  <String>
+    <Key>GuiSettings01ChangedFromTheStudioSGameInOPTIONSMOD_b84cde3511ee</Key>
+    <Value>Settings: {0}, {1} changed from the studio's game - in OPTIONS -&gt; MODS.</Value>
+  </String>
+  <String>
+    <Key>GuiFileUserMods0_1511760aa789</Key>
+    <Value>File: user/Mods/{0}</Value>
+  </String>
+  <String>
+    <Key>GuiTakesEffectAtTheNextStartOfTheGame_2d3ed52d7f09</Key>
+    <Value>Takes effect at the next start of the game.</Value>
+  </String>
+  <String>
+    <Key>GuiProblem0_90c5acc277da</Key>
+    <Value>Problem: {0}</Value>
+  </String>
+  <String>
+    <Key>GuiReturnToTheMainMenu</Key>
+    <Value>Return to the main menu</Value>
+  </String>
   <!-- ClientSide/MainMenu/Scenario/CustomizeScenarioPanel.cs -->
   <String>
     <Key>GuiCREATEGAME</Key>
@@ -3700,10 +3806,6 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>GuiEXTRAOPTIONS</Key>
     <Value>EXTRA OPTIONS</Value>
-  </String>
-  <String>
-    <Key>GuiReturnToTheMainMenu</Key>
-    <Value>Return to the main menu</Value>
   </String>
   <String>
     <Key>GuiSTART</Key>
@@ -5977,6 +6079,19 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipFishstockStockDays</Key>
     <Value>How big a full stock is: this many days of what the best trap for that fishing place catches.</Value>
+  </String>
+  <!-- settings: freshfood -->
+  <String>
+    <Key>SettingGroupFreshfood</Key>
+    <Value>FRESHFOOD</Value>
+  </String>
+  <String>
+    <Key>SettingFreshfoodEnabled</Key>
+    <Value>EAT PERISHABLES FIRST</Value>
+  </String>
+  <String>
+    <Key>SettingTipFreshfoodEnabled</Key>
+    <Value>Colonists prefer food that will spoil soon over preserved food, and will walk a little further for it. Food that never spoils is eaten last. A starving colonist still eats whatever fills them.</Value>
   </String>
   <!-- settings: gatherondemand -->
   <String>
@@ -15507,6 +15622,119 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
 With the instinctive willpower of pioneers, humans strove to tame a planet whose instincts told it to resist. This duel went on for generations as hope was built, crushed and rebuilt, and lessons were repeatedly learned and forgotten. 
  
 Time would tell if the human presence on Antheia was just a temporary incursion or if they were destined to dominate this biosphere just like Earth.</Value>
+  </String>
+  <!-- data: MOD -->
+  <String>
+    <Key>ModDescriptionAgent</Key>
+    <Value>Lets a program play the colony: the game pauses after each turn, writes what it sees to a file, and carries out the commands it reads back. For developers and experiments; it does nothing while switched off.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionBirdhop</Key>
+    <Value>Diamond birds hop to a neighbouring cell now and then, instead of standing on one spot forever.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionDebug</Key>
+    <Value>Turns the studio's own developer tools back on: the map overlays, the dev panel with its prepared test situations, session recording for replay, and a key that adds trade credits.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionDiet</Key>
+    <Value>Meat carries protein, plants carry vitamins, and only a cooked meal carries both. Preserved food keeps fewer vitamins, and the same dish every day wears down food morale - a varied diet and a kitchen become worth having.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionDisassembly</Key>
+    <Value>Tools and weapons can be taken apart again for the parts that made them, worked out from their own recipes.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionDiscomfort</Key>
+    <Value>Stink and noise near where a colonist sleeps cost Comfort - waste, fresh hides and busy workshops are better kept away from the beds - and the colonists say so.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionFauna</Key>
+    <Value>Tune how dangerous each dangerous animal is: a multiplier per species for how often it hits, how hard, how far away it notices you, how fast it moves and how much it takes to bring down.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionFishstock</Key>
+    <Value>Fish traps fish down a stock that grows back, so a trap left in one spot catches less and less until the water recovers.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionFreshfood</Key>
+    <Value>Colonists eat what will spoil first, instead of the freshest food in the store.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionGatherondemand</Key>
+    <Value>A standing order also covers what a job is waiting for: a padlocked resource is gathered when a construction site, a workshop or a production order needs it, not only to keep a stock.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionHealing</Key>
+    <Value>Wounds heal all the way, and how fast depends on how well someone is looked after - food, sleep and morale - not on muscle energy alone.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionHomeraid</Key>
+    <Value>Big predators break into homes with sleeping colonists in them, and into stores with food. Walls are a defence, not a guarantee.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionHud</Key>
+    <Value>A quieter map: names, status markers and labels only while LeftAlt is held, rows to hide each kind, item layers in the markers menu, a talk panel, and overlapping labels that open into a list.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionHunting</Key>
+    <Value>Hunting tweaks: how far hunters go for their prey, which animals a hunting zone covers, and camps that claim what is killed nearby.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionKeys</Key>
+    <Value>A KEYS section in the options menu: the studio's key bindings and the mods' keys, rebound by clicking a key and pressing the new one.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionMagnification</Key>
+    <Value>Magnification below 1.0, for small screens and large monitors, and a warning when the interface will not fit.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionMapedge</Key>
+    <Value>Stops the camera at the edge of the map instead of letting it scroll off into nothing.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionOwnership</Key>
+    <Value>Households are paid in food and cook for themselves - the first step from a communal expedition towards private ownership.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionPests</Key>
+    <Value>Food left lying about draws pests: rats to meat, field quadites to crops and vegetables. Store it.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionPreyfear</Key>
+    <Value>Small prey runs from what hunts it, and a dog standing right against its prey can bite it.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionRegrowth</Key>
+    <Value>Wood and living plants grow back more slowly where those around them have been gathered down. Leave some standing.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionReserve</Key>
+    <Value>A reserve per item: an amount colonists will not eat and workshops will not use up, unless someone is starving.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionSafesleep</Key>
+    <Value>Colonists do not bed down beside a known predator nest.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionSelfpreservation</Key>
+    <Value>Colonists stop walking into fights nobody sent them to - by being reluctant to take the job, not by being forbidden from it - and the badly injured stay out of danger.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionStatedump</Key>
+    <Value>Writes what the colony is doing to a text file on an interval, so a change can be checked by reading instead of watching. For testing.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionToolcare</Key>
+    <Value>Colonists don't leave good tools and weapons lying in the woods: when a job needs their hands, they put the tool back where they took it from.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionTrade</Key>
+    <Value>Goods sold on a trade run are paid for when the barge loads them, not when the run starts, and missions say roughly when they arrive.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionUnhidden</Key>
+    <Value>Community fixes and additions: charcoal from peat, building with peat, nets from any string, capped resource respawn, the smithies, your own scenarios in the New Game list, and the map editor's buttons.</Value>
   </String>
   <!-- data: NUTRIENT -->
   <String>

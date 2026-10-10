@@ -57,6 +57,11 @@ public static class UnhiddenMod
     /// <summary>The prefix the mod's settings would carry, for the stub above.</summary>
     public const string ModId = "unhidden";
 
+    /// <summary>Nothing: a build without the mod does not list it in SELECT MODS.</summary>
+    public static void Describe()
+    {
+    }
+
     public static void Disable()
     {
     }

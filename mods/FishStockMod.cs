@@ -80,6 +80,10 @@ public static class FishStockMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Fish traps fish down a stock that grows back, so a trap left in one spot catches less and less until the water recovers.",
+            "HUD_thumbnail_fishWeir");
         ModSettings.SetCategoryLabel(ModId, "FISH STOCK");
         _ = Enabled;
         _ = StockDays;

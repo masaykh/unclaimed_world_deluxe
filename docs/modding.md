@@ -308,6 +308,27 @@ loop: it builds the sample mod, asserts `makeCharcoal`'s `DaysNeeded` actually h
 exported XML, and checks the three failure cases (`-nomods` suppression, a corrupt DLL not
 stopping later mods, a stray `0Harmony.dll` refused).
 
+### Listing your mod in SELECT MODS
+
+The main menu's MODDING → SELECT MODS lists every mod: the ones that ship with the game and every
+DLL in `user/Mods`, loaded, failed or switched off. Each has a switch, and unfolds to a picture, an
+author and a description. A DLL is listed under its file name; to say more, put two files beside
+it with the same name:
+
+```
+user/Mods/MyMod.dll
+user/Mods/MyMod.xml    <Mod><Name>MY MOD</Name><Author>You</Author><Description>What it changes.</Description></Mod>
+user/Mods/MyMod.png    its picture, about 100 x 100
+```
+
+Both are optional. Switching a DLL off there lists it in `user/ModSettings.xml` as
+`<DisabledMod id="dll:MyMod"/>`, and the loader skips it from the next start. If your mod
+registers settings with its file name as the mod id (`ModSettings.Toggle("MyMod", ...)`), they
+appear in the same entry. The mods that ship with the game describe themselves with
+`ModSettings.Describe(modId, author, description, thumbnail)`, where the thumbnail is a sprite of
+the game's own (`HUD_thumbnail_cookhouse`) or a PNG's path. A built-in mod switched off has every
+setting read as the studio's game until it is switched on again, and gets its own values back then.
+
 ## The bundled Unhidden Mod
 
 This build ships a community mod — **on by default** — contributed as BepInEx / HarmonyLib
@@ -319,10 +340,9 @@ UnclaimedWorld.exe -nomods            stock game, mod off
 
 It splits into two halves, and the second one matters:
 
-**Interface and controls** — no effect on simulation state. The main menu gains EDIT and TEST
-buttons (the studio's `MainMenuScreen.EditMap` / `TestMap` are fully implemented and were simply
-never given a button — `btEditMap_Click` and `btTestMap_Click` are the studio's own handlers,
-sitting unsubscribed). The scenario picker lists user scenarios from `user/Scenarios` rather than
+**Interface and controls** — no effect on simulation state. The main menu's MODDING window gains
+MAP EDITOR and TEST SCENE (the studio's `MainMenuScreen.EditMap` / `TestMap` are fully implemented
+and were simply never given a button; MODDING itself is the port's, `ModdingDialog`). The scenario picker lists user scenarios from `user/Scenarios` rather than
 only built-in ones. Saves sort newest first, stockpile categories sort ascending, the mouse
 wheel scrolls data sheets, and `O` toggles shadows. `Config.Culture` is a **choice**
 (`unhidden.culture`) and defaults to the studio's own `InvariantCulture`; `en-GB`, which the

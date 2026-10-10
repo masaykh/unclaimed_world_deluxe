@@ -14,6 +14,8 @@ public class MainMenuPanel : Panel
 
 	private OptionsDialog optionsDialog;
 
+	private ModdingDialog moddingDialog;
+
 	public const int SecondButtonRowYPos = 116;
 
 	public string MapDataXmlPath;
@@ -24,6 +26,7 @@ public class MainMenuPanel : Panel
 		optionsDialog = new OptionsDialog(intf);
 		optionsDialog.CancelClick += optionsDialog_CancelClick;
 		optionsDialog.OKClick += optionsDialog_OKClick;
+		moddingDialog = new ModdingDialog(intf);
 		InitButtons();
 	}
 
@@ -90,36 +93,25 @@ public class MainMenuPanel : Panel
 		textButton5.Text = UWGame.Locale.Text("EXIT");
 		textButton5.Click += btExit_Click;
 		textButton5.Width = 106;
-		// UNHIDDEN MOD: EDIT and TEST reach the map editor.
-		//
-		// btEditMap_Click and btTestMap_Click below are the STUDIO'S OWN handlers, already
-		// present and already calling MainMenuScreen.EditMap / TestMap - nothing was subscribed
-		// to them. The whole feature was built and then left without a button, which is what
-		// makes this mod's name apt.
-		//
-		// The coordinates are the patch's own: they fill the empty slot at y=76 directly above
-		// OPTIONS, two 59px buttons where one 106px one would go. Not num2, which by this point
-		// has advanced to the CREDITS/EXIT column and would stack them under CREDITS.
-		// Switchable in MODS -> UNHIDDEN MOD, MAP EDITOR BUTTONS (Kastuk).
-		if (UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.MapEditorButtons.On)
-		{
-			TextButton textButton6 = new TextButton(Interface.gui);
-			Window.Add(textButton6);
-			textButton6.Init(TextButton.TextButtonType.White);
-			textButton6.Position = new Point(142, 76);
-			textButton6.Text = UWGame.Locale.Text("EDIT");
-			textButton6.Click += btEditMap_Click;
-			textButton6.Width = 59;
-			TextButton textButton7 = new TextButton(Interface.gui);
-			Window.Add(textButton7);
-			textButton7.Init(TextButton.TextButtonType.White);
-			textButton7.Position = new Point(198, 76);
-			// Named TEST MAP, not TEST: it opens a MAP PICKER and plays a raw map with no
-			// colonists on it. The DEBUG MOD dev panel's TEST SCENARIO is the other feature.
-			textButton7.Text = UWGame.Locale.Text("TEST MAP");
-			textButton7.Click += btTestMap_Click;
-			textButton7.Width = 59;
-		}
+		// PORT: MODDING, in the empty slot above OPTIONS where the Unhidden Mod put EDIT and TEST
+		// MAP (tripleacoder, "Main menu", 2026-10-10: "the Test and Edit buttons on the main menu
+		// are hard to understand ... replacing TEST and EDIT with a new button MODDING"). It opens
+		// SELECT MODS, MAP EDITOR and TEST SCENE (ModdingDialog) - the editor's two still under the
+		// Unhidden Mod's MAP EDITOR BUTTONS switch, greyed there when it is off. Always shown: the
+		// mods' own window is part of the game, not of a mod.
+		TextButton textButton6 = new TextButton(Interface.gui);
+		Window.Add(textButton6);
+		textButton6.Init(TextButton.TextButtonType.White);
+		textButton6.Position = new Point(textButton3.X, 76);
+		textButton6.Text = UWGame.Locale.Text("MODDING");
+		textButton6.Click += btModding_Click;
+		textButton6.Width = 106;
+		textButton6.ToolTip = UWGame.Locale.Text("Select mods, open the map editor, or try a map.");
+	}
+
+	private void btModding_Click(UIComponent sender, EventArgs e)
+	{
+		moddingDialog.ShowDialog(modal: true);
 	}
 
 	private void btNew_Click(UIComponent sender, EventArgs e)
@@ -140,16 +132,6 @@ public class MainMenuPanel : Panel
 	private void btOptions_Click(UIComponent sender, EventArgs e)
 	{
 		optionsDialog.ShowDialog(modal: true);
-	}
-
-	private void btTestMap_Click(UIComponent sender, EventArgs e)
-	{
-		((MainMenuInterface)Interface).mainMenuScreen.TestMap();
-	}
-
-	private void btEditMap_Click(UIComponent sender, EventArgs e)
-	{
-		((MainMenuInterface)Interface).mainMenuScreen.EditMap();
 	}
 
 	private void btLoadGame_Click(UIComponent sender, EventArgs e)

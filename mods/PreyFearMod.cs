@@ -67,6 +67,10 @@ public static class PreyFearMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Small prey runs from what hunts it, and a dog standing right against its prey can bite it.",
+            "HUD_thumbnail_thunderChicken");
         ModSettings.SetCategoryLabel(ModId, "PREY AND MELEE");
         _ = PreyFleesSetting;
         _ = CloseInReachSetting;

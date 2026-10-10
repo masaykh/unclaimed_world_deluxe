@@ -60,6 +60,10 @@ public static class RegrowthMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Wood and living plants grow back more slowly where those around them have been gathered down. Leave some standing.",
+            "HUD_thumbnail_spoak");
         _ = WoodOverharvest;
     }
 

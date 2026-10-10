@@ -94,6 +94,10 @@ public static class HuntingMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Hunting tweaks: how far hunters go for their prey, which animals a hunting zone covers, and camps that claim what is killed nearby.",
+            "HUD_thumbnail_springSnare");
         ModSettings.SetCategoryLabel(ModId, "HUNTING");
         _ = ChaseRange;
         _ = SwarmersInZones;

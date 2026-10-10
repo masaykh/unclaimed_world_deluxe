@@ -7,9 +7,14 @@ For players. If you want to *write* one, see [modding.md](modding.md).
 This build includes a set of mods, **on by default**, each individually switchable. They are in
 `mods/` in the source, and every one of them can be turned off without reinstalling anything.
 
+The main menu's **MODDING → SELECT MODS** lists them all, and any in `user/Mods`: what each does, who
+made it, and a switch for the whole mod. A mod switched off there acts as the studio's game until
+it is switched on again, and keeps your settings meanwhile; its individual switches are in OPTIONS →
+MODS.
+
 | mod | what it changes |
 |---|---|
-| **Unhidden Mod** | EDIT and TEST buttons on the main menu, user scenarios in the picker, newest-first save sorting, mouse-wheel scrolling on data sheets, `O` toggles shadows — plus charcoal from peat and the resource-respawn fix |
+| **Unhidden Mod** | MAP EDITOR and TEST SCENE under the main menu's MODDING, user scenarios in the picker, newest-first save sorting, mouse-wheel scrolling on data sheets, `O` toggles shadows — plus charcoal from peat and the resource-respawn fix |
 | **Healing** | wounds may heal fully rather than stopping halfway, and recovery speed depends on food, sleep and morale rather than muscle energy alone |
 | **Debug overlays** | the studio's own developer overlays - job scores, interest, ranges, path search, region maps - as switches, plus a picker for which of the 94 built-in test scenarios the main menu's TEST button loads, and a switch to record sessions for replay. All off by default |
 | **State dump** | writes `StateDump.txt` beside the game - every colonist's position, health and current goal, sampled on a game-time interval. For checking a change by reading rather than watching. Off by default |

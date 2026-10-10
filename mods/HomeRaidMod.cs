@@ -83,6 +83,10 @@ public static class HomeRaidMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Big predators break into homes with sleeping colonists in them, and into stores with food. Walls are a defence, not a guarantee.",
+            "HUD_thumbnail_snatcher");
         ModSettings.SetCategoryLabel(ModId, "HOME RAIDS");
         _ = EnabledSetting;
         _ = BreakInSeconds;

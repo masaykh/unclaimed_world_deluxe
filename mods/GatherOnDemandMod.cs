@@ -119,6 +119,10 @@ public static class GatherOnDemandMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "A standing order also covers what a job is waiting for: a padlocked resource is gathered when a construction site, a workshop or a production order needs it, not only to keep a stock.",
+            "HUD_thumbnail_woodPile");
         ModSettings.SetCategoryLabel(ModId, "GATHER ON DEMAND");
         _ = EnabledSetting;
         _ = BeforeMaterialsSetting;

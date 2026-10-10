@@ -107,6 +107,10 @@ public static class AgentMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Lets a program play the colony: the game pauses after each turn, writes what it sees to a file, and carries out the commands it reads back. For developers and experiments; it does nothing while switched off.",
+            "HUD_thumbnail_smallRobot");
         _ = Enabled;
         _ = TurnSeconds;
     }

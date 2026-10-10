@@ -60,6 +60,10 @@ public static class PestMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Food left lying about draws pests: rats to meat, field quadites to crops and vegetables. Store it.",
+            "HUD_thumbnail_binalRat");
         _ = Enabled;
         _ = Sensitivity;
     }

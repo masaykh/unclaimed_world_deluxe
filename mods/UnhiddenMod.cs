@@ -226,6 +226,18 @@ public static class UnhiddenMod
     public const string ModId = "unhidden";
 
     /// <summary>
+    /// SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture. Separate from
+    /// <see cref="RegisterSettings"/> and called whether the mod is on or not, so a mod switched
+    /// off there is still listed and can be switched on again.
+    /// </summary>
+    public static void Describe()
+    {
+        ModSettings.Describe(ModId, "Community (Unhidden Mod)",
+            "Community fixes and additions: charcoal from peat, building with peat, nets from any string, capped resource respawn, the smithies, your own scenarios in the New Game list, and the map editor's buttons.",
+            "HUD_thumbnail_forgeSimple");
+    }
+
+    /// <summary>
     /// Registers every switch above. Call once at startup, after ModSettings.Load and before the
     /// first data load. Touching each property is what registers it - there is no list to keep in
     /// step with the fields, which is one fewer thing to forget.

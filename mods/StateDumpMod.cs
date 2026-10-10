@@ -78,6 +78,10 @@ public static class StateDumpMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Writes what the colony is doing to a text file on an interval, so a change can be checked by reading instead of watching. For testing.",
+            "HUD_thumbnail_weatherAntenna");
         ModSettings.SetCategoryLabel(ModId, "STATE DUMP");
         _ = Enabled;
         _ = EverySeconds;

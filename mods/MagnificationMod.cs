@@ -67,6 +67,10 @@ public static class MagnificationMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Magnification below 1.0, for small screens and large monitors, and a warning when the interface will not fit.",
+            "HUD_thumbnail_satelliteDish");
         _ = AllowBelowOne;
         _ = WarnWhenTooSmall;
     }

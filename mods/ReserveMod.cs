@@ -63,6 +63,10 @@ public static class ReserveMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "A reserve per item: an amount colonists will not eat and workshops will not use up, unless someone is starving.",
+            "HUD_thumbnail_clayGranary");
         ModSettings.SetCategoryLabel(ModId, "RESERVES");
         _ = EnabledSetting;
     }

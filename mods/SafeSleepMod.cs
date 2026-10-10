@@ -51,6 +51,10 @@ public static class SafeSleepMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Colonists do not bed down beside a known predator nest.",
+            "HUD_thumbnail_leanToBigTarp");
         ModSettings.SetCategoryLabel(ModId, "SAFE SLEEP");
         _ = AvoidNests;
     }

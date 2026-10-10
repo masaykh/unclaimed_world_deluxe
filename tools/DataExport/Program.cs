@@ -154,37 +154,13 @@ internal static partial class Program
         // is set, because that is what it resolves against. The switches shape the tables, so an
         // export made without reading them would describe a game nobody is running.
         UWGame.Mods.ModSettings.Load((message, title) => Console.WriteLine("    " + title + ": " + message));
-        UWGame.Mods.PortSettings.RegisterSettings();
-        UWGame.Mods.MapEdgeMod.RegisterSettings();
-        UWGame.Mods.HealingMod.RegisterSettings();
-        UWGame.Mods.SelfPreservationMod.RegisterSettings();
-        UWGame.Mods.MagnificationMod.RegisterSettings();
-        UWGame.Mods.BalancedDietMod.RegisterSettings();
-        UWGame.Mods.DangerousFaunaMod.RegisterSettings();
-        UWGame.Mods.FishStockMod.RegisterSettings();
-        UWGame.Mods.HudMod.RegisterSettings();
-        UWGame.Mods.RegrowthMod.RegisterSettings();
-        UWGame.Mods.PestMod.RegisterSettings();
-        UWGame.Mods.BirdHopMod.RegisterSettings();
-        UWGame.Mods.HomeRaidMod.RegisterSettings();
-        UWGame.Mods.ReserveMod.RegisterSettings();
-        UWGame.Mods.TradeMod.RegisterSettings();
-        UWGame.Mods.SafeSleepMod.RegisterSettings();
-        UWGame.Mods.GatherOnDemandMod.RegisterSettings();
-        UWGame.Mods.DiscomfortMod.RegisterSettings();
-        UWGame.Mods.HuntingMod.RegisterSettings();
-        UWGame.Mods.KeybindMod.RegisterSettings();
-        UWGame.Mods.PreyFearMod.RegisterSettings();
-        UWGame.Mods.ToolCareMod.RegisterSettings();
-        UWGame.Mods.OwnershipMod.RegisterSettings();
-        UWGame.Mods.DisassemblyMod.RegisterSettings();
-        UWGame.Mods.DebugMod.RegisterSettings();
-        UWGame.Mods.StateDumpMod.RegisterSettings();
-        UWGame.Mods.AgentMod.RegisterSettings();
-        if (UWGame.Mods.UnhiddenMod.Enabled)
+        // As the game: the bundled mod switched off in SELECT MODS is off from the start, and listed.
+        UWGame.Mods.UnhiddenMod.Describe();
+        if (!UWGame.Mods.ModSettings.IsModEnabled(UWGame.Mods.UnhiddenMod.ModId))
         {
-            UWGame.Mods.UnhiddenMod.RegisterSettings();
+            UWGame.Mods.UnhiddenMod.Disable();
         }
+        RegisterEveryMod();
         foreach (UWGame.Mods.ModSetting setting in UWGame.Mods.ModSettings.All)
         {
             if (!setting.IsDefault)
@@ -407,6 +383,47 @@ internal static partial class Program
     /// It writes into the target installation's user/ folder, which is why the verify script
     /// gives it a throwaway one.
     /// </summary>
+    /// <summary>
+    /// Every mod's settings, in the game's order (GameStateManagement.Program) - the port's, the
+    /// mods that ship as their own file, then the bundled Unhidden Mod when it is on.
+    /// </summary>
+    private static void RegisterEveryMod()
+    {
+        UWGame.Mods.PortSettings.RegisterSettings();
+        UWGame.Mods.MapEdgeMod.RegisterSettings();
+        UWGame.Mods.HealingMod.RegisterSettings();
+        UWGame.Mods.SelfPreservationMod.RegisterSettings();
+        UWGame.Mods.MagnificationMod.RegisterSettings();
+        UWGame.Mods.BalancedDietMod.RegisterSettings();
+        UWGame.Mods.DangerousFaunaMod.RegisterSettings();
+        UWGame.Mods.FishStockMod.RegisterSettings();
+        UWGame.Mods.HudMod.RegisterSettings();
+        UWGame.Mods.RegrowthMod.RegisterSettings();
+        UWGame.Mods.PestMod.RegisterSettings();
+        UWGame.Mods.BirdHopMod.RegisterSettings();
+        UWGame.Mods.HomeRaidMod.RegisterSettings();
+        UWGame.Mods.ReserveMod.RegisterSettings();
+        UWGame.Mods.TradeMod.RegisterSettings();
+        UWGame.Mods.FreshFoodMod.RegisterSettings();
+        UWGame.Mods.SafeSleepMod.RegisterSettings();
+        UWGame.Mods.GatherOnDemandMod.RegisterSettings();
+        UWGame.Mods.DiscomfortMod.RegisterSettings();
+        UWGame.Mods.HuntingMod.RegisterSettings();
+        UWGame.Mods.KeybindMod.RegisterSettings();
+        UWGame.Mods.PreyFearMod.RegisterSettings();
+        UWGame.Mods.ToolCareMod.RegisterSettings();
+        UWGame.Mods.OwnershipMod.RegisterSettings();
+        UWGame.Mods.DisassemblyMod.RegisterSettings();
+        UWGame.Mods.DebugMod.RegisterSettings();
+        UWGame.Mods.StateDumpMod.RegisterSettings();
+        UWGame.Mods.AgentMod.RegisterSettings();
+        if (UWGame.Mods.UnhiddenMod.Enabled)
+        {
+            UWGame.Mods.UnhiddenMod.RegisterSettings();
+        }
+    }
+
+
     private static int SettingsSelfTest()
     {
         Console.WriteLine("==> settings self-test in " + Directory.GetCurrentDirectory());
@@ -576,6 +593,60 @@ internal static partial class Program
         wanted = UWGame.Mods.ModSettings.Toggle("selftest", "wanted", "WANTED", defaultValue: false, affectsSimulation: true);
         onByDefault = UWGame.Mods.ModSettings.Toggle("selftest", "byDefault", "BY DEFAULT", defaultValue: true, affectsSimulation: true);
         Check(wanted.On && onByDefault.On, "without -nomods the next start has the player's mods back");
+
+        // SELECT MODS (tripleacoder, "Main menu"): a mod switched off as a whole is -nomods for that
+        // one mod - its settings read stock, the file keeps the player's, and they come back.
+        var otherMod = UWGame.Mods.ModSettings.Toggle("selftestother", "thing", "THING", defaultValue: true);
+        UWGame.Mods.ModSettings.SetModEnabled("selftest", false);
+        Check(!wanted.On && !onByDefault.On && otherMod.On && !UWGame.Mods.ModSettings.IsModEnabled("selftest"),
+              "switched off in SELECT MODS: that mod's settings read stock, another mod's do not");
+        written = File.ReadAllText(path);
+        Check(written.Contains("<DisabledMod id=\"selftest\"") && written.Contains("selftest.wanted\" value=\"true\""),
+              "the file says it is off, and keeps the player's value");
+        UWGame.Mods.ModSettings.Reset();
+        UWGame.Mods.ModSettings.Load((m, t) => Console.WriteLine("    " + t + ": " + m));
+        wanted = UWGame.Mods.ModSettings.Toggle("selftest", "wanted", "WANTED", defaultValue: false, affectsSimulation: true);
+        onByDefault = UWGame.Mods.ModSettings.Toggle("selftest", "byDefault", "BY DEFAULT", defaultValue: true, affectsSimulation: true);
+        Check(!wanted.On && !onByDefault.On, "still off at the next start, before anything registers");
+        UWGame.Mods.ModSettings.SetModEnabled("selftest", true);
+        Check(wanted.On && onByDefault.On && UWGame.Mods.ModSettings.IsModEnabled("selftest"),
+              "switched on again: the player's own values are back");
+        Check(!File.ReadAllText(path).Contains("<DisabledMod id=\"selftest\""), "and the file no longer lists it");
+
+        // A third-party DLL: listed from user/Mods with what its files say, switched off by file name.
+        string mods = UWGame.Config.GetDataFolderPath(UWGame.Config.DataType.UserMods);
+        Directory.CreateDirectory(mods);
+        File.WriteAllBytes(Path.Combine(mods, "SelfTestMod.dll"), new byte[] { 0 });
+        File.WriteAllText(Path.Combine(mods, "SelfTestMod.xml"), "<Mod><Name>SELF TEST</Name><Author>Tester</Author><Description>Does nothing.</Description></Mod>");
+        File.WriteAllBytes(Path.Combine(mods, "SelfTestMod.png"), new byte[] { 0 });
+        var dll = UWGame.Mods.ModCatalog.Entries().FirstOrDefault(e => e.FileName == "SelfTestMod.dll");
+        Check(dll != null && dll.Name == "SELF TEST" && dll.Author == "Tester" && dll.Description == "Does nothing."
+              && dll.Thumbnail != null && dll.Thumbnail.EndsWith("SelfTestMod.png", StringComparison.OrdinalIgnoreCase),
+              "a DLL in user/Mods is listed with the name, author, description and picture beside it");
+        if (dll != null)
+        {
+            UWGame.Mods.ModCatalog.Switch(dll, false);
+        }
+        Check(!UWGame.Mods.ModSettings.IsModEnabled("dll:SelfTestMod") && File.ReadAllText(path).Contains("<DisabledMod id=\"dll:SelfTestMod\""),
+              "switched off: listed in the file by its file name, so the loader skips it at the next start");
+        var later = UWGame.Mods.ModCatalog.Entries().FirstOrDefault(e => e.FileName == "SelfTestMod.dll");
+        Check(later != null && later.State == UWGame.Mods.ModCatalog.ModState.AtNextStart && !later.SwitchedOn,
+              "and the window says it takes effect at the next start");
+        foreach (string f in new[] { "SelfTestMod.dll", "SelfTestMod.xml", "SelfTestMod.png" })
+        {
+            File.Delete(Path.Combine(mods, f));
+        }
+
+        // Every mod that ships says who wrote it, what it does, and has a picture.
+        UWGame.Mods.ModSettings.Reset();
+        UWGame.Mods.ModSettings.Load((m, t) => Console.WriteLine("    " + t + ": " + m));
+        UWGame.Mods.UnhiddenMod.Describe();
+        RegisterEveryMod();
+        var shipped = UWGame.Mods.ModSettings.All.Select(s => s.ModId).Where(id => id != UWGame.Mods.PortSettings.ModId).Distinct().ToList();
+        var undescribed = shipped.Where(id => !UWGame.Mods.ModSettings.Described.Any(d => d.Id == id && !string.IsNullOrEmpty(d.Author)
+                                                     && !string.IsNullOrEmpty(d.Description) && !string.IsNullOrEmpty(d.Thumbnail))).ToList();
+        Check(shipped.Count > 0 && undescribed.Count == 0, $"every mod that ships describes itself for SELECT MODS ({shipped.Count} mods)"
+              + (undescribed.Count == 0 ? "" : " - not: " + string.Join(", ", undescribed)));
 
         Console.WriteLine();
         if (failures == 0)

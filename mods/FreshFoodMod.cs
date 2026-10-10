@@ -46,6 +46,10 @@ public static class FreshFoodMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Colonists eat what will spoil first, instead of the freshest food in the store.",
+            "HUD_thumbnail_smokeOven");
         _ = EnabledSetting;
     }
 

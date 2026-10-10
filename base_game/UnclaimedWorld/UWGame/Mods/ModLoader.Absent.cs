@@ -28,6 +28,11 @@ public static class ModLoader
 
     public static IReadOnlyList<string> Failed => Array.Empty<string>();
 
+    public static IReadOnlyList<string> Disabled => Array.Empty<string>();
+
+    /// <summary>None: a build without the loader does not look in user/Mods, so SELECT MODS lists no files.</summary>
+    public static string[] ModFiles() => Array.Empty<string>();
+
     public static void Disable()
     {
     }

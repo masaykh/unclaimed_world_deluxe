@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -273,7 +274,104 @@ public static class ModSettings
     }
 
     /// <summary>Whether this setting is held at stock, with the file keeping the player's value.</summary>
-    private static bool KeepsFileValue(ModSetting s) => StockOnly && s.ModId != PortSettings.ModId;
+    private static bool KeepsFileValue(ModSetting s) =>
+        s.ModId != PortSettings.ModId && (StockOnly || disabledMods.Contains(s.ModId));
+
+    // ---- SELECT MODS: a mod switched off as a whole ------------------------------------------
+    //
+    // tripleacoder, "Main menu", 2026-10-10: "SELECT MODS should be a new window ... each mod should
+    // be presented with an optional thumbnail, author and small blurb." A mod switched off there is
+    // what -nomods is, for that one mod: every one of its settings reads its stock value, and the
+    // file keeps the player's own, so switching it back on gives them back. A third-party mod
+    // (ModLoader) is listed as "dll:" and its file name, and is not loaded at the next start.
+    // The list is in this file, as <DisabledMod id="..."/>, read before anything registers.
+
+    private static readonly HashSet<string> disabledMods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The id SELECT MODS keeps for a third-party mod's file: "dll:" and the name without .dll.</summary>
+    public static string DllModId(string fileNameWithoutExtension) => "dll:" + fileNameWithoutExtension;
+
+    /// <summary>Whether a mod is switched on in SELECT MODS. Every mod is, until it is switched off there.</summary>
+    public static bool IsModEnabled(string modId) => !disabledMods.Contains(modId ?? "");
+
+    /// <summary>
+    /// Switches a whole mod on or off and saves. Off: its settings read stock from now on, their
+    /// values kept in the file. On: they read the file's values again (their defaults where the
+    /// file has none). A setting that changes the data tables takes effect at the next game start,
+    /// as it does from the options menu; a third-party mod at the next start of the game.
+    /// </summary>
+    public static void SetModEnabled(string modId, bool on, Action<string, string> log = null)
+    {
+        if (string.IsNullOrEmpty(modId) || modId == PortSettings.ModId || IsModEnabled(modId) == on)
+        {
+            return;
+        }
+        foreach (ModSetting s in registered.Where((ModSetting r) => string.Equals(r.ModId, modId, StringComparison.OrdinalIgnoreCase)))
+        {
+            if (!on)
+            {
+                // The player's value goes into the file's keeping before the setting goes to stock.
+                if (!StockOnly && (stored.ContainsKey(s.Id) || !string.Equals(s.Value, s.DefaultValue, StringComparison.Ordinal)))
+                {
+                    if (!stored.ContainsKey(s.Id))
+                    {
+                        storedOrder.Add(s.Id);
+                    }
+                    stored[s.Id] = s.Value;
+                }
+            }
+        }
+        if (on)
+        {
+            disabledMods.Remove(modId);
+        }
+        else
+        {
+            disabledMods.Add(modId);
+        }
+        foreach (ModSetting s in registered.Where((ModSetting r) => string.Equals(r.ModId, modId, StringComparison.OrdinalIgnoreCase)))
+        {
+            s.Value = KeepsFileValue(s) ? s.StockValue : (stored.TryGetValue(s.Id, out string v) ? v : s.DefaultValue);
+        }
+        Save(log);
+    }
+
+    /// <summary>What SELECT MODS shows of a mod.</summary>
+    public sealed class ModInfo
+    {
+        /// <summary>The settings' mod id, or <see cref="DllModId"/> for a third-party mod.</summary>
+        public string Id;
+
+        /// <summary>Who wrote it.</summary>
+        public string Author;
+
+        /// <summary>A few sentences: what it changes, in a player's words.</summary>
+        public string Description;
+
+        /// <summary>A sprite in the GUI sprite sheet ("HUD_thumbnail_cookhouse"), or a PNG file's full path.</summary>
+        public string Thumbnail;
+    }
+
+    private static readonly List<ModInfo> described = new List<ModInfo>();
+
+    /// <summary>
+    /// What SELECT MODS says about a mod: its author, a description and a thumbnail - a sprite of
+    /// the game's own (an item's or a structure's, "HUD_thumbnail_...") or a PNG. Call it when the
+    /// mod registers its settings. The description is translated like the settings (Locale,
+    /// "(MOD DESCRIPTION)" and the id).
+    /// </summary>
+    public static void Describe(string modId, string author, string description, string thumbnail)
+    {
+        if (string.IsNullOrEmpty(modId))
+        {
+            return;
+        }
+        described.RemoveAll((ModInfo m) => string.Equals(m.Id, modId, StringComparison.OrdinalIgnoreCase));
+        described.Add(new ModInfo { Id = modId, Author = author, Description = description, Thumbnail = thumbnail });
+    }
+
+    /// <summary>Every described mod, in the order they described themselves.</summary>
+    public static IReadOnlyList<ModInfo> Described => described;
 
     /// <summary>Every registered setting, in registration order - which is the menu order.</summary>
     public static IReadOnlyList<ModSetting> All => registered;
@@ -295,6 +393,7 @@ public static class ModSettings
         loaded = true;
         stored.Clear();
         storedOrder.Clear();
+        disabledMods.Clear();
 
         string path;
         try
@@ -329,6 +428,14 @@ public static class ModSettings
                     storedOrder.Add(id);
                 }
                 stored[id] = v.Trim();
+            }
+            foreach (XElement e in doc.Root?.Elements("DisabledMod") ?? Array.Empty<XElement>())
+            {
+                string id = ((string)e.Attribute("id"))?.Trim();
+                if (!string.IsNullOrEmpty(id))
+                {
+                    disabledMods.Add(id);
+                }
             }
         }
         catch (Exception ex)
@@ -412,6 +519,12 @@ public static class ModSettings
                 {
                     Append(root, s);
                 }
+            }
+
+            // The mods switched off in SELECT MODS.
+            foreach (string id in disabledMods.OrderBy((string d) => d, StringComparer.OrdinalIgnoreCase))
+            {
+                root.Add(new XElement("DisabledMod", new XAttribute("id", id)));
             }
 
             XmlWriterSettings xws = new XmlWriterSettings
@@ -883,6 +996,8 @@ public static class ModSettings
         byId.Clear();
         stored.Clear();
         storedOrder.Clear();
+        disabledMods.Clear();
+        described.Clear();
         loaded = false;
         StockOnly = false;
         DataSignature = null;

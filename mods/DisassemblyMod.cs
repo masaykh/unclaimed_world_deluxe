@@ -93,6 +93,10 @@ public static class DisassemblyMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Tools and weapons can be taken apart again for the parts that made them, worked out from their own recipes.",
+            "HUD_thumbnail_workshopMachinist");
         _ = Generate;
     }
 

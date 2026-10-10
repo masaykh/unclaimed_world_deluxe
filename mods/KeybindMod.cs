@@ -40,6 +40,10 @@ public static class KeybindMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "A KEYS section in the options menu: the studio's key bindings and the mods' keys, rebound by clicking a key and pressing the new one.",
+            "HUD_thumbnail_radioHut");
     }
 
     /// <summary>Readable names for the studio's fields, in the order the section lists them.</summary>

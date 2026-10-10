@@ -163,6 +163,10 @@ public static partial class HudMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "A quieter map: names, status markers and labels only while LeftAlt is held, rows to hide each kind, item layers in the markers menu, a talk panel, and overlapping labels that open into a list.",
+            "HUD_thumbnail_sensorStructure");
         ModSettings.SetCategoryLabel(ModId, "HUD");
         _ = MarkersOnAltSetting;
         _ = RevealKey;

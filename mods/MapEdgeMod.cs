@@ -39,6 +39,10 @@ public static class MapEdgeMod
     /// <summary>Registered from Program.Main, like every other mod's settings.</summary>
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Stops the camera at the edge of the map instead of letting it scroll off into nothing.",
+            "HUD_thumbnail_path");
         _ = StopAtEdge;
     }
 

@@ -67,6 +67,14 @@ internal static partial class Program
         {
             entries[Locale.SettingGroupKey(modId)] = UWGame.Mods.ModSettings.CategoryLabel(modId);
         }
+        // What SELECT MODS says each mod does (ModSettings.Describe).
+        foreach (UWGame.Mods.ModSettings.ModInfo info in UWGame.Mods.ModSettings.Described)
+        {
+            if (!string.IsNullOrEmpty(info.Description))
+            {
+                entries[UWGame.Mods.ModCatalog.DescriptionKey(info.Id)] = info.Description;
+            }
+        }
         // The same list the game translates from (Locale.DataTexts) - the base game's tables, then
         // each built-in scenario's.
         foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))

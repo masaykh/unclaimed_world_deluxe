@@ -55,6 +55,36 @@ public static class ModLoader
     /// <summary>Mod file names that failed, with the reason appended.</summary>
     public static IReadOnlyList<string> Failed => FailedMods;
 
+    private static readonly List<string> DisabledMods = new List<string>();
+
+    /// <summary>Mod file names left unloaded because they are switched off in SELECT MODS.</summary>
+    public static IReadOnlyList<string> Disabled => DisabledMods;
+
+    /// <summary>
+    /// Every mod file in user/Mods, loaded or not, in load order - for SELECT MODS, which lists a
+    /// mod that is switched off or failed as well as one that runs. Empty when there is no folder.
+    /// </summary>
+    public static string[] ModFiles()
+    {
+        try
+        {
+            string folder = Config.GetDataFolderPath(Config.DataType.UserMods);
+            if (!Directory.Exists(folder))
+            {
+                return Array.Empty<string>();
+            }
+            string[] files = Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly)
+                .Where(p => !string.Equals(Path.GetFileName(p), "0Harmony.dll", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+            return files;
+        }
+        catch (Exception)
+        {
+            return Array.Empty<string>();
+        }
+    }
+
     /// <summary>
     /// Whether third-party mods are loaded at all. Cleared by <c>-nomods</c>, which is documented
     /// as giving the stock game and would be a lie if it left external patches running.
@@ -125,6 +155,14 @@ public static class ModLoader
                 Report(log, "Mod loader",
                     "Skipped " + fileName + " in the mods folder. The game already ships Harmony; " +
                     "a mod should reference it without copying it. Delete this file.");
+                continue;
+            }
+
+            // Switched off in SELECT MODS (ModSettings.SetModEnabled): not loaded, and listed so.
+            if (!ModSettings.IsModEnabled(ModSettings.DllModId(Path.GetFileNameWithoutExtension(fileName))))
+            {
+                DisabledMods.Add(fileName);
+                Report(log, "Mod loader", "Not loaded, switched off in SELECT MODS: " + fileName);
                 continue;
             }
 

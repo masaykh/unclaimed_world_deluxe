@@ -48,6 +48,10 @@ public static class BirdHopMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Diamond birds hop to a neighbouring cell now and then, instead of standing on one spot forever.",
+            "HUD_thumbnail_diamondBird");
         _ = Enabled;
     }
 

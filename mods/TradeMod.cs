@@ -79,6 +79,10 @@ public static class TradeMod
 
     public static void RegisterSettings()
     {
+        // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
+        ModSettings.Describe(ModId, "Jerrybi",
+            "Goods sold on a trade run are paid for when the barge loads them, not when the run starts, and missions say roughly when they arrive.",
+            "HUD_thumbnail_helipad");
         ModSettings.SetCategoryLabel(ModId, "TRADE");
         _ = PayOnPickupSetting;
         _ = RoughEtaSetting;
