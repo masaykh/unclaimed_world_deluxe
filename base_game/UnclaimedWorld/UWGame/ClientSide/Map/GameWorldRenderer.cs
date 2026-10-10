@@ -138,7 +138,7 @@ namespace UWGame.ClientSide.Map
         private short[] lightSourceIndices;
 
 
-        private Plane noClippingPlane;
+        ////private Plane noClippingPlane;
 
         //   VertexDeclaration terrainVertexDeclaration;
 
@@ -327,7 +327,8 @@ namespace UWGame.ClientSide.Map
         // for fix-up after other important classes like Client have constructed
         public void Init()
         {
-            noClippingPlane = CreatePlane(4000f/*WaterHeight - 20f*/, new Vector3(0, 0, -1), true); //false);
+            // never used..?
+            ////noClippingPlane = CreatePlane(4000f/*WaterHeight - 20f*/, new Vector3(0, 0, -1), true); //false);
 
         }
 
