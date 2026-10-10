@@ -33,6 +33,12 @@ if ($mode eq 'compare') {
     my ($template, $translation) = @ARGV;
     my ($tkeys, $tval) = read_table($template);
     my ($xkeys, $xval) = read_table($translation);
+    # Old "(GUI)..." keys are the same entries as their short forms (file_key).
+    my %short;
+    my %seen_key;
+    $short{file_key($_)} = $xval->{$_} for @$xkeys;
+    $xkeys = [grep { !$seen_key{$_}++ } map { file_key($_) } @$xkeys];
+    $xval = \%short;
     my @missing = grep { !exists $xval->{$_} } @$tkeys;
     my @obsolete = grep { !exists $tval->{$_} } @$xkeys;
     my @english = grep { exists $xval->{$_} && $xval->{$_} eq $tval->{$_} && $tval->{$_} =~ /[A-Za-z]{3}/ } @$tkeys;
@@ -113,6 +119,40 @@ sub write_entries {
 
 sub normal { my $s = shift; $s =~ s/\r\n/\n/g; return $s }
 
+sub xml_unescape {
+    my $s = shift;
+    $s =~ s/&lt;/</g; $s =~ s/&gt;/>/g; $s =~ s/&quot;/"/g; $s =~ s/&apos;/'/g;
+    $s =~ s/&#x([0-9A-Fa-f]+);/chr(hex $1)/ge; $s =~ s/&#(\d+);/chr($1)/ge;
+    $s =~ s/&amp;/&/g;
+    return $s;
+}
+
+# The key a language file uses for a key the code builds - Locale.ShortKey, which this must match
+# exactly (group checks it against the game's for every template entry). "(ITEM DESCRIPTION)
+# item:acetylene" is ItemDescriptionItemAcetylene: the area's words capitalised, the rest's words
+# with the first letter raised and their case kept. Cut at 50 and given "_" and 12 hex digits of
+# the full key's SHA-1 when longer, or when interface text or a count is not plain words.
+use Digest::SHA qw(sha1_hex);
+use Encode qw(encode_utf8);
+sub short_key {
+    my ($key) = @_;
+    my ($area, $rest) = (undef, $key);
+    ($area, $rest) = ($1, $2) if $key =~ /^\(([^)]*)\)(.*)\z/s;
+    my $readable = '';
+    if (defined $area) { $readable .= ucfirst lc for grep { length } split /[^A-Za-z0-9]+/, $area }
+    $readable .= ucfirst for grep { length } split /[^A-Za-z0-9]+/, $rest;
+    my $text = defined $area && ($area eq 'GUI' || $area eq 'COUNT');
+    my $plain = !$text || $rest =~ /\A[A-Za-z0-9]+(?: [A-Za-z0-9]+)*\z/;
+    return $readable if length($readable) <= 50 && $plain;
+    return substr($readable, 0, 50) . '_' . substr(sha1_hex(encode_utf8($key)), 0, 12);
+}
+
+# A key as a file has it, in the short form: an old "(GUI)SAVE GAME" is converted, as the game does.
+sub file_key {
+    my $k = xml_unescape(normal(shift));
+    return $k =~ /\A[A-Za-z0-9_]+\z/ ? $k : short_key($k);
+}
+
 # GROUP: put the template in an order a translator can work through (Kastuk: "sort Strings ... by
 # their classes in source code, so all related strings will be nearby"). The interface by the
 # source file that asks for it, in the order the file asks; the mod settings by mod, each setting's
@@ -172,6 +212,20 @@ if ($mode eq 'group') {
         push @blocks, "data: $area", map { $_->[1] } sort { $a->[0] cmp $b->[0] } @{ $data{$area} };
     }
     die "group lost entries\n" unless grep({ ref } @blocks) == @entries;
+    # The file keys: the game's (DataExport writes TABLE.keys, an entry's a line, in the table's
+    # order), checked against short_key's - the two copies of the rule must never drift.
+    open my $kh, '<:encoding(UTF-8)', "$table.keys" or die "cannot read $table.keys: $!\n";
+    chomp(my @game = <$kh>);
+    close $kh;
+    s/\r\z// for @game;
+    die "$table.keys has " . @game . " keys for " . @entries . " entries\n" unless @game == @entries;
+    my @differ;
+    for my $i (0 .. $#entries) {
+        my $mine = short_key(xml_unescape(normal($entries[$i][0])));
+        push @differ, "  $entries[$i][0]: game $game[$i], 37-strings.pl $mine" if $mine ne $game[$i];
+        $entries[$i][0] = $game[$i];
+    }
+    die "FAIL  37-strings.pl short_key and Locale.ShortKey disagree:\n" . join("\n", @differ[0 .. ($#differ < 9 ? $#differ : 9)]) . "\n" if @differ;
     write_entries($table, @blocks);
     exit 0;
 }
@@ -185,7 +239,8 @@ if ($mode eq 'merge') {
     my ($template, $translation, $out) = @ARGV;
     my (%mine, @mine_order);
     for my $e (read_entries($translation)) {
-        my $k = normal($e->[0]);
+        # Written before the keys were shortened, it says "(GUI)SAVE GAME": the same entry.
+        my $k = file_key($e->[0]);
         push @mine_order, $e unless exists $mine{$k};
         $mine{$k} = $e->[1];
     }
@@ -197,11 +252,11 @@ if ($mode eq 'merge') {
     while ($xml =~ m{<!--\s*(.*?)\s*-->|<Key>(.*?)</Key>\s*<Value>(.*?)</Value>}gs) {
         if (defined $1) { push @blocks, $1; next }
         my ($k, $v) = ($2, $3);
-        my $nk = normal($k);
+        my $nk = file_key($k);
         if (exists $mine{$nk}) { push @blocks, [$k, $mine{$nk}]; $used{$nk} = 1 }
         else { push @blocks, [$k, $v]; $added++ }
     }
-    my @old = grep { !$used{normal($_->[0])} } @mine_order;
+    my @old = grep { !$used{file_key($_->[0])} } @mine_order;
     push @blocks, 'no longer in the game - kept so nothing is lost, safe to delete', @old if @old;
     write_entries($out, @blocks);
     printf "==> %s: %d entries, %d new (in English until translated), %d no longer in the game (kept at the end)\n",

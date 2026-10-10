@@ -1,5 +1,8 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace UWGame;
@@ -45,11 +48,140 @@ public partial class Locale
 	/// </summary>
 	public static string Get(string key)
 	{
-		if (CurrentStrings != null && CurrentStrings.TryGetValue(key, out var value))
+		if (CurrentStrings != null && CurrentStrings.TryGetValue(ShortKey(key), out var value))
 		{
 			return value;
 		}
-		return InvariantStrings[key];
+		return InvariantStrings[ShortKey(key)];
+	}
+
+	/// <summary>How long a key's readable part may be before it is cut and given a hash.</summary>
+	public const int ShortKeyLength = 50;
+
+	private static readonly ConcurrentDictionary<string, string> shortKeys = new ConcurrentDictionary<string, string>();
+
+	/// <summary>
+	/// PORT: the key a language file uses for the code's key. Kastuk and tripleacoder,
+	/// "Translation", 2026-10-09: keys without spaces, letters and digits only, PascalCase, about 50
+	/// characters readable, "50+hash12 in case of doubles". The code still builds its keys as
+	/// before - "(GUI)" and the English, "(ITEM DESCRIPTION)" and a KeyName - and only the files
+	/// use this form:
+	///
+	/// - the area's words capitalised, then every word of the rest with its first letter raised and
+	///   the rest as it is: "(ITEM DESCRIPTION)item:acetylene" is ItemDescriptionItemAcetylene,
+	///   "(GUI)FULL SCREEN" GuiFULLSCREEN, "(GUI)Close" GuiClose - case kept, so CLOSE and Close stay two;
+	/// - then "_" and the first 12 hex digits of the full key's SHA-1, when the readable part is
+	///   longer than <see cref="ShortKeyLength"/> (it is cut there), or when interface text or a count
+	///   has anything but words and single spaces - "HEALTH:" and "HEALTH", "Subscore: +" and
+	///   "Subscore: -" would otherwise be one key.
+	///
+	/// A key from the code always gives the same file key, whatever else is in the game; 37-make-
+	/// strings.sh fails if two ever meet, and checks its own copy of this rule (37-strings.pl
+	/// short_key) against this one for every entry.
+	/// </summary>
+	public static string ShortKey(string key)
+	{
+		if (key == null)
+		{
+			return null;
+		}
+		return shortKeys.GetOrAdd(key, MakeShortKey);
+	}
+
+	private static string MakeShortKey(string key)
+	{
+		string area = null;
+		string rest = key;
+		int close = key.IndexOf(')');
+		if (key.StartsWith("(") && close > 0)
+		{
+			area = key.Substring(1, close - 1);
+			rest = key.Substring(close + 1);
+		}
+		StringBuilder readable = new StringBuilder();
+		if (area != null)
+		{
+			foreach (string word in Words(area))
+			{
+				readable.Append(char.ToUpperInvariant(word[0])).Append(word.Substring(1).ToLowerInvariant());
+			}
+		}
+		foreach (string word in Words(rest))
+		{
+			readable.Append(char.ToUpperInvariant(word[0])).Append(word.Substring(1));
+		}
+		bool text = area == "GUI" || area == "COUNT";
+		bool plain = !text || IsPlainWords(rest);
+		if (readable.Length <= ShortKeyLength && plain)
+		{
+			return readable.ToString();
+		}
+		string cut = readable.Length > ShortKeyLength ? readable.ToString(0, ShortKeyLength) : readable.ToString();
+		return cut + "_" + Hash12(key);
+	}
+
+	private static IEnumerable<string> Words(string s)
+	{
+		int start = -1;
+		for (int i = 0; i <= s.Length; i++)
+		{
+			bool alnum = i < s.Length && IsAsciiLetterOrDigit(s[i]);
+			if (alnum && start < 0)
+			{
+				start = i;
+			}
+			else if (!alnum && start >= 0)
+			{
+				yield return s.Substring(start, i - start);
+				start = -1;
+			}
+		}
+	}
+
+	private static bool IsAsciiLetterOrDigit(char c) => (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
+
+	/// <summary>Words of letters and digits, one space between each - nothing a key would lose.</summary>
+	private static bool IsPlainWords(string s)
+	{
+		if (s.Length == 0 || s[0] == ' ' || s[s.Length - 1] == ' ')
+		{
+			return false;
+		}
+		for (int i = 0; i < s.Length; i++)
+		{
+			if (s[i] == ' ' ? s[i - 1] == ' ' : !IsAsciiLetterOrDigit(s[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static string Hash12(string key)
+	{
+		using (SHA1 sha = SHA1.Create())
+		{
+			byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(key));
+			StringBuilder hex = new StringBuilder(12);
+			for (int i = 0; i < 6; i++)
+			{
+				hex.Append(hash[i].ToString("x2"));
+			}
+			return hex.ToString();
+		}
+	}
+
+	/// <summary>Whether a file's key is already in the short form - letters, digits and "_".</summary>
+	public static bool IsShortKey(string key)
+	{
+		foreach (char c in key)
+		{
+			if (!IsAsciiLetterOrDigit(c) && c != '_')
+			{
+				return false;
+			}
+		}
+		return key.Length > 0;
 	}
 
 	/// <summary>Interface text: the key is "(GUI)" and the English, as in the studio's own file.</summary>
@@ -103,7 +235,7 @@ public partial class Locale
 	{
 		UseChosenCulture();
 		if (currentCulture != InvariantCulture && CurrentStrings != null
-			&& CurrentStrings.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
+			&& CurrentStrings.TryGetValue(ShortKey(key), out var value) && !string.IsNullOrEmpty(value))
 		{
 			if (english == null || SamePlaceholders(english, value))
 			{
@@ -111,7 +243,7 @@ public partial class Locale
 			}
 			if (reportedPlaceholders.Add(key))
 			{
-				GameStateManagement.UnclaimedWorld.LogError("Strings/" + currentCulture + ".xml: \"" + key + "\" has different {0}/{1} from the English, so the English is shown.", "LANGUAGE");
+				GameStateManagement.UnclaimedWorld.LogError("Strings/" + currentCulture + ".xml: \"" + ShortKey(key) + "\" has different {0}/{1} from the English, so the English is shown.", "LANGUAGE");
 			}
 		}
 		return english;
@@ -198,7 +330,13 @@ public partial class Locale
 		foreach (String item in list)
 		{
 			// PORT: was Add, which threw on a key written twice - easy to do by hand in a translation.
-			dictionary[item.Key] = item.Value;
+			// A key in the old form, "(GUI)SAVE GAME", is read as its short form, so a file written
+			// before the keys were shortened still works (Locale.ShortKey).
+			if (string.IsNullOrEmpty(item.Key))
+			{
+				continue;
+			}
+			dictionary[IsShortKey(item.Key) ? item.Key : ShortKey(item.Key)] = item.Value;
 		}
 	}
 

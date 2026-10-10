@@ -396,7 +396,7 @@ public partial class Locale
 	{
 		foreach (string candidate in CurrentScenario == null ? new[] { key } : new[] { key + "@" + CurrentScenario, key })
 		{
-			if (InvariantStrings != null && InvariantStrings.TryGetValue(candidate, out string template)
+			if (InvariantStrings != null && InvariantStrings.TryGetValue(ShortKey(candidate), out string template)
 				&& string.Equals(Normalize(template), Normalize(english), StringComparison.Ordinal))
 			{
 				string translated = Text(candidate, null);

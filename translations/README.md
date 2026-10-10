@@ -32,6 +32,23 @@ nearest object with an id of its own (a spoken line's). A translation is used on
 still the English the template has for its key, so a scenario's own wording is never replaced by the
 base game's translation.
 
+**Keys in the files.** The keys above are what the code builds. The files write each one shorter -
+letters and digits only, PascalCase (Kastuk and tripleacoder, 2026-10-09): the area's words, then
+the rest's words run together, their case kept.
+
+| the code's key | in the file |
+|---|---|
+| `(ITEM DESCRIPTION)item:acetylene` | `ItemDescriptionItemAcetylene` |
+| `(GUI)SAVE GAME` | `GuiSAVEGAME` |
+| `(GUI)HEALTH:` | `GuiHEALTH_b0cf22ab3f2d` |
+| `(GUI)2034 \nTelescopes detect animal life on Tau Ceti b, ...` | `Gui2034TelescopesDetectAnimalLifeOnTauCetiBANearby_71de0c7c5ba7` |
+
+A key gets `_` and 12 hex digits (from a hash of the code's key) when it is longer than 50
+characters - cut there - or when interface text has anything but words and spaces in it, so
+`HEALTH:` and `HEALTH`, `Subscore: +` and `Subscore: -` stay apart. Copy keys from the template;
+don't make them up. A file written with the old `(GUI)SAVE GAME` keys still works, and `--merge`
+rewrites it in the new ones.
+
 Terrain features (rocks, moss, hills) are left out: their names are the names of their art
 ("sulfurrock", "S: Bird 1, single") and are not shown.
 
@@ -101,7 +118,10 @@ supplements the same script builds).
 ## How it works
 
 `UWGame/Locale.cs`. `Locale.Text(english)` looks up `"(GUI)" + english`; `Locale.Text(key,
-english)` any other key. Both give the chosen language's value, or the English passed in - **the
+english)` any other key - each in its file form, `Locale.ShortKey`, which the files are read into
+(an old-form key is converted as it is read). `37-strings.pl short_key` is the same rule for the
+template; every template run checks the two give the same key for every entry, and that no two
+entries share one. Both give the chosen language's value, or the English passed in - **the
 English always comes from the code**, so a stale template can never change what an English player
 sees, and neither call ever throws. (The studio's own `Get` threw for any key missing from this
 folder; it had no callers, and is left as it was.)

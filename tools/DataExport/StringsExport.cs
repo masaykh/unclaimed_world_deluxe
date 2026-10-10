@@ -69,26 +69,76 @@ internal static partial class Program
         }
         // The same list the game translates from (Locale.DataTexts) - the base game's tables, then
         // each built-in scenario's.
+        foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))
+        {
+            entries[text.Key] = text.English;
+        }
+        var texts = ScenarioEntries(text => entries[text.Key] = text.English);
+        if (texts == null)
+        {
+            return 1;
+        }
+        foreach (var pair in texts)
+        {
+            entries[pair.Key] = pair.Value;
+        }
+
+        var list = entries.Select(e => new UWGame.String { Key = e.Key, Value = e.Value }).ToList();
+        var ns = new XmlSerializerNamespaces();
+        ns.Add("", "");
+        var settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineChars = "\r\n", Encoding = new UTF8Encoding(false) };
+        using (XmlWriter writer = XmlWriter.Create(outPath, settings))
+        {
+            new XmlSerializer(typeof(List<UWGame.String>)).Serialize(writer, list, ns);
+        }
+        // The file key of each entry, in the same order (Locale.ShortKey). 37-strings.pl group
+        // writes the template with these, after checking its own copy of the rule gives the same.
+        // Two entries may never share one: a translation could not tell them apart.
+        var shared = list.GroupBy(e => Locale.ShortKey(e.Key)).Where(g => g.Count() > 1).ToList();
+        if (shared.Count > 0)
+        {
+            Console.Error.WriteLine("FATAL: these entries would share a key in the language files (Locale.ShortKey):");
+            foreach (var g in shared)
+            {
+                Console.Error.WriteLine("  " + g.Key + ": " + string.Join(" | ", g.Select(e => e.Key)));
+            }
+            return 1;
+        }
+        File.WriteAllLines(outPath + ".keys", list.Select(e => Locale.ShortKey(e.Key)), new UTF8Encoding(false));
+        Console.WriteLine($"==> strings: {list.Count} entries ({list.Count(e => e.Key.StartsWith("(GUI)", StringComparison.Ordinal))} interface, "
+                          + $"{list.Count(e => e.Key.StartsWith("(SETTING", StringComparison.Ordinal))} settings, "
+                          + $"{list.Count - list.Count(e => e.Key.StartsWith("(GUI)", StringComparison.Ordinal) || e.Key.StartsWith("(SETTING", StringComparison.Ordinal))} data) -> {outPath}");
+        return 0;
+    }
+
+    /// <summary>
+    /// The built-in scenarios' own text, as template entries - with the base game's tables loaded
+    /// when called. A scenario's text goes under the shared key when the base game has none and
+    /// every scenario that has it agrees; under "key@scenario" where it differs
+    /// (Locale.TranslatedData). <paramref name="headerText"/> gets what the New Game screens show
+    /// of each (Locale.TranslateScenario). Null, and the reason written, when a scenario does not
+    /// load completely.
+    /// </summary>
+    private static SortedDictionary<string, string> ScenarioEntries(Action<Locale.DataText> headerText)
+    {
         var baseTexts = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))
         {
             baseTexts[text.Key] = text.English;
-            entries[text.Key] = text.English;
         }
         var scenarioTexts = new SortedDictionary<string, SortedDictionary<string, string>>(StringComparer.Ordinal);
         foreach (var loader in BuiltInScenarios())
         {
             var header = loader.GetScenarioHeader();
-            // What the New Game screens show of it (Locale.TranslateScenario).
             header.ScenarioData = loader.GetScenarioData();
             foreach (Locale.DataText text in Locale.ScenarioTexts(header))
             {
-                entries[text.Key] = text.English;
+                headerText?.Invoke(text);
             }
             if (!LoadScenarioTables(loader))
             {
                 Console.Error.WriteLine($"FATAL: scenario {header.Name} did not load completely, so its text cannot be listed.");
-                return 1;
+                return null;
             }
             foreach (Locale.DataText text in Locale.DataTexts(GameData.Instance))
             {
@@ -103,8 +153,7 @@ internal static partial class Program
                 byScenario[header.Name] = text.English;
             }
         }
-        // A scenario's text under the shared key when the base game has none and every scenario
-        // that has it agrees; under "key@scenario" where it differs (Locale.TranslatedData).
+        var entries = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (var pair in scenarioTexts)
         {
             if (!baseTexts.ContainsKey(pair.Key) && pair.Value.Values.Distinct(StringComparer.Ordinal).Count() == 1)
@@ -117,19 +166,7 @@ internal static partial class Program
                 entries[pair.Key + "@" + byScenario.Key] = byScenario.Value;
             }
         }
-
-        var list = entries.Select(e => new UWGame.String { Key = e.Key, Value = e.Value }).ToList();
-        var ns = new XmlSerializerNamespaces();
-        ns.Add("", "");
-        var settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineChars = "\r\n", Encoding = new UTF8Encoding(false) };
-        using (XmlWriter writer = XmlWriter.Create(outPath, settings))
-        {
-            new XmlSerializer(typeof(List<UWGame.String>)).Serialize(writer, list, ns);
-        }
-        Console.WriteLine($"==> strings: {list.Count} entries ({list.Count(e => e.Key.StartsWith("(GUI)", StringComparison.Ordinal))} interface, "
-                          + $"{list.Count(e => e.Key.StartsWith("(SETTING", StringComparison.Ordinal))} settings, "
-                          + $"{list.Count - list.Count(e => e.Key.StartsWith("(GUI)", StringComparison.Ordinal) || e.Key.StartsWith("(SETTING", StringComparison.Ordinal))} data) -> {outPath}");
-        return 0;
+        return entries;
     }
 
     /// <summary>
@@ -147,12 +184,29 @@ internal static partial class Program
             Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
             if (!ok) failures++;
         }
+        // The keys a language file uses (Locale.ShortKey; Kastuk and tripleacoder, 2026-10-09).
+        string Key(string k) => Locale.ShortKey(k);
+        Check(Key("(ITEM DESCRIPTION)item:acetylene") == "ItemDescriptionItemAcetylene" && Key("(GUI)SAVE GAME") == "GuiSAVEGAME"
+              && Key("(SETTING)hud.labelList") == "SettingHudLabelList",
+              $"a key is the area's words and the rest's, run together ({Key("(ITEM DESCRIPTION)item:acetylene")}, {Key("(GUI)SAVE GAME")})");
+        Check(Key("(GUI)Close") == "GuiClose" && Key("(GUI)CLOSE") == "GuiCLOSE", "the text's case is kept, so CLOSE and Close are two keys");
+        Check(System.Text.RegularExpressions.Regex.IsMatch(Key("(GUI)HEALTH:"), "^GuiHEALTH_[0-9a-f]{12}$") && Key("(GUI)HEALTH:") != Key("(GUI)HEALTH")
+              && Key("(GUI)Subscore: +") != Key("(GUI)Subscore: -"),
+              $"text with punctuation gets a hash, so HEALTH: and HEALTH stay two ({Key("(GUI)HEALTH:")})");
+        string longKey = Key("(GUI)Content changes apply at the next game start and not before that!");
+        Check(longKey.Length == Locale.ShortKeyLength + 13 && longKey.StartsWith("GuiContentChangesApplyAtTheNextGameStartAndNotBefo_", StringComparison.Ordinal),
+              $"a long one is cut at {Locale.ShortKeyLength} and given a hash ({longKey})");
+        Check(Key(Key("(GUI)HEALTH:")) != null && Locale.IsShortKey(Key("(GUI)HEALTH:")) && !Locale.IsShortKey("(GUI)HEALTH"),
+              "a short key is letters, digits and _ only - a file's old \"(GUI)...\" keys are told apart and converted");
+
         string folder = Config.GetDataFolderPath(Config.DataType.BaseData, "Strings");
         Directory.CreateDirectory(folder);
         File.WriteAllText(Path.Combine(folder, "Test.xml"),
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<ArrayOfString>\r\n" +
             "  <String><Key>(GUI)SAVE GAME</Key><Value>СОХРАНИТЬ ИГРУ</Value></String>\r\n" +
-            "  <String><Key>(GUI)SAVE GAME</Key><Value>СОХРАНИТЬ</Value></String>\r\n" +
+            // The same entry again in the short form: one key, the last wins. The rest of the file
+            // is in the old form, which must keep working for files written before.
+            $"  <String><Key>{Key("(GUI)SAVE GAME")}</Key><Value>СОХРАНИТЬ</Value></String>\r\n" +
             "  <String><Key>(GUI)Illegal width entered. {0} is maximum.</Key><Value>Ширина не больше {0}.</Value></String>\r\n" +
             "  <String><Key>(SETTING)hud.labelList</Key><Value>СПИСОК МЕТОК</Value></String>\r\n" +
             "  <String><Key>(ITEM)item:acetylene</Key><Value>Ацетилен</Value></String>\r\n" +
@@ -193,12 +247,12 @@ internal static partial class Program
         // Scenarios. A text two scenarios word differently is two keys, "key@scenario" each. One
         // scenario's translation lands in that scenario only; in the other the English stays - even
         // with the plain key translated too, because that is not the English the template holds.
-        // The key is taken from the template, so the test follows the data.
-        string template = File.ReadAllText(Path.Combine(folder, Locale.InvariantCulture + ".xml"));
-        var variants = System.Text.RegularExpressions.Regex.Matches(template, "<Key>([^<@]+)@([^<]+)</Key>")
-            .Cast<System.Text.RegularExpressions.Match>()
-            .GroupBy(m => System.Net.WebUtility.HtmlDecode(m.Groups[1].Value), m => System.Net.WebUtility.HtmlDecode(m.Groups[2].Value))
-            .FirstOrDefault(g => g.Count() >= 2 && BuiltInScenarios().Count(l => g.Contains(l.GetScenarioHeader().Name)) >= 2);
+        // The key is taken from the entries the template is written from, so the test follows the data.
+        if (Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them") != 0) return 1;
+        var variants = (ScenarioEntries(null) ?? new SortedDictionary<string, string>()).Keys
+            .Where(k => k.Contains("@"))
+            .GroupBy(k => k.Substring(0, k.LastIndexOf('@')), k => k.Substring(k.LastIndexOf('@') + 1))
+            .FirstOrDefault(g => g.Count() >= 2);
         Check(variants != null, "the template has a text two scenarios word differently" + (variants == null ? "" : $" ({variants.Key})"));
         if (variants == null) return 1;
         string shared = variants.Key, first = variants.ElementAt(0), second = variants.ElementAt(1);
