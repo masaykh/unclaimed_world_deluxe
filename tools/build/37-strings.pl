@@ -330,7 +330,15 @@ if ($mode eq 'unrouted' || $mode eq 'route') {
         my @lines = <$fh>;
         close $fh;
         my ($n, $changed) = (0, 0);
+        # Inside a /* ... */ block, nothing is code: the original source keeps whole methods there
+        # beside their routed replacements (Personality.GetHappinessBreakdown, ea6bb85).
+        my $in_block = 0;
         for my $line (@lines) {
+            if ($in_block) {
+                $in_block = 0 if $line =~ m{\*/};
+                next;
+            }
+            $in_block = 1 if $line =~ m{/\*(?!.*\*/)};
             next if $line =~ m{^\s*(//|/\*|\*)};
             my %seen;
             my @hits = grep { !$seen{$_->[0]}++ } (assigned_literals($line), sink_literals($line, $file), returned_literals($line, $file));

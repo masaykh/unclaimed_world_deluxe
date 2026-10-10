@@ -121,7 +121,9 @@ git -c core.quotePath=false ls-files -z 'base_game/UnclaimedWorld/UWGame/ClientS
   'base_game/UnclaimedWorld/GameStateManagement/*.cs' 'mods/*.cs' \
   | xargs -0 perl "$HELPER" unrouted | sort -k2 > "$WORK/unrouted.txt"
 [ -f "$UNROUTED" ] || : > "$UNROUTED"
-risen=$(awk -F'\t' 'NR == FNR { allowed[$2] = $1; next } $1 > ($2 in allowed ? allowed[$2] : 0) { print "      " $2 ": " $1 " (allowed " ($2 in allowed ? allowed[$2] : 0) ")" }' \
+# By argument number, not NR == FNR: with nothing allowed (an empty ratchet) every line of the
+# counts would have been read as an allowance, and a rise from 0 passed.
+risen=$(awk -F'\t' 'FILENAME == ARGV[1] { allowed[$2] = $1; next } $1 > ($2 in allowed ? allowed[$2] : 0) { print "      " $2 ": " $1 " (allowed " ($2 in allowed ? allowed[$2] : 0) ")" }' \
   <(tr -d '\r' < "$UNROUTED") "$WORK/unrouted.txt")
 if [ -n "$risen" ]; then
   echo "FAIL  English written straight into the interface, where Locale cannot reach it - use Locale.Text:" >&2

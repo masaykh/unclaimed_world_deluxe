@@ -482,6 +482,19 @@ public class SidePanelEditorEntity : RosterPanel
 		UpdateCheckBoxes();
 	}
 
+	/// <summary>
+	/// PORT: nothing chosen and nothing following the pointer, for a change of editor mode
+	/// (RosterAccessPanel.SwitchEditorMode). The chosen asset stayed chosen in Paint terrain
+	/// properties, so a click painted and placed at once (Kastuk, 2026-10-09).
+	/// </summary>
+	public void ResetTools()
+	{
+		The.InGameUI.DestroyEntityBeingPlaced();
+		terrainGrid.SelectedIndex = -1;
+		treeGrid.SelectedIndex = -1;
+		SelectedEntityType = null;
+	}
+
 	private void FlipEntityIfChosen(Entity entity)
 	{
 		if (cbFlipHorizontally.IsChecked)

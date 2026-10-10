@@ -135,6 +135,12 @@ public class SidePanelEditorSoil : RosterPanel, IEditorPanel
 		}
 	}
 
+	/// <summary>PORT: for a change of editor mode (RosterAccessPanel.SwitchEditorMode).</summary>
+	public void ResetTools()
+	{
+		tools.Deselect();
+	}
+
 	public override void Hide()
 	{
 		base.Hide();

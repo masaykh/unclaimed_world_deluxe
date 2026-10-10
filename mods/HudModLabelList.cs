@@ -130,12 +130,12 @@ public static partial class HudMod
         }
 
         // Open: top to bottom as they were on the map, the column starting at the hovered label.
-        foreach (int i in crowd.OrderBy(i => rects[i].Y).ThenBy(i => rects[i].X))
+        listAnchor = rects[under].Location;
+        foreach (int i in GrowIntoList(rects, crowd, listAnchor, ListBottom()))
         {
             listed.Add(shown[i]);
             listedFrom[shown[i]] = rects[i].Location;
         }
-        listAnchor = rects[under].Location;
         listMapPosition = The.MapUI.MapWindowWorldPosition;
         clickStarted = false;
     }
@@ -164,6 +164,42 @@ public static partial class HudMod
     private static int ListBottom() => The.Sim.Controller.DrawArea.Height - 160;
 
     /// <summary>
+    /// The labels the list is made of, in list order: <paramref name="crowd"/>, and then every label
+    /// the laid-out column itself touches, with everything touching those, until the column touches
+    /// nothing new - tripleacoder: "If the list touches other labels, those labels should also be
+    /// included in the list." Lining the crowd up moves it, and on the first version a label just
+    /// above the new column stayed out of it (tripleacoder's screenshot, 2026-10-09: "only some of
+    /// the labels are gathered").
+    /// </summary>
+    public static List<int> GrowIntoList(IList<Rectangle> rects, List<int> crowd, Point anchor, int bottom)
+    {
+        var members = new HashSet<int>(crowd);
+        while (true)
+        {
+            List<int> ordered = members.OrderBy(i => rects[i].Y).ThenBy(i => rects[i].X).ToList();
+            List<Rectangle> column = LayOutList(ordered.Select(i => rects[i]).ToList(), anchor, bottom);
+            List<int> touched = Enumerable.Range(0, rects.Count)
+                .Where(i => !members.Contains(i) && column.Any(c => Touch(c, rects[i])))
+                .ToList();
+            if (touched.Count == 0)
+            {
+                return ordered;
+            }
+            foreach (int i in touched)
+            {
+                members.UnionWith(TouchingClosure(rects, i));
+            }
+        }
+    }
+
+    /// <summary>Overlapping, or edge to edge: labels a pixel apart read as one heap.</summary>
+    private static bool Touch(Rectangle a, Rectangle b)
+    {
+        a.Inflate(1, 1);
+        return a.Intersects(b);
+    }
+
+    /// <summary>
     /// The label at <paramref name="start"/> and every label that touches it, or touches one that
     /// does, and so on - tripleacoder: "If the list touches other labels, those labels should also
     /// be included". Indexes into <paramref name="rects"/>, <paramref name="start"/> first.
@@ -177,7 +213,7 @@ public static partial class HudMod
             Rectangle current = rects[found[next]];
             for (int i = 0; i < rects.Count; i++)
             {
-                if (!seen.Contains(i) && current.Intersects(rects[i]))
+                if (!seen.Contains(i) && Touch(current, rects[i]))
                 {
                     seen.Add(i);
                     found.Add(i);

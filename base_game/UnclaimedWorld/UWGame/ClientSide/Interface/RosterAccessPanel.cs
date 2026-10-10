@@ -268,20 +268,40 @@ public class RosterAccessPanel
 
 	private void editorPlaceEntity_Click(UIComponent sender, EventArgs e)
 	{
-		The.InGameUI.ChangeRosterPanel(The.InGameUI.SidePanelEditorEntity);
-		DeselectOtherRadioButtons(btEditorPlaceEntity);
+		SwitchEditorMode(The.InGameUI.SidePanelEditorEntity, btEditorPlaceEntity);
 	}
 
 	private void btEditorPaintTile_Click(UIComponent sender, EventArgs e)
 	{
-		The.InGameUI.ChangeRosterPanel(The.InGameUI.SidePanelEditorSoil);
-		DeselectOtherRadioButtons(btEditorPaintTile);
+		SwitchEditorMode(The.InGameUI.SidePanelEditorSoil, btEditorPaintTile);
 	}
 
 	private void btEditorTerrainHeight_Click(UIComponent sender, EventArgs e)
 	{
-		The.InGameUI.ChangeRosterPanel(The.InGameUI.SidePanelEditorTerrainHeight);
-		DeselectOtherRadioButtons(btEditorTerrainHeight);
+		SwitchEditorMode(The.InGameUI.SidePanelEditorTerrainHeight, btEditorTerrainHeight);
+	}
+
+	/// <summary>
+	/// PORT: a new editor mode starts with no tool. The studio only swapped the panel, and what
+	/// was chosen in the last one stayed armed: an asset picked in Place map assets kept being
+	/// placed on every click in Paint terrain properties, alongside the paint (Kastuk, 2026-10-09:
+	/// "Let all other tools be unselected, when I select other mode."). The mode buttons also
+	/// stay one-at-a-time, as the game's own roster buttons do.
+	/// </summary>
+	private void SwitchEditorMode(RosterPanel panel, ImageButton bt)
+	{
+		The.InGameUI.SidePanelEditorEntity.ResetTools();
+		The.InGameUI.SidePanelEditorSoil.ResetTools();
+		The.InGameUI.SidePanelEditorTerrainHeight.ResetTools();
+		The.InGameUI.InterfaceMode = InGameInterface.InterfaceState.None;
+		The.InGameUI.ChangeRosterPanel(panel);
+		foreach (ImageButton other in new[] { btEditorPlaceEntity, btEditorPaintTile, btEditorTerrainHeight })
+		{
+			if (other != null && other != bt)
+			{
+				other.IsChecked = false;
+			}
+		}
 	}
 
 	private void stock_Click(UIComponent sender, EventArgs e)

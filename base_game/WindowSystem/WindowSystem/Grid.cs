@@ -783,19 +783,40 @@ public class Grid : UIComponent, IKeyedEntryComponent
 		label.Init(labelType);
 		label.Name = "captionAndValue";
 		uIComponent.Add(label);
-		if (leadingTextXPos.HasValue)
-		{
-			label.X += leadingTextXPos.Value;
-		}
+		// PORT: a small margin by default - the names touched the window's left edge (Kastuk,
+		// 2026-10-10, the map editor's resource window: "shift that list of resource names to the
+		// right for a couple of pixels to fit the window").
+		label.X += leadingTextXPos ?? CaptionMargin;
 		JustifyItemContent(label);
-		int x = Width - paddingRight - label.TextWidth;
 		ImageButton imageButton = new ImageButton(guiManager);
-		imageButton.X = x;
 		imageButton.Click += clickHandler;
 		uIComponent.Add(imageButton);
 		imageButton.EventArgs = eventArgs;
 		imageButton.Init(ImageButtonType.HUDArrowRight);
+		PlaceButtonAfterCaption(uIComponent);
 		AddEntry(key, uIComponent);
+	}
+
+	/// <summary>The left margin of an AddEntryAndButton row's text, in pixels.</summary>
+	public const int CaptionMargin = 4;
+
+	/// <summary>
+	/// PORT: an AddEntryAndButton row's arrow, right after its text. The studio put it at
+	/// Width - paddingRight - the text's width, which moves it LEFT as the name grows, so every
+	/// row's arrow stood somewhere else (Kastuk, 2026-10-10: "need that arrow be placed right next
+	/// to name"). Called again when the row's text changes.
+	/// </summary>
+	public static void PlaceButtonAfterCaption(UIComponent row)
+	{
+		Label caption = row.Controls.OfType<Label>().FirstOrDefault((Label l) => l.Name == "captionAndValue");
+		if (caption == null)
+		{
+			return;
+		}
+		foreach (ImageButton button in row.Controls.OfType<ImageButton>())
+		{
+			button.X = caption.X + caption.TextWidth + 6;
+		}
 	}
 
 	public void AddEntry(object key, int? xPosColumn1, string entry1, int xPositionColumn2, string entry2)

@@ -1083,6 +1083,14 @@ internal static partial class Program
         Check(crowd.OrderBy(i => i).SequenceEqual(new[] { 0, 1, 2 }),
               $"the list takes the hovered label, what touches it, and what touches those - not a label apart (got {string.Join(",", crowd)})");
         Check(UWGame.Mods.HudMod.TouchingClosure(labels, 3).SequenceEqual(new[] { 3 }), "a label touching nothing makes no list");
+        var edge = new[] { R(100, 100, 80, 20), R(180, 100, 80, 20) };
+        Check(UWGame.Mods.HudMod.TouchingClosure(edge, 0).Count == 2, "labels edge to edge touch");
+        // tripleacoder's screenshot: A and B overlap; E lies clear of both on the map, but where the
+        // column puts B. It has to come into the list.
+        var gather = new[] { R(100, 200, 80, 20), R(140, 205, 80, 20), R(100, 240, 80, 20), R(600, 600, 80, 20) };
+        var grown = UWGame.Mods.HudMod.GrowIntoList(gather, UWGame.Mods.HudMod.TouchingClosure(gather, 0), new Microsoft.Xna.Framework.Point(100, 200), 900);
+        Check(grown.OrderBy(i => i).SequenceEqual(new[] { 0, 1, 2 }),
+              $"a label the laid-out list covers joins it; one apart does not (got {string.Join(",", grown)})");
         var column = UWGame.Mods.HudMod.LayOutList(new[] { R(0, 0, 80, 20), R(0, 0, 120, 20), R(0, 0, 60, 20) }, new Microsoft.Xna.Framework.Point(100, 100), 900);
         Check(column.Select(r => r.X).Distinct().SequenceEqual(new[] { 100 }) && column[1].Y == column[0].Bottom + UWGame.Mods.HudMod.ListGap
               && column[2].Y == column[1].Bottom + UWGame.Mods.HudMod.ListGap && column[0].Y == 100,

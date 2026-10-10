@@ -191,6 +191,7 @@ public class FullLCDPanel
 				{
 					uIComponent = item.FindChildById("captionAndValue");
 					((Label)uIComponent).Text = item2.Key.Name + " " + text;
+					Grid.PlaceButtonAfterCaption(item);
 				}
 			}
 			else if (item2.Key is IHasIcon hasIcon2)

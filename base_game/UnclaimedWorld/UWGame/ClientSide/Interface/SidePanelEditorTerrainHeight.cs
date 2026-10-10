@@ -81,6 +81,12 @@ public class SidePanelEditorTerrainHeight : RosterPanel, IEditorPanel
 		lblStatusInfo2.Width = 200;
 	}
 
+	/// <summary>PORT: for a change of editor mode (RosterAccessPanel.SwitchEditorMode).</summary>
+	public void ResetTools()
+	{
+		tools.Deselect();
+	}
+
 	public override void Hide()
 	{
 		base.Hide();

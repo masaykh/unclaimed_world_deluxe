@@ -742,7 +742,10 @@ public class HUDOverlayPanel : HUDWindow
 		CheckBox checkBox = (CheckBox)sender;
 		EditorOverlayTypes editorOverlayTypes = (EditorOverlayTypes)sender.Tag1;
 		The.InGameUI.OverlaySettings.EditorOverlayTypeSettings[editorOverlayTypes] = checkBox.IsChecked;
-		if (editorOverlayTypes == EditorOverlayTypes.TerrainDivision && checkBox.IsChecked)
+		// PORT: on AND off. The terrain is drawn into a cached map; the studio redrew it only when the
+		// wireframe was switched on, so switching it off left the lines until a brush repainted the
+		// spot (Kastuk, 2026-10-09: "when I switch on Terrain division, I cannot switch it back").
+		if (editorOverlayTypes == EditorOverlayTypes.TerrainDivision)
 		{
 			The.Client.Renderer.terrainSlicedMap.RedrawMap(The.Client.Renderer.DiffuseMSRenderTarget);
 		}

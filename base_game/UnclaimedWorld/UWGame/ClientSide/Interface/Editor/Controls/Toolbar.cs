@@ -35,6 +35,8 @@ public class Toolbar : UIComponent
 
 	private Grid grdOptions;
 
+	private readonly List<ImageButton> toolButtons = new List<ImageButton>();
+
 	public Toolbar(IEditorPanel parent, Resolution resolution)
 		: base(((RosterPanel)parent).Window.guiManager)
 	{
@@ -52,16 +54,19 @@ public class Toolbar : UIComponent
 		ImageButton imageButton = new ImageButton(gui);
 		imageButton.InitWithIcon(ImageButtonType.LCD, "basic_icon_category", hasCheckedState: true);
 		hzButtons.AddEntry(pencil, imageButton);
+		toolButtons.Add(imageButton);
 		radioGroup.Add(imageButton, addAsControl: false);
 		imageButton.ToolTip = UWGame.Locale.Text("Pencil. This tool draws with a sharp edge.");
 		imageButton = new ImageButton(gui);
 		imageButton.InitWithIcon(ImageButtonType.LCD, "basic_icon_category", hasCheckedState: true);
 		hzButtons.AddEntry(paintBrush, imageButton);
+		toolButtons.Add(imageButton);
 		radioGroup.Add(imageButton, addAsControl: false);
 		imageButton.ToolTip = UWGame.Locale.Text("Paintbrush. This tool draws with a soft edge.");
 		imageButton = new ImageButton(gui);
 		imageButton.InitWithIcon(ImageButtonType.LCD, "basic_icon_category", hasCheckedState: true);
 		hzButtons.AddEntry(eraser, imageButton);
+		toolButtons.Add(imageButton);
 		radioGroup.Add(imageButton, addAsControl: false);
 		imageButton.ToolTip = UWGame.Locale.Text("Eraser. This tool removes/erases.");
 		grdOptions = new Grid(gui, ListBoxType.LCD, Label.LabelType.CRTBigGlow);
@@ -132,6 +137,20 @@ public class Toolbar : UIComponent
 			return The.InGameUI.RosterIsDisplayed((RosterPanel)parent);
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// PORT: no tool chosen, no button pressed - for a change of editor mode (RosterAccessPanel.
+	/// SwitchEditorMode). Kastuk, 2026-10-09: "Let all other tools be unselected, when I select
+	/// other mode."
+	/// </summary>
+	public void Deselect()
+	{
+		selectedTool = null;
+		foreach (ImageButton button in toolButtons)
+		{
+			button.IsChecked = false;
+		}
 	}
 
 	private void UseTool(TilePos tilePos)

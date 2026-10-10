@@ -34,9 +34,12 @@ public class SetTileResourcesWindow : HUDWindow
 		textButton.Text = UWGame.Locale.Text("Clear");
 		textButton.Init(TextButton.TextButtonType.HUD);
 		textButton.Click += btClear_Click;
-		textButton.Y = 162;
-		textButton.X = 10;
 		textButton.ScaleWidthToFitText();
+		// PORT: top right, over the list's heading row rather than over the resource names at the
+		// bottom (Kastuk, 2026-10-09: "let the button Clear be moved into upper right corner to
+		// not be drawn over names of resources"). The studio's place was X 10, Y 162.
+		textButton.Y = 6;
+		textButton.X = DisplayWindow.Width - textButton.Width - 10;
 	}
 
 	private void btClear_Click(UIComponent sender, EventArgs e)
@@ -55,6 +58,7 @@ public class SetTileResourcesWindow : HUDWindow
 				}
 			}
 		});
+		Populate();
 	}
 
 	public void ClearResource(ResourceType resourceType)
@@ -74,11 +78,12 @@ public class SetTileResourcesWindow : HUDWindow
 				{
 					if (item.Find<EditorData>(out var c))
 					{
-						c.Resources = c.Resources.Where((Resource r) => r.KeyName != resourceType.KeyName).ToArray();
+						c.Resources = c.Resources?.Where((Resource r) => r.KeyName != resourceType.KeyName).ToArray();
 					}
 				}
 			}
 		});
+		Populate();
 	}
 
 	public new void Hide()
@@ -119,6 +124,7 @@ public class SetTileResourcesWindow : HUDWindow
 		{
 			The.Sim.PlaySite.EditorResources.Add(resourceType);
 		}
+		Populate();
 	}
 
 	private static bool SaveResourceChangesToTrees(ResourceType resourceType, int? min, int? max, int? modifier, TerrainTile terrainTile)
@@ -283,6 +289,45 @@ public class SetTileResourcesWindow : HUDWindow
 				dictionary.Add(allResourceType.Value, 0);
 			}
 		}
+		CountPlacedResourcesInArea(The.InGameUI.SelectedTiles, dictionary);
 		FullLCDPanel.PopulateCategoryGrid<ResourceType, int, ResourceCategory>(gui, outerGrid, CollapsablePanel.PanelType.HUD, Label.LabelType.HUDWindow, SetSummaryDelegate, resourceClickHandler, dictionary);
+	}
+
+	/// <summary>
+	/// PORT: the number beside each resource is how many of the selected tiles (or, for a crop,
+	/// trees on them) have it set. The studio's was always 0, so a zone placed earlier could not
+	/// be seen by selecting it again (Kastuk, 2026-10-09: "show them in this same window as Clay 1
+	/// in place of Clay 0 if there's Clay resource is placed").
+	/// </summary>
+	private static void CountPlacedResourcesInArea(MapArea mapArea, Dictionary<ResourceType, int> counts)
+	{
+		void Count(Resource[] placed)
+		{
+			if (placed == null)
+			{
+				return;
+			}
+			foreach (Resource resource in placed)
+			{
+				if (resource != null && GameData.Instance.AllResourceTypes.TryGetValue(resource.KeyName, out ResourceType type) && counts.ContainsKey(type))
+				{
+					counts[type]++;
+				}
+			}
+		}
+		mapArea.IterateArea(delegate(TerrainTile tile)
+		{
+			Count(tile.DesignerPlacedResources);
+			if (tile.TreesOnTile != null)
+			{
+				foreach (Entity tree in tile.TreesOnTile)
+				{
+					if (tree.Find<EditorData>(out var c))
+					{
+						Count(c.Resources);
+					}
+				}
+			}
+		});
 	}
 }
