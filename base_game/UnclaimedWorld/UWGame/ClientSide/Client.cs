@@ -1153,6 +1153,7 @@ namespace UWGame.ClientSide
         }
         */
 
+        /*
         int jobWidth = 10;
         int outputWidth = 14;
         int impWidth = 7;
@@ -1160,7 +1161,7 @@ namespace UWGame.ClientSide
         int scoreNoToolsWidth = 7;
         int activeWidth = 8;
         int takerScoreWidth = 8;
-
+        */
         /*
         private void PrintJobs()
         {
@@ -1412,6 +1413,7 @@ namespace UWGame.ClientSide
         //    }
         //}
 
+        /*
         private void ResetPerformanceCounters(string option, bool? newBool, float? newFloat)
         {
             EventManager.totalComputationAllInstancesInSeconds = 0;
@@ -1421,7 +1423,7 @@ namespace UWGame.ClientSide
             HaulingJobManager.totalComputationAllInstancesInSeconds = 0;
             RegionMap.totalComputationAllInstancesInSeconds = 0;
 
-        }
+        }*/
 
         /*
         private static void PrintGlobalScriptVariables(System.Text.StringBuilder description)
@@ -2813,6 +2815,7 @@ namespace UWGame.ClientSide
             }
         }*/
 
+        /*
         #region these pairs are used to map from the data driven check boxes on the dev panel to some other object
         /// <summary>
         /// 
@@ -2825,6 +2828,7 @@ namespace UWGame.ClientSide
         private Dictionary<string, ResourceType> resourceTypeOverlayOptions = new Dictionary<string, ResourceType>();
 
         #endregion
+        */
 
         //private void InitDeveloperDialog()
         //{
@@ -3253,7 +3257,7 @@ namespace UWGame.ClientSide
 
 
         #region Achievement tests
-
+        /*
         private void TestSwarmers(string option, bool? newBool, float? newFloat)
         {
             UWGame.SimSide.Allegiances.Allegiance all1 = new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:swarmer"]);
@@ -3272,7 +3276,7 @@ namespace UWGame.ClientSide
 
                 }
             }
-        }
+        }*/
         /*
         private void TestTwinkler(string option, bool? newBool, float? newFloat)
         {
@@ -3991,11 +3995,12 @@ namespace UWGame.ClientSide
 
         #region DevDebugMethods
 
+        /*
         // Test Threat!
         private void PlaceThreat_OnPress(string option, bool? newBool, float? newFloat)
         {
             The.InGameUI.InterfaceMode = UWGame.ClientSide.Interface.InGameInterface.InterfaceState.Threat;
-        }
+        }*/
 
         /*
         /// <summary>
