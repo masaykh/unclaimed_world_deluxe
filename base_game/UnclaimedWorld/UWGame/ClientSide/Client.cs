@@ -4247,7 +4247,7 @@ namespace UWGame.ClientSide
                 SetEmigrateDecision(man);
             }
         }*/
-
+        /*
         private static Entity GetSelectedAgentOrFirstPerson()
         {
             Entity man = null;
@@ -4265,66 +4265,61 @@ namespace UWGame.ClientSide
                 man = The.Sim.PlaySite.PlayerAllegiance.Persons[0];
             }
             return man;
-        }
+        }*/
 
-        private static void SetStarving(Entity man, bool nearDeath = false)
-        {
-            Need need;
-            if (man.BiologicalEntity.Needs.NeedsList.TryGetValue("protein", out need))
-            {
-                need.CurrentLevel = 0f;
-                if (nearDeath)
-                {
-                    need.PhysicalNeed.DaysAtZero = 2f;
-                }
-            }
-            if (man.BiologicalEntity.Needs.NeedsList.TryGetValue("foodEnergy", out need))
-            {
-                need.CurrentLevel = 0f;
-                if (nearDeath)
-                {
-                    need.PhysicalNeed.DaysAtZero = 2f;
-                }
-            }
-            if (man.BiologicalEntity.Needs.NeedsList.TryGetValue("micronutrients", out need))
-            {
-                need.CurrentLevel = 0f;
-                if (nearDeath)
-                {
-                    need.PhysicalNeed.DaysAtZero = 2f;
-                }
-            }
+        //private static void SetStarving(Entity man, bool nearDeath = false)
+        //{
+        //    Need need;
+        //    if (man.BiologicalEntity.Needs.NeedsList.TryGetValue("protein", out need))
+        //    {
+        //        need.CurrentLevel = 0f;
+        //        if (nearDeath)
+        //        {
+        //            need.PhysicalNeed.DaysAtZero = 2f;
+        //        }
+        //    }
+        //    if (man.BiologicalEntity.Needs.NeedsList.TryGetValue("foodEnergy", out need))
+        //    {
+        //        need.CurrentLevel = 0f;
+        //        if (nearDeath)
+        //        {
+        //            need.PhysicalNeed.DaysAtZero = 2f;
+        //        }
+        //    }
+        //    if (man.BiologicalEntity.Needs.NeedsList.TryGetValue("micronutrients", out need))
+        //    {
+        //        need.CurrentLevel = 0f;
+        //        if (nearDeath)
+        //        {
+        //            need.PhysicalNeed.DaysAtZero = 2f;
+        //        }
+        //    }
 
-            /* man.BiologicalEntity.Needs.NeedsList["protein"].CurrentLevel = 0f; //0.2f       
-             man.BiologicalEntity.Needs.NeedsList["foodEnergy"].CurrentLevel = 0f; //0.2f       
-             man.BiologicalEntity.Needs.NeedsList["micronutrients"].CurrentLevel = 0f; //0.2f */
-            man.BiologicalEntity.AddToStomachContents(-1f);
+        //    /* man.BiologicalEntity.Needs.NeedsList["protein"].CurrentLevel = 0f; //0.2f       
+        //     man.BiologicalEntity.Needs.NeedsList["foodEnergy"].CurrentLevel = 0f; //0.2f       
+        //     man.BiologicalEntity.Needs.NeedsList["micronutrients"].CurrentLevel = 0f; //0.2f */
+        //    man.BiologicalEntity.AddToStomachContents(-1f);
 
-            /*  if (nearDeath)
-              {
-                  man.BiologicalEntity.Needs.NeedsList["protein"].PhysicalNeed.DaysAtZero = 2f;
-                  man.BiologicalEntity.Needs.NeedsList["foodEnergy"].PhysicalNeed.DaysAtZero = 2f;
-                  man.BiologicalEntity.Needs.NeedsList["micronutrients"].PhysicalNeed.DaysAtZero = 2f;
-              }*/
-        }
+        //}
 
-        private void MergeHouseholds_OnPress(string option, bool? newBool, float? newFloat)
-        {
-            if (!newBool.HasValue)
-                return;
+        //private void MergeHouseholds_OnPress(string option, bool? newBool, float? newFloat)
+        //{
+        //    if (!newBool.HasValue)
+        //        return;
 
-            if (The.Sim.PlaySite.PlayerAllegiance.Persons.Count > 1 && The.Sim.PlaySite.GetFirstPlayerExpedition().Households.Count > 1)
-            {   // merge 1st and last households:
-                The.Sim.PlaySite.GetFirstPlayerExpedition().Households[0].MergeHouseholds(The.Sim.PlaySite.GetFirstPlayerExpedition().Households[The.Sim.PlaySite.GetFirstPlayerExpedition().Households.Count - 1]);
-                // merge households 0 and 1:
-                //((PersonEntity)Entities[0]).Household.MergeHouseholds(((PersonEntity)Entities[1]).Household);
-            }
+        //    if (The.Sim.PlaySite.PlayerAllegiance.Persons.Count > 1 && The.Sim.PlaySite.GetFirstPlayerExpedition().Households.Count > 1)
+        //    {   // merge 1st and last households:
+        //        The.Sim.PlaySite.GetFirstPlayerExpedition().Households[0].MergeHouseholds(The.Sim.PlaySite.GetFirstPlayerExpedition().Households[The.Sim.PlaySite.GetFirstPlayerExpedition().Households.Count - 1]);
+        //        // merge households 0 and 1:
+        //        //((PersonEntity)Entities[0]).Household.MergeHouseholds(((PersonEntity)Entities[1]).Household);
+        //    }
 
-            /*Jobs.HaulingJob job = new Jobs.HaulingJob(new Point(1,1), ColonyJobs);
-            job.Item = ColonyOwner.OwningBody.Items[Items.IronOreType.Instance][0];           
-            */
-        }
+        //    /*Jobs.HaulingJob job = new Jobs.HaulingJob(new Point(1,1), ColonyJobs);
+        //    job.Item = ColonyOwner.OwningBody.Items[Items.IronOreType.Instance][0];           
+        //    */
+        //}
 
+        /*
         private void ClearTile_OnPress(string option, bool? newBool, float? newFloat)
         {
             if (The.InGameUI.SelectedEntity != null)
@@ -4347,8 +4342,8 @@ namespace UWGame.ClientSide
                     The.Map.ClearTile(tile);
                 });
             }
-        }
-
+        }*/
+        /*
         private void CancelEntityJob_OnPress(string option, bool? newBool, float? newFloat)
         {
             if (The.InGameUI.SelectedEntity != null)
@@ -4359,8 +4354,8 @@ namespace UWGame.ClientSide
 
                 entity.SendMessage(new Message(null, Message.MessageTypes.CancelJobOrItemInUse, Message.CancelJobKeepVehicle.KeepVehicle));
             }
-        }
-
+        }*/
+        /*
         private void Kill_OnPress(string option, bool? newBool, float? newFloat)
         {
             // calling from  outside the main thread??? this can cause a crash if the main thread is iterating???
@@ -4381,9 +4376,9 @@ namespace UWGame.ClientSide
                 }
 
             }
-        }
+        }*/
 
-
+        /*
         private void GodMode_OnPress(string option, bool? newBool, float? newFloat)
         {
             if (newBool == false)
@@ -4395,7 +4390,8 @@ namespace UWGame.ClientSide
                 The.InGameUI.FogMap.DisplayWindow.Hide();
             }
         }
-
+        */
+        /*
         private void FogOfWar_OnPress(string option, bool? newBool, float? newFloat)
         {
             if (newBool == true)
@@ -4406,7 +4402,7 @@ namespace UWGame.ClientSide
             {
                 The.InGameUI.FogMap.DisplayWindow.Hide();
             }
-        }
+        }*/
 
         /*  private void Stealth_OnPress(string option, bool? newBool, float? newFloat)
           {
@@ -4423,43 +4419,43 @@ namespace UWGame.ClientSide
                }
           }*/
 
-        private void PlaceTree_OnPress(string option, bool? newBool, float? newFloat)
-        {
-            /*   TerrainTile selTile = The.InGameUI.SelectedTiles;
-               if (selTile != null)
-               {
-                   //Tree treeToPlant = new Tree(GameData.Instance.AllTreeTypes["tree:spoak"]);
-                   Entity treeToPlant = new Entity(GameData.Instance.AllTreeTypes["tree:spoak"]);
-                   Point pos = new Point(selTile.X, selTile.Y);
-                   treeToPlant.PlaceGroundFeature(pos, Common.Direction.North, MapManager.TileAndDirectionToWorldPos(pos, Common.Direction.North));
+        //private void PlaceTree_OnPress(string option, bool? newBool, float? newFloat)
+        //{
+        //    /*   TerrainTile selTile = The.InGameUI.SelectedTiles;
+        //       if (selTile != null)
+        //       {
+        //           //Tree treeToPlant = new Tree(GameData.Instance.AllTreeTypes["tree:spoak"]);
+        //           Entity treeToPlant = new Entity(GameData.Instance.AllTreeTypes["tree:spoak"]);
+        //           Point pos = new Point(selTile.X, selTile.Y);
+        //           treeToPlant.PlaceGroundFeature(pos, Common.Direction.North, MapManager.TileAndDirectionToWorldPos(pos, Common.Direction.North));
 
-                   //treeToPlant.Tree.Place(MapManager.TileToWorldPos(selTile), Common.Direction.North);
+        //           //treeToPlant.Tree.Place(MapManager.TileToWorldPos(selTile), Common.Direction.North);
 
-               }*/
+        //       }*/
 
-        }
-
-
-
-        private void DeattachObject(Entity entity, IAttachable objectToAttach, string attachorBoneName)
-        {
-            if (!entity.Renderable./*TODO DECOUPLE*/RenderAsModel.AnimatedModel.ModelAnimator.HasAttachedObject(attachorBoneName))
-            {
-                // hmmm...
-
-                //  BonePose attachor;
-
-                //  attachor = entity.Renderable./*TODO DECOUPLE*/RenderAsModel.AnimatedModel.ModelAnimator.BonePoses[attachorBoneName];
-
-                entity.Renderable./*TODO DECOUPLE*/RenderAsModel.AnimatedModel.ModelAnimator.DeattachObject(objectToAttach, attachorBoneName);
-
-            }
-        }
+        //}
 
 
 
+        //private void DeattachObject(Entity entity, IAttachable objectToAttach, string attachorBoneName)
+        //{
+        //    if (!entity.Renderable./*TODO DECOUPLE*/RenderAsModel.AnimatedModel.ModelAnimator.HasAttachedObject(attachorBoneName))
+        //    {
+        //        // hmmm...
+
+        //        //  BonePose attachor;
+
+        //        //  attachor = entity.Renderable./*TODO DECOUPLE*/RenderAsModel.AnimatedModel.ModelAnimator.BonePoses[attachorBoneName];
+
+        //        entity.Renderable./*TODO DECOUPLE*/RenderAsModel.AnimatedModel.ModelAnimator.DeattachObject(objectToAttach, attachorBoneName);
+
+        //    }
+        //}
 
 
+
+
+        /*
         private void Wander_OnPress(string option, bool? newBool, float? newFloat)
         {
 
@@ -4476,7 +4472,7 @@ namespace UWGame.ClientSide
                     entity.Locomotor.LeggedLocomotor.TestWander = newBool.Value;
                 }
             }
-        }
+        }*/
 
         /*
         private void SetUIToSelectedEntityAllegiance(string option, bool? newBool, float? newFloat)
@@ -4493,7 +4489,7 @@ namespace UWGame.ClientSide
 
         }
         */
-
+        /*
         private void LaunchSelected(string option, bool? newBool, float? newFloat)
         {
             if (newBool == true)
@@ -4506,7 +4502,8 @@ namespace UWGame.ClientSide
             }
 
         }
-
+        */
+        /*
         private void DisableAI_OnPress(string option, bool? newBool, float? newFloat)
         {
             if (The.InGameUI.SelectedEntity != null)
@@ -4522,8 +4519,8 @@ namespace UWGame.ClientSide
                     entity.Intelligence.DisableAI = newBool.Value;
                 }
             }
-        }
-
+        }*/
+        /*
         private void RotateSlowly_OnPress(string option, bool? newBool, float? newFloat)
         {
             if (The.InGameUI.SelectedEntity != null)
@@ -4534,18 +4531,18 @@ namespace UWGame.ClientSide
                     entity.Locomotor.RotateSlowly = newBool.Value;
                 }
             }
-        }
+        }*/
 
-        private void PlaceItem_OnPress(string option, bool? newBool, float? newFloat)
-        {
-            /*  TerrainTile selTile = The.InGameUI.SelectedTiles;
-              if (selTile != null)
-              {
-                    Item item = new Item(GameData.Instance.AllItemTypes["item:meat"]);
-                    AddColonyItem(item, new Point(selTile.X, selTile.Y));
-              }
-  */
-        }
+  //      private void PlaceItem_OnPress(string option, bool? newBool, float? newFloat)
+  //      {
+  //          /*  TerrainTile selTile = The.InGameUI.SelectedTiles;
+  //            if (selTile != null)
+  //            {
+  //                  Item item = new Item(GameData.Instance.AllItemTypes["item:meat"]);
+  //                  AddColonyItem(item, new Point(selTile.X, selTile.Y));
+  //            }
+  //*/
+  //      }
 
 
 
