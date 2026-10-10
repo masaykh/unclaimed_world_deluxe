@@ -2679,6 +2679,7 @@ namespace UWGame.ClientSide
 
         //}
 
+        /*
         private AnimConditionInfo FindMatchingAnimCondition(Entity entity, string animKey, string attachedRenderableTypeKey, AttacheePoint? attacheePoint) //, out Vector3? translation, out Vector3? rotation)
         {
             if (entity.EntityType.RenderableTypeMode.RenderAsModelType.AnimConditions != null)
@@ -2705,9 +2706,7 @@ namespace UWGame.ClientSide
             }
 
             return null;
-
-
-        }
+        }*/
 
         //private void TestAnims(string option, bool? newBool, float? newFloat)
         //{
@@ -2754,7 +2753,7 @@ namespace UWGame.ClientSide
         //    }
         //}
 
-
+        /*
         private void MovemapClick(string option, bool? newBool, float? newFloat)
         {
             MovementMap map = overlayOptions[option]; // UWGame.SimSide.Instance.Map.GetMovementMap(ProtectionLevel.Exposed, ThreatCategory.Human, EntityApproach.Bold);
@@ -2768,8 +2767,8 @@ namespace UWGame.ClientSide
                 The.MapUI.Overlays.Remove(map);
             }
 
-        }
-
+        }*/
+        /*
         private void RegionMapClick(string option, bool? newBool, float? newFloat)
         {
             RegionMap regionMap = regionMapOverlayOptions[option]; // UWGame.SimSide.Instance.Map.GetMovementMap(ProtectionLevel.Exposed, ThreatCategory.Human, EntityApproach.Bold);
@@ -2783,8 +2782,8 @@ namespace UWGame.ClientSide
                 The.MapUI.Overlays.Remove(regionMap);
             }
 
-        }
-
+        }*/
+        /*
         private void ThreatMapClick(string option, bool? newBool, float? newFloat)
         {
             ThreatMap map = threatMapOverlayOptions[option];
@@ -2798,8 +2797,8 @@ namespace UWGame.ClientSide
                 The.MapUI.Overlays.Remove(map);
             }
 
-        }
-
+        }*/
+        /*
         private void DiscomfortMapClick(string option, bool? newBool, float? newFloat)
         {
             DiscomfortMap map = discomfortMapOverlayOptions[option];
@@ -2812,7 +2811,7 @@ namespace UWGame.ClientSide
             {
                 The.MapUI.Overlays.Remove(map);
             }
-        }
+        }*/
 
         #region these pairs are used to map from the data driven check boxes on the dev panel to some other object
         /// <summary>
@@ -3274,7 +3273,7 @@ namespace UWGame.ClientSide
                 }
             }
         }
-
+        /*
         private void TestTwinkler(string option, bool? newBool, float? newFloat)
         {
             UWGame.SimSide.Allegiances.Allegiance all1 = new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:twinkler"]);
@@ -3288,30 +3287,32 @@ namespace UWGame.ClientSide
             PlaceGameEntities.ImmobilizeEntity(e1);
 
         }
-
+        */
+        /*
         private void TestAdvanceTime(string option, bool? newBool, float? newFloat)
         {
             The.Sim.AdvanceTime(DateAndTime.secondsPerDay); // DateAndTime.DaysPerYear);
                                                             // The.Sim.DateAndTime.UpdateDayAndYear( )
         }
+        */
 
-        private void TestSetGunsProduced(string option, bool? newBool, float? newFloat)
-        {
-            /*
-             entityType.KeyName == "item:gunpowderRifle"
-                                    || entityType.KeyName == "item:blackPowderRifleAmmo")             
-             */
+        //private void TestSetGunsProduced(string option, bool? newBool, float? newFloat)
+        //{
+        //    /*
+        //     entityType.KeyName == "item:gunpowderRifle"
+        //                            || entityType.KeyName == "item:blackPowderRifleAmmo")             
+        //     */
 
-            //  Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
-            Allegiance al = The.InGameUI.UIAllegiance;
-            EntityType gunType = GameData.Instance.AllEntityTypes["item:gunpowderRifle"];
-            al.Statistics.AddProductionEvent(gunType, SimSide.Allegiances.Statistics.ProductionStatistics.StatTypes.Produced, 10);
+        //    //  Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
+        //    Allegiance al = The.InGameUI.UIAllegiance;
+        //    EntityType gunType = GameData.Instance.AllEntityTypes["item:gunpowderRifle"];
+        //    al.Statistics.AddProductionEvent(gunType, SimSide.Allegiances.Statistics.ProductionStatistics.StatTypes.Produced, 10);
 
-            EntityType ammoType = GameData.Instance.AllEntityTypes["item:blackPowderRifleAmmo"];
-            al.Statistics.AddProductionEvent(ammoType, SimSide.Allegiances.Statistics.ProductionStatistics.StatTypes.Produced, 20);
+        //    EntityType ammoType = GameData.Instance.AllEntityTypes["item:blackPowderRifleAmmo"];
+        //    al.Statistics.AddProductionEvent(ammoType, SimSide.Allegiances.Statistics.ProductionStatistics.StatTypes.Produced, 20);
 
-        }
-
+        //}
+        /*
         private void TestSetHidesProduced(string option, bool? newBool, float? newFloat)
         {
 
@@ -3333,9 +3334,9 @@ namespace UWGame.ClientSide
             //  exp.Statistics.AddProductionEvent(hideType, SimSide.Allegiances.Statistics.ProductionStatistics.StatTypes.Produced, 50);
             al.Statistics.AddProductionEvent(hideType, SimSide.Allegiances.Statistics.ProductionStatistics.StatTypes.Produced, 50);
 
-        }
+        }*/
 
-
+        /*
         private void TestRatingsAndPopulation(string option, bool? newBool, float? newFloat)
         {
             SpawnFood();
@@ -3349,13 +3350,13 @@ namespace UWGame.ClientSide
                 SpawnNewMember();
             }
 
-        }
-
+        }*/
+        /*
         private void TestFood(string option, bool? newBool, float? newFloat)
         {
             SpawnFood();
         }
-
+        *//*
         private static void SpawnFood()
         {
             Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
@@ -3366,8 +3367,8 @@ namespace UWGame.ClientSide
                 Entity type = new Entity(GameData.Instance.AllEntityTypes["item:smokedCarbonTail"]);
                 PlaceGameEntities.AddColonyItem(type, exp.Location.Value);
             }
-        }
-
+        }*/
+        /*
         private void TestCoilRiflesAndAmmo(string option, bool? newBool, float? newFloat)
         {
             SpawnGunsAndAmmo();
@@ -3389,8 +3390,8 @@ namespace UWGame.ClientSide
                 PlaceGameEntities.AddColonyItem(type, exp.Location.Value);
                 PlaceGameEntities.AddColonyItem(type, exp.Location.Value);
             }
-        }
-
+        }*/
+        /*
         private void TestBushDragonCarcass(string option, bool? newBool, float? newFloat)
         {
             SpawnBushDragonCarcass();
@@ -3400,8 +3401,8 @@ namespace UWGame.ClientSide
         private void TestUpgradedHuts(string option, bool? newBool, float? newFloat)
         {
             SpawnUpgradedHuts();
-        }
-
+        }*/
+        /*
         private static void SpawnComfortItems()
         {
             Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
@@ -3420,8 +3421,8 @@ namespace UWGame.ClientSide
             e.Bulk = 1f;
             PlaceGameEntities.AddColonyItem(e, exp.Location.Value);
 
-        }
-
+        }*/
+        /*
         private static void SpawnUpgradedHuts()
         {
             Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
@@ -3449,12 +3450,14 @@ namespace UWGame.ClientSide
                 }
             }
         }
-
+        */
+        /*
         private void TestMember(string option, bool? newBool, float? newFloat)
         {
             SpawnNewMember();
         }
-
+        */
+        /*
         private static void SpawnNewMember()
         {
             Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
@@ -3462,8 +3465,8 @@ namespace UWGame.ClientSide
 
             PlaceGameEntities.GetBob(expPos, exp);
         }
-
-
+        */
+        /*
         private void TestSpraySentries(string option, bool? newBool, float? newFloat)
         {
             Expedition exp = The.InGameUI.UIAllegiance.GetFirstExpedition();
@@ -3489,34 +3492,36 @@ namespace UWGame.ClientSide
                 PlaceGameEntities.AddColonyItem(ammo, exp.Location.Value);
             }
 
-        }
+        }*/
+
+        /*
 
         private static void TestSpawnComfortItems(string option, bool? newBool, float? newFloat)
         {
             SpawnComfortItems();
-        }
+        }*/
 
-        private static Vector3 SpawnSentry(Expedition exp, Vector3 location)
-        {
-            Entity sentry = PlaceGameEntities.AddFinishedStructure("structure:sprayGunSentry",
-                null, exp, false, location);
+        //private static Vector3 SpawnSentry(Expedition exp, Vector3 location)
+        //{
+        //    Entity sentry = PlaceGameEntities.AddFinishedStructure("structure:sprayGunSentry",
+        //        null, exp, false, location);
 
-            Entity ammo = new Entity(GameData.Instance.AllEntityTypes["item:bushDragonCartridge"]);
-            PlaceGameEntities.AddColonyItem(ammo, new Vector3(50f, 50f, 0f));
-            Container magazine = sentry.Parts[0].Parts.FirstOrDefault(p => p.EntityType.KeyName == "item:sentrySprayGun").Contains;
-            Entity surplusAmmo;
-            magazine.AddToContain(ammo, out surplusAmmo);
+        //    Entity ammo = new Entity(GameData.Instance.AllEntityTypes["item:bushDragonCartridge"]);
+        //    PlaceGameEntities.AddColonyItem(ammo, new Vector3(50f, 50f, 0f));
+        //    Container magazine = sentry.Parts[0].Parts.FirstOrDefault(p => p.EntityType.KeyName == "item:sentrySprayGun").Contains;
+        //    Entity surplusAmmo;
+        //    magazine.AddToContain(ammo, out surplusAmmo);
 
-            /* Entity sentry = PlaceGameEntities.AddFinishedStructure("structure:sentry", 
-                 null, exp, false, exp.Location);
+        //    /* Entity sentry = PlaceGameEntities.AddFinishedStructure("structure:sentry", 
+        //         null, exp, false, exp.Location);
 
-             Entity ammo = new Entity(GameData.Instance.AllEntityTypes["item:sentryGunAmmo"]);
-             PlaceGameEntities.AddColonyItem(ammo, new Vector3(50f, 50f, 0f));
-             Container magazine = sentry.Parts[0].Parts.FirstOrDefault(p => p.EntityType.KeyName == "item:sentryGun").Contains;
-             Entity surplusAmmo;
-             magazine.AddToContain(ammo, out surplusAmmo);*/
-            return location;
-        }
+        //     Entity ammo = new Entity(GameData.Instance.AllEntityTypes["item:sentryGunAmmo"]);
+        //     PlaceGameEntities.AddColonyItem(ammo, new Vector3(50f, 50f, 0f));
+        //     Container magazine = sentry.Parts[0].Parts.FirstOrDefault(p => p.EntityType.KeyName == "item:sentryGun").Contains;
+        //     Entity surplusAmmo;
+        //     magazine.AddToContain(ammo, out surplusAmmo);*/
+        //    return location;
+        //}
 
         #endregion
 
@@ -3992,7 +3997,7 @@ namespace UWGame.ClientSide
             The.InGameUI.InterfaceMode = UWGame.ClientSide.Interface.InGameInterface.InterfaceState.Threat;
         }
 
-
+        /*
         /// <summary>
         /// shows the resource noise maps
         /// </summary>
@@ -4012,36 +4017,36 @@ namespace UWGame.ClientSide
                 The.MapUI.ResourceOverlays.Remove(resourceType);
             }
 
-        }
+        }*/
 
 
-        private void UnblockTile_OnPress(string option, bool? newBool, float? newFloat)
-        {
-            The.InGameUI.InterfaceMode = UWGame.ClientSide.Interface.InGameInterface.InterfaceState.UnblockSubtile;
+        //private void UnblockTile_OnPress(string option, bool? newBool, float? newFloat)
+        //{
+        //    The.InGameUI.InterfaceMode = UWGame.ClientSide.Interface.InGameInterface.InterfaceState.UnblockSubtile;
 
-            /*The.InGameUI.SelectedTiles.IterateArea(selTile =>
-                {
-                    if (selTile != null)
-                    {
-                        Vector2 from, to;
-                        from = MapManager.SubTileToWorldPos(
-                            MapManager.TileEdgeToSubtile(selTile.TilePos).ToPoint());
+        //    /*The.InGameUI.SelectedTiles.IterateArea(selTile =>
+        //        {
+        //            if (selTile != null)
+        //            {
+        //                Vector2 from, to;
+        //                from = MapManager.SubTileToWorldPos(
+        //                    MapManager.TileEdgeToSubtile(selTile.TilePos).ToPoint());
 
-                        to = from + new Vector2(MapManager.subTileSize * 2, MapManager.subTileSize * 2);
+        //                to = from + new Vector2(MapManager.subTileSize * 2, MapManager.subTileSize * 2);
 
-                        MapManager.IterateSubtiles(from, to,
-                            s =>
-                            {
-                                The.Map.SetSubtileTerrainCost(s.ToVector3(), 2); // 0 = blocked!
-                               // The.Map.SetSubtileTerrainCostToSurfaceType(s.ToVector3());
-                            });
+        //                MapManager.IterateSubtiles(from, to,
+        //                    s =>
+        //                    {
+        //                        The.Map.SetSubtileTerrainCost(s.ToVector3(), 2); // 0 = blocked!
+        //                       // The.Map.SetSubtileTerrainCostToSurfaceType(s.ToVector3());
+        //                    });
 
-                    }
+        //            }
 
-                });*/
-        }
+        //        });*/
+        //}
 
-
+        /*
         private void BlockTile_OnPress(string option, bool? newBool, float? newFloat)
         {
 
@@ -4076,14 +4081,7 @@ namespace UWGame.ClientSide
                 }
             });
 
-            /* foreach (var selTile in The.InGameUI.SelectedTiles.Coverage)
-             {
-                 if (selTile != null)
-                 {
-                     The.Map.SetTileCost(selTile.X, selTile.Y, 0);
-                 }
-             }*/
-        }
+        }*/
 
         /*  private void BlockEdge_OnPress(string option, bool? newBool, float? newFloat)
           {
