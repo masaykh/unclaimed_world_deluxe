@@ -1276,29 +1276,6 @@ namespace UWGame.ClientSide.Map
 
         }
 
-        private void SetUpTerrainIndices(short[] indices)
-        {
-            int counter = 0;
-            for (int y = 0; y < noOfVerticesVertical - 1; y++)
-            {
-                for (int x = 0; x < noOfVerticesHorizontal - 1; x++)
-                {
-                    short topLeft = (short)(x + y * noOfVerticesHorizontal);
-                    short topRight = (short)((x + 1) + y * noOfVerticesHorizontal);
-                    short lowerRight = (short)((x + 1) + (y + 1) * noOfVerticesHorizontal);
-                    short lowerLeft = (short)(x + (y + 1) * noOfVerticesHorizontal);
-
-                    indices[counter++] = topLeft;
-                    indices[counter++] = lowerRight;
-                    indices[counter++] = lowerLeft;
-
-                    indices[counter++] = topLeft;
-                    indices[counter++] = topRight;
-                    indices[counter++] = lowerRight;
-                }
-            }
-        }
-
         public static void SetUpIndices(int noOfQuads, short[] indices)
         {
 
@@ -2091,8 +2068,6 @@ namespace UWGame.ClientSide.Map
             }
         }
 
-        bool isInGodMode = false;
-
         /// <summary>
         /// must be done after all entities have been updated, but before drawing starts.
         /// </summary>
@@ -2840,8 +2815,7 @@ namespace UWGame.ClientSide.Map
         List<IDrawnAsGroundSprite> bottomSprites = new List<IDrawnAsGroundSprite>(); // structure ground sprites such as torn up earth
         List<IDrawnAsGroundSprite> middleSprites = new List<IDrawnAsGroundSprite>(); // add-ons and roads
         List<IDrawnAsGroundSprite> topSprites = new List<IDrawnAsGroundSprite>(); // resources like firewood...
-        List<IDrawnAsGroundSprite> outlineSprites = new List<IDrawnAsGroundSprite>();
-
+        
         private void DrawGroundFeatureSprites()
         {
 
@@ -2966,10 +2940,6 @@ namespace UWGame.ClientSide.Map
             firstYToDraw = MapManager.WorldPosToTile(position).Y - GutterSize;
         }
 
-        /// <summary>
-        /// Recompute visible vertices only when we are scrolling
-        /// </summary>
-        private bool first = false;
         public void SetUpTerrainVerticesAndIndicesInCurrentView()
         {
 
@@ -3201,8 +3171,6 @@ namespace UWGame.ClientSide.Map
                 }
             }
         }
-
-        private static double a = 0;//dummy var to modulate test tint color MLo
 
         /// <summary>
         /// we need to supply tile coords because they are not the same as the tile data when we are drawing the map gutter.
@@ -4012,36 +3980,6 @@ namespace UWGame.ClientSide.Map
 
             }
 
-        }
-
-        private void SetLightSourceDrawing()
-        {
-            /*
-           Shawn sez: If you have a lot of overlapping lights in your scene, an interesting extension of this technique is to accumulate all the lights separately before combining them with your main scene:
-
-           Create a RenderTarget2D the same size as your screen 
-           Draw the regular scene as normal 
-           GraphicsDevice.SetRenderTarget(0, lightRenderTarget) 
-           GraphicsDevice.Clear(Color.Black) 
-           Draw all the light shapes using SpriteBlendMode.Additive 
-           GraphicsDevice.ResolveRenderTarget(0) 
-           GraphicsDevice.SetRenderTarget(0, null) 
-           Using SpriteSortMode.Immediate, set renderstates for multiply blend mode 
-           SpriteBatch.Draw(lightRenderTarget.GetTexture()), covering the entire screen
-           */
-
-
-            /*
-            The.Client.GraphicsDevice.DepthStencilBuffer = game.ScreenManager.NoMultiSamplingStencilBuffer;
-            // occluded pixel - render ambient light:
-
-            The.Client.GraphicsDevice.RenderState.AlphaBlendEnable = true;
-
-            // additive blending. light sources will be rendered with alpha = 0.
-            The.Client.GraphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
-            The.Client.GraphicsDevice.RenderState.SourceBlend = Blend.One;
-            The.Client.GraphicsDevice.RenderState.DestinationBlend = Blend.One;
-            */
         }
 
         /*
@@ -4867,41 +4805,41 @@ namespace UWGame.ClientSide.Map
             return printPos;
         }
 
-        private void DrawEntityDebugText(Entity objectAsEntity, bool drawInfo)
-        {
-            if (drawInfo)
-            {
-                if (objectAsEntity != null)
-                {
-                    BodyComponent body;
-                    if (objectAsEntity.Find(out body))
-                    {
-                        Vector2 pos = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
-                        pos.Y -= 32f;
-                        pos.X -= 14f;
-                        Kensei.Dev.DevText.Print(pos, ((int)(body.Body.GlobalHitpoints)).ToString(), Color.LightGreen);
-                    }
+        //private void DrawEntityDebugText(Entity objectAsEntity, bool drawInfo)
+        //{
+        //    if (drawInfo)
+        //    {
+        //        if (objectAsEntity != null)
+        //        {
+        //            BodyComponent body;
+        //            if (objectAsEntity.Find(out body))
+        //            {
+        //                Vector2 pos = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
+        //                pos.Y -= 32f;
+        //                pos.X -= 14f;
+        //                Kensei.Dev.DevText.Print(pos, ((int)(body.Body.GlobalHitpoints)).ToString(), Color.LightGreen);
+        //            }
 
-                    Intelligence intelligence;
-                    if (objectAsEntity.Find(out intelligence))
-                    {
-                        Vector2 pos = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
-                        pos.Y -= 22f;
-                        pos.X -= 14f;
-                        Kensei.Dev.DevText.Print(pos, ((int)(100f * intelligence.Morale)).ToString(), Color.LightBlue);
-                    }
+        //            Intelligence intelligence;
+        //            if (objectAsEntity.Find(out intelligence))
+        //            {
+        //                Vector2 pos = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
+        //                pos.Y -= 22f;
+        //                pos.X -= 14f;
+        //                Kensei.Dev.DevText.Print(pos, ((int)(100f * intelligence.Morale)).ToString(), Color.LightBlue);
+        //            }
 
-                    NonLivingEntity nonLiving;
-                    if (objectAsEntity.Find(out nonLiving))
-                    {
-                        Vector2 pos = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
-                        pos.Y -= 32f;
-                        pos.X -= 14f;
-                        Kensei.Dev.DevText.Print(pos, ((int)(100f * nonLiving.Condition)).ToString(), Color.LightCyan);
-                    }
-                }
-            }
-        }
+        //            NonLivingEntity nonLiving;
+        //            if (objectAsEntity.Find(out nonLiving))
+        //            {
+        //                Vector2 pos = The.MapUI.WorldPosToScreen(objectAsEntity.PlaySiteLocation);
+        //                pos.Y -= 32f;
+        //                pos.X -= 14f;
+        //                Kensei.Dev.DevText.Print(pos, ((int)(100f * nonLiving.Condition)).ToString(), Color.LightCyan);
+        //            }
+        //        }
+        //    }
+        //}
 
         private int DrawDepthMapForLighting(int featureQuadIndex, GraphicsDevice device)
         {
