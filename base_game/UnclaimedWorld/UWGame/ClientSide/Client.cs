@@ -1852,7 +1852,7 @@ namespace UWGame.ClientSide
 
         float timeToSleep = 0;
         float desiredSleepAmount;
-        private int frameCount = 0;
+        //private int frameCount = 0;
 
         // const float frameTimeAtTargetFPS = 1f / targetFrameRateWhenPaused; // 0.0333f;
 
