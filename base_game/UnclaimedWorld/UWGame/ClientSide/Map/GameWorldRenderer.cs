@@ -1481,10 +1481,7 @@ namespace UWGame.ClientSide.Map
                     {
                         foreach (var resource in tileToDraw.TileResources)
                         {
-                            if (tileToDraw.X == 18 && tileToDraw.Y == 10)
-                            {
-
-                            }
+                            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (tileToDraw.X == 18 && tileToDraw.Y == 10) { }
 
                             if (isInGodMode || knowledgeToShow.AllDetectedEntities.Contains(resource.Value.DetectableID)) // don't render non-detected resources!
                             {
@@ -1770,10 +1767,8 @@ namespace UWGame.ClientSide.Map
 
                             if (PositionIsOnTile(billboard.MapPosition.Value, tileX, tileY))
                             {
-                                if (renderable.Entity != null && renderable.Entity.ToString().Contains("Tipi"))
-                                {
-
-                                }
+                                // PORT: the studio's empty breakpoint anchor, as in 181adb2 - it built every billboard's entity string each
+                                // frame: if (renderable.Entity != null && renderable.Entity.ToString().Contains("Tipi")) { }
 
                                 if (TileEntitiesAreInSight(tileX, tileY))
                                 {
@@ -5088,6 +5083,7 @@ namespace UWGame.ClientSide.Map
         private void DrawOverlayGroundSprites()
         {
             SetupInterfaceOnMapQuads();
+            UWGame.Port.RenderTrace.Log("overlay ground sprites offered: " + overlayGroundSpriteQuadIndex + " quad(s)");
 
             if (overlayGroundSpriteQuadIndex == 0)
                 return;
@@ -5137,6 +5133,7 @@ namespace UWGame.ClientSide.Map
         private void DrawInfluenceMapSprites()
         {
             SetupInfluenceQuads();
+            UWGame.Port.RenderTrace.Log("influence map sprites offered: " + influenceMapQuadIndex + " quad(s)");
 
             if (influenceMapQuadIndex == 0)
                 return;

@@ -843,10 +843,7 @@ public class EntityType : IXmlSerializable, IGameData, IHasCategory<EntityCatego
 
         if (!string.IsNullOrEmpty(DetectionTag))
         {
-            if (DetectionTag == "inDeeperWaterFishingSpot")
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (DetectionTag == "inDeeperWaterFishingSpot") { }
 
             BaseDataLoader.AddToTagCollection(this,
                 DetectionTag, GameData.Instance.DetectableTypeByTag); // EntityTypeDetectionByTag);

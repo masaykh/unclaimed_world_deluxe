@@ -206,10 +206,7 @@ namespace UWGame.SimSide.Entities
                 IDCounter++;
             }
 
-            if (ID == (EntityID)9)
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (ID == (EntityID)9) { }
 
             if (ID != EntityID.Invalid)
                 LookUp<Entity, EntityID>.Add(ID, this);
@@ -541,10 +538,7 @@ namespace UWGame.SimSide.Entities
 
             SpawnedByOwner = sn.DoEnumNullable(SpawnedByOwner);
 
-            if (ID == (Entities.EntityID)4528) // containedBy == (EntityID)4648)
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (ID == (Entities.EntityID)4528) { }
 
             containedBy = sn.DoEntityIDNullable(containedBy);
             CustomFields = sn.DoDictionary(CustomFields);
@@ -2881,9 +2875,7 @@ namespace UWGame.SimSide.Entities
                         Find(out bioEntity);
                         if (bioEntity.Needs != null)
                         {
-                            if (ID == (EntityID)4600)
-                            {
-                            }
+                            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (ID == (EntityID)4600) { }
 
                             bioEntity.Needs.UpdateNeedsTotalBulk();
                         }
@@ -4107,10 +4099,7 @@ namespace UWGame.SimSide.Entities
            
             this.EntityType = entityType;
 
-            if (EntityType.KeyName == "entity:dog")
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (EntityType.KeyName == "entity:dog") { }
 
 
             #region IDs
@@ -7336,10 +7325,7 @@ namespace UWGame.SimSide.Entities
            
             bool isCompleted = IsCompleted();
 
-            if (name != null && name.Contains("onlan"))
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (name != null && name.Contains("onlan")) { }
 
             if (!IsDead && isCompleted && EntityType.IntelligenceType != null)
             {
@@ -9186,10 +9172,7 @@ namespace UWGame.SimSide.Entities
             PropertyResult? result = null;
             PropertyResult customResult;
 
-            if (propertyKey == "harvestDate")
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (propertyKey == "harvestDate") { }
 
 
             if (exposedPropertyValueFunctions.ContainsKey(propertyKey))
@@ -11052,7 +11035,7 @@ namespace UWGame.SimSide.Entities
                 PropertyResult result = new PropertyResult();
 
                 // use this??
-                //We don´t want to have to list all item keynames in order to make them show data, 
+                //We donï¿½t want to have to list all item keynames in order to make them show data, 
                 //instead all items which share a degrade type will use the same state descriptions
                 if (entityData.EntityType.NonLivingType.FinalDegradeType != null)
                 {
@@ -11197,17 +11180,14 @@ namespace UWGame.SimSide.Entities
             if (ShowCondition(entityData)) //(entityData.EntityType.NonLivingType.FinalDegradeType != null || entityData.EntityType.Parts != null)
             {
                 PropertyResult conditionResult = new PropertyResult();
-                //We don´t want to have to list all item keynames in order to make them show data, 
+                //We donï¿½t want to have to list all item keynames in order to make them show data, 
                 //instead all items which share a degrade type will use the same state descriptions
                 if (entityData.EntityType.NonLivingType.FinalDegradeType != null)
                 {
                     conditionResult.PropertyKeyName = entityData.EntityType.NonLivingType.FinalDegradeType.KeyName;
                 }
 
-                if (entityData.EntityID == (EntityID)6604)
-                {
-
-                }
+                // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (entityData.EntityID == (EntityID)6604) { }
 
                 if (entityData.PartIsBroken)
                 {

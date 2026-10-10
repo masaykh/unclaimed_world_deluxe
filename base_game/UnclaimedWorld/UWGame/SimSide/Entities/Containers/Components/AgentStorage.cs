@@ -618,10 +618,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
 
         protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
         {
-            if (entity.ID == (EntityID)18)
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (entity.ID == (EntityID)18) { }
 
 
             bool wasRemoved = false;
@@ -699,10 +696,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
             bool isProductionOutput = false,
             UpgradeCategory upgradeCategory = null) //bool isUpgrade = false)
         {
-            if (entity.ID == (EntityID)18)
-            {
-
-            }
+            // PORT: the studio's empty breakpoint anchor, as in 181adb2: if (entity.ID == (EntityID)18) { }
 
             if (compartment == null || compartment.Value == StorageCompartment.Haul)
             {

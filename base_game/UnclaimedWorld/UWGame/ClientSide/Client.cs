@@ -263,7 +263,11 @@ namespace UWGame.ClientSide
 
             if (clientContent == null)
             {
-                Content = new ContentManager(Controller.Game.Services);
+                // PORT: the port's content manager, as before 6a5e712 - it converts the models' vertex buffers for
+                // OpenGL (PORTING-NOTES deviation 14), merges the fonts' Cyrillic supplements (FontSupplement)
+                // and reads port-content. A plain ContentManager drew every 3D model as broken shards (Kastuk,
+                // 2026-10-10, -nomods on ffd3c81).
+                Content = new UWGame.Port.UwContentManager(Controller.Game.Services);
                 Content.RootDirectory = "Content";
             }
             else
