@@ -152,7 +152,7 @@ namespace UWGame.ClientSide
 
         public RoundLineManager RoundLineManager;
 
-        public delegate void ButtonClick(object sender);
+        /*public delegate void ButtonClick(object sender);*/
 
         public Texture2D interfaceArt;
 
@@ -664,7 +664,7 @@ namespace UWGame.ClientSide
         public void MarkPerformanceTime(string periodName, Color color)
         {
 
-#if DEBUG || PROFILE
+#if DEBUG
 
             if (PPList == null)
             {
@@ -1756,7 +1756,7 @@ namespace UWGame.ClientSide
 
 //            //  return;
 
-//#if PROFILE //TODO need to send message to sim to pause also, MLo
+//if PROFILE //TODO need to send message to sim to pause also, MLo
 //           // test for CPU or GPU BOUND!!! (shawn hargreaves)
 //           // we are cpu bound it seems...
 //           // http://blogs.msdn.com/b/shawnhar/archive/2008/04/07/how-to-tell-if-you-are-cpu-or-gpu-bound.aspx
