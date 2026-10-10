@@ -1713,7 +1713,8 @@ namespace UWGame.ClientSide
                     LimitFPS(limitFramerateWhenPaused);
                 }
 
-                /*Manager.Update();*/
+                // PORT: as shipped; the snapshot had it commented out (see BeginRun).
+                Kensei.Dev.Manager.Update();
 
                 AudioManager.Update(gameTime);
                 The.MapUI.UpdateMouseInMap();
@@ -2122,7 +2123,12 @@ namespace UWGame.ClientSide
             //because we use the rendering methods for fog of war...
             Dimension dim = Controller.DrawArea;
 
-            ////Kensei.Dev.Manager.Initialise(The.Client.Content, The.Client.GraphicsDevice, 0, 0, dim.Width, dim.Height);
+            // PORT: as the shipped game does (base_game before 6a5e712). The source snapshot has this
+            // commented out, but the renderer still draws through Kensei.Dev every frame
+            // (GameWorldRenderer.Draw -> Manager.Draw), so without it the first frame of a game, a
+            // loaded save or the map editor threw in DevText.Draw / Shape.Render2DLines (Kastuk,
+            // 2026-10-10, on ffd3c81).
+            Kensei.Dev.Manager.Initialise(The.Client.Content, The.Client.GraphicsDevice, 0, 0, dim.Width, dim.Height);
             /*
 #if DEBUG
             InitDeveloperDialog(); // we need some placed entities for some of the options...           

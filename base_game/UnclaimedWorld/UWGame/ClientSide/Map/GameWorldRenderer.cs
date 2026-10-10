@@ -3825,12 +3825,15 @@ namespace UWGame.ClientSide.Map
                     {
                         if (soilType.RenderAsRocksType != null && soilType.RenderAsRocksType.DepthMapTextureName != null)
                         {
-                            terrainEffect.Parameters["NormalMap"].SetValue(terrainTextures[soilType.RenderAsRocksType.DepthMapTextureName]);
+                            // PORT DEVIATION 20 (see PORTING-NOTES.md): the OpenGL rebuild of this effect drops the parameter, which the shader never reads; restored after 6a5e712/d1a1363.
+                            UWGame.Port.EffectCompat.SetIfDeclared(terrainEffect, "NormalMap", terrainTextures[soilType.RenderAsRocksType.DepthMapTextureName]);
                         }
                     }
                 }
 
 
+                // PORT DIAGNOSTIC (port.renderTrace).
+                UWGame.Port.RenderTrace.Technique("multiTex (terrain)", terrainEffect);
                 foreach (EffectPass pass in terrainEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
@@ -3838,6 +3841,7 @@ namespace UWGame.ClientSide.Map
                     terrainVertices = batch.TerrainVerticesArray;
                     terrainIndices = batch.TerrainIndicesArray;
                     The.Client.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrainVertices, 0, terrainVertices.Length, terrainIndices, 0, terrainIndices.Length / 3);
+                    UWGame.Port.RenderTrace.Submit("terrain", terrainIndices.Length / 3);
                     //  The.Client.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrainVertices, 0, terrainVertices.Length, terrainIndices, 0, terrainIndices.Length / 3);
 
                 }
@@ -3876,11 +3880,13 @@ namespace UWGame.ClientSide.Map
             //    alpha /= 255.0f;
             //}
 
-            GroundFeatureEffect.Parameters["AlphaAdjustment"].SetValue(1f);
+            // PORT DEVIATION 20 (see PORTING-NOTES.md): the OpenGL rebuild of this effect drops the parameter, which the shader never reads; restored after 6a5e712/d1a1363.
+            UWGame.Port.EffectCompat.SetIfDeclared(GroundFeatureEffect, "AlphaAdjustment", 1f);
 
             GroundFeatureEffect.CurrentTechnique = GroundFeatureEffect.Techniques["RenderOutlineGroundSprites"]; //0]; //"RoadsAndPaths"];
 
-            GroundFeatureEffect.Parameters["NormalMap"].SetValue(terrainTextures["linear gradient normal map"]);
+            // PORT DEVIATION 20 (see PORTING-NOTES.md): the OpenGL rebuild of this effect drops the parameter, which the shader never reads; restored after 6a5e712/d1a1363.
+            UWGame.Port.EffectCompat.SetIfDeclared(GroundFeatureEffect, "NormalMap", terrainTextures["linear gradient normal map"]);
 
 
             GroundFeatureEffect.Parameters["UseIntegerPositions"].SetValue(!The.MapUI.IsScrolling);
@@ -3901,6 +3907,7 @@ namespace UWGame.ClientSide.Map
                 pass.Apply();
 
                 The.Client.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, groundFeatureVertices, 0, 4 * numberOfQuadsToDraw, groundFeatureIndices, 0, 2 * numberOfQuadsToDraw);
+                UWGame.Port.RenderTrace.Submit("ground feature sprites (RoadsAndPaths)", 2 * numberOfQuadsToDraw);
 
             }
 
@@ -3948,7 +3955,8 @@ namespace UWGame.ClientSide.Map
                                                                      The.Sim.DateAndTime.SunPosition.Z
                                                                      ));
 
-            GroundFeatureEffect.Parameters["NormalMap"].SetValue(terrainTextures["linear gradient normal map"]);
+            // PORT DEVIATION 20 (see PORTING-NOTES.md): the OpenGL rebuild of this effect drops the parameter, which the shader never reads; restored after 6a5e712/d1a1363.
+            UWGame.Port.EffectCompat.SetIfDeclared(GroundFeatureEffect, "NormalMap", terrainTextures["linear gradient normal map"]);
 
 
             GroundFeatureEffect.Parameters["UseIntegerPositions"].SetValue(!The.MapUI.IsScrolling);
@@ -3978,6 +3986,7 @@ namespace UWGame.ClientSide.Map
                 pass.Apply();
 
                 The.Client.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, groundFeatureVertices, 0, 4 * numberOfQuadsToDraw, groundFeatureIndices, 0, 2 * numberOfQuadsToDraw);
+                UWGame.Port.RenderTrace.Submit("ground feature sprites (RoadsAndPaths)", 2 * numberOfQuadsToDraw);
 
             }
 
@@ -5094,7 +5103,8 @@ namespace UWGame.ClientSide.Map
             Viewport viewport = The.Client.GraphicsDevice.Viewport;
             Vector2 viewportSize = new Vector2(viewport.Width, viewport.Height);*/
             overlayGroundSpritesEffect.Parameters["ViewportSize"].SetValue(viewportSize);
-            overlayGroundSpritesEffect.Parameters["WindowPosition"].SetValue(The.MapUI.MapWindowWorldPosition);
+            // PORT DEVIATION 20 (see PORTING-NOTES.md): the OpenGL rebuild of this effect drops the parameter, which the shader never reads; restored after 6a5e712/d1a1363.
+            UWGame.Port.EffectCompat.SetIfDeclared(overlayGroundSpritesEffect, "WindowPosition", The.MapUI.MapWindowWorldPosition);
 
             overlayGroundSpritesEffect.Parameters["ScanlinesTexture"].SetValue(Scanlines);
 
@@ -5114,6 +5124,7 @@ namespace UWGame.ClientSide.Map
 
                 The.Client.GraphicsDevice.DrawUserIndexedPrimitives( // OK TO REUSE INDICES.
                     PrimitiveType.TriangleList, overlayGroundSpriteVertices, 0, overlayGroundSpriteQuadIndex * 4, featureIndices, 0, overlayGroundSpriteQuadIndex * 2);
+                UWGame.Port.RenderTrace.Submit("overlay ground sprites", overlayGroundSpriteQuadIndex * 2);
 
             }
 
@@ -5140,7 +5151,8 @@ namespace UWGame.ClientSide.Map
             Viewport viewport = The.Client.GraphicsDevice.Viewport;
             Vector2 viewportSize = new Vector2(viewport.Width, viewport.Height);*/
             overlayGroundSpritesEffect.Parameters["ViewportSize"].SetValue(viewportSize);
-            overlayGroundSpritesEffect.Parameters["WindowPosition"].SetValue(The.MapUI.MapWindowWorldPosition);
+            // PORT DEVIATION 20 (see PORTING-NOTES.md): the OpenGL rebuild of this effect drops the parameter, which the shader never reads; restored after 6a5e712/d1a1363.
+            UWGame.Port.EffectCompat.SetIfDeclared(overlayGroundSpritesEffect, "WindowPosition", The.MapUI.MapWindowWorldPosition);
             overlayGroundSpritesEffect.Parameters["ScanlinesTexture"].SetValue(Scanlines);
             overlayGroundSpritesEffect.Parameters["OverlayTexture"].SetValue(The.Client.FlatSpriteSheet.Texture);
 
@@ -5156,6 +5168,7 @@ namespace UWGame.ClientSide.Map
 
                 The.Client.GraphicsDevice.DrawUserIndexedPrimitives(
                     PrimitiveType.TriangleList, influenceMapVertices, 0, influenceMapQuadIndex * 4, featureIndices, 0, influenceMapQuadIndex * 2);
+                UWGame.Port.RenderTrace.Submit("influence map sprites", influenceMapQuadIndex * 2);
 
             }
 
