@@ -4091,7 +4091,7 @@ namespace UWGame.ClientSide
 
           }*/
 
-
+        /*
         private void SetEmigrateDecision(Entity man)
         {
             if (man.Intelligence.EmigrateDecider.PreferredMigrationTarget.HasValue)
@@ -4121,8 +4121,8 @@ namespace UWGame.ClientSide
                 SetStarving(man);
             }
         }
-
-
+        */
+        /*
         private void AddCredits(string option, bool? newBool, float? newFloat)
         {
             The.InGameUI.UIAllegiance.TradeCredits += 500;
@@ -4163,8 +4163,8 @@ namespace UWGame.ClientSide
                 }
             }
         }
-
-
+        */
+        /*
         private void Immobilize_OnPress(string option, bool? newBool, float? newFloat)
         {
             Entity man = GetSelectedAgentOrFirstPerson();
@@ -4184,7 +4184,7 @@ namespace UWGame.ClientSide
                 man.PersonEntity.Personality.Principles[SimSide.Allegiances.Statistics.RatingTypes.Comfort] += 0.1f;
             }
         }
-
+        *//*
         private void RaiseFoodPrinciples(string option, bool? newBool, float? newFloat)
         {
             Entity man = GetSelectedAgentOrFirstPerson();
@@ -4202,7 +4202,8 @@ namespace UWGame.ClientSide
             {
                 man.PersonEntity.Personality.Principles[SimSide.Allegiances.Statistics.RatingTypes.Security] += 0.1f;
             }
-        }
+        }*/
+        /*
         private void Injure_OnPress(string option, bool? newBool, float? newFloat)
         {
             Entity man = GetSelectedAgentOrFirstPerson();
@@ -4234,7 +4235,7 @@ namespace UWGame.ClientSide
             }
 
         }
-
+        */
         /*
         private void Emigrate_OnPress(string option, bool? newBool, float? newFloat)
         {            
