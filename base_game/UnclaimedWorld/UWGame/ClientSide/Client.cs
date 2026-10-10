@@ -184,8 +184,10 @@ namespace UWGame.ClientSide
 
 
         int frameRate = 0;
-        int frameCounter = 0;
 
+        /*
+        int frameCounter = 0;
+        */
 
 
         //public bool IsPaused = false;
@@ -224,7 +226,7 @@ namespace UWGame.ClientSide
             private set;
         }
 
-        TimeSpan frameRateElapsedTime = TimeSpan.Zero;
+        ////TimeSpan frameRateElapsedTime = TimeSpan.Zero;
 
         public GameTime GameTime = new GameTime();
 
@@ -888,7 +890,7 @@ namespace UWGame.ClientSide
             AudioManager.Resume();
         }*/
 
-        System.Text.StringBuilder description = new System.Text.StringBuilder("");
+        ////System.Text.StringBuilder description = new System.Text.StringBuilder("");
         //private void PrintDebugPanelInfo()
         //{
         //    description.Clear();
@@ -2398,10 +2400,10 @@ namespace UWGame.ClientSide
             }
 
         }
-
+        /*
         private Dictionary<string, Tuple<string, AttachPoint, AttacheePoint>> attacheeOptions; // = new Dictionary<string, Tuple<string, AttachPoint, AttacheePoint>>();
         private Dictionary<string, AttachPoint> attachorOptions = new Dictionary<string, AttachPoint>();
-
+        */
         /*
         /// <summary>
         /// called once
