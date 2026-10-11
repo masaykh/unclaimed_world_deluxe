@@ -82,6 +82,9 @@ internal static partial class Program
         Console.WriteLine("==> Map Editor: painted soil and vegetation written as the loader reads them (MapManager.SoilTexels, VegetationTexels)");
         CheckPaintTexels(Check);
 
+        Console.WriteLine("==> Map Editor: a wall raised or levelled reaches the region map at once (MapManager.FinishTerrainRegionRepairs)");
+        CheckRegionRepair(Check);
+
         Console.WriteLine(failures == 0 ? "mapedit self-test OK" : $"mapedit self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
     }
@@ -402,6 +405,90 @@ internal static partial class Program
         check(wrong == 0, "every subtile reads back its own soil and vegetation" + (wrong == 0 ? "" : $" - {wrong} do not, e.g. {firstWrong}"));
         check(soil.All(t => t.A == 255), "  every texel of the picture is filled");
         check(map.SoilTexels(sand, out _, out _) == null, "a soil type the map has none of gets no picture, so SAVE removes the old one");
+    }
+
+    /// <summary>
+    /// Kastuk, 2026-10-10: "Region map (foot) markers cannot update walkable area after changes of
+    /// terrain height until I save-load the map." A height edit marks the foot region map's sectors
+    /// dirty, but only the CycleManager repairs them, and Sim.Update runs it in a game, not in the
+    /// editor. Two sectors of open ground, as MapLoader.CreateMapCosts and BuildMapCosts leave them;
+    /// a wall across one, as a height edit blocks subtiles (MapManager.SetSubtileCost); then the
+    /// repair Sim.Update now runs in EngineMode.Edit.
+    /// </summary>
+    private static void CheckRegionRepair(Action<bool, string> check)
+    {
+        const int tilesWide = 32, tilesHigh = 16;
+        MapManager map = NewEditMap(tilesWide, tilesHigh);
+        map.mapSubtileWidth = tilesWide * 3;
+        map.mapSubtileHeight = tilesHigh * 3;
+        // As MapManager sets them from the subtile size: 48 subtiles a sector.
+        map.NoOfSectorsAcrossWidth = (int)Math.Ceiling(map.mapSubtileWidth / 48.0);
+        map.NoOfSectorsAcrossHeight = (int)Math.Ceiling(map.mapSubtileHeight / 48.0);
+        The.Map = map;
+        var bottom = new SubtileLayer((ushort)map.mapSubtileWidth, (ushort)map.mapSubtileHeight);
+        var foot = new SubtileLayers(SurfaceType.TransportType.Foot.ToString(), bottom);
+        bottom.CreateAllSectors();
+        map.TerrainCosts = new Dictionary<SurfaceType.TransportType, SubtileLayers> { { SurfaceType.TransportType.Foot, foot } };
+        byte open = PlainsType.Instance.Cost(SurfaceType.TransportType.Foot, SurfaceType.TerrainFeatures.None);
+        for (int i = 0; i < map.mapSubtileWidth; i++)
+        {
+            for (int j = 0; j < map.mapSubtileHeight; j++)
+            {
+                foot.SetValueOnBottomLayer(i, j, (MapManager.SubtileValue)open);
+            }
+        }
+        try
+        {
+            map.InitPostLoadMap();
+        }
+        catch (Exception ex)
+        {
+            check(false, "the region map builds on open ground: " + ex.GetType().Name + " in " + ex.TargetSite?.Name);
+            return;
+        }
+        var west = new Point(5, 20);
+        var east = new Point(70, 20);
+        // Regions stop at sector edges; two places are one walkable area when the region graph joins them.
+        bool Connected()
+        {
+            ushort from = foot.GetRegion(west), to = foot.GetRegion(east);
+            var seen = new HashSet<ushort> { from };
+            var next = new Queue<ushort>(seen);
+            while (next.Count > 0)
+            {
+                ushort region = next.Dequeue();
+                if (region == to)
+                {
+                    return true;
+                }
+                if (foot.RegionMap.RegionGraph.TryGetValue(region, out var edges))
+                {
+                    foreach (ushort neighbour in edges.Keys.Where(seen.Add))
+                    {
+                        next.Enqueue(neighbour);
+                    }
+                }
+            }
+            return false;
+        }
+        check(Connected(), "open ground: the west and the east are one walkable area");
+
+        const int wallX = 60;
+        for (int j = 0; j < map.mapSubtileHeight; j++)
+        {
+            map.SetSubtileCost(new Point(wallX, j), SurfaceType.TransportType.Foot, 0);
+        }
+        check(foot.RegionMap.SectorsAreDirty, "  a wall across the east sector marks it for repair");
+        map.FinishTerrainRegionRepairs();
+        check(!foot.RegionMap.SectorsAreDirty, "  the editor's repair works it in at once");
+        check(!Connected(), "  the wall splits the walkable area");
+
+        for (int j = 0; j < map.mapSubtileHeight; j++)
+        {
+            map.SetSubtileCost(new Point(wallX, j), SurfaceType.TransportType.Foot, open);
+        }
+        map.FinishTerrainRegionRepairs();
+        check(!foot.RegionMap.SectorsAreDirty && Connected(), "  levelled again, it is one walkable area again");
     }
 
     private static MapManager NewEditMap(int width, int height)

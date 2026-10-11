@@ -776,6 +776,28 @@ public class MapManager : ISnapshot
 		}
 	}
 
+	/// <summary>
+	/// PORT: works the Map Editor's changes into the terrain region maps at once. In a game the
+	/// CycleManager repairs them a slice at a time, but Sim.Update only runs it in EngineMode.Game,
+	/// so in the editor a height change stayed out of them until the map was loaded again (Kastuk,
+	/// 2026-10-10: "Region map (foot) markers cannot update walkable area after changes of terrain
+	/// height until I save-load the map"). The studio's Sim.PostLoadMap: "in editor mode we only use
+	/// terrain maps to check accessibility".
+	/// </summary>
+	public void FinishTerrainRegionRepairs()
+	{
+		foreach (KeyValuePair<SurfaceType.TransportType, SubtileLayers> terrainCost in TerrainCosts)
+		{
+			RegionMap regionMap = terrainCost.Value.RegionMap;
+			if (regionMap != null && regionMap.SectorsAreDirty)
+			{
+				while (!regionMap.CycleOnce())
+				{
+				}
+			}
+		}
+	}
+
 	public void Init()
 	{
 		InitMaps();

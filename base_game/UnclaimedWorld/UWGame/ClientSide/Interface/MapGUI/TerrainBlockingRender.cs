@@ -32,7 +32,11 @@ public class TerrainBlockingRender : ÏnfluenceRender
 		Color color = Color.Black;
 		byte cost;
 		bool isInPad;
-		for (int i = point.X; i <= point2.X; i++)
+		// PORT: placing map assets shows only the asset's own footprint; the whole area's markers wait for
+		// the BUILDABLE AREA overlay (Kastuk, 2026-10-10: "when placing Map assets, do not turn on Buildable
+		// area markers automatically"). Building in a game still shows them, as the studio had it.
+		bool showAreas = The.InGameUI.InterfaceMode != InGameInterface.InterfaceState.EditorPlaceEntity || The.InGameUI.OverlaySettings.EditorOverlayTypeSettings[Overlays.EditorOverlayTypes.BuildAreas] || The.InGameUI.OverlaySettings.OverlayTypeSettings[Overlays.OverlayTypes.BuildAreas];
+		for (int i = point.X; showAreas && i <= point2.X; i++)
 		{
 			for (int j = point.Y; j <= point2.Y; j++)
 			{

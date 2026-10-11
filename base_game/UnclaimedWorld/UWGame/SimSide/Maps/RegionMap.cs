@@ -68,6 +68,9 @@ public abstract class RegionMap : ISnapshot, ICyclable, ILookUp<ICyclable, Cycla
 
 	protected bool sectorsAreDirty;
 
+	/// <summary>PORT: whether a change waits to be worked into the regions (MapManager.FinishTerrainRegionRepairs).</summary>
+	public bool SectorsAreDirty => sectorsAreDirty;
+
 	private int subtileMapWidth;
 
 	private int subtileMapHeight;

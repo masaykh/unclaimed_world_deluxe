@@ -798,7 +798,7 @@ public class Grid : UIComponent, IKeyedEntryComponent
 	}
 
 	/// <summary>The left margin of an AddEntryAndButton row's text, in pixels.</summary>
-	public const int CaptionMargin = 4;
+	public const int CaptionMargin = 6;
 
 	/// <summary>
 	/// PORT: an AddEntryAndButton row's arrow, right after its text. The studio put it at

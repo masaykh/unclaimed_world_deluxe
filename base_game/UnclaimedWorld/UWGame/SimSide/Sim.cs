@@ -1429,6 +1429,11 @@ public class Sim : GameScreen, ISnapshot
 		}
 		IsInNormalGameLoop = true;
 		GameTime = gameTime;
+		// PORT: the editor's terrain changes reach the region maps (MapManager.FinishTerrainRegionRepairs).
+		if (Mode == EngineMode.Edit)
+		{
+			The.Map.FinishTerrainRegionRepairs();
+		}
 		if (IsPaused)
 		{
 			return;
