@@ -51,6 +51,12 @@ namespace UWGame.Mods;
 /// a conversation. The line is picked from the colonist and the day, not from the game's random
 /// generator, so replays are untouched by it.
 ///
+/// A stink line says what smells (Kastuk, 2026-10-10: "May add more lines with hints, what's
+/// smelling"): the most of the filth near the bed decides - fertiliser, guano and sulphur "Who is
+/// excrementing out there?", rotten food "That's quite unappetizing.", carcasses and fresh hides
+/// "Such a breath of the wild." Other waste keeps the two general lines. Rotten food and spoiled
+/// meals stink too since then.
+///
 /// Off by default.
 /// </summary>
 public static class DiscomfortMod
@@ -66,7 +72,7 @@ public static class DiscomfortMod
     public static ModSetting EnabledSetting =>
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "STINK AND NOISE COST SLEEPERS COMFORT", defaultValue: false,
-            toolTip: "Filthy items (waste, fertiliser, sulphur, carcasses, fresh hides) and busy " +
+            toolTip: "Filthy items (waste, rotten food, fertiliser, sulphur, carcasses, fresh hides) and busy " +
                      "workbenches, smithies, workshops, refineries and mines near where a colonist " +
                      "sleeps lower their Comfort for the day. Measured once a day, when they first lie down.",
             affectsSimulation: true));
@@ -121,6 +127,12 @@ public static class DiscomfortMod
     /// <summary>Fresh hides: item:megapodGreenHide, item:whipjawGreenHide, item:thunderChickenGreenHide.</summary>
     private const string FreshHideSuffix = "GreenHide";
 
+    /// <summary>Rotten food: item:rottenMeat, item:rottenStaple, item:rottenVegetables, item:spoiledMeal.</summary>
+    private static readonly string[] RottenKeyPrefixes = { "item:rotten", "item:spoiled" };
+
+    /// <summary>What a filthy item smells of: which line a sleeper says about it.</summary>
+    public enum Smell { None, Waste, Excrement, Rotten, Wild }
+
     /// <summary>Workplaces that are loud while worked at, by part of their key.</summary>
     private static readonly string[] NoisyKeyParts = { "workbench", "smithy", "workshop", "refinery", "mine" };
 
@@ -144,18 +156,42 @@ public static class DiscomfortMod
     private static string[] StinkLines => new[] { UWGame.Locale.Text("What is this smell!?"), UWGame.Locale.Text("It's hard to even breathe here.") };
     private static string[] NoiseLines => new[] { UWGame.Locale.Text("Can you be quiet please..."), UWGame.Locale.Text("How is anyone supposed to sleep with that racket?") };
 
+    /// <summary>The lines for the filth there is most of near the bed.</summary>
+    public static string[] LinesFor(Smell smell) => smell switch
+    {
+        Smell.Excrement => new[] { UWGame.Locale.Text("Who is excrementing out there?") },
+        Smell.Rotten => new[] { UWGame.Locale.Text("That's quite unappetizing.") },
+        Smell.Wild => new[] { UWGame.Locale.Text("Such a breath of the wild.") },
+        _ => StinkLines,
+    };
+
     /// <summary>Whether an item stinks.</summary>
-    public static bool IsFilthy(EntityType type)
+    public static bool IsFilthy(EntityType type) => SmellOf(type) != Smell.None;
+
+    /// <summary>What an item smells of; Smell.None for an item that does not stink.</summary>
+    public static Smell SmellOf(EntityType type)
     {
         if (type?.ItemType == null)
         {
-            return false;
+            return Smell.None;
         }
-        if (type.CategoryKey == WasteCategory || type.ItemType.CarcassType != null || Array.IndexOf(FilthyKeys, type.KeyName) >= 0)
+        string key = type.KeyName ?? "";
+        foreach (string prefix in RottenKeyPrefixes)
         {
-            return true;
+            if (key.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                return Smell.Rotten;
+            }
         }
-        return type.KeyName != null && type.KeyName.EndsWith(FreshHideSuffix, StringComparison.Ordinal);
+        if (type.ItemType.CarcassType != null || key.EndsWith(FreshHideSuffix, StringComparison.Ordinal))
+        {
+            return Smell.Wild;
+        }
+        if (Array.IndexOf(FilthyKeys, key) >= 0)
+        {
+            return Smell.Excrement;
+        }
+        return type.CategoryKey == WasteCategory ? Smell.Waste : Smell.None;
     }
 
     /// <summary>Whether a structure is a loud workplace while worked at.</summary>
@@ -209,13 +245,13 @@ public static class DiscomfortMod
             return;
         }
         Vector3 exit = (sleepingPlace?.EntityType?.StructureType != null ? sleepingPlace.AccessPoint : null) ?? sleeper.PlaySiteLocation;
-        Measure(exit, out int stink, out int noise);
+        Measure(exit, out int stink, out int noise, out Smell strongest);
         float penalty = PenaltyFor(stink, noise, ChoiceValue(PercentSetting, 3), ChoiceValue(CapSetting, 40));
         Entity.SetPropertyValue(ref sleeper.CustomFields, DayKey, new PropertyResult { NumberResult = today });
         Entity.SetPropertyValue(ref sleeper.CustomFields, PenaltyKey, new PropertyResult { NumberResult = penalty });
         if (penalty > 0f && TalkSetting.On)
         {
-            Complain(sleeper, stink >= noise ? StinkLines : NoiseLines, today);
+            Complain(sleeper, stink >= noise ? LinesFor(strongest) : NoiseLines, today);
         }
     }
 
@@ -237,10 +273,23 @@ public static class DiscomfortMod
         return Number(colonist, PenaltyKey) ?? 0f;
     }
 
-    /// <summary>Filthy items and workers at loud workplaces within the distance of a point.</summary>
-    public static void Measure(Vector3 at, out int stink, out int noise)
+    /// <summary>
+    /// Filthy items and workers at loud workplaces within the distance of a point, and what most of
+    /// the filth smells of.
+    /// </summary>
+    public static void Measure(Vector3 at, out int stink, out int noise, out Smell strongest)
     {
         int s = 0, n = 0;
+        int[] bySmell = new int[Enum.GetValues(typeof(Smell)).Length];
+        void Smelt(EntityType type)
+        {
+            Smell smell = SmellOf(type);
+            if (smell != Smell.None)
+            {
+                s++;
+                bySmell[(int)smell]++;
+            }
+        }
         float range = ChoiceValue(DistanceSetting, 5) * TileSize;
         int reach = (int)Math.Ceiling(range / TileSize);
         int cx = (int)(at.X / TileSize), cy = (int)(at.Y / TileSize);
@@ -259,16 +308,10 @@ public static class DiscomfortMod
                     {
                         continue;
                     }
-                    if (IsFilthy(e.EntityType))
-                    {
-                        s++;
-                    }
+                    Smelt(e.EntityType);
                     e.Contains?.IterateContained(delegate(Entity inside)
                     {
-                        if (IsFilthy(inside?.EntityType))
-                        {
-                            s++;
-                        }
+                        Smelt(inside?.EntityType);
                     });
                     if (IsNoisy(e.EntityType))
                     {
@@ -279,6 +322,21 @@ public static class DiscomfortMod
         }
         stink = s;
         noise = n;
+        strongest = Strongest(bySmell);
+    }
+
+    /// <summary>The smell there is most of; on a tie, the one named first in Smell.</summary>
+    public static Smell Strongest(int[] bySmell)
+    {
+        Smell strongest = Smell.None;
+        for (int i = 1; i < bySmell.Length; i++)
+        {
+            if (bySmell[i] > bySmell[(int)strongest])
+            {
+                strongest = (Smell)i;
+            }
+        }
+        return strongest;
     }
 
     /// <summary>How many are working at a structure now (SimProcess.Workers of its processes).</summary>

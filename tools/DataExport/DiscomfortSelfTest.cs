@@ -62,6 +62,32 @@ internal static partial class Program
         Check(!UWGame.Mods.DiscomfortMod.IsFilthy(Type("item:clamwichSoup")) && !UWGame.Mods.DiscomfortMod.IsFilthy(Type("item:firewood")),
               "clamwich soup and firewood do not");
 
+        // What it smells of decides the line (Kastuk, 2026-10-10: "lines with hints, what's smelling").
+        var Smell = new Func<string, UWGame.Mods.DiscomfortMod.Smell>(key => UWGame.Mods.DiscomfortMod.SmellOf(Type(key)));
+        foreach (string key in new[] { "item:rottenMeat", "item:rottenStaple", "item:rottenVegetables", "item:spoiledMeal" })
+        {
+            Check(Type(key) != null && Smell(key) == UWGame.Mods.DiscomfortMod.Smell.Rotten, key + " stinks of rot (" + Type(key)?.CategoryKey + ")");
+        }
+        foreach (string key in new[] { "item:organicFertilizer", "item:guanoFertilizer", "item:guano", "item:sulfurBlocks", "item:sulfurPowder" })
+        {
+            Check(Smell(key) == UWGame.Mods.DiscomfortMod.Smell.Excrement, key + ": \"Who is excrementing out there?\"");
+        }
+        Check(Smell("item:megapodGreenHide") == UWGame.Mods.DiscomfortMod.Smell.Wild && UWGame.Mods.DiscomfortMod.SmellOf(carcass) == UWGame.Mods.DiscomfortMod.Smell.Wild,
+              "a fresh hide and a carcass: \"Such a breath of the wild.\"");
+        EntityType otherWaste = null;
+        foreach (EntityType t in types.Values)
+        {
+            if (otherWaste == null && UWGame.Mods.DiscomfortMod.SmellOf(t) == UWGame.Mods.DiscomfortMod.Smell.Waste) otherWaste = t;
+        }
+        Check(otherWaste != null && otherWaste.CategoryKey == "waste", $"other waste keeps the general lines ({otherWaste?.KeyName})");
+        Check(UWGame.Mods.DiscomfortMod.Strongest(new[] { 0, 2, 3, 0, 1 }) == UWGame.Mods.DiscomfortMod.Smell.Excrement
+              && UWGame.Mods.DiscomfortMod.Strongest(new[] { 0, 2, 0, 2, 0 }) == UWGame.Mods.DiscomfortMod.Smell.Waste
+              && UWGame.Mods.DiscomfortMod.Strongest(new int[5]) == UWGame.Mods.DiscomfortMod.Smell.None,
+              "the line follows the most of the filth; a tie keeps the general lines");
+        Check(UWGame.Mods.DiscomfortMod.LinesFor(UWGame.Mods.DiscomfortMod.Smell.Rotten)[0] == "That's quite unappetizing."
+              && UWGame.Mods.DiscomfortMod.LinesFor(UWGame.Mods.DiscomfortMod.Smell.Waste).Length == 2,
+              "each smell has its line");
+
         foreach (string key in new[] { "structure:improvisedWorkbench", "structure:mudBrickWorkbench", "structure:improvisedSmithy",
                                        "structure:simpleSmithy", "structure:workshopBuilding", "structure:rareMetalRefinery", "structure:saltMine" })
         {
