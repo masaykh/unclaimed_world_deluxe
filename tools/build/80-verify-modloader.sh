@@ -946,6 +946,19 @@ else
   fail "the translation template is out of date"
 fi
 
+# StockpilePriorityMod (Kastuk, "Stockpile improvements", 2026-10-10): HIGH stockpiles fill and are
+# hauled to first, LOW ones last. The tiers must not overlap the studio's score for a pair, a pair
+# the stockpile refuses must stay out, and the priority a Stockpile now saves must load back.
+say "==> 38. stockpile priority: HIGH fills first, LOW last, hauling takes it, and it saves"
+out=$( cd "$(new_install case38)" && "$EXPORT" . --stockpile-priority-selftest 2>&1 ) || true
+if echo "$out" | grep -q "stockpile priority self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception' | head -4
+  fail "the stockpile priority self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a
@@ -960,7 +973,7 @@ echo "$out" | grep -q 'settings self-test OK'   && pass "$(echo "$out" | grep -c
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "mod loader OK - 32/32 cases passed."
+  say "mod loader OK - 33/33 cases passed."
 else
   say "mod loader FAILED - $FAILURES check(s)."
   exit 1

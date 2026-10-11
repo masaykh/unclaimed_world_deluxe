@@ -184,6 +184,7 @@
     <Compile Remove="UWGame\Mods\MapGenMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\FreshFoodMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\TradeMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\StockpilePriorityMod.Absent.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
@@ -217,6 +218,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MapEdgeMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\SelfPreservationMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\TradeMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StockpilePriorityMod.cs" />
   </ItemGroup>
 
   <Target Name="ReportUwFeatures" BeforeTargets="Build">

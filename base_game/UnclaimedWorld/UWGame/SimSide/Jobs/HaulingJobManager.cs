@@ -296,6 +296,8 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 				{
 					score = 0.7 * (double)damageScore + 0.2 * result + 0.1 * (double)num;
 				}
+				// MOD: HIGH stockpiles fill first, LOW ones last (StockpilePriorityMod.RankStorage).
+				score = UWGame.Mods.StockpilePriorityMod.RankStorage(score, combo.StorageLocation?.Stockpile, combo.StorageLocation?.TradeOfferStorage.HasValue == true);
 			}
 		}
 		return Result.OK;
@@ -1072,7 +1074,9 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 				toLocation = null;
 				haulToTrade = assignedItem2.Value.StorageLocation.TradeOfferStorage.HasValue;
 			}
-			new HaulingJobSpecificItem(toLocation, assignedItem2.Value.StorageLocation.GetStorageTarget, parent, data, null, haulToStorage: true, haulToTrade, parent);
+			HaulingJobSpecificItem haul = new HaulingJobSpecificItem(toLocation, assignedItem2.Value.StorageLocation.GetStorageTarget, parent, data, null, haulToStorage: true, haulToTrade, parent);
+			// MOD: hauling to a HIGH or LOW stockpile takes its priority (StockpilePriorityMod.PrioritiseHaul).
+			UWGame.Mods.StockpilePriorityMod.PrioritiseHaul(haul, assignedItem2.Value.StorageLocation.Stockpile, parent);
 		}
 	}
 
@@ -1454,7 +1458,9 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 				toLocation = null;
 				haulToTrade = item.Value.StorageLocation.TradeOfferStorage.HasValue;
 			}
-			new HaulingJobSpecificItem(toLocation, item.Value.StorageLocation.GetStorageTarget, ownerOfHaulingJobs, itemData, null, haulToStorage: true, haulToTrade, ownerOfHaulingJobs);
+			HaulingJobSpecificItem haul = new HaulingJobSpecificItem(toLocation, item.Value.StorageLocation.GetStorageTarget, ownerOfHaulingJobs, itemData, null, haulToStorage: true, haulToTrade, ownerOfHaulingJobs);
+			// MOD: hauling to a HIGH or LOW stockpile takes its priority (StockpilePriorityMod.PrioritiseHaul).
+			UWGame.Mods.StockpilePriorityMod.PrioritiseHaul(haul, item.Value.StorageLocation.Stockpile, ownerOfHaulingJobs);
 		}
 	}
 

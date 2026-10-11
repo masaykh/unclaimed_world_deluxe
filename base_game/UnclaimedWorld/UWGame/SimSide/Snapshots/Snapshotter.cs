@@ -54,7 +54,12 @@ public class Snapshotter
 		/// rebuilt from its original seed on every load and replayed numbers it had already used -
 		/// see the comment on RandomGenerator.DoSnapshot.
 		/// </summary>
-		RandomStreamPosition = 3u
+		RandomStreamPosition = 3u,
+		/// <summary>
+		/// Stockpile gained its Priority (StockpilePriorityMod: LOW, NORMAL or HIGH, Kastuk 2026-09-12).
+		/// A Stockpile read from an older save is NORMAL, as every stockpile was.
+		/// </summary>
+		StockpilePriority = 4u
 	}
 
 	public struct TypeInformation

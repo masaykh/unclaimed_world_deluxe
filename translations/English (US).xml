@@ -4960,6 +4960,18 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>GuiHowIsAnyoneSupposedToSleepWithThatRacket_bdcf4e8f1e48</Key>
     <Value>How is anyone supposed to sleep with that racket?</Value>
   </String>
+  <String>
+    <Key>GuiWhoIsExcrementingOutThere_63254099fbbe</Key>
+    <Value>Who is excrementing out there?</Value>
+  </String>
+  <String>
+    <Key>GuiThatSQuiteUnappetizing_25847cb6cf3f</Key>
+    <Value>That's quite unappetizing.</Value>
+  </String>
+  <String>
+    <Key>GuiSuchABreathOfTheWild_0ec354f51e51</Key>
+    <Value>Such a breath of the wild.</Value>
+  </String>
   <!-- mods/HudMod.cs -->
   <String>
     <Key>GuiNAMES</Key>
@@ -5076,6 +5088,23 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>GuiStopsChasingVermin0ThreatensTheColony_4400eb88de19</Key>
     <Value>stops chasing vermin: {0} threatens the colony.</Value>
+  </String>
+  <!-- mods/StockpilePriorityMod.cs -->
+  <String>
+    <Key>GuiPRIORITYHIGH_c8540c85156b</Key>
+    <Value>PRIORITY: HIGH</Value>
+  </String>
+  <String>
+    <Key>GuiPRIORITYLOW_5574f8a7d1a5</Key>
+    <Value>PRIORITY: LOW</Value>
+  </String>
+  <String>
+    <Key>GuiPRIORITYNORMAL_fa952f7f13c1</Key>
+    <Value>PRIORITY: NORMAL</Value>
+  </String>
+  <String>
+    <Key>GuiHIGHFilledFirstAndHaulingHereComesBeforeOtherHa_3d9d974b0f64</Key>
+    <Value>HIGH: filled first, and hauling here comes before other hauling. LOW: filled when the other stockpiles are full, and hauling here comes last. NORMAL: as the TASKS window says.</Value>
   </String>
   <!-- mods/ToolCareMod.cs -->
   <String>
@@ -5412,7 +5441,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipDiscomfortEnabled</Key>
-    <Value>Filthy items (waste, fertiliser, sulphur, carcasses, fresh hides) and busy workbenches, smithies, workshops, refineries and mines near where a colonist sleeps lower their Comfort for the day. Measured once a day, when they first lie down.</Value>
+    <Value>Filthy items (waste, rotten food, fertiliser, sulphur, carcasses, fresh hides) and busy workbenches, smithies, workshops, refineries and mines near where a colonist sleeps lower their Comfort for the day. Measured once a day, when they first lie down.</Value>
   </String>
   <String>
     <Key>SettingDiscomfortPercent</Key>
@@ -6564,6 +6593,19 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipStatedumpInterval</Key>
     <Value>Game hours between samples. Six is about four lines per colonist per day, which is enough to see a decision change without producing a file nobody can read.</Value>
+  </String>
+  <!-- settings: stockpilepriority -->
+  <String>
+    <Key>SettingGroupStockpilepriority</Key>
+    <Value>STOCKPILE PRIORITY</Value>
+  </String>
+  <String>
+    <Key>SettingStockpilepriorityEnabled</Key>
+    <Value>STOCKPILE PRIORITY</Value>
+  </String>
+  <String>
+    <Key>SettingTipStockpilepriorityEnabled</Key>
+    <Value>A PRIORITY button in the stockpile window. HIGH stockpiles are filled first and hauling to them comes before other hauling; LOW ones are filled when the others are full, and hauling to them comes last.</Value>
   </String>
   <!-- settings: toolcare -->
   <String>
@@ -15723,6 +15765,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   <String>
     <Key>ModDescriptionStatedump</Key>
     <Value>Writes what the colony is doing to a text file on an interval, so a change can be checked by reading instead of watching. For testing.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionStockpilepriority</Key>
+    <Value>A priority on every stockpile: HIGH ones are filled and hauled to first, LOW ones only when the rest are full.</Value>
   </String>
   <String>
     <Key>ModDescriptionToolcare</Key>

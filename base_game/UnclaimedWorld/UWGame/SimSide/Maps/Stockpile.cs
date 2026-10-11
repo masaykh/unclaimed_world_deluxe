@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Containers;
+using UWGame.SimSide.Jobs;
 using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Maps;
@@ -30,6 +31,13 @@ public class Stockpile : ISnapshot
 	private bool settingsAreDirty = true;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
+
+	/// <summary>
+	/// PORT: which stockpiles fill first and how urgent hauling to them is - read only by
+	/// StockpilePriorityMod (HaulingJobManager), set by the stockpile window through CreateStockpile.
+	/// Normal everywhere unless the player changes it.
+	/// </summary>
+	public Priority Priority;
 
 	public bool IsSnapshotted { get; set; }
 
@@ -190,6 +198,10 @@ public class Stockpile : ISnapshot
 		settingsAreDirty = sn.DoBool(settingsAreDirty);
 		defaultSettings = sn.DoGameData(defaultSettings);
 		stockpileType = sn.DoEnum(stockpileType);
+		if (version >= Snapshotter.Version.StockpilePriority)
+		{
+			Priority = sn.DoEnum(Priority);
+		}
 		sn.Ignore(limitsAreDirty);
 		sn.Ignore(itemsWithLimits);
 		return this;
@@ -197,7 +209,7 @@ public class Stockpile : ISnapshot
 
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
+		version = sn.DoVersion(Snapshotter.Version.StockpilePriority);
 		return version;
 	}
 

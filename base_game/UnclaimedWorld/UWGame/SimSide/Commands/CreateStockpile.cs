@@ -3,6 +3,7 @@ using System.Linq;
 using UWGame.Control.Commands;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Containers;
+using UWGame.SimSide.Jobs;
 using UWGame.SimSide.Maps;
 using UWGame.SimSide.Snapshots;
 using UWGame.SimSide.XmlCollections;
@@ -26,6 +27,12 @@ public class CreateStockpile : Command
 	public SerializableDictionary<string, int> MayStockpileItem;
 
 	public string DefaultStorageSettings;
+
+	/// <summary>
+	/// PORT: the stockpile's priority (StockpilePriorityMod). A command recorded before it existed reads
+	/// as Normal, which is what every stockpile was.
+	/// </summary>
+	public Priority Priority;
 
 	public CreateStockpile()
 	{
@@ -91,6 +98,7 @@ public class CreateStockpile : Command
 			defaultSettings = GameData.Instance.AllDefaultStorageSettings[DefaultStorageSettings];
 		}
 		Stockpile stockpile = new Stockpile(mayStockpileCategory: (MayStockpileCategory == null) ? new Dictionary<EntityCategory, bool>() : MayStockpileCategory.ToDictionary((KeyValuePair<string, bool> k) => GameData.Instance.AllEntityCategories[k.Key], (KeyValuePair<string, bool> k) => k.Value), mayStockpileItem: (MayStockpileItem == null) ? new Dictionary<EntityType, int>() : MayStockpileItem.ToDictionary((KeyValuePair<string, int> k) => GameData.Instance.AllEntityTypes[k.Key], (KeyValuePair<string, int> k) => k.Value), typeOfStockpile: TypeOfStockpile, defaultSettings: defaultSettings);
+		stockpile.Priority = Priority;
 		if (zone != null)
 		{
 			zone.Stockpile = stockpile;
@@ -103,6 +111,8 @@ public class CreateStockpile : Command
 		{
 			entityGroupToUse.TerminalTradeOffers[(EntityID)Structure] = stockpile;
 		}
+		// MOD: hauling already planned to this stockpile takes its new priority.
+		UWGame.Mods.StockpilePriorityMod.OnStockpileChanged(entityGroupToUse, stockpile);
 		return true;
 	}
 }

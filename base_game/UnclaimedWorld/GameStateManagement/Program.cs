@@ -122,6 +122,7 @@ internal static class Program
 		UWGame.Mods.HomeRaidMod.RegisterSettings();
 		UWGame.Mods.ReserveMod.RegisterSettings();
 		UWGame.Mods.TradeMod.RegisterSettings();
+		UWGame.Mods.StockpilePriorityMod.RegisterSettings();
 		UWGame.Mods.FreshFoodMod.RegisterSettings();
 		UWGame.Mods.SafeSleepMod.RegisterSettings();
 		UWGame.Mods.GatherOnDemandMod.RegisterSettings();

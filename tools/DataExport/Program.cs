@@ -102,6 +102,10 @@ internal static partial class Program
             Console.Error.WriteLine("               DiscomfortMod against the tables: what stinks, which workplaces are");
             Console.Error.WriteLine("               loud, the comfort lost, and the once-a-day measurement.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --stockpile-priority-selftest");
+            Console.Error.WriteLine("               StockpilePriorityMod: HIGH stockpiles fill and are hauled to first, LOW");
+            Console.Error.WriteLine("               last, and a Stockpile saves its priority.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --strings-literals=FILE --strings-out=FILE");
             Console.Error.WriteLine("               write English (US).xml: the literals in FILE (from Locale.Text calls),");
             Console.Error.WriteLine("               every mod setting's label and tooltip, every item's name and description.");
@@ -231,6 +235,11 @@ internal static partial class Program
         if (args.Contains("--discomfort-selftest"))
         {
             return DiscomfortSelfTest();
+        }
+
+        if (args.Contains("--stockpile-priority-selftest"))
+        {
+            return StockpilePrioritySelfTest();
         }
 
         if (args.Contains("--homeraid-selftest"))
@@ -404,6 +413,7 @@ internal static partial class Program
         UWGame.Mods.HomeRaidMod.RegisterSettings();
         UWGame.Mods.ReserveMod.RegisterSettings();
         UWGame.Mods.TradeMod.RegisterSettings();
+        UWGame.Mods.StockpilePriorityMod.RegisterSettings();
         UWGame.Mods.FreshFoodMod.RegisterSettings();
         UWGame.Mods.SafeSleepMod.RegisterSettings();
         UWGame.Mods.GatherOnDemandMod.RegisterSettings();

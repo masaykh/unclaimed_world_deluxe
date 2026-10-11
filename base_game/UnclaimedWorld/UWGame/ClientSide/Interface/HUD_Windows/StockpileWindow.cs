@@ -36,6 +36,12 @@ public class StockpileWindow : HUDWindow
 
 	private TextButton tbRemove;
 
+	// MOD: StockpilePriorityMod's PRIORITY button, and the priority OK will send. Kept from the
+	// stockpile even while the mod is off, so OK never clears a priority the player set.
+	private TextButton btPriority;
+
+	private UWGame.SimSide.Jobs.Priority priority;
+
 	private TextButton btOK;
 
 	private TextButton btCancel;
@@ -95,13 +101,36 @@ public class StockpileWindow : HUDWindow
 		tbRemove.Y = 12;
 		tbRemove.X = DisplayWindow.Width - tbRemove.Width - 12;
 		tbRemove.ScaleWidthToFitText();
+		btPriority = new TextButton(gui);
+		Add(btPriority);
+		btPriority.Init(TextButton.TextButtonType.HUD);
+		btPriority.Click += btPriority_Click;
+		btPriority.X = 18;
+		btPriority.Width = 150;
+		btPriority.Visible = false;
 		SetVerticalPositions();
+	}
+
+	private void btPriority_Click(UIComponent sender, EventArgs e)
+	{
+		priority = UWGame.Mods.StockpilePriorityMod.Next(priority);
+		ShowPriority();
+	}
+
+	private void ShowPriority()
+	{
+		btPriority.Text = UWGame.Mods.StockpilePriorityMod.Label(priority);
+		btPriority.ToolTip = UWGame.Mods.StockpilePriorityMod.ButtonToolTip;
 	}
 
 	private void SetVerticalPositions()
 	{
 		btCancel.Y = DisplayWindow.Height - btCancel.Height - 18;
 		btOK.Y = btCancel.Y;
+		if (btPriority != null)
+		{
+			btPriority.Y = btCancel.Y;
+		}
 		listSurface.Height = btOK.Y - 13 - listSurface.Y;
 		outerGrid.Height = listSurface.Height;
 	}
@@ -386,6 +415,7 @@ public class StockpileWindow : HUDWindow
 			defaultStorageSettings = structureData.EntityType.ContainerType.GetDefaultStorageSettings();
 		}
 		CreateStockpile command = ((structureData != null) ? new CreateStockpile(mayStockpileCategory, mayStockpileItem, owner.ID, defaultStorageSettings, structure.Value, typeOfStockpile, giveClientFeedback: true) : ((The.InGameUI.SelectedZone == null) ? new CreateStockpile(mayStockpileCategory, mayStockpileItem, owner.ID, defaultStorageSettings, The.InGameUI.SelectedTiles, giveClientFeedback: true) : new CreateStockpile(mayStockpileCategory, mayStockpileItem, owner.ID, defaultStorageSettings, The.InGameUI.SelectedZone.ID, giveClientFeedback: true)));
+		command.Priority = priority;
 		The.Client.Controller.StoreAndExecuteCommand(command);
 		Hide();
 	}
@@ -485,6 +515,12 @@ public class StockpileWindow : HUDWindow
 			zoneName = structureData.EntityType.Name.ToUpper(Config.Culture);
 		}
 		SetDisplayName(zoneName, lblName, lblHeader, headerIcon);
+		if (fillUserControls)
+		{
+			priority = stockpile?.Priority ?? UWGame.SimSide.Jobs.Priority.Normal;
+		}
+		btPriority.Visible = UWGame.Mods.StockpilePriorityMod.Enabled && typeOfStockpile == Stockpile.TypesOfStockpiles.Normal;
+		ShowPriority();
 		Populate(fillUserControls, mapArea, owner, structureData, stockpile);
 	}
 
