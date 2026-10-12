@@ -6211,7 +6211,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipHidegearEnabled</Key>
-    <Value>Adds a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+    <Value>Adds a hide backpack (long hauls feel 30% lighter), a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
   </String>
   <!-- settings: homeraid -->
   <String>
@@ -7850,6 +7850,14 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <String>
     <Key>EffectProfileHideArmourStealth</Key>
     <Value>Hide armour</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionHideBackpackLoad</Key>
+    <Value>A load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileHideBackpackLoad</Key>
+    <Value>Backpack</Value>
   </String>
   <String>
     <Key>EffectProfileDescriptionHideCloakComfort</Key>
@@ -11569,6 +11577,22 @@ SURVIVAL GUIDE NOTES
   <String>
     <Key>ItemSummarydescriptionItemHideArmour</Key>
     <Value>Layered whipjaw hide over a megapod hide jerkin.</Value>
+  </String>
+  <String>
+    <Key>ItemItemHideBackpack</Key>
+    <Value>Hide backpack</Value>
+  </String>
+  <String>
+    <Key>ItemDescriptionItemHideBackpack</Key>
+    <Value>Worn on long hauls. A load feels 30% lighter: the wearer is less slowed when heavily laden, and less tired by carrying.</Value>
+  </String>
+  <String>
+    <Key>ItemPluralnameItemHideBackpack</Key>
+    <Value>Hide backpack</Value>
+  </String>
+  <String>
+    <Key>ItemSummarydescriptionItemHideBackpack</Key>
+    <Value>A pack of tanned megapod hide on thunder chicken leather straps.</Value>
   </String>
   <String>
     <Key>ItemItemHideCloak</Key>
@@ -18783,6 +18807,14 @@ The storehouse also has a space for storage of items that are not intended for s
     <Value>This object can be disassembled without losing any parts.</Value>
   </String>
   <String>
+    <Key>ProcessItemHideBackpackDisassemble</Key>
+    <Value>Disassemble</Value>
+  </String>
+  <String>
+    <Key>ProcessSummarydescriptionItemHideBackpackDisassemb_ed16d9e66db7</Key>
+    <Value>This object can be disassembled without losing any parts.</Value>
+  </String>
+  <String>
     <Key>ProcessItemImprovedFireExtinguisherDisassemble</Key>
     <Value>Disassemble</Value>
   </String>
@@ -19244,6 +19276,10 @@ The storehouse also has a space for storage of items that are not intended for s
   </String>
   <String>
     <Key>ProcessMakeHideArmour</Key>
+    <Value>Producing</Value>
+  </String>
+  <String>
+    <Key>ProcessMakeHideBackpack</Key>
     <Value>Producing</Value>
   </String>
   <String>

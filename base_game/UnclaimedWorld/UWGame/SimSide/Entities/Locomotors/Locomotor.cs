@@ -547,7 +547,8 @@ namespace UWGame.SimSide.Entities.Locomotors
                     && Parent.AgentStorage.GetCurrentBurdenState() == AgentStorage.BurdenState.HaulHeavy)
                 {
                     // only move slower if the box hauling anim is playing...        // ItemStorage.TotalStored / ItemStorage.TotalCapacity;
-                    float burdenModifier = MathHelper.Lerp(1f, 0.6f, totalBulk / storage.TotalCapacity);
+                    // MOD: HideGearMod - a backpack makes the load feel lighter (1 when absent).
+                    float burdenModifier = MathHelper.Lerp(1f, 0.6f, totalBulk / storage.TotalCapacity * UWGame.Mods.HideGearMod.LoadFelt(Parent));
                     speed = burdenModifier * speed;
                 }
             }

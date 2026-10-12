@@ -126,7 +126,8 @@ internal class GoalTraverseEdgeBetweenWaypointsAtomic : Goal
 			}
 			if (entity.AgentStorage != null)
 			{
-				float num = entity.AgentStorage.ItemStorage.TotalStored / entity.AgentStorage.ItemStorage.TotalCapacity;
+				// MOD: HideGearMod - a backpack makes the load feel lighter (1 when absent).
+				float num = entity.AgentStorage.ItemStorage.TotalStored / entity.AgentStorage.ItemStorage.TotalCapacity * UWGame.Mods.HideGearMod.LoadFelt(entity);
 				if (num > 0.9f)
 				{
 					return physicalWork.HaulingHeavyLoad;

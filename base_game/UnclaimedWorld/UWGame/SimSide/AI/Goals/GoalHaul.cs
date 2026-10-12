@@ -256,7 +256,10 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 				float num = Common.DistanceOctile(entityIntelligence.CurrentExpedition.Location.Value, job.ToLocation.Value);
 				float num2 = Common.DistanceOctile(entityIntelligence.CurrentExpedition.Location.Value, playSiteLocation);
 				Vector3 destination = ((!(num > num2)) ? playSiteLocation : job.ToLocation.Value);
-				FindOptionalEquipmentIfNeeded(destination, job, equipWeapon: true, equipFood: true, mountWeapon: false);
+				// MOD: HideGearMod - a long haul asks for hauling gear; null (the studio's call) without it.
+				List<UWGame.SimSide.Items.ItemType.TaskType> gearTasks = null;
+				UWGame.Mods.HideGearMod.AddHaulGear(ref gearTasks);
+				FindOptionalEquipmentIfNeeded(destination, job, equipWeapon: true, equipFood: true, mountWeapon: false, gearTasks);
 			}
 			if (MapManager.WorldPosToSubtile(entity.Location.Value) != MapManager.WorldPosToSubtile(itemData.PlaySiteLocation))
 			{

@@ -42,6 +42,21 @@ namespace UWGame.Mods;
 /// GoalHunt once) multiply it by <see cref="ArmourFactor(BodyPart, AttackType)"/> and an attacker
 /// sees an armoured colonist as the harder target it is.
 ///
+/// THE BACKPACK (step 3). Not more haul space, which is what a backpack sounds like: haul capacity
+/// is ItemStorage.TotalCapacity, saved with the game and copied into each storage space and into
+/// what colonists remember of each other, so changing it on putting a pack on would have to be
+/// undone exactly on taking it off, through a save. Instead the load FEELS lighter: the two places
+/// the game turns "how full is the haul storage" into a cost - Locomotor.ApplyBurdenModifier's
+/// slowdown when heavily laden, and GoalTraverseEdgeBetweenWaypointsAtomic.GetExertionLevel's
+/// tiredness from carrying - read that fraction through <see cref="LoadFelt"/>. Nothing is stored,
+/// so nothing can go wrong in a save. Its effect profile has no effects: the game only treats an
+/// item as a gadget if it names one, and the profile is what the player sees while it is worn.
+///
+/// Hauling asks for it. GoalHaul already calls FindOptionalEquipmentIfNeeded, for a weapon and
+/// food on a long haul, but with no gear task, and ItemType.TaskType.Hauling is marked "not in
+/// use". <see cref="AddHaulGear"/> passes it. Like the cloak, only on hauls beyond normal range:
+/// fetching a pack for a short carry would cost more than it saves.
+///
 /// WHAT IS ASKED FOR GEAR. The studio's goals ask for UnspecifiedHunting (finding prey), Scouting
 /// or Examining (checking, scouting) and, after dark, NightActivities. PatrolOrAttack is a task type
 /// with no goal asking for it: GoalPatrol asks for night gear only. <see cref="AddPatrolGear"/> is
@@ -68,6 +83,14 @@ public static class HideGearMod
     public const string CloakEffectKey = "hideCloakComfort";
 
     public const string ArmourEffectKey = "hideArmourStealth";
+
+    public const string BackpackKey = "item:hideBackpack";
+
+    /// <summary>The backpack's effect profile, which names no effect (see the class comment).</summary>
+    public const string BackpackProfileKey = "hideBackpackLoad";
+
+    /// <summary>How full the haul storage feels with a backpack on: a load of 1 counts as 0.7.</summary>
+    public const float BackpackLoadFelt = 0.7f;
 
     /// <summary>Comfort while wearing the cloak: the studio's stimulant gives 0.05, a strong one 0.08.</summary>
     public const float CloakComfort = 0.05f;
@@ -101,7 +124,7 @@ public static class HideGearMod
     public static ModSetting Enabled =>
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "HIDE CLOTHING AND ARMOUR", defaultValue: false,
-            toolTip: "Adds a hide cloak (megapod hide, some comfort, worn on long trips and at " +
+            toolTip: "Adds a hide backpack (long hauls feel 30% lighter), a hide cloak (megapod hide, some comfort, worn on long trips and at " +
                      "night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of " +
                      "cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
@@ -143,6 +166,14 @@ public static class HideGearMod
             Description = "The character is easier to detect, and takes less from cuts and bites to the body, arms and legs.",
             Effects = new string[1] { ArmourEffectKey },
             SortOrder = 120
+        });
+        list.Add(new EffectProfileType
+        {
+            KeyName = BackpackProfileKey,
+            Name = "Backpack",
+            Description = "A load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.",
+            Effects = new string[0],
+            SortOrder = 130
         });
     }
 
@@ -199,6 +230,16 @@ public static class HideGearMod
             new SerializableDictionary<ItemType.TaskType, ItemType.AppropriateLevel>
             {
                 { ItemType.TaskType.PatrolOrAttack, ItemType.AppropriateLevel.Best }
+            }));
+
+        // Long hauls only, like the cloak's long trips.
+        listOfEntityTypes.Add(Gear(BackpackKey, "Hide backpack",
+            "A pack of tanned megapod hide on thunder chicken leather straps.",
+            "Worn on long hauls. A load feels 30% lighter: the wearer is less slowed when heavily laden, and less tired by carrying.",
+            0.1f, BackpackProfileKey, "leatherPouch", atAnyDistance: false,
+            new SerializableDictionary<ItemType.TaskType, ItemType.AppropriateLevel>
+            {
+                { ItemType.TaskType.Hauling, ItemType.AppropriateLevel.Best }
             }));
     }
 
@@ -261,6 +302,9 @@ public static class HideGearMod
         // Made like the bellows: hide, by hand, bushcraft, a tool set any camp has.
         listOfProcessTypes.Add(Recipe("makeHideCloak", CloakKey, ("item:megapodTannedHide", 2)));
         listOfProcessTypes.Add(Recipe("makeHideArmour", ArmourKey, ("item:whipjawTannedHide", 2), ("item:megapodTannedHide", 1)));
+        // Thunder chicken leather for the straps, as the bellows use it. Not rawhide string, which
+        // this tool set already holds as a TOOL; the validator refuses an item as tool and input both.
+        listOfProcessTypes.Add(Recipe("makeHideBackpack", BackpackKey, ("item:megapodTannedHide", 1), ("item:thunderChickenTannedHide", 1)));
     }
 
     private static ProcessType Recipe(string key, string output, params (string item, int count)[] hides)
@@ -319,16 +363,54 @@ public static class HideGearMod
         {
             return 1f;
         }
-        float left = 1f;
+        return Wears(wearer, ArmourKey) ? Remaining(damage.KeyName) : 1f;
+    }
+
+    /// <summary>Whether this entity has an item of this key in its Equipment storage.</summary>
+    private static bool Wears(Entity wearer, string itemKey)
+    {
+        if (wearer?.AgentStorage?.Equipment == null)
+        {
+            return false;
+        }
         foreach (EntityID id in wearer.AgentStorage.Equipment.StoredItems)
         {
             Entity item = Entity.FindByID(id);
-            if (item != null && item.EntityType.KeyName == ArmourKey)
+            if (item != null && item.EntityType.KeyName == itemKey)
             {
-                left = Remaining(damage.KeyName);
+                return true;
             }
         }
-        return left;
+        return false;
+    }
+
+    /// <summary>
+    /// How full a load feels to this entity, as a factor on the stored fraction: the backpack's
+    /// <see cref="BackpackLoadFelt"/>, or 1. Called from Locomotor.ApplyBurdenModifier and
+    /// GoalTraverseEdgeBetweenWaypointsAtomic.GetExertionLevel.
+    /// </summary>
+    public static float LoadFelt(Entity carrier)
+    {
+        return Enabled.On && Wears(carrier, BackpackKey) ? BackpackLoadFelt : 1f;
+    }
+
+    /// <summary>
+    /// Called from GoalHaul where it asks for optional equipment: a long haul asks for hauling gear.
+    /// </summary>
+    public static void AddHaulGear(ref List<ItemType.TaskType> gearTasks)
+    {
+        if (!Enabled.On)
+        {
+            return;
+        }
+        if (gearTasks == null)
+        {
+            gearTasks = new List<ItemType.TaskType>();
+        }
+        if (!gearTasks.Contains(ItemType.TaskType.Hauling))
+        {
+            gearTasks.Add(ItemType.TaskType.Hauling);
+        }
     }
 
     /// <summary>The factor for one damage type: the pure arithmetic, for the self-test.</summary>

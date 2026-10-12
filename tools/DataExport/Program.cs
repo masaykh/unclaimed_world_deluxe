@@ -2249,9 +2249,11 @@ internal static partial class Program
         }
 
         var data = GameData.Instance;
-        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey };
-        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey };
-        string[] recipes = { "makeHideCloak", "makeHideArmour" };
+        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey, UWGame.Mods.HideGearMod.BackpackKey };
+        // Each item's profile; the cloak's and the armour's are keyed like the effect they name,
+        // the backpack's names none (its work is done in Locomotor and the exertion level).
+        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey, UWGame.Mods.HideGearMod.BackpackProfileKey };
+        string[] recipes = { "makeHideCloak", "makeHideArmour", "makeHideBackpack" };
         Check(enabled.IsStock != on && enabled.AffectsSimulation && enabled.DefaultValue == "false",
               "off by default, simulation-affecting, and stock only when off");
         Check(UWGame.Mods.ModSettings.Signature().Contains("hidegear.enabled=true") == on,
@@ -2260,7 +2262,10 @@ internal static partial class Program
         var T = new { Patrol = UWGame.SimSide.Items.ItemType.TaskType.PatrolOrAttack,
                       Night = UWGame.SimSide.Items.ItemType.TaskType.NightActivities,
                       Journey = UWGame.SimSide.Items.ItemType.TaskType.LongerJourneys,
-                      Hunt = UWGame.SimSide.Items.ItemType.TaskType.UnspecifiedHunting };
+                      Hunt = UWGame.SimSide.Items.ItemType.TaskType.UnspecifiedHunting,
+                      Haul = UWGame.SimSide.Items.ItemType.TaskType.Hauling };
+        List<UWGame.SimSide.Items.ItemType.TaskType> haul = null;
+        UWGame.Mods.HideGearMod.AddHaulGear(ref haul);
         List<UWGame.SimSide.Items.ItemType.TaskType> byDay = null;
         var atNight = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Night };
         UWGame.Mods.HideGearMod.AddPatrolGear(ref byDay);
@@ -2273,6 +2278,8 @@ internal static partial class Program
             foreach (string key in effects) Check(!data.AllEffectTypes.ContainsKey(key) && !data.AllEffectProfileTypes.ContainsKey(key), key + " is not in the tables");
             foreach (string key in recipes) Check(!data.AllProcessTypes.ContainsKey(key), key + " is not in the tables");
             Check(byDay == null && atNight.Count == 1, "a patrol asks for night gear only, as the studio's did");
+            Check(haul == null, "a haul asks for no gear, as the studio's did");
+            Check(UWGame.Mods.HideGearMod.LoadFelt(null) == 1f, "a load weighs what it weighs");
             Check(UWGame.Mods.HideGearMod.ArmourFactor((UWGame.SimSide.Entities.Body.BodyPart)null, null) == 1f,
                   "no armour factor: a blow lands as the studio's layers decide");
             Console.WriteLine(failures == 0 ? "hide gear self-test OK" : $"hide gear self-test: {failures} FAILED");
@@ -2281,8 +2288,9 @@ internal static partial class Program
 
         Check(byDay != null && byDay.Count == 1 && byDay[0] == T.Patrol, "a patrol by day asks for patrol gear");
         Check(atNight.Count == 2 && atNight.Contains(T.Patrol), "a patrol at night asks for night and patrol gear, once each");
+        Check(haul != null && haul.Count == 1 && haul[0] == T.Haul, "a long haul asks for hauling gear");
 
-        UWGame.SimSide.Entities.EntityType cloak = null, armour = null;
+        UWGame.SimSide.Entities.EntityType cloak = null, armour = null, backpack = null;
         for (int i = 0; i < items.Length; i++)
         {
             string key = items[i];
@@ -2291,15 +2299,23 @@ internal static partial class Program
                 Check(false, key + " is an item in the tables");
                 continue;
             }
-            if (i == 0) cloak = type; else armour = type;
+            if (i == 0) cloak = type; else if (i == 1) armour = type; else backpack = type;
             var item = type.ItemType;
             // What CompositeGoal.IsGadgetForTask asks of a gadget.
             Check(item.TaskAppropriateLevels != null && item.FinalEffectsWhenEquipped != null && item.FinalEffectsWhenEquipped.Count == 1,
                   key + " is a gadget: task levels, and one effect profile when worn");
             var profile = item.FinalEffectsWhenEquipped?.FirstOrDefault();
             string effectKey = profile?.Effects?.FirstOrDefault();
-            Check(profile != null && profile.KeyName == effects[i] && effectKey == effects[i] && data.AllEffectTypes.ContainsKey(effectKey),
-                  key + ": its profile " + effects[i] + " names an effect in the tables");
+            if (type == backpack)
+            {
+                Check(profile != null && profile.KeyName == effects[i] && profile.Effects != null && profile.Effects.Length == 0,
+                      key + ": its profile " + effects[i] + " is shown and names no effect");
+            }
+            else
+            {
+                Check(profile != null && profile.KeyName == effects[i] && effectKey == effects[i] && data.AllEffectTypes.ContainsKey(effectKey),
+                      key + ": its profile " + effects[i] + " names an effect in the tables");
+            }
             Check(type.Category != null && type.Category.KeyName == "equipment", key + " is listed with equipment");
             Check(item.MaximumBulk <= 0.5f - 0.29f,
                   FormattableString.Invariant($"{key}: {item.MaximumBulk} bulk fits in Equipment beside the heaviest weapons (0.29 of 0.5)"));
@@ -2353,6 +2369,33 @@ internal static partial class Program
             Check(armour.ItemType.UseGearAtAnyDistanceFromExpedition && !cloak.ItemType.UseGearAtAnyDistanceFromExpedition,
                   "armour is taken on a patrol near camp; the cloak only beyond normal range");
         }
+        if (backpack != null && cloak != null && armour != null)
+        {
+            var haulTask = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Haul };
+            var patrolTask = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Patrol };
+            Check(backpack.ItemType.GetTaskAppropriateLevel(haulTask) > 0f
+                  && cloak.ItemType.GetTaskAppropriateLevel(haulTask) == 0f && armour.ItemType.GetTaskAppropriateLevel(haulTask) == 0f,
+                  "on a haul the backpack is wanted and nothing else of ours");
+            Check(backpack.ItemType.GetTaskAppropriateLevel(patrolTask) == 0f, "on patrol the backpack is not");
+            Check(!backpack.ItemType.UseGearAtAnyDistanceFromExpedition, "the backpack only on hauls beyond normal range");
+            // Hauling was "not in use", but 21 of the studio's weapons and tools say Minor for it. They are
+            // not gadgets - CompositeGoal.IsGadgetForTask wants FinalEffectsWhenEquipped, and they have
+            // none - so a haul asking for gear cannot send anyone for a musket. Only gadgets count.
+            var haulGadgets = data.AllEntityTypes.Values.Where(e => e.ItemType?.TaskAppropriateLevels != null
+                && e.ItemType.FinalEffectsWhenEquipped != null && e.ItemType.GetTaskAppropriateLevel(T.Haul) > 0f).ToList();
+            Check(haulGadgets.Count == 1 && haulGadgets[0] == backpack,
+                  "the only gadget a haul can fetch is the backpack (" + string.Join(", ", haulGadgets.Select(e => e.KeyName)) + ")");
+        }
+
+        // The backpack's arithmetic, worked through the two formulas it is read in, at a full load.
+        float felt = UWGame.Mods.HideGearMod.BackpackLoadFelt;
+        Check(felt == 0.7f && UWGame.Mods.HideGearMod.LoadFelt(null) == 1f, "a load feels 0.7 of itself with a backpack, and nobody is wearing one here");
+        float bareSpeed = Microsoft.Xna.Framework.MathHelper.Lerp(1f, 0.6f, 1f), packSpeed = Microsoft.Xna.Framework.MathHelper.Lerp(1f, 0.6f, felt);
+        Check(packSpeed > bareSpeed, FormattableString.Invariant(
+            $"Locomotor.ApplyBurdenModifier, full haul: {bareSpeed:0.##} of walking speed bare, {packSpeed:0.##} with a backpack"));
+        var work = data.Constants.PhysicalWork;
+        Check(work.HaulingHeavyLoad > work.HaulingMediumLoad, FormattableString.Invariant(
+            $"GetExertionLevel, full haul: {work.HaulingHeavyLoad} bare (over 0.9), {work.HaulingMediumLoad} with a backpack (0.7)"));
 
         // Step 2, protection. Every damage type the armour names is one the game has; it covers the
         // body parts the studio's humanoid calls clothed and not the head; and what it leaves of a

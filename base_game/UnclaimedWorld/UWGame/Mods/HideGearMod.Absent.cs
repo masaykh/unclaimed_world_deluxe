@@ -11,8 +11,8 @@ namespace UWGame.Mods;
 /// <summary>
 /// The hide gear mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
-/// No hide cloak or armour in the tables, a patrol asks for night gear only, and a blow lands as
-/// the studio's body layers alone decide.
+/// No hide cloak, armour or backpack in the tables, a patrol asks for night gear only, a haul for
+/// none, a blow lands as the studio's body layers alone decide, and a load weighs what it weighs.
 /// </summary>
 public static class HideGearMod
 {
@@ -45,4 +45,10 @@ public static class HideGearMod
     public static float ArmourFactor(Entity wearer, BodyPartType part, DamageType damage) => 1f;
 
     public static float ArmourFactor(BodyPart part, AttackType attack) => 1f;
+
+    public static float LoadFelt(Entity carrier) => 1f;
+
+    public static void AddHaulGear(ref List<ItemType.TaskType> gearTasks)
+    {
+    }
 }
