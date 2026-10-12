@@ -2273,6 +2273,8 @@ internal static partial class Program
             foreach (string key in effects) Check(!data.AllEffectTypes.ContainsKey(key) && !data.AllEffectProfileTypes.ContainsKey(key), key + " is not in the tables");
             foreach (string key in recipes) Check(!data.AllProcessTypes.ContainsKey(key), key + " is not in the tables");
             Check(byDay == null && atNight.Count == 1, "a patrol asks for night gear only, as the studio's did");
+            Check(UWGame.Mods.HideGearMod.ArmourFactor((UWGame.SimSide.Entities.Body.BodyPart)null, null) == 1f,
+                  "no armour factor: a blow lands as the studio's layers decide");
             Console.WriteLine(failures == 0 ? "hide gear self-test OK" : $"hide gear self-test: {failures} FAILED");
             return failures == 0 ? 0 : 1;
         }
@@ -2351,6 +2353,51 @@ internal static partial class Program
             Check(armour.ItemType.UseGearAtAnyDistanceFromExpedition && !cloak.ItemType.UseGearAtAnyDistanceFromExpedition,
                   "armour is taken on a patrol near camp; the cloak only beyond normal range");
         }
+
+        // Step 2, protection. Every damage type the armour names is one the game has; it covers the
+        // body parts the studio's humanoid calls clothed and not the head; and what it leaves of a
+        // blow is the factor, worked through the studio's own ComputeDamage at an attack's mean.
+        foreach (var pair in UWGame.Mods.HideGearMod.ArmourProtection)
+        {
+            Check(data.AllDamageTypes.ContainsKey(pair.Key) && pair.Value > 0f && pair.Value < 1f,
+                  FormattableString.Invariant($"armour takes {pair.Value:0.##} of {pair.Key}, a damage type in the tables"));
+        }
+        Check(UWGame.Mods.HideGearMod.Remaining("sharp") == 0.7f && UWGame.Mods.HideGearMod.Remaining("fire") == 1f,
+              "a cut keeps 0.7 of its damage; fire, which it does not name, all of it");
+        Check(data.AllBodyLayerTypes.ContainsKey(UWGame.Mods.HideGearMod.CoveredLayer), "clothesLayer is a body layer in the tables");
+        if (data.AllBodyTypes.TryGetValue("humanoid", out var humanoid))
+        {
+            var parts = new List<UWGame.SimSide.Entities.Body.BodyPartType>();
+            void Walk(UWGame.SimSide.Entities.Body.BodyPartType[] level)
+            {
+                foreach (var part in level ?? new UWGame.SimSide.Entities.Body.BodyPartType[0]) { parts.Add(part); Walk(part.BodyPartTypes); }
+            }
+            Walk(humanoid.BodyPartTypes);
+            string covered = string.Join(", ", parts.Where(x => x.ArmorLayerType?.KeyName == UWGame.Mods.HideGearMod.CoveredLayer).Select(x => x.Name));
+            string bare = string.Join(", ", parts.Where(x => x.ArmorLayerType?.KeyName != UWGame.Mods.HideGearMod.CoveredLayer).Select(x => x.Name));
+            Check(covered == "Torso, Left arm, Right arm, Left leg, Right leg" && bare == "Head",
+                  "on a humanoid it covers " + covered + "; not " + bare);
+            var torso = parts.FirstOrDefault(x => x.Name == "Torso");
+            // The strongest bite in the game, on the torso, by AttackType.ComputeDamage's formula
+            // from the layer's own numbers (its ...Final tables are built with the content, which a
+            // run with no window never loads).
+            var bite = data.AllAttackTypes.Values.Where(x => x.Damage == "bite" && x.DamageMean > 0f)
+                .OrderByDescending(x => x.DamageMean).FirstOrDefault();
+            var layer = torso?.ArmorLayerType;
+            if (bite != null && layer?.DamageReductionFactor != null && layer.DamageReductionConstant != null
+                && layer.DamageReductionFactor.TryGetValue("bite", out float resist) && layer.DamageReductionConstant.TryGetValue("bite", out float flat))
+            {
+                float bare0 = Math.Max(0f, bite.DamageMean * (1f - resist) - flat);
+                float worn = bare0 * UWGame.Mods.HideGearMod.Remaining("bite");
+                Check(bare0 > 0f && worn < bare0, FormattableString.Invariant(
+                    $"{bite.KeyName} (mean {bite.DamageMean:0.#}) on the torso: {bare0:0.#} damage bare, {worn:0.#} in armour"));
+            }
+            else Check(false, "a bite attack and the humanoid torso to try it on");
+        }
+        else Check(false, "the humanoid body is in the tables");
+        Check(UWGame.Mods.HideGearMod.ArmourFactor(null, null, null) == 1f
+              && UWGame.Mods.HideGearMod.ArmourFactor((UWGame.SimSide.Entities.Body.BodyPart)null, null) == 1f,
+              "no wearer, part or attack: the blow passes unchanged");
 
         Console.WriteLine(failures == 0 ? "hide gear self-test OK" : $"hide gear self-test: {failures} FAILED");
         return failures == 0 ? 0 : 1;

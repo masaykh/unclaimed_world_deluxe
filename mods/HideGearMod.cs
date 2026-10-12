@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using UWGame.ClientSide.Renderables;
 using UWGame.SimSide.AllGameData;
+using UWGame.SimSide.Combat;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Entities.Body;
 using UWGame.SimSide.Items;
 using UWGame.SimSide.Policies;
 using UWGame.SimSide.Processes;
@@ -24,8 +26,21 @@ namespace UWGame.Mods;
 /// WHAT AN EFFECT CAN DO. AffectsNumbers has seven members, and only some are read: Stealth
 /// (Entity's detection factor, in every activity), AgentComfort (Intelligence.Comfort, which the
 /// comfort rating averages and emigration weighs), NightSensorRange and Detection. Morale and Need
-/// are defined and read by nothing. So the hide cloak gives comfort and the armour costs stealth;
-/// the armour's protection is step 2, a damage-resistance effect read in AttackType.ComputeDamage.
+/// are defined and read by nothing. So the hide cloak gives comfort and the armour costs stealth.
+///
+/// PROTECTION (step 2). There is no effect for it: a body part's resistance is its type's fixed
+/// ArmorLayerType, the same for every colonist. So the armour is read where a blow lands -
+/// AttackType.HitTarget, beside DangerousFaunaMod's toughness - by <see cref="ArmourFactor(Entity,
+/// BodyPartType, DamageType)"/>, and it covers what the studio already calls clothed: every body
+/// part whose layer is clothesLayer, which on a human is the torso, arms and legs, not the head.
+///
+/// A FACTOR AND NOTHING ELSE, deliberately. The studio's formula is roll x (1 - resistance) -
+/// constant. A flat constant would make small bites vanish, and the AI's estimate could not follow
+/// it: that is precomputed per attack type and body-part TYPE (GameData.AttackScoresAgainstBodyParts),
+/// so it cannot know who is wearing what. A pure factor scales the estimate exactly as it scales
+/// the blow, so the three places the estimate is read for one target (EvaluateAttackJobs twice,
+/// GoalHunt once) multiply it by <see cref="ArmourFactor(BodyPart, AttackType)"/> and an attacker
+/// sees an armoured colonist as the harder target it is.
 ///
 /// WHAT IS ASKED FOR GEAR. The studio's goals ask for UnspecifiedHunting (finding prey), Scouting
 /// or Examining (checking, scouting) and, after dark, NightActivities. PatrolOrAttack is a task type
@@ -63,6 +78,23 @@ public static class HideGearMod
     /// </summary>
     public const float ArmourStealth = -0.15f;
 
+    /// <summary>
+    /// The share of a blow the hide armour takes, by DamageType key; anything not listed passes.
+    /// Against the studio's own layers: human skin takes 0.2 of a cut, bite or blow (and a flat 4),
+    /// an animal's hide 0.1 (and 2). Tanned and layered hide is better than either at cuts and
+    /// bites, half that at blows, and stops little of a musket ball or an arrow.
+    /// </summary>
+    public static readonly Dictionary<string, float> ArmourProtection = new Dictionary<string, float>
+    {
+        { "sharp", 0.3f },
+        { "bite", 0.3f },
+        { "blunt", 0.15f },
+        { "piercing", 0.1f }
+    };
+
+    /// <summary>The body layer the armour goes over: what the studio's bodies call clothed.</summary>
+    public const string CoveredLayer = "clothesLayer";
+
     private static ModSetting enabled;
 
     /// <summary>Whether the two items, their recipes and the patrol's request for armour are in.</summary>
@@ -70,8 +102,8 @@ public static class HideGearMod
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "HIDE CLOTHING AND ARMOUR", defaultValue: false,
             toolTip: "Adds a hide cloak (megapod hide, some comfort, worn on long trips and at " +
-                     "night) and hide armour (whipjaw and megapod hide, worn on patrol, harder to " +
-                     "sneak in). Changes what a save contains: a save with these items needs this on.",
+                     "night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of " +
+                     "cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
     /// <summary>Registered from Program.Main BEFORE any data table is built: the loaders read the switch.</summary>
@@ -107,8 +139,8 @@ public static class HideGearMod
         list.Add(new EffectProfileType
         {
             KeyName = ArmourEffectKey,
-            Name = "Stiff armour",
-            Description = "The character is easier to detect.",
+            Name = "Hide armour",
+            Description = "The character is easier to detect, and takes less from cuts and bites to the body, arms and legs.",
             Effects = new string[1] { ArmourEffectKey },
             SortOrder = 120
         });
@@ -161,7 +193,8 @@ public static class HideGearMod
         // studio leaves gear behind for.
         listOfEntityTypes.Add(Gear(ArmourKey, "Hide armour",
             "Layered whipjaw hide over a megapod hide jerkin.",
-            "Worn on patrol. Stiff and loud, so the wearer is easier to notice.",
+            "Worn on patrol. Takes 30% of a cut or a bite to the body, arms and legs, 15% of a blow " +
+            "and 10% of a shot, but not to the head. Stiff and loud, so the wearer is easier to notice.",
             0.2f, ArmourEffectKey, "hideGrey", atAnyDistance: true,
             new SerializableDictionary<ItemType.TaskType, ItemType.AppropriateLevel>
             {
@@ -272,6 +305,56 @@ public static class HideGearMod
             ProcessToolSetKey = "toolSetCombineLightImprovisedObjects",
             AgentAnimationStates = new AnimModifier[1] { AnimModifier.Improvised }
         };
+    }
+
+    /// <summary>
+    /// What is left of a blow of this damage to this body part of this entity, for what it wears:
+    /// 1 when the mod is off, the part is not one clothes cover, or nothing worn protects.
+    /// Called from AttackType.HitTarget.
+    /// </summary>
+    public static float ArmourFactor(Entity wearer, BodyPartType part, DamageType damage)
+    {
+        if (!Enabled.On || wearer?.AgentStorage?.Equipment == null || damage == null
+            || part?.ArmorLayerType == null || part.ArmorLayerType.KeyName != CoveredLayer)
+        {
+            return 1f;
+        }
+        float left = 1f;
+        foreach (EntityID id in wearer.AgentStorage.Equipment.StoredItems)
+        {
+            Entity item = Entity.FindByID(id);
+            if (item != null && item.EntityType.KeyName == ArmourKey)
+            {
+                left = Remaining(damage.KeyName);
+            }
+        }
+        return left;
+    }
+
+    /// <summary>The factor for one damage type: the pure arithmetic, for the self-test.</summary>
+    public static float Remaining(string damageKey)
+    {
+        return ArmourProtection.TryGetValue(damageKey, out float taken) ? 1f - taken : 1f;
+    }
+
+    /// <summary>
+    /// The same factor, for an attacker's ESTIMATE against a body part it is scoring: the target
+    /// it sees, or the one it remembers (a body in a MemoryFact, which names the entity). What it
+    /// wears is read from the entity itself - armour is not something a colonist can hide.
+    /// Called where EvaluateAttackJobs and GoalHunt read GameData.AttackScoresAgainstBodyParts.
+    /// </summary>
+    public static float ArmourFactor(BodyPart part, AttackType attack)
+    {
+        if (!Enabled.On || part?.Body == null || attack == null)
+        {
+            return 1f;
+        }
+        Entity wearer = part.Body.Parent;
+        if (wearer == null && part.Body.ParentMemoryFact != null)
+        {
+            wearer = Entity.FindByID(part.Body.ParentMemoryFact.EntityID);
+        }
+        return ArmourFactor(wearer, part.BodyPartType, attack.DamageFinal);
     }
 
     /// <summary>

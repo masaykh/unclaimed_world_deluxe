@@ -425,7 +425,8 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 			weaponInstanceComboAttackData.bodyPartID = bodyPart.BodyPartID;
 			weaponInstanceComboAttackData.AttackType = attackType;
 			weaponInstanceComboAttackData.JobData = jobData;
-			weaponInstanceComboAttackData.EstimatedDamageScore = value;
+			// MOD: HideGearMod - the precomputed score is per body-part TYPE; armour scales it.
+			weaponInstanceComboAttackData.EstimatedDamageScore = value * UWGame.Mods.HideGearMod.ArmourFactor(bodyPart, attackType);
 			GetAllWeaponInstanceCombosAgainstThisBodyPart(attacker, jobData, attackType, bodyPart, weaponInstanceComboAttackData, weapons, allCombos, ownersOfWeapons, cachedWeaponReplenishStates);
 		}
 		if (bodyPart.BodyParts == null)
@@ -894,7 +895,8 @@ internal class EvaluateAttackJobs : GoalEvaluator, IScoreJob
 				return CalculateResult.Done;
 			}
 			BodyPart bodyPart = data2.Body.FindBodyPart(weaponInstanceCombo.AttackData.bodyPartID);
-			weaponInstanceCombo.AttackData.EstimatedDamageScore = GameData.Instance.AttackScoresAgainstBodyParts[weaponInstanceCombo.AttackData.AttackType][bodyPart.BodyPartType];
+			// MOD: HideGearMod - armour scales the precomputed score, as it scales the blow.
+			weaponInstanceCombo.AttackData.EstimatedDamageScore = GameData.Instance.AttackScoresAgainstBodyParts[weaponInstanceCombo.AttackData.AttackType][bodyPart.BodyPartType] * UWGame.Mods.HideGearMod.ArmourFactor(bodyPart, weaponInstanceCombo.AttackData.AttackType);
 		}
 		float energyLevelFactorOnDamage = GoalDoAttack.GetEnergyLevelFactorOnDamage(entity, weaponInstanceCombo.AttackData.AttackType);
 		float value = ScoreFitness(entity);

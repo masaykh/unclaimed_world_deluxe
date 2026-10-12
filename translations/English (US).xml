@@ -6211,7 +6211,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipHidegearEnabled</Key>
-    <Value>Adds a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol, harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+    <Value>Adds a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
   </String>
   <!-- settings: homeraid -->
   <String>
@@ -7845,11 +7845,11 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <String>
     <Key>EffectProfileDescriptionHideArmourStealth</Key>
-    <Value>The character is easier to detect.</Value>
+    <Value>The character is easier to detect, and takes less from cuts and bites to the body, arms and legs.</Value>
   </String>
   <String>
     <Key>EffectProfileHideArmourStealth</Key>
-    <Value>Stiff armour</Value>
+    <Value>Hide armour</Value>
   </String>
   <String>
     <Key>EffectProfileDescriptionHideCloakComfort</Key>
@@ -11560,7 +11560,7 @@ SURVIVAL GUIDE NOTES
   </String>
   <String>
     <Key>ItemDescriptionItemHideArmour</Key>
-    <Value>Worn on patrol. Stiff and loud, so the wearer is easier to notice.</Value>
+    <Value>Worn on patrol. Takes 30% of a cut or a bite to the body, arms and legs, 15% of a blow and 10% of a shot, but not to the head. Stiff and loud, so the wearer is easier to notice.</Value>
   </String>
   <String>
     <Key>ItemPluralnameItemHideArmour</Key>

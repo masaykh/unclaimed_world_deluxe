@@ -280,6 +280,8 @@ public class AttackType : IGameData, IXmlSerializable
 		if (damage > 0f)
 		{
 			damage /= UWGame.Mods.DangerousFaunaMod.ToughnessFactor(targetAsEntity);
+			// MOD: HideGearMod - hide armour takes its share of a blow to a clothed body part.
+			damage *= UWGame.Mods.HideGearMod.ArmourFactor(targetAsEntity, bodyPart.BodyPartType, DamageFinal);
 			damage = bodyPart.DoDamage(damage);
 			if (entity != null)
 			{

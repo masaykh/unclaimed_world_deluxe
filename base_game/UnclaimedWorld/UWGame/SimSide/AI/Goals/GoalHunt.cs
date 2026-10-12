@@ -211,7 +211,8 @@ internal class GoalHunt : CompositeGoal, ITopLevelGoal
 			WeaponInstanceCombo weaponInstanceCombo = list[i];
 			weaponInstanceCombo.AttackData.JobData.AttackDirection = GoalDoAttack.GetAttackDirection(entity, data.PlaySiteLocation, data.Rotation);
 			BodyPart bodyPart = data.Body.FindBodyPart(weaponInstanceCombo.AttackData.bodyPartID);
-			weaponInstanceCombo.AttackData.EstimatedDamageScore = GameData.Instance.AttackScoresAgainstBodyParts[weaponInstanceCombo.AttackData.AttackType][bodyPart.BodyPartType];
+			// MOD: HideGearMod - armour scales the precomputed score, as it scales the blow.
+			weaponInstanceCombo.AttackData.EstimatedDamageScore = GameData.Instance.AttackScoresAgainstBodyParts[weaponInstanceCombo.AttackData.AttackType][bodyPart.BodyPartType] * UWGame.Mods.HideGearMod.ArmourFactor(bodyPart, weaponInstanceCombo.AttackData.AttackType);
 			double num = AttackJob.ScoreAttackDamageAndChanceToHit(entity, weaponInstanceCombo, data, 1f, weaponInstanceCombo.AttackData.EstimatedDamageScore);
 			weaponInstanceCombo.Score = (float)num;
 			if (weaponInstanceCombo.Weapon != null && weapon.HasValue && weaponInstanceCombo.Weapon.EntityID == weapon.Value.Entity)

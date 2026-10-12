@@ -26,7 +26,7 @@ MODS.
 | **Balanced diet** | meat carries protein, plants carry micronutrients, and only a cooked meal carries both — so one food source no longer feeds a colonist indefinitely and the kitchen stops being optional |
 | **Magnification** | zoom *below* 1, which the stock game clamps away: the interface takes less of the screen and more of the world is visible. Costs fill rate — 0.5 is four times the pixels — so it warns when the interface will no longer fit |
 | **Map edge** | stops the camera at the edge of the map. The stock rule allows half a screen of overscroll, so the map can be pushed until half the window shows the empty grid behind the world |
-| **Hide gear** | a hide cloak and hide armour, made from tanned megapod and whipjaw hide. Colonists take the cloak on long trips and at night, for a little comfort, and the armour on patrol, where it makes them easier to notice. Protection in a fight comes in the next step. Off by default: a save with these items needs it on |
+| **Hide gear** | a hide cloak and hide armour, made from tanned megapod and whipjaw hide. Colonists take the cloak on long trips and at night, for a little comfort, and the armour on patrol: it takes 30% of a cut or a bite to the body, arms and legs (less of a blow or a shot, nothing to the head), and makes them easier to notice. Attackers see the armour when they weigh a target. Off by default: a save with these items needs it on |
 
 Most of these exist because **Kastuk** asked for them, and each mod's source opens with the
 report that prompted it.
