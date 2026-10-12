@@ -1381,6 +1381,17 @@ public class MapLoader
 		return result;
 	}
 
+	/// <summary>
+	/// PORT: a plant placed in the Map Editor gets its crops the way a loaded map gives them
+	/// (SetEntityDataAfterInitialize). It had none, so shadeleaf, wingweed, spoak, daysheen and
+	/// water cane - whose grown sprite needs HasBranches - showed their cut sprite whatever age
+	/// was chosen (Kastuk, 2026-10-11). Call once the entity has its renderable.
+	/// </summary>
+	public static void SetDefaultCrops(Entity entity)
+	{
+		SetRandomCropsFromResourceProbabilities(null, entity.EntityType.TreeType?.DefaultCrops, entity);
+	}
+
 	private static void SetRandomCropsFromResourceProbabilities(Resource[] resources, DefaultCrops[] defaultCrops, Entity entity)
 	{
 		entity.Find<UWGame.SimSide.Trees.Tree>(out var c);

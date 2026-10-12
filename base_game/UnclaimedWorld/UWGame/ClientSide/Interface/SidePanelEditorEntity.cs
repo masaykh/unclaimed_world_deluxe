@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using UWGame.SimSide;
 using UWGame.SimSide.Allegiances;
@@ -43,6 +44,10 @@ public class SidePanelEditorEntity : RosterPanel
 	private CheckBox cbSmallBrush;
 
 	private CheckBox cbBigBrush;
+
+	private Label lblAge;
+
+	private FillableBar fbAge;
 
 	private int buttonYPos;
 
@@ -111,6 +116,7 @@ public class SidePanelEditorEntity : RosterPanel
 	private void cbYoungTree_Click(UIComponent sender, EventArgs e)
 	{
 		cbGrown.IsChecked = false;
+		RebuildEntityBeingPlaced();
 	}
 
 	private void btClear_Click(UIComponent sender, EventArgs e)
@@ -165,6 +171,7 @@ public class SidePanelEditorEntity : RosterPanel
 		cbRandom = new CheckBox(Interface.gui);
 		cbRandom.Text = UWGame.Locale.Text("RANDOM");
 		cbRandom.Init(CheckBoxType.LED, CheckBoxFlavor.Red);
+		cbRandom.Click += cbRandom_Click;
 		cbRandom.Label.NormalColor = Color.Black;
 		cbRandom.Width = 100;
 		cbSmallBrush = new CheckBox(Interface.gui);
@@ -179,31 +186,114 @@ public class SidePanelEditorEntity : RosterPanel
 		cbBigBrush.Click += cbBigBrush_Click;
 		cbBigBrush.Label.NormalColor = Color.Black;
 		cbBigBrush.Width = 100;
+		InitAgeSlider();
+	}
+
+	private void cbRandom_Click(UIComponent sender, EventArgs e)
+	{
+		RebuildEntityBeingPlaced();
+	}
+
+	/// <summary>
+	/// PORT: what follows the pointer is made when an asset is chosen (CreateEntityForPlacement),
+	/// so a change to its options reached only the one made after the next click - the asset
+	/// placed first kept the old age, season or brush (Kastuk, 2026-10-11). Made again here, with
+	/// the options as they are now.
+	/// </summary>
+	private void RebuildEntityBeingPlaced()
+	{
+		if (intface.InterfaceMode != InGameInterface.InterfaceState.EditorPlaceEntity || SelectedEntityType == null)
+		{
+			return;
+		}
+		The.InGameUI.DestroyEntityBeingPlaced();
+		CreateEntityForPlacement(SelectedEntityType);
+		The.InGameUI.UpdateEntitiesBeingPlacedPositions();
 	}
 
 	private void cbBigBrush_Click(UIComponent sender, EventArgs e)
 	{
 		cbSmallBrush.IsChecked = false;
+		RebuildEntityBeingPlaced();
 	}
 
 	private void cbSmallBrush_Click(UIComponent sender, EventArgs e)
 	{
 		cbBigBrush.IsChecked = false;
+		RebuildEntityBeingPlaced();
 	}
 
 	private void cbGrownTree_Click(UIComponent sender, EventArgs e)
 	{
 		cbYoung.IsChecked = false;
+		RebuildEntityBeingPlaced();
 	}
 
 	private void cbWinter_Click(UIComponent sender, EventArgs e)
 	{
 		cbSummer.IsChecked = false;
+		RebuildEntityBeingPlaced();
 	}
 
 	private void cbSummer_Click(UIComponent sender, EventArgs e)
 	{
 		cbWinter.IsChecked = false;
+		RebuildEntityBeingPlaced();
+	}
+
+	/// <summary>
+	/// PORT: a plant's age is chosen in tenths of a year up to its TreeType.MaxAge, at the
+	/// leftmost a random age as the studio's placing gave with neither YOUNG nor GROWN on. It
+	/// replaces those two for plants (Kastuk, 2026-10-11: "a slider of tree age ... instead of
+	/// current switchers Young and Grown, as there's quite a lot of stages at some plants").
+	/// Creatures keep YOUNG and GROWN. Beside DEL, which has that row's left end.
+	/// </summary>
+	private void InitAgeSlider()
+	{
+		lblAge = new Label(Interface.gui);
+		lblAge.Init(Label.LabelType.LCDNormal);
+		lblAge.NormalColor = Color.Black;
+		lblAge.Text = UWGame.Locale.Text("AGE");
+		lblAge.FitToText();
+		fbAge = new FillableBar(Interface.gui, FillableBar.FillableBarType.LCDSlider, canGrow: false);
+		fbAge.ShowNotches = false;
+		fbAge.ShowValueLabel = FillableBarSlider.ShowValueLabelModes.Always;
+		fbAge.DisplayValueFunction = (int tenths) => (tenths == 0) ? UWGame.Locale.Text("random") : (0.1f * (float)tenths).ToString("0.#");
+		fbAge.SliderTooltip = UWGame.Locale.Text("Age in years. Leftmost: a random age.");
+		fbAge.SliderMouseUp += fbAge_SliderMouseUp;
+	}
+
+	private void fbAge_SliderMouseUp(object sender, EventArgs e)
+	{
+		RebuildEntityBeingPlaced();
+	}
+
+	private void ShowAgeSlider(TreeType treeType)
+	{
+		int maxTenths = Math.Max(1, (int)Math.Round(10f * treeType.MaxAge));
+		if (fbAge.MaxValue != maxTenths)
+		{
+			// Another plant: the same share of its life, so GROWN stays grown.
+			int value = (fbAge.MaxValue > 0) ? (int)Math.Round((double)fbAge.Value * (double)maxTenths / (double)fbAge.MaxValue) : 0;
+			fbAge.MaxValue = maxTenths;
+			fbAge.Value = Math.Min(value, maxTenths);
+		}
+		int x = display.X + 90;
+		int y = buttonYPos - 86;
+		Window.Add(lblAge);
+		lblAge.Position = new Point(x, y + 2);
+		Window.Add(fbAge);
+		fbAge.Position = new Point(lblAge.Right + 6, y);
+		fbAge.Width = display.Right - fbAge.X - 12;
+		fbAge.UpdateSliderPosition();
+	}
+
+	/// <summary>
+	/// PORT: the age the slider gives a plant, in years; null for a random one.
+	/// </summary>
+	public static float? AgeFromSlider(int tenths)
+	{
+		return (tenths > 0) ? new float?(0.1f * (float)tenths) : null;
 	}
 
 	private void UpdateCheckBoxes()
@@ -213,11 +303,17 @@ public class SidePanelEditorEntity : RosterPanel
 			Window.Remove(option.Value);
 		}
 		options.Clear();
+		Window.Remove(lblAge);
+		Window.Remove(fbAge);
 		if (intface.EntitiesBeingPlaced != null && intface.EntitiesBeingPlaced.Count > 0)
 		{
 			Entity entity = intface.EntitiesBeingPlaced[0].Entity;
 			options.Add(cbFlipHorizontally.Text, cbFlipHorizontally);
-			if (entity.EntityType.TreeType != null || entity.EntityType.BiologicalType != null)
+			if (entity.EntityType.TreeType != null)
+			{
+				ShowAgeSlider(entity.EntityType.TreeType);
+			}
+			else if (entity.EntityType.BiologicalType != null)
 			{
 				options.Add(cbYoung.Text, cbYoung);
 				options.Add(cbGrown.Text, cbGrown);
@@ -272,18 +368,16 @@ public class SidePanelEditorEntity : RosterPanel
 	{
 		outerGrid.BeginAddingEntries();
 		terrainGrid.BeginAddingEntries();
-		foreach (KeyValuePair<string, EntityType> allTerrainFeatureType in GameData.Instance.AllTerrainFeatureTypes)
+		// PORT: listed in order (EditorListOrder).
+		foreach (EntityType terrainFeatureType in EditorListOrder(GameData.Instance.AllTerrainFeatureTypes.Values.Where((EntityType t) => t.TerrainType.CanBeMapEditorPlaced)))
 		{
-			if (allTerrainFeatureType.Value.TerrainType.CanBeMapEditorPlaced)
-			{
-				terrainGrid.AddEntry(allTerrainFeatureType.Value, allTerrainFeatureType.Value.Name);
-			}
+			terrainGrid.AddEntry(terrainFeatureType, terrainFeatureType.Name);
 		}
 		terrainGrid.EndAddingEntries();
 		treeGrid.BeginAddingEntries();
-		foreach (KeyValuePair<string, EntityType> allTreeType in GameData.Instance.AllTreeTypes)
+		foreach (EntityType treeType in EditorListOrder(GameData.Instance.AllTreeTypes.Values))
 		{
-			treeGrid.AddEntry(allTreeType.Value, allTreeType.Value.Name);
+			treeGrid.AddEntry(treeType, treeType.Name);
 		}
 		treeGrid.EndAddingEntries();
 		outerGrid.EndAddingEntries();
@@ -318,6 +412,96 @@ public class SidePanelEditorEntity : RosterPanel
 				Entity = entity,
 				Position = item
 			});
+		}
+	}
+
+	/// <summary>
+	/// PORT: the order of the Map Editor's asset lists - by name, numbers by value (rockwall2
+	/// before rockwall10), each group of terrain together (EditorListGroup). The studio's was the
+	/// order the loaders made them in (Kastuk, 2026-10-11: "sort assets ... by alphabet inside
+	/// their subcategories (like all deposits must stay nearby)").
+	/// </summary>
+	public static List<EntityType> EditorListOrder(IEnumerable<EntityType> types)
+	{
+		return types.OrderBy(EditorListGroup).ThenBy((EntityType t) => t.Name ?? t.KeyName, NaturalOrder.Instance).ToList();
+	}
+
+	/// <summary>
+	/// PORT: the asset types carry no category, so the groups are read off the studio's keys and
+	/// names: places a job or a building needs, deposits, ambient sounds ("S: "), everything
+	/// else, and ground decals (keys ending "_g").
+	/// </summary>
+	public static int EditorListGroup(EntityType type)
+	{
+		if (type.TerrainType == null)
+		{
+			return 0;
+		}
+		string key = type.KeyName;
+		if (key.EndsWith("Terminal") || key.Contains("Spot"))
+		{
+			return 0;
+		}
+		if (key.EndsWith("Deposit"))
+		{
+			return 1;
+		}
+		if (type.Name != null && type.Name.StartsWith("S: "))
+		{
+			return 2;
+		}
+		if (key.EndsWith("_g"))
+		{
+			return 4;
+		}
+		return 3;
+	}
+
+	/// <summary>
+	/// PORT: compares names ignoring case, a run of digits by its value.
+	/// </summary>
+	private sealed class NaturalOrder : IComparer<string>
+	{
+		public static readonly NaturalOrder Instance = new NaturalOrder();
+
+		public int Compare(string a, string b)
+		{
+			int i = 0;
+			int j = 0;
+			while (i < a.Length && j < b.Length)
+			{
+				if (char.IsDigit(a[i]) && char.IsDigit(b[j]))
+				{
+					int startA = i;
+					int startB = j;
+					while (i < a.Length && char.IsDigit(a[i]))
+					{
+						i++;
+					}
+					while (j < b.Length && char.IsDigit(b[j]))
+					{
+						j++;
+					}
+					string numberA = a.Substring(startA, i - startA).TrimStart('0');
+					string numberB = b.Substring(startB, j - startB).TrimStart('0');
+					int byValue = (numberA.Length != numberB.Length) ? numberA.Length.CompareTo(numberB.Length) : string.CompareOrdinal(numberA, numberB);
+					if (byValue != 0)
+					{
+						return byValue;
+					}
+				}
+				else
+				{
+					int byLetter = char.ToLowerInvariant(a[i]).CompareTo(char.ToLowerInvariant(b[j]));
+					if (byLetter != 0)
+					{
+						return byLetter;
+					}
+					i++;
+					j++;
+				}
+			}
+			return (a.Length - i).CompareTo(b.Length - j);
 		}
 	}
 
@@ -362,24 +546,18 @@ public class SidePanelEditorEntity : RosterPanel
 		{
 			if (entity.Find<Tree>(out var c))
 			{
-				float? num = null;
-				if (cbYoung.IsChecked)
+				// PORT: the AGE slider's age (InitAgeSlider), saved as AgeInYears
+				// (MapManager.CreateEntityDataFromEntity); random when it is at the left.
+				float? age = AgeFromSlider(fbAge.Value);
+				if (age.HasValue)
 				{
-					num = 0.5f * entity.EntityType.TreeType.MatureAge;
-					c.SetAgePreInit(num.Value);
-					editorData.TreeAgeGroup = UWGame.SimSide.Trees.AgeGroup.Young;
-				}
-				else if (cbGrown.IsChecked)
-				{
-					num = 1.5f * entity.EntityType.TreeType.MatureAge;
-					c.SetAgePreInit(num.Value);
-					editorData.TreeAgeGroup = UWGame.SimSide.Trees.AgeGroup.Grown;
+					c.SetAgePreInit(age.Value);
 				}
 				else
 				{
 					c.SetAgePreInit();
-					editorData.TreeAgeGroup = null;
 				}
+				editorData.TreeAgeGroup = null;
 				if (cbSummer.IsChecked)
 				{
 					c.InSeason = InSeason.Summer;
@@ -402,6 +580,8 @@ public class SidePanelEditorEntity : RosterPanel
 			}
 			entity.Initialize(The.Sim.PlaySite, allegiance);
 			entity.InitializeModelAndOnScreenFunctionality();
+			// PORT: its crops, as a loaded map gives them (MapLoader.SetDefaultCrops).
+			UWGame.SimSide.Maps.MapEditor.MapLoader.SetDefaultCrops(entity);
 		}
 		entity.FlipHorizontally = The.Client.ClientRandomGenerator.Next(2, "SmallEditorPanel", saveMessage: false) == 0;
 		FlipEntityIfChosen(entity);

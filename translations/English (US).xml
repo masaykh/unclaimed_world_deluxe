@@ -3273,6 +3273,18 @@ turns this off.</Value>
     <Key>GuiLBRUSH</Key>
     <Value>L BRUSH</Value>
   </String>
+  <String>
+    <Key>GuiAGE</Key>
+    <Value>AGE</Value>
+  </String>
+  <String>
+    <Key>GuiRandom</Key>
+    <Value>random</Value>
+  </String>
+  <String>
+    <Key>GuiAgeInYearsLeftmostARandomAge_36124ebe130c</Key>
+    <Value>Age in years. Leftmost: a random age.</Value>
+  </String>
   <!-- ClientSide/Interface/SidePanelEditorSoil.cs -->
   <String>
     <Key>GuiSoil</Key>

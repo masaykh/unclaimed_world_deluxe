@@ -728,12 +728,15 @@ public class MapClient
 		SubtileLayers mapCosts = The.Map.TerrainCosts[SurfaceType.TransportType.Foot];
 		Microsoft.Xna.Framework.Point point = The.Map.ClampTileMapPosition(new Microsoft.Xna.Framework.Point(x, y));
 		Microsoft.Xna.Framework.Point point2 = The.Map.ClampTileMapPosition(new Microsoft.Xna.Framework.Point(x2, y2));
+		// PORT: the Map Editor selects water and other ground nobody can walk, so what is placed
+		// there can be seen and given resources (Kastuk, 2026-10-11). A click already could.
+		bool selectBlocked = The.Sim != null && The.Sim.Mode == Sim.EngineMode.Edit;
 		for (int i = point.X; i <= point2.X; i++)
 		{
 			for (int j = point.Y; j <= point2.Y; j++)
 			{
 				Microsoft.Xna.Framework.Point point3 = new Microsoft.Xna.Framework.Point(i, j);
-				if (!The.Map.TileIsCompletelyBlocked(mapCosts, point3))
+				if (selectBlocked || !The.Map.TileIsCompletelyBlocked(mapCosts, point3))
 				{
 					mapArea.Add(The.Map.GetTile(point3));
 					if (mapArea.Count > 1600)

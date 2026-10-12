@@ -959,6 +959,20 @@ else
   fail "the stockpile priority self-test reported failures"
 fi
 
+# Map Editor plants (Kastuk, 2026-10-11): a plant placed grown showed its cut sprite, because the
+# grown one needs HasBranches and the editor gave no crops (MapLoader.SetDefaultCrops); the AGE
+# slider runs from a random age to MaxAge; the asset lists are in order, deposits and sounds
+# together, numbers by value (SidePanelEditorEntity.EditorListOrder).
+say "==> 39. Map Editor plants: grown shows grown, the AGE slider's range, the asset lists in order"
+out=$( cd "$(new_install case39)" && "$EXPORT" . --editor-plants-selftest 2>&1 ) || true
+if echo "$out" | grep -q "editor plants self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception' | head -4
+  fail "the editor plants self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a

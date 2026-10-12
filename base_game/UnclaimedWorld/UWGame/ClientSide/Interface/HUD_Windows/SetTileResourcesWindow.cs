@@ -291,6 +291,29 @@ public class SetTileResourcesWindow : HUDWindow
 		}
 		CountPlacedResourcesInArea(The.InGameUI.SelectedTiles, dictionary);
 		FullLCDPanel.PopulateCategoryGrid<ResourceType, int, ResourceCategory>(gui, outerGrid, CollapsablePanel.PanelType.HUD, Label.LabelType.HUDWindow, SetSummaryDelegate, resourceClickHandler, dictionary);
+		SortEachCategoryByName();
+	}
+
+	/// <summary>
+	/// PORT: each category's resources by name, as the Map Editor's asset lists
+	/// (SidePanelEditorEntity.EditorListOrder). They came in the order the tables were made,
+	/// and a crop found on the selected trees joined at the bottom (Kastuk, 2026-10-11).
+	/// </summary>
+	private void SortEachCategoryByName()
+	{
+		List<Grid> grids = new List<Grid>();
+		foreach (UIComponent entry in outerGrid.Entries)
+		{
+			grids.Clear();
+			((CollapsablePanel)entry).ExpandedPanel.FindChildOfType(null, ref grids);
+			if (grids.Count == 0)
+			{
+				continue;
+			}
+			Grid grid = grids[0];
+			Dictionary<UIComponent, string> names = grid.EntriesByKey.ToDictionary((KeyValuePair<object, UIComponent> e) => e.Value, (KeyValuePair<object, UIComponent> e) => ((ResourceType)e.Key).Name ?? "");
+			grid.Sort((UIComponent row) => names.TryGetValue(row, out var name) ? name.ToLowerInvariant() : "", Grid.Sorting.Ascending);
+		}
 	}
 
 	/// <summary>

@@ -106,6 +106,10 @@ internal static partial class Program
             Console.Error.WriteLine("               StockpilePriorityMod: HIGH stockpiles fill and are hauled to first, LOW");
             Console.Error.WriteLine("               last, and a Stockpile saves its priority.");
             Console.Error.WriteLine();
+            Console.Error.WriteLine("  --editor-plants-selftest");
+            Console.Error.WriteLine("               the Map Editor against the tables: a plant placed grown can show its");
+            Console.Error.WriteLine("               grown sprite, the AGE slider's range, the asset lists' order.");
+            Console.Error.WriteLine();
             Console.Error.WriteLine("  --strings-literals=FILE --strings-out=FILE");
             Console.Error.WriteLine("               write English (US).xml: the literals in FILE (from Locale.Text calls),");
             Console.Error.WriteLine("               every mod setting's label and tooltip, every item's name and description.");
@@ -235,6 +239,11 @@ internal static partial class Program
         if (args.Contains("--discomfort-selftest"))
         {
             return DiscomfortSelfTest();
+        }
+
+        if (args.Contains("--editor-plants-selftest"))
+        {
+            return EditorPlantsSelfTest();
         }
 
         if (args.Contains("--stockpile-priority-selftest"))
