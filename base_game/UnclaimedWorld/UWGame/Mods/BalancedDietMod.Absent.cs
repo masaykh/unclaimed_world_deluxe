@@ -4,7 +4,7 @@ using UWGame.SimSide.Items;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The balanced diet mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The balanced diet mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 /// </summary>
 public static class BalancedDietMod
 {

@@ -14,7 +14,10 @@ MODS.
 
 | mod | what it changes |
 |---|---|
-| **Unhidden Mod** | MAP EDITOR and TEST SCENE under the main menu's MODDING, user scenarios in the picker, newest-first save sorting, mouse-wheel scrolling on data sheets, `O` toggles shadows — plus charcoal from peat and the resource-respawn fix |
+| **Peat** | a kiln turns dry peat into charcoal, and a campfire or a primitive kitchen can be built with peat instead of firewood |
+| **Rawhide string** | a fishing net can be made from rawhide string as well as cotton string |
+| **Resource respawn cap** | shellfish and other resources that grow back are topped up to the most a tile has held, instead of multiplying every time they are harvested |
+| **Main menu** | MAP EDITOR and TEST SCENE under the main menu's MODDING, and a test map shown whole |
 | **Healing** | wounds may heal fully rather than stopping halfway, and recovery speed depends on food, sleep and morale rather than muscle energy alone |
 | **Debug overlays** | the studio's own developer overlays - job scores, interest, ranges, path search, region maps - as switches, plus a picker for which of the 94 built-in test scenarios the main menu's TEST button loads, and a switch to record sessions for replay. All off by default |
 | **State dump** | writes `StateDump.txt` beside the game - every colonist's position, health and current goal, sampled on a game-time interval. For checking a change by reading rather than watching. Off by default |
@@ -39,9 +42,9 @@ setting in it is. The list of confirmed settings is kept in `ModSettings.cs`.
 **In a file:** `user/ModSettings.xml`, next to the game. One line per setting:
 
 ```xml
-<setting id="unhidden.charcoalFromPeat" value="true" />
-<setting id="unhidden.capResourceRespawn" value="true" />
-<setting id="unhidden.culture" value="Invariant" />
+<setting id="peat.charcoalFromPeat" value="true" />
+<setting id="respawncap.capResourceRespawn" value="true" />
+<setting id="port.culture" value="invariant" />
 ```
 
 **All of them at once:** launch with `-nomods`.
@@ -56,12 +59,12 @@ That is the stock game: every bundled mod off.
 
 **Some settings change what a save contains, and some do not.** A change to the interface — sort
 order, scrolling, buttons — is invisible to a save. A change to *simulation content* is not:
-`unhidden.charcoalFromPeat` adds a recipe, and a save made with it on names that recipe. Load it
+`peat.charcoalFromPeat` adds a recipe, and a save made with it on names that recipe. Load it
 with the setting off and the game will tell you rather than silently dropping it.
 
 The game asks about this on load; `port.askAboutModsOnLoad` controls whether it does.
 
-**`unhidden.capResourceRespawn` is a fix, but it is still a mod.** The studio's code computes a
+**`respawncap.capResourceRespawn` is a fix, but it is still a mod.** The studio's code computes a
 clamp and then discards it — a pure function called as a statement — so a replenishing tile adds
 a *fraction of its maximum* on top of what is already there rather than topping up to the
 maximum. With a fraction of 1.0 the tile roughly doubles each time, and the maximum ratchets up

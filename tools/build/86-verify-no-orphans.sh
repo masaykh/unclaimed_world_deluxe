@@ -9,7 +9,7 @@
 #           that no file calls. A stub exists only to satisfy the core's calls into a mod that is
 #           compiled out; once the core stops calling a member, the stub keeps it alive for
 #           nothing. Five were found that way (AgentMod.IsEnabled, GatherOnDemandMod.Demand, ...).
-#           Checked per class: a stub file may declare more than one (UnhiddenModSmithies).
+#           Checked per class: a stub file may declare more than one.
 #           Enabled, ModId and RegisterSettings are exempt: they are the shape every stub has, so
 #           that a stub reads like its mod, not calls anybody needs.
 #   mod     A public or internal member of a mod (mods/*.cs) that is named nowhere at all except

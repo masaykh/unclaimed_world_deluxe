@@ -5,7 +5,7 @@ using UWGame.SimSide.Maps;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The stockpile priority mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The stockpile priority mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Every stockpile fills and is hauled to as the studio had it; a priority a save carries is kept
 /// and means nothing.

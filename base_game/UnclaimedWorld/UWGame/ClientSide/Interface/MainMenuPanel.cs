@@ -96,8 +96,8 @@ public class MainMenuPanel : Panel
 		// PORT: MODDING, in the empty slot above OPTIONS where the Unhidden Mod put EDIT and TEST
 		// MAP (tripleacoder, "Main menu", 2026-10-10: "the Test and Edit buttons on the main menu
 		// are hard to understand ... replacing TEST and EDIT with a new button MODDING"). It opens
-		// SELECT MODS, MAP EDITOR and TEST SCENE (ModdingDialog) - the editor's two still under the
-		// Unhidden Mod's MAP EDITOR BUTTONS switch, greyed there when it is off. Always shown: the
+		// SELECT MODS, MAP EDITOR and TEST SCENE (ModdingDialog) - the editor's two under
+		// MainMenuMod's MAP EDITOR BUTTONS switch, greyed there when it is off. Always shown: the
 		// mods' own window is part of the game, not of a mod.
 		TextButton textButton6 = new TextButton(Interface.gui);
 		Window.Add(textButton6);

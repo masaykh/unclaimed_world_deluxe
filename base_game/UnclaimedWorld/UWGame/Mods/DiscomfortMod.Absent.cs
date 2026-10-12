@@ -3,7 +3,7 @@ using UWGame.SimSide.Entities;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The discomfort mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The discomfort mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Comfort is the studio's sum of comfort effects; nothing near a sleeping place changes it.
 /// </summary>

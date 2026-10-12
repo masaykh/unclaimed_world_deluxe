@@ -59,6 +59,12 @@ public class SnapshotHeader : ISnapshot
 		if (version >= Snapshotter.Version.ModsRecorded)
 		{
 			Mods = sn.DoString(Mods ?? "");
+			if (sn.mode == Snapshotter.Mode.Load)
+			{
+				// PORT: a save stamped before the Unhidden Mod was split names its settings by
+				// their old ids; read as today's, so it is not taken for a save with other mods.
+				Mods = ModSettings.WithCurrentIds(Mods);
+			}
 		}
 		sn.Ignore(ProgramVersion);
 		return this;

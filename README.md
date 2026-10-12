@@ -34,13 +34,16 @@ are unsigned — signing needs a paid Apple Developer account — so Gatekeeper 
 ## What is different from the stock game
 
 The port itself is meant to be invisible: same game, running on a current runtime, on three
-platforms instead of one. What you will actually notice is the mods — **seven of them, on by
-default, each individually switchable** in the options menu under **MODS**, or all off with
-`-nomods`.
+platforms instead of one. What you will actually notice is the mods — **most of them on by
+default, each individually switchable** in the options menu under **MODS** and in **SELECT MODS**,
+or all off with `-nomods`. Some of them:
 
 | mod | what it changes |
 |---|---|
-| **Unhidden** | EDIT and TEST buttons the studio implemented and never wired up, user scenarios in the picker, newest-first saves, wheel-scrolling data sheets, `O` for shadows — plus charcoal from peat and a resource-respawn fix |
+| **Peat** | charcoal from peat, and campfires and kitchens built with peat instead of firewood |
+| **Rawhide string** | fishing nets from rawhide string, which the stock game makes and never uses |
+| **Resource respawn cap** | shellfish stop doubling every time they are harvested — the studio computed the cap and discarded it |
+| **Main menu** | the map editor and test scenes the studio implemented and never wired to a button |
 | **Healing** | wounds can heal fully rather than stopping halfway, at a rate set by food, sleep and morale rather than muscle energy alone |
 | **Debug overlays** | the studio's own developer overlays, the 94 built-in test scenarios and session recording, reachable again - all off by default |
 | **State dump** | a text record of what the colony is doing, for checking a change without watching the screen - off by default |
@@ -62,7 +65,7 @@ The organising rule, and the one thing to understand before changing anything:
 > game plays.**
 
 Core means the port — .NET 8, MonoGame 3.8.5.1, DesktopGL — and bugfixes. A crash is a bug; a
-balance change is not, however clearly it was a mistake. `unhidden.capResourceRespawn` fixes a
+balance change is not, however clearly it was a mistake. `respawncap.capResourceRespawn` fixes a
 clamp the studio computed and discarded, and it is *still* a mod, because it changes the food
 economy of a running game.
 

@@ -5,7 +5,7 @@ using UWGame.SimSide.Processes;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The disassembly generator, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The disassembly generator, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// <see cref="Generated"/> and <see cref="Refused"/> are here for tools/DataExport, which reports
 /// on them with <c>--disassembly</c>. It builds against whatever UnclaimedWorld.dll it is pointed

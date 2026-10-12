@@ -3,7 +3,7 @@ using UWGame.SimSide.Entities;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The bird hop mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The bird hop mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Immobile creatures stay put, as the studio set them.
 /// </summary>

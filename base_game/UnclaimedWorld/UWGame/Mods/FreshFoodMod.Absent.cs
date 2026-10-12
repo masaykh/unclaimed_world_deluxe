@@ -3,7 +3,7 @@ using UWGame.SimSide.AI;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The eat-perishables-first mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The eat-perishables-first mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// EvaluateEat keeps the studio's freshness score and weights.
 /// </summary>

@@ -3,7 +3,7 @@ using UWGame.SimSide.Resources;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The regrowth mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The regrowth mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Every tile respawns exactly what the studio's replenish computed.
 /// </summary>

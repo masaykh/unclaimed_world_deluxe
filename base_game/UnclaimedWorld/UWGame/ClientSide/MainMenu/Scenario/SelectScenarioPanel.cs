@@ -44,16 +44,34 @@ public class SelectScenarioPanel : Panel
 		InitButtons();
 	}
 
-	private List<UWGame.SimSide.Scenarios.Scenario> GetListOfScenarios()
+	/// <summary>
+	/// PORT: scenario headers including user-made ones. AllScenarioLoader.LoadAllScenarioHeaders
+	/// enumerates user/Scenarios with Directory.GetDirectories, which throws on an installation
+	/// that has never created the folder - every fresh install - so that falls back to the
+	/// built-in list instead of taking out the main menu.
+	/// </summary>
+	public static List<UWGame.SimSide.Scenarios.Scenario> AllScenarioHeaders()
 	{
-		// UNHIDDEN MOD: RGScenarioLoader lists only the built-in scenarios. AllScenarioLoader
-		// adds the ones in user/Scenarios, which is what makes user-authored scenarios show up
-		// in this picker at all.
-		List<UWGame.SimSide.Scenarios.Scenario> scenarios = UWGame.Mods.UnhiddenMod.Enabled
-			? UWGame.Mods.UnhiddenMod.AllScenarioHeaders()
-			: (from s in RGScenarioLoader.LoadAllScenarioHeaders()
+		try
+		{
+			return (from s in AllScenarioLoader.LoadAllScenarioHeaders()
 				orderby s.SortOrder
 				select s).ToList();
+		}
+		catch (Exception ex) when (ex is System.IO.DirectoryNotFoundException || ex is System.IO.IOException || ex is UnauthorizedAccessException)
+		{
+			return (from s in RGScenarioLoader.LoadAllScenarioHeaders()
+				orderby s.SortOrder
+				select s).ToList();
+		}
+	}
+
+	private List<UWGame.SimSide.Scenarios.Scenario> GetListOfScenarios()
+	{
+		// PORT (from the Unhidden Mod, now core - Kastuk, 2026-10-11): RGScenarioLoader lists only
+		// the built-in scenarios. AllScenarioLoader adds the ones in user/Scenarios, which is what
+		// makes user-authored scenarios show up in this picker at all.
+		List<UWGame.SimSide.Scenarios.Scenario> scenarios = AllScenarioHeaders();
 		// PORT: their names and descriptions in the chosen language (Locale.TranslateScenario).
 		foreach (UWGame.SimSide.Scenarios.Scenario scenario in scenarios)
 		{

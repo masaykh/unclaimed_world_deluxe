@@ -50,16 +50,16 @@ internal static class Program
 					Console.WriteLine("                    then load from them. Run this once to get editable copies.");
 					Console.WriteLine("  --data-from-xml   Load data tables from data/ only, ignoring the built-in");
 					Console.WriteLine("                    defaults. Use after editing the exported XML.");
-					Console.WriteLine("  -nomods           Run the stock game: the bundled Unhidden Mod off, every");
-					Console.WriteLine("                    mod setting at its stock value for this session (the file");
-					Console.WriteLine("                    keeps yours), and no mods loaded from user/Mods. Saves made");
-					Console.WriteLine("                    with mods on may not load without them.");
+					Console.WriteLine("  -nomods           Run the stock game: every mod setting at its stock value");
+					Console.WriteLine("                    for this session (the file keeps yours), and no mods");
+					Console.WriteLine("                    loaded from user/Mods. Saves made with mods on may not");
+					Console.WriteLine("                    load without them.");
 					Console.WriteLine();
 					Console.WriteLine("Data loading with no flags is exactly as retail: the built-in tables are");
 					Console.WriteLine("used and nothing under data/ is written or read.");
 					Console.WriteLine();
-					Console.WriteLine("This build BUNDLES the community Unhidden Mod, ON by default. For retail");
-					Console.WriteLine("behaviour in full, run with -nomods. See MODDING.md.");
+					Console.WriteLine("This build BUNDLES mods, most ON by default. For retail behaviour in full,");
+					Console.WriteLine("run with -nomods. See docs/how_to_use_mods.md.");
 					return false;
 
 				// Anything else is ignored - Steam passes arguments of its own.
@@ -75,15 +75,14 @@ internal static class Program
 		{
 			return;
 		}
-		// -nomods gives the stock game: it switches off both the bundled Unhidden Mod and the
-		// third-party mod loader. Parsed before anything else because content hooks and Harmony
+		// -nomods gives the stock game: every bundled mod's settings at stock, and no third-party
+		// mod loader. Parsed before anything else because content hooks and Harmony
 		// patches on the data loaders run during data loading, which starts inside the
 		// UnclaimedWorld constructor below - after that it is too late to switch off.
 		foreach (string arg in args)
 		{
 			if (string.Equals(arg, "-nomods", StringComparison.OrdinalIgnoreCase))
 			{
-				UWGame.Mods.UnhiddenMod.Disable();
 				UWGame.Mods.ModLoader.Disable();
 				// And every other mod's switches at their stock values, for this session only:
 				// user/ModSettings.xml keeps the player's own (ModSettings.StockOnly).
@@ -92,22 +91,15 @@ internal static class Program
 		}
 		// Mod configuration, from user/ModSettings.xml. Read BEFORE anything registers a setting
 		// and long before the first data table is built, because a switch that shapes the tables -
-		// the bundled mod's peat recipe is one - is read while they are being assembled. The
-		// port's own entries are registered either way; the bundled mod's only when it is present
-		// and on, so -nomods leaves no trace of it in the file or the menu.
+		// PeatMod's recipe is one - is read while they are being assembled.
 		UWGame.Mods.ModSettings.Load(UnclaimedWorld.LogError);
-		// The bundled mod switched off in SELECT MODS is off as -nomods makes it - its content
-		// hooks included, not only its switches - so from the start of the game. It is still
-		// listed there (Describe), to be switched on again.
-		UWGame.Mods.UnhiddenMod.Describe();
-		if (!UWGame.Mods.ModSettings.IsModEnabled(UWGame.Mods.UnhiddenMod.ModId))
-		{
-			UWGame.Mods.UnhiddenMod.Disable();
-		}
 		UWGame.Mods.PortSettings.RegisterSettings();
-		// The mods that ship as their own file, each answering one request. Always registered:
-		// unlike the bundled Unhidden Mod they are not a build-time feature, so their switches are
-		// in the file and the menu whatever the build, and each is off with one click.
+		// AFTER the settings are loaded: the culture is a choice with the studio's own default.
+		// Nothing before here reads Config.Culture - the first thing to use it is the window this
+		// method goes on to create.
+		UWGame.Mods.PortSettings.ApplyCulture();
+		// The mods that ship as their own file, each answering one request. Their switches are in
+		// the file and the menu, and each mod is off with one click in SELECT MODS.
 		UWGame.Mods.MapEdgeMod.RegisterSettings();
 		UWGame.Mods.HealingMod.RegisterSettings();
 		UWGame.Mods.SelfPreservationMod.RegisterSettings();
@@ -136,15 +128,12 @@ internal static class Program
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();
 		UWGame.Mods.AgentMod.RegisterSettings();
-		if (UWGame.Mods.UnhiddenMod.Enabled)
-		{
-			UWGame.Mods.UnhiddenMod.RegisterSettings();
-			// AFTER the settings are loaded, because the culture is now a choice with the studio's
-			// own default rather than something the mod imposes. Nothing between here and the
-			// startup above reads Config.Culture - it is display formatting, and the first thing
-			// to use it is the window this method goes on to create.
-			UWGame.Mods.UnhiddenMod.ApplyCulture();
-		}
+		// What was the Unhidden Mod (Kastuk, 2026-10-11), last as it was, so a save stamp lists
+		// their switches in the same order as before (ModSettings.Signature).
+		UWGame.Mods.PeatMod.RegisterSettings();
+		UWGame.Mods.RawhideStringMod.RegisterSettings();
+		UWGame.Mods.RespawnCapMod.RegisterSettings();
+		UWGame.Mods.MainMenuMod.RegisterSettings();
 
 		// Third-party mods from user/Mods. Before the game object is constructed, so a mod can
 		// patch anything the game does on the way up - including the data loaders, which run

@@ -5,7 +5,7 @@ using UWGame.SimSide.InGameEvents;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The fish stock mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The fish stock mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Leaves fishTrapSpawningLoop exactly as the studio wrote it: traps catch forever.
 /// </summary>

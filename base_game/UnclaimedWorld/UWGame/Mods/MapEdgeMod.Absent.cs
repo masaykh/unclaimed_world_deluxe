@@ -4,7 +4,7 @@ using UWGame.Control;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The map edge mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The map edge mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// This one is the clearest case for a stub: MapClient.ChangeMapWindowWorldPosition already
 /// branches on <see cref="Enabled"/> and keeps the studio's clamp in the other arm, so with

@@ -1,7 +1,7 @@
 namespace UWGame.Mods;
 
 /// <summary>
-/// The magnification mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The magnification mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// The three answers below are the studio's own expressions, taken from the lines the mod
 /// replaced - Controller had <c>ClampBottom(ZoomFactor, 1f)</c> and <c>ActiveZoomFactor &gt; 1f</c>

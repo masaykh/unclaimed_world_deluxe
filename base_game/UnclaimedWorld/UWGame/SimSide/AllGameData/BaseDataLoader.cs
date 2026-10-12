@@ -1568,14 +1568,13 @@ public class BaseDataLoader : DataLoader
 	protected override List<ProcessType> InitProcessTypes()
 	{
 		List<ProcessType> list = ProcessLoader.InitProcessTypes();
-		// UNHIDDEN MOD: the makePeatCharcoal recipe.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
-		{
-			UWGame.Mods.UnhiddenMod.AddProcesses(list);
-		}
+		// MOD: PeatMod's charcoal-from-peat and peat-built recipes, RawhideStringMod's fishing net.
+		// Each adds nothing with its switch off.
+		UWGame.Mods.PeatMod.AddProcesses(list);
+		UWGame.Mods.RawhideStringMod.AddProcesses(list);
 		// DISASSEMBLY MOD: a Disassemble recipe per assembled tool, weapon and spear, generated
 		// from the recipe that makes it. Here rather than earlier because it reads the finished
-		// process table - including anything the Unhidden Mod just added - and the entity table,
+		// process table - including anything PeatMod and RawhideStringMod just added - and the entity table,
 		// which the queue built several steps ago.
 		UWGame.Mods.DisassemblyMod.AddDisassembly(list);
 		return list;
@@ -8534,14 +8533,11 @@ public class BaseDataLoader : DataLoader
 		TreeLoader.Init(list);
 		ItemLoader.Init(list);
 		InitMiscEntityTypes(list);
-		// UNHIDDEN MOD: adds peat charcoal and retags forge fuel. Hooked here rather than at the
-		// end of ItemLoader.Init / StructureLoader.Init, which is where the Harmony patch
-		// postfixed, because both loaders feed this one list and the order is the same.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
-		{
-			UWGame.Mods.UnhiddenMod.AddItems(list);
-			UWGame.Mods.UnhiddenModSmithies.Replace(list);
-		}
+		// MOD: PeatMod retags forge fuel - charcoal and the two smithies. Hooked here rather than at
+		// the end of ItemLoader.Init / StructureLoader.Init, which is where the Unhidden Mod's
+		// Harmony patch postfixed, because both loaders feed this one list and the order is the
+		// same.
+		UWGame.Mods.PeatMod.AddItems(list);
 		// DISASSEMBLY MOD: it needs the entity table when the PROCESS table is built, several
 		// steps later. See DisassemblyMod.CaptureItems for why it cannot read GameData for it.
 		UWGame.Mods.DisassemblyMod.CaptureItems(list);

@@ -3,7 +3,7 @@ using UWGame.SimSide.Entities;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The home raid mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The home raid mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// No animal ever targets a building: sleepers and stores are as safe as the studio made them.
 /// GoalThink gives no species EvaluateBreakIn, and a GoalBreakIn loaded from a modded save fails on

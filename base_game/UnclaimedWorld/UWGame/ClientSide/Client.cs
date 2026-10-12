@@ -4614,11 +4614,11 @@ namespace UWGame.ClientSide
             if (EnableKeyboardShortcuts)
             {
                 flag = inputData.IsKeyTapped(options.ToggleIngameMenu);
-                // UNHIDDEN MOD: its key (O unless rebound in the KEYS section) toggles shadows. Read by
-                // DateAndTime.ComputeSunAndLight.
-                if (UWGame.Mods.UnhiddenMod.Enabled && inputData.IsKeyTapped(UWGame.Mods.UnhiddenMod.ShadowsKey.KeyValue))
+                // PORT (from the Unhidden Mod): its key (O unless rebound in the KEYS section)
+                // toggles shadows. Read by DateAndTime.ComputeSunAndLight.
+                if (inputData.IsKeyTapped(UWGame.Mods.PortSettings.ShadowsKey.KeyValue))
                 {
-                    UWGame.Mods.UnhiddenMod.ShadowsDisabled = !UWGame.Mods.UnhiddenMod.ShadowsDisabled;
+                    UWGame.Mods.PortSettings.ShadowsDisabled = !UWGame.Mods.PortSettings.ShadowsDisabled;
                 }
             }
             bool flag2 = false;

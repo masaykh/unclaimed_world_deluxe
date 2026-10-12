@@ -6,7 +6,7 @@ using UWGame.SimSide.Maps;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The prey fear mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The prey fear mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Prey keeps the studio's threat radius, eating animals do not check for danger, and a melee
 /// strike needs the studio's two-sided distance band.

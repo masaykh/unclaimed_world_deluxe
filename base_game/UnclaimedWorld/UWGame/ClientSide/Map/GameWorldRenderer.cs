@@ -1628,8 +1628,8 @@ namespace UWGame.ClientSide.Map
         public static bool GetIsInGodMode()
         {
             bool result = false;
-            // MOD: UnhiddenMod's SHOW ALL OF A TEST MAP draws a TEST MAP the way the editor does.
-            if (The.Sim.Mode == Sim.EngineMode.Edit || (UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.RevealsTestMap))
+            // MOD: MainMenuMod's SHOW ALL OF A TEST MAP draws a TEST MAP the way the editor does.
+            if (The.Sim.Mode == Sim.EngineMode.Edit || UWGame.Mods.MainMenuMod.RevealsTestMap)
             {
                 result = true;
             }

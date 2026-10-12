@@ -85,10 +85,58 @@ public static class PortSettings
         _ = AskAboutModsOnLoad;
         _ = RenderTrace;
         _ = Language;
-        // A date pattern and a language's file name are shown as they are, in every language.
+        _ = Culture;
+        _ = ShadowsKey;
+        // A date pattern, a language's file name and a culture code are shown as they are.
         SaveDateFormat.ChoicesAreText = false;
         Language.ChoicesAreText = false;
+        Culture.ChoicesAreText = false;
     }
+
+    // ---- From the Unhidden Mod (Kastuk, 2026-10-11: "dissolve my old Unhidden mod into main code
+    // (or just move into Port category)"). Interface only, so not a mod: -nomods leaves them as
+    // the file has them. ModSettings.LegacyIds reads the old unhidden.* entries into these.
+
+    private static ModSetting culture;
+
+    /// <summary>
+    /// Which culture <c>Config.Culture</c> carries, defaulting to the studio's own. The studio's
+    /// <c>Config.Culture = CultureInfo.InvariantCulture</c> is assigned once and pushed onto the
+    /// thread, so it decides how every number and date without an explicit provider is parsed and
+    /// formatted. The community patch imposed en-GB; that is offered, not imposed. en-GB and
+    /// invariant agree on the decimal separator.
+    /// </summary>
+    public static ModSetting Culture =>
+        culture ?? (culture = ModSettings.Choice(
+            ModId, "culture", "DISPLAY CULTURE", new string[2] { "invariant", "en-GB" },
+            defaultValue: "invariant",
+            toolTip: "Which culture the interface formats numbers and dates with. 'invariant' is " +
+                     "the studio's own setting and what the retail game runs. 'en-GB' is the " +
+                     "community patch's preference - day/month/year dates - and changes " +
+                     "presentation only.",
+            stockValue: "invariant"));
+
+    /// <summary>
+    /// Applies <see cref="Culture"/>. Call after the settings are registered and before the window
+    /// is created; with the default it assigns what the studio's static constructor already did.
+    /// </summary>
+    public static void ApplyCulture()
+    {
+        Config.Culture = Culture.Value == "en-GB"
+            ? System.Globalization.CultureInfo.GetCultureInfo("en-GB")
+            : System.Globalization.CultureInfo.InvariantCulture;
+    }
+
+    private static ModSetting shadowsKey;
+
+    /// <summary>The community patch's "O": shadows off and on (Client.HandleInput, DateAndTime.ComputeSunAndLight).</summary>
+    public static ModSetting ShadowsKey =>
+        shadowsKey ?? (shadowsKey = ModSettings.Key(
+            ModId, "shadowsKey", "TOGGLE SHADOWS", Microsoft.Xna.Framework.Input.Keys.O,
+            toolTip: "Switches the sun's shadows off and on, in game."));
+
+    /// <summary>Toggled by <see cref="ShadowsKey"/>; while true the sun counts as down for shadows.</summary>
+    public static bool ShadowsDisabled;
 
     private static ModSetting language;
 

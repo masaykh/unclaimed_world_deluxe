@@ -6,7 +6,7 @@ using UWGame.SimSide.Expeditions;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The hunting mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The hunting mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Hunters chase prey as far as the studio set, and the human prey list is the studio's. The
 /// policy window has no autoclaim switch, and an animal that dies in camp unowned stays unowned;

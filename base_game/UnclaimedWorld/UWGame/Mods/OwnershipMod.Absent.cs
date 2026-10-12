@@ -6,7 +6,7 @@ using UWGame.SimSide.Entities.Biological;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The ownership mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The ownership mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Everything belongs to the expedition, as the studio shipped it: households are paid nothing, cook
 /// nothing, and a person eats from the expedition's stock alone.

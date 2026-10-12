@@ -3,7 +3,7 @@ using System;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The procedural map generator, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The procedural map generator, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Nothing in the game calls it; DataExport's --generate-map and --mapgen-selftest do, and say
 /// the mod is not in this build.

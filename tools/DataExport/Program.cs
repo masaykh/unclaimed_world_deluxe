@@ -32,18 +32,17 @@ internal static partial class Program
         if (saveSelfTest != null) saveSelfTest = Path.GetFullPath(saveSelfTest);
         printTraces = args.Contains("--traces");
 
-        // The bundled Unhidden Mod is on by default and its content hooks run inside the data
+        // The bundled mods are on by default and their content hooks run inside the data
         // load, so an export made without this reflects the MODDED tables. That is usually what
         // you want - it is what the game will run - but exporting the stock tables has to be
         // possible too, both for diffing the mod's effect and for a data modder who wants the
         // studio's own numbers as a starting point. Mirrors UnclaimedWorld.exe -nomods.
         if (args.Contains("--nomods") || args.Contains("-nomods"))
         {
-            UWGame.Mods.UnhiddenMod.Disable();
             UWGame.Mods.ModLoader.Disable();
             UWGame.Mods.ModSettings.UseStockValues();
+            Console.WriteLine("==> -nomods: every mod's settings at stock");
         }
-        Console.WriteLine("==> Unhidden Mod: " + (UWGame.Mods.UnhiddenMod.Enabled ? "ON" : "off"));
 
         if (target == null)
         {
@@ -58,8 +57,8 @@ internal static partial class Program
             Console.Error.WriteLine("               the check that the exported XML is actually sufficient to run");
             Console.Error.WriteLine("               from, rather than merely well-formed.");
             Console.Error.WriteLine();
-            Console.Error.WriteLine("  --nomods     export the stock tables, with the bundled Unhidden Mod off.");
-            Console.Error.WriteLine("               Without this the export includes the mod's content.");
+            Console.Error.WriteLine("  --nomods     export the stock tables, every bundled mod at its stock values.");
+            Console.Error.WriteLine("               Without this the export includes the mods' content.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --settings-selftest");
             Console.Error.WriteLine("               write, re-read and verify user/ModSettings.xml in <game-dir>,");
@@ -162,12 +161,6 @@ internal static partial class Program
         // is set, because that is what it resolves against. The switches shape the tables, so an
         // export made without reading them would describe a game nobody is running.
         UWGame.Mods.ModSettings.Load((message, title) => Console.WriteLine("    " + title + ": " + message));
-        // As the game: the bundled mod switched off in SELECT MODS is off from the start, and listed.
-        UWGame.Mods.UnhiddenMod.Describe();
-        if (!UWGame.Mods.ModSettings.IsModEnabled(UWGame.Mods.UnhiddenMod.ModId))
-        {
-            UWGame.Mods.UnhiddenMod.Disable();
-        }
         RegisterEveryMod();
         foreach (UWGame.Mods.ModSetting setting in UWGame.Mods.ModSettings.All)
         {
@@ -403,7 +396,7 @@ internal static partial class Program
     /// </summary>
     /// <summary>
     /// Every mod's settings, in the game's order (GameStateManagement.Program) - the port's, the
-    /// mods that ship as their own file, then the bundled Unhidden Mod when it is on.
+    /// mods that ship as their own file, then what was the Unhidden Mod.
     /// </summary>
     private static void RegisterEveryMod()
     {
@@ -436,10 +429,10 @@ internal static partial class Program
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
         UWGame.Mods.AgentMod.RegisterSettings();
-        if (UWGame.Mods.UnhiddenMod.Enabled)
-        {
-            UWGame.Mods.UnhiddenMod.RegisterSettings();
-        }
+        UWGame.Mods.PeatMod.RegisterSettings();
+        UWGame.Mods.RawhideStringMod.RegisterSettings();
+        UWGame.Mods.RespawnCapMod.RegisterSettings();
+        UWGame.Mods.MainMenuMod.RegisterSettings();
     }
 
 
@@ -659,13 +652,25 @@ internal static partial class Program
         // Every mod that ships says who wrote it, what it does, and has a picture.
         UWGame.Mods.ModSettings.Reset();
         UWGame.Mods.ModSettings.Load((m, t) => Console.WriteLine("    " + t + ": " + m));
-        UWGame.Mods.UnhiddenMod.Describe();
         RegisterEveryMod();
         var shipped = UWGame.Mods.ModSettings.All.Select(s => s.ModId).Where(id => id != UWGame.Mods.PortSettings.ModId).Distinct().ToList();
         var undescribed = shipped.Where(id => !UWGame.Mods.ModSettings.Described.Any(d => d.Id == id && !string.IsNullOrEmpty(d.Author)
                                                      && !string.IsNullOrEmpty(d.Description) && !string.IsNullOrEmpty(d.Thumbnail))).ToList();
         Check(shipped.Count > 0 && undescribed.Count == 0, $"every mod that ships describes itself for SELECT MODS ({shipped.Count} mods)"
               + (undescribed.Count == 0 ? "" : " - not: " + string.Join(", ", undescribed)));
+
+        // The Unhidden Mod was split (Kastuk, 2026-10-11). A save stamped before names its
+        // settings by the old ids, and must read as a save with the same mods as today's.
+        string oldStamp = "mod:SomeMod; unhidden.charcoalFromPeat=true; unhidden.peatBuilding=true; unhidden.stringAlternatives=true";
+        string newStamp = UWGame.Mods.ModSettings.WithCurrentIds(oldStamp);
+        Check(newStamp == "mod:SomeMod; peat.charcoalFromPeat=true; peat.peatBuilding=true; rawhidestring.stringAlternatives=true",
+              "an old save's unhidden.* stamp reads with today's ids (got \"" + newStamp + "\")");
+        // PortSettings keeps the instances it made before the Reset, so its ids are compared.
+        Check(UWGame.Mods.ModSettings.CurrentId("unhidden.culture") == UWGame.Mods.PortSettings.Culture.Id
+              && UWGame.Mods.ModSettings.CurrentId("unhidden.shadowsKey") == UWGame.Mods.PortSettings.ShadowsKey.Id
+              && new[] { "charcoalFromPeat", "peatBuilding", "stringAlternatives", "capResourceRespawn", "mapEditorButtons", "revealTestMap" }
+                     .All(key => UWGame.Mods.ModSettings.Find(UWGame.Mods.ModSettings.CurrentId("unhidden." + key)) != null),
+              "  and each old id names a setting this build registers");
 
         Console.WriteLine();
         if (failures == 0)

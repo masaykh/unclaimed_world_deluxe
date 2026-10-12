@@ -29,21 +29,22 @@
   </PropertyGroup>
 
   <!--
-    SELECTABLE FEATURES.  -p:UwHarmony=true -p:UwUnhiddenMod=true -p:UwGameplayMods=true
+    SELECTABLE FEATURES.  -p:UwHarmony=true -p:UwGameplayMods=true
 
-    (NOT -p:UwFeatures="harmony;unhiddenmod" - that form is shown below as the one that FAILS,
+    (NOT -p:UwFeatures="harmony;gameplaymods" - that form is shown below as the one that FAILS,
     and having it here as the headline cost a reader a build. See "THE INTERFACE IS BOOLEANS"
     in the next comment.)
 
     Build-time rather than runtime for everything that pulls in code the user may not want in
-    their process at all: the Harmony mod loader (which loads third-party assemblies), the bundled
-    Unhidden Mod, and the six per-request gameplay mods (all of which change simulation content,
-    and therefore save compatibility). Leaving a feature out means its code is not compiled in,
+    their process at all: the Harmony mod loader (which loads third-party assemblies), and the
+    bundled mods in mods/ (many of which change simulation content, and therefore save
+    compatibility). The Unhidden Mod was a third feature until it was split into mods of its own
+    (Kastuk, 2026-10-11). Leaving a feature out means its code is not compiled in,
     not merely disabled - which is the honest meaning of "I did not install that", and
     .github/workflows/publish.yml checks it by searching the built assembly for strings that
     exist only inside a mod.
 
-    Default is all three ON, matching the archives, EXCEPT that the two mod features default off
+    Default is both ON, matching the archives, EXCEPT that the mods feature defaults off
     when the repository's mods/ directory is absent - see THE MODS DIRECTORY DECIDES THE DEFAULT
     below. The installer in kit/ passes them explicitly.
 
@@ -56,10 +57,10 @@
   <!--
     THE INTERFACE IS BOOLEANS, not a list:
 
-        dotnet build ... -p:UwHarmony=true -p:UwUnhiddenMod=false -p:UwGameplayMods=false
+        dotnet build ... -p:UwHarmony=true -p:UwGameplayMods=false
 
     A list property cannot be passed safely through the dotnet CLI. Both separators are taken
-    by the CLI itself - `-p:UwFeatures="harmony;unhiddenmod"` and the comma form both fail with
+    by the CLI itself - `-p:UwFeatures="harmony;gameplaymods"` and the comma form both fail with
     "MSBUILD : error MSB1006: Property is not valid", because ; and , delimit properties at that
     level. Only %3B-escaping survives, which is not something to ask an installer script - or a
     human - to remember. Separate booleans need no escaping and cannot be silently mangled.
@@ -85,22 +86,20 @@
 
   <PropertyGroup>
     <UwHarmony Condition="'$(UwHarmony)' == ''">true</UwHarmony>
-    <UwUnhiddenMod Condition="'$(UwUnhiddenMod)' == ''">$(UwModsPresent)</UwUnhiddenMod>
     <UwGameplayMods Condition="'$(UwGameplayMods)' == ''">$(UwModsPresent)</UwGameplayMods>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UwFeatures)' != ''">
     <UwFeatureList>;$(UwFeatures.ToLowerInvariant().Replace(' ',''));</UwFeatureList>
     <UwHarmony>$(UwFeatureList.Contains(';harmony;'))</UwHarmony>
-    <UwUnhiddenMod>$(UwFeatureList.Contains(';unhiddenmod;'))</UwUnhiddenMod>
     <UwGameplayMods>$(UwFeatureList.Contains(';gameplaymods;'))</UwGameplayMods>
   </PropertyGroup>
 
   <!--
     Exactly one implementation of each feature is compiled. The *.Absent.cs files are no-op
-    stubs with a `const bool Enabled = false`, which keeps the game's own call sites - eleven of
-    them for the mod - byte-identical whether a feature is in or out. See the header comment in
-    UnhiddenMod.Absent.cs for why that is preferable to #if at each site.
+    stubs with a `const bool Enabled = false`, which keeps the game's own call sites
+    byte-identical whether a feature is in or out. See the header comment in
+    PeatMod.Absent.cs for why that is preferable to #if at each site.
 
     The loader is the only thing that references HarmonyLib, so the two come and go together.
   -->
@@ -141,14 +140,6 @@
              Link="UWGame\Mods\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UwUnhiddenMod)' == 'true'">
-    <Compile Remove="UWGame\Mods\UnhiddenMod.Absent.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(UwUnhiddenMod)' != 'true'">
-    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\UnhiddenMod.cs" />
-    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\UnhiddenModSmithies.cs" />
-  </ItemGroup>
-
   <!--
     The six per-request mods, in and out as a group. They are listed one by one rather than
     globbed because a glob would silently include a mod nobody wrote a stub for, and the first
@@ -185,6 +176,10 @@
     <Compile Remove="UWGame\Mods\FreshFoodMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\TradeMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\StockpilePriorityMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\PeatMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\RawhideStringMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\RespawnCapMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\MainMenuMod.Absent.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
@@ -219,10 +214,16 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\SelfPreservationMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\TradeMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\StockpilePriorityMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\PeatMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\PeatModSmithies.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\RecipeVariants.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\RawhideStringMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\RespawnCapMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MainMenuMod.cs" />
   </ItemGroup>
 
   <Target Name="ReportUwFeatures" BeforeTargets="Build">
-    <Message Importance="high" Text="UwFeatures: harmony=$(UwHarmony) unhiddenmod=$(UwUnhiddenMod) gameplaymods=$(UwGameplayMods) (mods/ present: $(UwModsPresent))" />
+    <Message Importance="high" Text="UwFeatures: harmony=$(UwHarmony) gameplaymods=$(UwGameplayMods) (mods/ present: $(UwModsPresent))" />
   </Target>
 
   <ItemGroup>

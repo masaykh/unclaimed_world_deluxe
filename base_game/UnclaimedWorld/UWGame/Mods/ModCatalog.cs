@@ -141,11 +141,6 @@ public static class ModCatalog
         {
             return ModState.OffThisSession;
         }
-        // The bundled mod is off from the start of the game, so a change shows at the next.
-        if (string.Equals(modId, UnhiddenMod.ModId, StringComparison.OrdinalIgnoreCase) && UnhiddenMod.Enabled != ModSettings.IsModEnabled(modId))
-        {
-            return ModState.AtNextStart;
-        }
         return ModSettings.IsModEnabled(modId) ? ModState.On : ModState.Off;
     }
 

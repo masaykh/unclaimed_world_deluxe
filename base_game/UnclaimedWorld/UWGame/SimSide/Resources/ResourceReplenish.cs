@@ -75,11 +75,11 @@ public class ResourceReplenish : ISnapshot
 			// UpdateMaxItemsEverSet then ratchets the maximum up to the new count, so the next
 			// harvest starts the next doubling from higher up.
 			//
-			// UNHIDDEN MOD: use the clamp the studio computed. Under the switch because it changes
-			// the food economy of a running game, and because the port's own patches are meant to
-			// leave gameplay alone.
+			// MOD: RespawnCapMod uses the clamp the studio computed. A mod because it changes the
+			// food economy of a running game, and the port's own patches are meant to leave
+			// gameplay alone.
 			int clamped = Common.Clamp(num, 1, maxResourceItemsEverSet - parent.NoOfHarvestableItems);
-			if (UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.CapResourceRespawn.On)
+			if (UWGame.Mods.RespawnCapMod.Enabled)
 			{
 				num = clamped;
 			}

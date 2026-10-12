@@ -293,10 +293,10 @@ public class DateAndTime : ISnapshot
 		SunElevation = (float)Math.Asin(num5);
 		bool sunIsUp = SunIsUp;
 		SunIsUp = SunElevation > 0f && SunElevation < (float)Math.PI;
-		// UNHIDDEN MOD: the "O" shadow toggle. Forcing the sun down is what suppresses shadows,
-		// and it is applied before the change is compared below so the tree night states stay
-		// consistent with it.
-		if (UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.ShadowsDisabled)
+		// PORT (from the Unhidden Mod): the "O" shadow toggle. Forcing the sun down is what
+		// suppresses shadows, and it is applied before the change is compared below so the tree
+		// night states stay consistent with it.
+		if (UWGame.Mods.PortSettings.ShadowsDisabled)
 		{
 			SunIsUp = false;
 		}

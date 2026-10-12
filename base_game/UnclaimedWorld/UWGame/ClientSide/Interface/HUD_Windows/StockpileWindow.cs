@@ -161,7 +161,7 @@ public class StockpileWindow : HUDWindow
 		cpCategory = new CollapsablePanel(gui, CollapsablePanel.PanelType.StockpileHUD);
 		cpCategory.CollapsedHeight = outerGrid.ItemHeight;
 		outerGrid.AddEntry(entityCategory, cpCategory);
-		// UNHIDDEN MOD: same for the category header. SortOrder rather than the name, so categories
+		// PORT (from the Unhidden Mod): same for the category header. SortOrder rather than the name, so categories
 		// keep the order the data gives them and only the items inside go alphabetical.
 		cpCategory.OrderByTag1 = entityCategory.SortOrder;
 		cpCategory.Init();
@@ -266,7 +266,7 @@ public class StockpileWindow : HUDWindow
 	{
 		UIComponent uIComponent = new UIComponent(gui);
 		categoryGrid.AddEntry(entityType, uIComponent);
-		// UNHIDDEN MOD: give the row a sort key. Without one, DoCategorySorting below orders every
+		// PORT (from the Unhidden Mod): give the row a sort key. Without one, DoCategorySorting below orders every
 		// row by a null OrderByTag1 - OrderBy is stable, so nothing moved and the sort looked like it
 		// did nothing at all. Reported by Kastuk as "already tried in Unhidden mod without success".
 		// PluralName is what BuySellPanel uses for the same job, so the stockpile now reads the way
@@ -601,13 +601,11 @@ public class StockpileWindow : HUDWindow
 			item5.EndAddingEntries();
 		}
 		outerGrid.EndAddingEntries();
-		// UNHIDDEN MOD: sort the stockpile the way the inventory panel already sorts itself.
-		// InventoryPanel.DoCategorySorting is the studio's own routine, used at
-		// InventoryPanel.cs:949; the stockpile window just never called it.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
-		{
-			InventoryPanel.DoCategorySorting(outerGrid, categoryGridsThatWereAddedTo, Grid.Sorting.Ascending);
-		}
+		// PORT (from the Unhidden Mod, now core - Kastuk, 2026-10-11): sort the stockpile the way
+		// the inventory panel already sorts itself. InventoryPanel.DoCategorySorting is the
+		// studio's own routine, used at InventoryPanel.cs:949; the stockpile window just never
+		// called it.
+		InventoryPanel.DoCategorySorting(outerGrid, categoryGridsThatWereAddedTo, Grid.Sorting.Ascending);
 	}
 
 	private void CountItemsThatAreAlreadyHere(MapArea mapArea, IKnownEntityData structureData)

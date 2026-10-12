@@ -3,7 +3,7 @@ using UWGame.ClientSide.Interface;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The HUD mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The HUD mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// The markers switch is left to the studio's click handling: a ground click shows, a right
 /// click hides.

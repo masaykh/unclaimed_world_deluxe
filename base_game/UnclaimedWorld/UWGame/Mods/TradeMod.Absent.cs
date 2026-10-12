@@ -8,7 +8,7 @@ using UWGame.SimSide.Overland.Missions.Templates;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The trade mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The trade mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// A trade run's sale is paid when the run starts, as the studio made it: the contract records
 /// what EntityGroup.Buy charged, loading pays nothing more, and an abort leaves the studio's

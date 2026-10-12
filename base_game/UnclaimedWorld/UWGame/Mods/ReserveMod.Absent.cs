@@ -4,7 +4,7 @@ using UWGame.SimSide.Expeditions;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The reserve mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The reserve mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// No item is ever reserved: colonists eat and workshops use everything, as the studio made them.
 /// Reserves a modded build left in a save's expedition custom fields are never read.

@@ -2439,12 +2439,12 @@ Structures can often have their lifespan extended with regular maintenance. Item
   </String>
   <!-- ClientSide/Interface/ModdingDialog.cs -->
   <String>
-    <Key>GuiSwitchedOffOPTIONSMODSUNHIDDENMODMAPEDITORBUTTO_e8e373692836</Key>
-    <Value>Switched off: OPTIONS -&gt; MODS -&gt; UNHIDDEN MOD -&gt; MAP EDITOR BUTTONS.</Value>
+    <Key>GuiSwitchedOffOPTIONSMODSMAINMENUMAPEDITORBUTTONS_0503ba322338</Key>
+    <Value>Switched off: OPTIONS -&gt; MODS -&gt; MAIN MENU -&gt; MAP EDITOR BUTTONS.</Value>
   </String>
   <String>
-    <Key>GuiComesWithTheUnhiddenModWhichIsSwitchedOffSELECT_7c7c266eebbf</Key>
-    <Value>Comes with the Unhidden Mod, which is switched off: SELECT MODS.</Value>
+    <Key>GuiComesWithTheMAINMENUModWhichIsSwitchedOffSELECT_eb5b47220e46</Key>
+    <Value>Comes with the MAIN MENU mod, which is switched off: SELECT MODS.</Value>
   </String>
   <String>
     <Key>GuiEveryModWhatItDoesWhoMadeItAndASwitchForEach_c541542fcf72</Key>
@@ -6364,6 +6364,27 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipMagnificationWarnWhenTooSmall</Key>
     <Value>Reports at startup when the resolution and magnification together leave less room than the interface is laid out for, instead of letting panels be cut off at the screen edge.</Value>
   </String>
+  <!-- settings: mainmenu -->
+  <String>
+    <Key>SettingGroupMainmenu</Key>
+    <Value>MAIN MENU</Value>
+  </String>
+  <String>
+    <Key>SettingMainmenuMapEditorButtons</Key>
+    <Value>MAP EDITOR BUTTONS</Value>
+  </String>
+  <String>
+    <Key>SettingTipMainmenuMapEditorButtons</Key>
+    <Value>Lets MODDING on the main menu open the studio's map editor, and a map played with no colonists on it. Takes effect the next time the main menu opens.</Value>
+  </String>
+  <String>
+    <Key>SettingMainmenuRevealTestMap</Key>
+    <Value>SHOW ALL OF A TEST MAP</Value>
+  </String>
+  <String>
+    <Key>SettingTipMainmenuRevealTestMap</Key>
+    <Value>A map opened with TEST SCENE is drawn whole, as in the editor: no fog of war and no black unexplored ground. Ordinary games are not affected.</Value>
+  </String>
   <!-- settings: mapedge -->
   <String>
     <Key>SettingGroupMapedge</Key>
@@ -6397,6 +6418,27 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipOwnershipEnabled</Key>
     <Value>After each workday, every household with a worker is topped up with food from the colony's stock, and its members cook their own meals from it after work. Houses stay communal. Household food no longer counts in the colony's stock.</Value>
+  </String>
+  <!-- settings: peat -->
+  <String>
+    <Key>SettingGroupPeat</Key>
+    <Value>PEAT</Value>
+  </String>
+  <String>
+    <Key>SettingPeatCharcoalFromPeat</Key>
+    <Value>CHARCOAL FROM PEAT</Value>
+  </String>
+  <String>
+    <Key>SettingTipPeatCharcoalFromPeat</Key>
+    <Value>Adds the recipe that turns dry peat into charcoal in a kiln, for maps where trees are scarce. Off gives the stock game's firewood route only. Changes what a save contains: a save made with this on names a recipe a build without it does not have.</Value>
+  </String>
+  <String>
+    <Key>SettingPeatPeatBuilding</Key>
+    <Value>BUILD WITH PEAT</Value>
+  </String>
+  <String>
+    <Key>SettingTipPeatPeatBuilding</Key>
+    <Value>Lets a campfire, an improvised kitchen and a mudbrick kitchen be built with dry peat instead of firewood. The fuel is not spent building them - it is the load they start with - so peat works as well as a log does.</Value>
   </String>
   <!-- settings: pests -->
   <String>
@@ -6445,6 +6487,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>When a save was made with different modded content, ask whether to load it with the settings it was made with. Off loads with your current settings and only reports the difference.</Value>
   </String>
   <String>
+    <Key>SettingPortCulture</Key>
+    <Value>DISPLAY CULTURE</Value>
+  </String>
+  <String>
+    <Key>SettingTipPortCulture</Key>
+    <Value>Which culture the interface formats numbers and dates with. 'invariant' is the studio's own setting and what the retail game runs. 'en-GB' is the community patch's preference - day/month/year dates - and changes presentation only.</Value>
+  </String>
+  <String>
     <Key>SettingPortLanguage</Key>
     <Value>LANGUAGE</Value>
   </String>
@@ -6468,6 +6518,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipPortSaveDateFormat</Key>
     <Value>How the date is written in the save and load lists. ISO (yyyy-MM-dd) sorts correctly and cannot be misread. The decimal separator used everywhere else stays a period whatever is chosen here.</Value>
   </String>
+  <String>
+    <Key>SettingPortShadowsKey</Key>
+    <Value>TOGGLE SHADOWS</Value>
+  </String>
+  <String>
+    <Key>SettingTipPortShadowsKey</Key>
+    <Value>Switches the sun's shadows off and on, in game.</Value>
+  </String>
   <!-- settings: preyfear -->
   <String>
     <Key>SettingGroupPreyfear</Key>
@@ -6488,6 +6546,19 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipPreyfearPreyFlees</Key>
     <Value>Rats, field quadites, mud worms and other vermin that cannot fight back keep further from dogs and predators, and stop eating to run when one comes close.</Value>
+  </String>
+  <!-- settings: rawhidestring -->
+  <String>
+    <Key>SettingGroupRawhidestring</Key>
+    <Value>RAWHIDE STRING</Value>
+  </String>
+  <String>
+    <Key>SettingRawhidestringStringAlternatives</Key>
+    <Value>NETS FROM ANY STRING</Value>
+  </String>
+  <String>
+    <Key>SettingTipRawhidestringStringAlternatives</Key>
+    <Value>Adds a fishing net recipe that uses rawhide string. Stock only accepts cotton string, which leaves rawhide string with no use at all.</Value>
   </String>
   <!-- settings: regrowth -->
   <String>
@@ -6514,6 +6585,19 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipReserveEnabled</Key>
     <Value>Adds an R button beside each item in the Production list. Pressed, the slider sets an amount colonists will not eat and workshops will not use - kept for trading. Starving colonists may still eat it. Reopen the Production list after switching this.</Value>
+  </String>
+  <!-- settings: respawncap -->
+  <String>
+    <Key>SettingGroupRespawncap</Key>
+    <Value>RESOURCE RESPAWN CAP</Value>
+  </String>
+  <String>
+    <Key>SettingRespawncapCapResourceRespawn</Key>
+    <Value>CAP RESOURCE RESPAWN</Value>
+  </String>
+  <String>
+    <Key>SettingTipRespawncapCapResourceRespawn</Key>
+    <Value>Tops a resource tile back up to the most it has ever held, instead of adding that much again on top. Without it, shellfish and other fully-replenishing resources multiply every time they are harvested.</Value>
   </String>
   <!-- settings: safesleep -->
   <String>
@@ -6740,83 +6824,6 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipTradeRoughEta</Key>
     <Value>The ETA in the missions list reads "half a day" or "a day or two" instead of "0.48 days", and its tooltip names the part of the day, not the clock.</Value>
-  </String>
-  <!-- settings: unhidden -->
-  <String>
-    <Key>SettingGroupUnhidden</Key>
-    <Value>UNHIDDEN MOD</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenCapResourceRespawn</Key>
-    <Value>CAP RESOURCE RESPAWN</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenCapResourceRespawn</Key>
-    <Value>Tops a resource tile back up to the most it has ever held, instead of adding that much again on top. Without it, shellfish and other fully-replenishing resources multiply every time they are harvested.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenCharcoalFromPeat</Key>
-    <Value>CHARCOAL FROM PEAT</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenCharcoalFromPeat</Key>
-    <Value>Adds the recipe that turns 1 dry peat into 1 charcoal in a kiln, for maps where trees are scarce. Off gives the stock game's firewood route only. Changes what a save contains: a save made with this on names a recipe a build without it does not have.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenCulture</Key>
-    <Value>DISPLAY CULTURE</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenCulture</Key>
-    <Value>Which culture the interface formats numbers and dates with. 'invariant' is the studio's own setting and what the retail game runs. 'en-GB' is the community patch's preference - day/month/year dates - and changes presentation only.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenExperimental</Key>
-    <Value>EXPERIMENTAL</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenExperimental</Key>
-    <Value>Reserved for whatever is being tried out in this build. Off in a release.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenMapEditorButtons</Key>
-    <Value>MAP EDITOR BUTTONS</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenMapEditorButtons</Key>
-    <Value>Shows EDIT and TEST MAP on the main menu: the studio's map editor, and a map played with no colonists on it. Takes effect the next time the main menu opens.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenPeatBuilding</Key>
-    <Value>BUILD WITH PEAT</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenPeatBuilding</Key>
-    <Value>Lets a campfire, an improvised kitchen and a mudbrick kitchen be built with dry peat instead of firewood. The fuel is not spent building them - it is the load they start with - so peat works as well as a log does.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenRevealTestMap</Key>
-    <Value>SHOW ALL OF A TEST MAP</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenRevealTestMap</Key>
-    <Value>A map opened with TEST MAP is drawn whole, as in the editor: no fog of war and no black unexplored ground. Ordinary games are not affected.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenShadowsKey</Key>
-    <Value>TOGGLE SHADOWS</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenShadowsKey</Key>
-    <Value>Switches the sun's shadows off and on, in game.</Value>
-  </String>
-  <String>
-    <Key>SettingUnhiddenStringAlternatives</Key>
-    <Value>NETS FROM ANY STRING</Value>
-  </String>
-  <String>
-    <Key>SettingTipUnhiddenStringAlternatives</Key>
-    <Value>Adds a fishing net recipe that uses rawhide string. Stock only accepts cotton string, which leaves rawhide string with no use at all.</Value>
   </String>
   <!-- data: ALLEGIANCE -->
   <String>
@@ -15743,12 +15750,20 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
     <Value>Magnification below 1.0, for small screens and large monitors, and a warning when the interface will not fit.</Value>
   </String>
   <String>
+    <Key>ModDescriptionMainmenu</Key>
+    <Value>The map editor and test scenes from MODDING on the main menu, and a test map shown whole with no fog of war.</Value>
+  </String>
+  <String>
     <Key>ModDescriptionMapedge</Key>
     <Value>Stops the camera at the edge of the map instead of letting it scroll off into nothing.</Value>
   </String>
   <String>
     <Key>ModDescriptionOwnership</Key>
     <Value>Households are paid in food and cook for themselves - the first step from a communal expedition towards private ownership.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionPeat</Key>
+    <Value>Peat as fuel: a kiln turns dry peat into charcoal, and a campfire or a primitive kitchen can be built with peat instead of firewood.</Value>
   </String>
   <String>
     <Key>ModDescriptionPests</Key>
@@ -15759,12 +15774,20 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
     <Value>Small prey runs from what hunts it, and a dog standing right against its prey can bite it.</Value>
   </String>
   <String>
+    <Key>ModDescriptionRawhidestring</Key>
+    <Value>A fishing net can be made from rawhide string as well as cotton string, so rawhide string has a use.</Value>
+  </String>
+  <String>
     <Key>ModDescriptionRegrowth</Key>
     <Value>Wood and living plants grow back more slowly where those around them have been gathered down. Leave some standing.</Value>
   </String>
   <String>
     <Key>ModDescriptionReserve</Key>
     <Value>A reserve per item: an amount colonists will not eat and workshops will not use up, unless someone is starving.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionRespawncap</Key>
+    <Value>Shellfish and other resources that grow back are topped up to the most a tile has held, instead of multiplying every time they are harvested.</Value>
   </String>
   <String>
     <Key>ModDescriptionSafesleep</Key>
@@ -15789,10 +15812,6 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   <String>
     <Key>ModDescriptionTrade</Key>
     <Value>Goods sold on a trade run are paid for when the barge loads them, not when the run starts, and missions say roughly when they arrive.</Value>
-  </String>
-  <String>
-    <Key>ModDescriptionUnhidden</Key>
-    <Value>Community fixes and additions: charcoal from peat, building with peat, nets from any string, capped resource respawn, the smithies, your own scenarios in the New Game list, and the map editor's buttons.</Value>
   </String>
   <!-- data: NUTRIENT -->
   <String>

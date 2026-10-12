@@ -5,7 +5,7 @@ using UWGame.SimSide.Entities.Containers;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The tool care mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The tool care mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// A colonist whose job needs its hands drops whatever the job doesn't use, where it stands, as the
 /// studio made it.

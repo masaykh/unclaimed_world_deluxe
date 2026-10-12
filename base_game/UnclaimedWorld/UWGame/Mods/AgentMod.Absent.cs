@@ -3,7 +3,7 @@ using UWGame.Control;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The file-driven agent channel, compiled OUT. See UnhiddenMod.Absent.cs for the pattern and
+/// The file-driven agent channel, compiled OUT. See PeatMod.Absent.cs for the pattern and
 /// HealingMod.Absent.cs for why every member answers what the studio's code answered.
 /// </summary>
 public static class AgentMod

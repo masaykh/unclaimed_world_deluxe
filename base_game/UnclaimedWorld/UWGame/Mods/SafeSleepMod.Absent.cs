@@ -4,7 +4,7 @@ using UWGame.SimSide.Entities;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The safe sleep mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The safe sleep mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// A sleeping spot is scored as the studio scored it: by kind of place, never by what is nearby.
 /// </summary>

@@ -4,7 +4,7 @@ using UWGame.SimSide.Entities;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The dangerous fauna mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The dangerous fauna mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Every factor is 1 and the aggro range passes through untouched - the studio's own numbers,
 /// which is what the real mod also answers until a row is changed.

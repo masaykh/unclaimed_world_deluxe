@@ -3,7 +3,7 @@ using UWGame.SimSide.Expeditions;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The pest mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The pest mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// Every population fills to the studio's MaxMembers at the studio's growth rate.
 /// </summary>

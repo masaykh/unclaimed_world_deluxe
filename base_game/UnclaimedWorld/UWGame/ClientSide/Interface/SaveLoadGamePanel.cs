@@ -322,13 +322,10 @@ public class SaveLoadGamePanel : Panel
 	{
 		List<string> listOfSavedGamePaths = GetListOfSavedGamePaths();
 		List<Tuple<string, long, SnapshotHeader>> snapshotHeaders = GetSnapshotHeaders(listOfSavedGamePaths);
-		// UNHIDDEN MOD: newest save first. The Harmony patch had to replace this whole method
-		// with a reflection-driven copy to get one sort in; from inside the assembly it is a
-		// sort.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
-		{
-			snapshotHeaders = snapshotHeaders.OrderByDescending((Tuple<string, long, SnapshotHeader> x) => x.Item3.Timestamp).ToList();
-		}
+		// PORT (from the Unhidden Mod, now core - Kastuk, 2026-10-11): newest save first. The
+		// Harmony patch had to replace this whole method with a reflection-driven copy to get one
+		// sort in; from inside the assembly it is a sort.
+		snapshotHeaders = snapshotHeaders.OrderByDescending((Tuple<string, long, SnapshotHeader> x) => x.Item3.Timestamp).ToList();
 		grid.BeginAddingEntries();
 		grid.Clear();
 		foreach (Tuple<string, long, SnapshotHeader> item in snapshotHeaders)

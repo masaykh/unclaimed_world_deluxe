@@ -396,12 +396,10 @@ public class InventorySettings : ISnapshot
 		attainableInfoInProgress.Clear();
 		isOwnedOrTradable.Clear();
 		processesToDo = null;
-		// UNHIDDEN MOD: the added item is producible but would never be offered, because
-		// attainability is computed from the tables as they stood before the addition.
-		if (UWGame.Mods.UnhiddenMod.Enabled)
-		{
-			UWGame.Mods.UnhiddenMod.RegisterAttainability(attainableInfo);
-		}
+		// MOD: the recipes PeatMod and RawhideStringMod add are producible but would never be
+		// offered, because attainability is computed from the tables as they stood before.
+		UWGame.Mods.PeatMod.RegisterAttainability(attainableInfo);
+		UWGame.Mods.RawhideStringMod.RegisterAttainability(attainableInfo);
 	}
 
 	private void StartRecomputeAttainability()

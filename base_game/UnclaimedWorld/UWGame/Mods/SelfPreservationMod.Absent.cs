@@ -5,7 +5,7 @@ using UWGame.SimSide.Jobs;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The self-preservation mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern, and
+/// The self-preservation mod, compiled OUT. See PeatMod.Absent.cs for the pattern, and
 /// HealingMod.Absent.cs for why every member answers what the studio's code answered.
 /// </summary>
 public static class SelfPreservationMod

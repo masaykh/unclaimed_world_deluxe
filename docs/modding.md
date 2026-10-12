@@ -329,34 +329,43 @@ appear in the same entry. The mods that ship with the game describe themselves w
 the game's own (`HUD_thumbnail_cookhouse`) or a PNG's path. A built-in mod switched off has every
 setting read as the studio's game until it is switched on again, and gets its own values back then.
 
-## The bundled Unhidden Mod
+## What was the Unhidden Mod
 
-This build ships a community mod — **on by default** — contributed as BepInEx / HarmonyLib
-patches and applied here directly in source. `-nomods` turns it off.
+A community mod, contributed as BepInEx / HarmonyLib patches and applied here directly in source.
+It shipped as one mod until 2026-10-11, when Kastuk asked for it to be dissolved — "standing
+alongside of all other mods that Unhidden one make just confusion". It is now:
+
+| where | what |
+|---|---|
+| core | the scenario picker lists user scenarios from `user/Scenarios` (`SelectScenarioPanel.AllScenarioHeaders`); saves sort newest first; stockpile categories sort ascending; the mouse wheel scrolls data sheets |
+| `PortSettings` | `port.culture` (DISPLAY CULTURE) and `port.shadowsKey` (`O` toggles shadows) |
+| `PeatMod` (PEAT) | `peat.charcoalFromPeat`, `peat.peatBuilding`, and the charcoal / smithy fuel tag |
+| `RawhideStringMod` (RAWHIDE STRING) | `rawhidestring.stringAlternatives` |
+| `RespawnCapMod` (RESOURCE RESPAWN CAP) | `respawncap.capResourceRespawn` |
+| `MainMenuMod` (MAIN MENU) | `mainmenu.mapEditorButtons`, `mainmenu.revealTestMap` |
+
+Each of the four mods has its own entry in SELECT MODS. A settings file or a save stamp written
+before the split names the old `unhidden.*` ids; `ModSettings.LegacyIds` reads them as the new
+ones, and a file is written back with the new ids. `-nomods` holds every mod at its stock values.
 
 ```
-UnclaimedWorld.exe -nomods            stock game, mod off
+UnclaimedWorld.exe -nomods            stock game, every mod at its stock values
 ```
 
-It splits into two halves, and the second one matters:
-
-**Interface and controls** — no effect on simulation state. The main menu's MODDING window gains
-MAP EDITOR and TEST SCENE (the studio's `MainMenuScreen.EditMap` / `TestMap` are fully implemented
-and were simply never given a button; MODDING itself is the port's, `ModdingDialog`). The scenario picker lists user scenarios from `user/Scenarios` rather than
-only built-in ones. Saves sort newest first, stockpile categories sort ascending, the mouse
-wheel scrolls data sheets, and `O` toggles shadows. `Config.Culture` is a **choice**
-(`unhidden.culture`) and defaults to the studio's own `InvariantCulture`; `en-GB`, which the
+**Interface** — the core part has no effect on simulation state. MODDING's MAP EDITOR and TEST
+SCENE (MainMenuMod) call the studio's `MainMenuScreen.EditMap` / `TestMap`, fully implemented and
+never given a button; MODDING itself is the port's, `ModdingDialog`. `Config.Culture` is a
+**choice** (`port.culture`) and defaults to the studio's own `InvariantCulture`; `en-GB`, which the
 contributed patch imposed on every player, is the other setting. The studio assigns invariant in
 `Config`'s static constructor and `GameStateManagement.UnclaimedWorld` pushes it onto
 `Thread.CurrentThread.CurrentCulture`, so it governs every number and date formatted or parsed
-without an explicit provider — a deliberate decision, and one a mod should offer rather than
-overwrite.
+without an explicit provider — a deliberate decision, and one to offer rather than overwrite.
 
-**Simulation content** — changes balance, and **changes what a save contains**. `item:charcoal` is
-redefined to carry a `fuelForForge` *tag* instead of being matched by item key, both smithies are
-redefined to require the tag rather than the literal item, and `makeCharcoalFromPeat` is added.
-That last one is switchable — `unhidden.charcoalFromPeat` in `user/ModSettings.xml`, or the MODS
-section of the options menu — and it is the only thing here that a save can name.
+**Simulation content** (PeatMod) — changes balance, and **changes what a save contains**.
+`item:charcoal` is redefined to carry a `fuelForForge` *tag* instead of being matched by item key,
+both smithies are redefined to require the tag rather than the literal item, and
+`makeCharcoalFromPeat` is added — all with `peat.charcoalFromPeat` on, in `user/ModSettings.xml`
+or the MODS section of the options menu.
 
 ### Charcoal from peat
 
@@ -389,7 +398,7 @@ The full peat chain, all of it stock except the last step: peat bank → `makeWe
 
 ### Building with peat
 
-`unhidden.peatBuilding` adds a peat-fuelled variant of the three stock recipes that hand a
+`peat.peatBuilding` adds a peat-fuelled variant of the three stock recipes that hand a
 structure its first load of fuel — `constructCampfire`, `constructImprovisedKitchen`,
 `constructMudbrickKitchen`. In all three the firewood is not a *material*: it is consumed and
 re-created as a waste product, which is how the game says "the structure starts with one fuel in
@@ -414,13 +423,14 @@ recipe for a structure now works.
 
 ### Fixes and alternatives from the task list
 
-Three more switches, all defaulting on, all in `user/ModSettings.xml` and the MODS menu:
+Three more switches, all defaulting on, all in `user/ModSettings.xml` and the MODS menu, each in
+the mod named by its prefix:
 
 | setting | what it does |
 |---|---|
-| `unhidden.stringAlternatives` | `makeFishingNetFromRawhide` — a net from rawhide string. Stock `makeFishingNet` names `item:cottonString` by key and is the **only** recipe in the game that consumes a string, so `item:rawhideString` is craftable and used by nothing at all |
-| `unhidden.capResourceRespawn` | tops a replenishing resource tile back up to its high-water mark instead of adding that much *again* on top. `ResourceReplenish.ReplenishResourceItems` computes exactly this clamp and drops the result — `Common.Clamp` is a pure function called as a statement — so a tile with `FractionOfMaximumToReplenishEachTime = 1.0` (torux shellfish among others) roughly **doubles** every time it has been harvested, and the maximum is a ratchet that records the larger count |
-| `unhidden.peatBuilding` | the peat-fuelled build variants, above |
+| `rawhidestring.stringAlternatives` | `makeFishingNetFromRawhide` — a net from rawhide string. Stock `makeFishingNet` names `item:cottonString` by key and is the **only** recipe in the game that consumes a string, so `item:rawhideString` is craftable and used by nothing at all |
+| `respawncap.capResourceRespawn` | tops a replenishing resource tile back up to its high-water mark instead of adding that much *again* on top. `ResourceReplenish.ReplenishResourceItems` computes exactly this clamp and drops the result — `Common.Clamp` is a pure function called as a statement — so a tile with `FractionOfMaximumToReplenishEachTime = 1.0` (torux shellfish among others) roughly **doubles** every time it has been harvested, and the maximum is a ratchet that records the larger count |
+| `peat.peatBuilding` | the peat-fuelled build variants, above |
 
 The respawn one is a gameplay fix, so it is in the mod rather than in `patches/` — the port's own
 patches leave gameplay alone. It takes effect immediately and no save can tell whether it was on.
@@ -440,7 +450,7 @@ No knife, no machete, no hammer.
 recipe that **produces** an item and turns it round — `makeHammer` is 1 wrought iron + 1 sticks, so
 a hammer comes apart into 1 wrought iron + 1 sticks — which means nothing is typed twice and the
 disassembly follows the studio's numbers when they change. It runs at the end of
-`BaseDataLoader.InitProcessTypes`, the same hook the Unhidden Mod's recipes use, and hangs each
+`BaseDataLoader.InitProcessTypes`, the same hook PeatMod's recipes use, and hangs each
 generated recipe on its item through the studio's own `NonLivingType.SalvageProcess` field, so the
 DISASSEMBLE button appears by the studio's own path (`EntityType.CanBeSalvagedDirectly`, read by
 `HUDEntityContextMenu.RefreshEntityContent`).
@@ -535,7 +545,7 @@ save stamp together.
 ```xml
 <ModSettings>
   <!-- CHARCOAL FROM PEAT - Adds the recipe that turns 1 dry peat into 1 charcoal ...  AFFECTS SAVES -->
-  <Setting id="unhidden.charcoalFromPeat" value="true" />
+  <Setting id="peat.charcoalFromPeat" value="true" />
   <Setting id="port.saveDateFormat" value="yyyy-MM-dd HH:mm" />
 </ModSettings>
 ```
@@ -608,9 +618,8 @@ Why it is in source rather than loaded: BepInEx 5 targets .NET Framework / Mono 
 into a .NET 8 process, and BepInEx 6's CoreCLR loader is pre-release. But the deeper reason is
 that HarmonyLib exists to reach what you cannot name from outside an assembly — and from inside,
 the twelve patch targets, six reflected private methods and seven `___field` injections are just
-fields and methods. The port has the source, so the whole apparatus collapses into eleven `if
-(UnhiddenMod.Enabled)` call sites. See `mods/` for the implementation
-and `patches/` for the contributed originals, kept verbatim as the record of intent.
+fields and methods. The port has the source, so the whole apparatus collapsed into ordinary call
+sites. See `PeatMod`, `RawhideStringMod`, `RespawnCapMod` and `MainMenuMod` in `mods/`.
 
 Two bugs were fixed in the translation. The scenario patch called
 `AllScenarioLoader.LoadAllScenarioHeaders()`, which enumerates `user/Scenarios` with

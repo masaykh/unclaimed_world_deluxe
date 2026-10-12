@@ -13,8 +13,8 @@ using UWGame.SimSide.XmlCollections;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The Unhidden Mod's smithy redefinitions - see <see cref="UnhiddenMod"/> for provenance and
-/// for the switch that gates them.
+/// The peat mod's smithy redefinitions, from the Unhidden Mod - see <see cref="PeatMod"/> for
+/// provenance, and for the switch that gates them (CHARCOAL FROM PEAT).
 ///
 /// Both smithies are replaced wholesale rather than edited, because that is how the original
 /// Harmony patch expressed it: it could not reach into a constructed EntityType, so it rebuilt
@@ -33,7 +33,7 @@ namespace UWGame.Mods;
 /// descriptions, sprites, particle emitters, collision shapes, part lists - is carried over
 /// unchanged so the two entries stay consistent with the rest of the table.
 /// </summary>
-internal static class UnhiddenModSmithies
+internal static class PeatModSmithies
 {
     public static void Replace(List<EntityType> listOfEntityTypes)
     {

@@ -3,7 +3,7 @@ using UWGame.SimSide.Entities;
 namespace UWGame.Mods;
 
 /// <summary>
-/// The gather-on-demand mod, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The gather-on-demand mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// A standing order keeps its stock and nothing more, as the studio made it.
 /// </summary>

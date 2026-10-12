@@ -5,7 +5,7 @@ namespace UWGame.Mods;
 
 /// <summary>
 /// The Harmony mod loader, compiled OUT. Selected by building without the <c>harmony</c>
-/// feature: <c>-p:UwFeatures="unhiddenmod"</c>. See the SELECTABLE FEATURES block in
+/// feature: <c>-p:UwHarmony=false</c>. See the SELECTABLE FEATURES block in
 /// UnclaimedWorld.csproj.
 ///
 /// A build without this feature references no HarmonyLib and ships no 0Harmony.dll, so nothing
@@ -13,7 +13,7 @@ namespace UWGame.Mods;
 /// the loader exists to run other people's code, and someone who does not want that should be
 /// able to have a build that cannot.
 ///
-/// Same stub arrangement as <see cref="UnhiddenMod"/> - see the note there for why this is
+/// Same stub arrangement as the mods' - see PeatMod.Absent.cs for why this is
 /// preferable to <c>#if</c> at the call sites. <see cref="Enabled"/> is a constant false and
 /// <see cref="LoadAll"/> does nothing, so <c>user/Mods</c> is never even looked at.
 ///

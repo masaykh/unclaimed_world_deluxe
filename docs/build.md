@@ -76,14 +76,13 @@ local testing, and nothing is compressed.
 **Booleans, not a list:**
 
 ```sh
-dotnet build … -p:UwHarmony=true -p:UwUnhiddenMod=true -p:UwGameplayMods=true  # default: all
-dotnet build … -p:UwHarmony=false -p:UwUnhiddenMod=true                        # no external mod loading
-dotnet build … -p:UwHarmony=false -p:UwUnhiddenMod=false                       # no bundled mod either
-dotnet build … -p:UwGameplayMods=false                                         # none of the six
+dotnet build … -p:UwHarmony=true -p:UwGameplayMods=true    # default: both
+dotnet build … -p:UwHarmony=false                          # no external mod loading
+dotnet build … -p:UwHarmony=false -p:UwGameplayMods=false  # no bundled mods either
 ```
 
 Not a list, because a list cannot be passed safely: both `;` and `,` delimit *properties* to the
-`dotnet` CLI itself, so `-p:UwFeatures="harmony;unhiddenmod"` fails with
+`dotnet` CLI itself, so `-p:UwFeatures="harmony;gameplaymods"` fails with
 `MSBUILD : error MSB1006: Property is not valid` no matter how it is quoted. Only `%3B`-escaping
 survives, which is not something to ask a human or an installer script to remember.
 

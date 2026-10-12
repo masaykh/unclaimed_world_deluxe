@@ -336,14 +336,14 @@ public abstract class DataSheet : HUDWindow
 		{
 			ScrollUpGrid(elapsed, currentlyShownExpandedGrid);
 		}
-		else if (UWGame.Mods.UnhiddenMod.Enabled)
+		else
 		{
 			UpdateWheelScrolling();
 		}
 	}
 
 	/// <summary>
-	/// UNHIDDEN MOD: mouse wheel scrolls the expanded grid, in addition to the studio's
+	/// PORT (from the Unhidden Mod, now core - Kastuk, 2026-10-11): mouse wheel scrolls the expanded grid, in addition to the studio's
 	/// hover-over-the-arrow scrolling.
 	///
 	/// Polled rather than driven off InputData.MouseWheelMove. That is an event GUIManager

@@ -446,6 +446,7 @@ public static class ModSettings
             storedOrder.Clear();
             return;
         }
+        MoveLegacyEntries();
 
         // Anything registered before Load - there should be nothing, but a mod that registers from
         // a static constructor can get in first - is rebound now.
@@ -454,6 +455,98 @@ public static class ModSettings
             if (stored.TryGetValue(s.Id, out string v))
             {
                 s.Value = v;
+            }
+        }
+    }
+
+    // ---- Ids that moved --------------------------------------------------------------------------
+    //
+    // Kastuk, 2026-10-11: the Unhidden Mod "standing alongside of all other mods ... make just
+    // confusion". It was split: its peat, rawhide string and respawn switches into mods of their
+    // own, its main menu switches into MainMenuMod, its culture and shadows key into PortSettings.
+    // A settings file or a save stamp written before names them by the old ids. Read here as the
+    // new ones, so nobody's choices or saves are lost; a file is written back with the new ids.
+
+    /// <summary>Old setting id -> the id it has now.</summary>
+    private static readonly Dictionary<string, string> LegacyIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "unhidden.charcoalFromPeat", "peat.charcoalFromPeat" },
+        { "unhidden.peatBuilding", "peat.peatBuilding" },
+        { "unhidden.stringAlternatives", "rawhidestring.stringAlternatives" },
+        { "unhidden.capResourceRespawn", "respawncap.capResourceRespawn" },
+        { "unhidden.mapEditorButtons", "mainmenu.mapEditorButtons" },
+        { "unhidden.revealTestMap", "mainmenu.revealTestMap" },
+        { "unhidden.culture", "port.culture" },
+        { "unhidden.shadowsKey", "port.shadowsKey" },
+    };
+
+    /// <summary>A mod switched off in SELECT MODS under an old id -> the mods it became.</summary>
+    private static readonly Dictionary<string, string[]> LegacyModIds = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "unhidden", new string[4] { "peat", "rawhidestring", "respawncap", "mainmenu" } },
+    };
+
+    /// <summary>The id a setting has now: <paramref name="id"/> itself unless it moved.</summary>
+    public static string CurrentId(string id)
+    {
+        return (id != null && LegacyIds.TryGetValue(id, out string now)) ? now : id;
+    }
+
+    /// <summary>A save stamp (<see cref="Signature"/>) with every old id replaced by today's.</summary>
+    public static string WithCurrentIds(string signature)
+    {
+        if (string.IsNullOrEmpty(signature))
+        {
+            return signature;
+        }
+        List<string> parts = new List<string>();
+        foreach (string raw in signature.Split(';'))
+        {
+            string part = raw.Trim();
+            if (part.Length == 0)
+            {
+                continue;
+            }
+            int eq = part.IndexOf('=');
+            if (eq > 0 && !part.StartsWith("mod:", StringComparison.OrdinalIgnoreCase))
+            {
+                part = CurrentId(part.Substring(0, eq)) + part.Substring(eq);
+            }
+            parts.Add(part);
+        }
+        return string.Join("; ", parts);
+    }
+
+    /// <summary>
+    /// Old ids in the file just read become today's, in the same place in the file. Where the file
+    /// has both - an old build wrote one, a new one the other - the new id's value stands.
+    /// </summary>
+    private static void MoveLegacyEntries()
+    {
+        foreach (KeyValuePair<string, string> move in LegacyIds)
+        {
+            if (!stored.TryGetValue(move.Key, out string value))
+            {
+                continue;
+            }
+            int at = storedOrder.FindIndex((string id) => string.Equals(id, move.Key, StringComparison.OrdinalIgnoreCase));
+            stored.Remove(move.Key);
+            if (stored.ContainsKey(move.Value))
+            {
+                storedOrder.RemoveAt(at);
+                continue;
+            }
+            stored[move.Value] = value;
+            storedOrder[at] = move.Value;
+        }
+        foreach (KeyValuePair<string, string[]> move in LegacyModIds)
+        {
+            if (disabledMods.Remove(move.Key))
+            {
+                foreach (string modId in move.Value)
+                {
+                    disabledMods.Add(modId);
+                }
             }
         }
     }
@@ -865,7 +958,7 @@ public static class ModSettings
         }
 
         Dictionary<string, string> wanted = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (string raw in (signature ?? "").Split(';'))
+        foreach (string raw in (WithCurrentIds(signature) ?? "").Split(';'))
         {
             string part = raw.Trim();
             if (part.Length == 0 || part.StartsWith("mod:", StringComparison.OrdinalIgnoreCase))
@@ -902,7 +995,7 @@ public static class ModSettings
     {
         List<KeyValuePair<string, ModContentState>> parts =
             new List<KeyValuePair<string, ModContentState>>();
-        foreach (string raw in (signature ?? "").Split(';'))
+        foreach (string raw in (WithCurrentIds(signature) ?? "").Split(';'))
         {
             string part = raw.Trim();
             if (part.Length == 0)

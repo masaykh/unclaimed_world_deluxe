@@ -7,7 +7,7 @@ namespace UWGame.Mods;
 /// <c>-p:UwGameplayMods=false</c> - which is also what happens on its own when the repository's
 /// mods/ directory is not there at all.
 ///
-/// WHY A STUB RATHER THAN #if AT EVERY CALL SITE: see the header of UnhiddenMod.Absent.cs. The
+/// WHY A STUB RATHER THAN #if AT EVERY CALL SITE: see the header of PeatMod.Absent.cs. The
 /// short of it is that Body.RegainHitpoints reads better with two ordinary calls in it than with
 /// two preprocessor blocks, and the patch series in kit/ stays smaller.
 ///

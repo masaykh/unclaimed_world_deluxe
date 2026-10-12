@@ -44,10 +44,10 @@ jobs:
       # Two booleans, not a list: ';' and ',' both delimit properties to the dotnet CLI, so a
       # list form fails with MSB1006 however it is quoted. The csproj explains this at length.
       - name: Build without mod loading
-        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false -p:UwUnhiddenMod=true
+        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false
 
       - name: Build with no mods at all
-        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false -p:UwUnhiddenMod=false
+        run: dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -p:UwHarmony=false -p:UwGameplayMods=false
 
       # The tools that build on a Linux runner. Not all of them do, and that is by design:
       #
@@ -165,7 +165,8 @@ jobs:
           # Strings that exist ONLY inside a gameplay mod.
           for s in ["_disassemble",
                     "The interface is laid out for at least",
-                    "WRITE A STATE DUMP"]:
+                    "WRITE A STATE DUMP",
+                    "makeCharcoalFromPeat"]:
               if present(s):
                   print("STILL PRESENT: " + s); bad = 1
               else:

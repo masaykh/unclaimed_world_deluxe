@@ -237,11 +237,29 @@ got=$(peat_per_charcoal "$d")
 [ "$got" = "2" ] && pass "makeCharcoalFromPeat costs 2 dry peat"   || fail "expected 2 dry peat per charcoal, got '$got'"
 
 
-d=$(new_install case5b); write_setting "$d" unhidden.charcoalFromPeat false
+d=$(new_install case5b); write_setting "$d" peat.charcoalFromPeat false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-echo "$out" | grep -q 'unhidden.charcoalFromPeat = false'   && pass "the setting is read and reported"   || fail "dataexport did not report the setting: $(echo "$out" | grep -i setting)"
+echo "$out" | grep -q 'peat.charcoalFromPeat = false'   && pass "the setting is read and reported"   || fail "dataexport did not report the setting: $(echo "$out" | grep -i setting)"
 has_process "$d" makeCharcoalFromPeat   && fail "the recipe is still in the tables with the switch off"   || pass "switch off: the peat recipe is gone from the tables"
 has_process "$d" makeCharcoal   && pass "switch off: the stock charcoal recipe is untouched"   || fail "switch off: the STOCK recipe disappeared too"
+
+# The Unhidden Mod was split (Kastuk, 2026-10-11) and its settings renamed. A file written before
+# names them by the old ids, and the player's choice must survive the rename
+# (ModSettings.LegacyIds).
+d=$(new_install case5c); write_setting "$d" unhidden.charcoalFromPeat false
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+echo "$out" | grep -q 'peat.charcoalFromPeat = false'   && pass "an old file's unhidden.charcoalFromPeat is read as peat.charcoalFromPeat"   || fail "the old id was not carried over: $(echo "$out" | grep -i setting)"
+has_process "$d" makeCharcoalFromPeat   && fail "the old id's choice was lost: the recipe is back"   || pass "  and still keeps the peat recipe out"
+
+# The Unhidden Mod switched off in SELECT MODS: every mod it became is off.
+d=$(new_install case5d); mkdir -p "$d/user"
+printf '<ModSettings>\n  <DisabledMod id="unhidden" />\n</ModSettings>\n' > "$d/user/ModSettings.xml"
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+if has_process "$d" makeCharcoalFromPeat || has_process "$d" makeFishingNetFromRawhide; then
+  fail "an old file's switched-off Unhidden Mod left its recipes in"
+else
+  pass "an old file's switched-off Unhidden Mod switches off the peat and rawhide string mods"
+fi
 
 # ------------------------------------------------- 6. a bad settings file is survivable
 #
@@ -249,7 +267,7 @@ has_process "$d" makeCharcoal   && pass "switch off: the stock charcoal recipe i
 # has to cost them their settings and not their game.
 say "==> 6. a malformed ModSettings.xml is ignored, not fatal"
 d=$(new_install case6); mkdir -p "$d/user"
-printf '<ModSettings><Setting id="unhidden.charcoalFromPeat" value="false"' > "$d/user/ModSettings.xml"
+printf '<ModSettings><Setting id="peat.charcoalFromPeat" value="false"' > "$d/user/ModSettings.xml"
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "a malformed settings file stopped the data load"; }
 echo "$out" | grep -qi 'ModSettings.xml could not be read'   && pass "reported, and named the file" || fail "the malformed file was not reported"
 has_process "$d" makeCharcoalFromPeat   && pass "fell back to the defaults" || fail "a malformed file was partly applied"
@@ -299,7 +317,7 @@ stones=$(input_amount "$d" constructCampfireWithPeat item:stones)
 has_process "$d" constructCampfire \
   && pass "the stock constructCampfire is still there" || fail "the stock recipe was replaced"
 
-d=$(new_install case9b); write_setting "$d" unhidden.peatBuilding false
+d=$(new_install case9b); write_setting "$d" peat.peatBuilding false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
 has_process "$d" constructCampfireWithPeat \
   && fail "the variant is still there with the switch off" || pass "switch off: the variants are gone"
@@ -322,7 +340,7 @@ cotton=$(input_amount "$d" makeFishingNet item:cottonString)
 input_amount "$d" makeFishingNetFromRawhide item:cottonString | grep -q .   && fail "  the variant still names cotton string" || pass "  and no cotton string is left in it"
 has_process "$d" makeFishingNet   && pass "the stock recipe is untouched" || fail "the stock recipe was replaced"
 
-d=$(new_install case10b); write_setting "$d" unhidden.stringAlternatives false
+d=$(new_install case10b); write_setting "$d" rawhidestring.stringAlternatives false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
 has_process "$d" makeFishingNetFromRawhide   && fail "the variant is still there with the switch off" || pass "switch off: the variant is gone"
 
@@ -541,12 +559,12 @@ echo "$report" | grep -q "days=0 " \
 # Config.Culture = InvariantCulture in a static constructor and pushes it onto the thread, so it is
 # a deliberate default rather than an unconsidered one; the contributed patch used to overwrite it
 # with en-GB for every player.
-d=$(new_install case12c); write_setting "$d" unhidden.culture en-GB
+d=$(new_install case12c); write_setting "$d" port.culture en-GB
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-echo "$out" | grep -q "unhidden.culture = en-GB (default invariant)" \
+echo "$out" | grep -q "port.culture = en-GB (default invariant)" \
   && pass "the display culture is a choice, and its default is the studio's invariant" \
   || { echo "$out" | grep -i culture | sed 's/^/      /'; \
-       fail "unhidden.culture is not registered, or does not default to invariant"; }
+       fail "port.culture is not registered, or does not default to invariant"; }
 
 d=$(new_install case12b); write_setting "$d" disassembly.generate false
 report=$( cd "$d" && "$EXPORT" . --disassembly 2>&1 ) || { echo "$report"; fail "dataexport returned nonzero"; }

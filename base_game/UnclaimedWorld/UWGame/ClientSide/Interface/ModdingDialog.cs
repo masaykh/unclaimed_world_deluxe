@@ -39,10 +39,11 @@ public class ModdingDialog : Panel
 		};
 		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(Interface, Window, 52, Panel.RosterMargin, out _, out lcdSurface, ref lcdScreen);
 
-		bool editorButtons = UWGame.Mods.UnhiddenMod.Enabled && UWGame.Mods.UnhiddenMod.MapEditorButtons.On;
-		string editorOff = UWGame.Mods.UnhiddenMod.Enabled
-			? UWGame.Locale.Text("Switched off: OPTIONS -> MODS -> UNHIDDEN MOD -> MAP EDITOR BUTTONS.")
-			: UWGame.Locale.Text("Comes with the Unhidden Mod, which is switched off: SELECT MODS.");
+		// MOD: MainMenuMod's MAP EDITOR BUTTONS (once the Unhidden Mod's).
+		bool editorButtons = UWGame.Mods.MainMenuMod.EditorButtons;
+		string editorOff = UWGame.Mods.ModSettings.IsModEnabled(UWGame.Mods.MainMenuMod.ModId)
+			? UWGame.Locale.Text("Switched off: OPTIONS -> MODS -> MAIN MENU -> MAP EDITOR BUTTONS.")
+			: UWGame.Locale.Text("Comes with the MAIN MENU mod, which is switched off: SELECT MODS.");
 		int y = 12;
 		y = AddButton(UWGame.Locale.Text("SELECT MODS"), UWGame.Locale.Text("Every mod: what it does, who made it, and a switch for each."), true, null, y, delegate
 		{

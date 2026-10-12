@@ -1,7 +1,7 @@
 namespace UWGame.Mods;
 
 /// <summary>
-/// The state dump, compiled OUT. See UnhiddenMod.Absent.cs for the pattern.
+/// The state dump, compiled OUT. See PeatMod.Absent.cs for the pattern.
 /// </summary>
 public static class StateDumpMod
 {
