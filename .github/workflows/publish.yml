@@ -51,7 +51,8 @@ jobs:
 
       # The tools that build on a Linux runner. Not all of them do, and that is by design:
       #
-      #   DataExport, XmlProxyGen   net8.0-windows + WinForms, unconditionally. They are Windows
+      #   DataExport, XmlProxyGen,  net8.0-windows + WinForms, unconditionally. They are Windows
+      #   SpriteExport
       #                             desktop tools, and EnableWindowsTargeting=true would make
       #                             them compile without making them runnable.
       #   ContentProbe              net8.0-windows for DX, plain net8.0 for GL - so it builds

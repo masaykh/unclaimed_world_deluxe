@@ -99,6 +99,7 @@ tools/shadowdusk/                the shader compiler: patches, and a script to f
 tools/MgfxTranscode/             MGFX shader-container tool (transcode / inject / validate)
 tools/DataExport/                runs the data loader headlessly - test data mods without launching
 tools/ContentProbe/              loads assets through a real ContentManager and reports pass/fail
+tools/SpriteExport/              cuts the sprite atlases into one named PNG each, with index pages
 tools/build/                     numbered build scripts, run in order
 ```
 
@@ -144,6 +145,30 @@ itself no longer needs it: this DesktopGL build compiles its own effects from
 `assets/effects/*.fx` and the packager writes them straight into the package's `Content/`, so
 there is nothing left for it to shadow. Your own Steam install is untouched either way — the
 package is a separate directory.
+
+### Seeing every sprite: `tools/SpriteExport`
+
+The world, the ground sprites, the ghosted buildings and the interface are drawn from six compiled
+atlases. A data table names a sprite by its name in one of them (`tree_daysheen_1_grown_cut`,
+`HUD_thumbnail_spoak`). To see them all, with their names:
+
+```sh
+dotnet build tools/SpriteExport/SpriteExport.csproj -c Release
+artifacts/bin/SpriteExport/release/spriteexport.exe "<game>/Content" sprites --sources assets/Content
+```
+
+`sprites/index.html` links one page per atlas, with every sprite, its name, its size and the
+source file it was built from, and a name filter. `sprites.csv` lists each sprite's rectangle in its
+atlas. `--normals` also exports the depth-derived normal maps of `BuildingsAndTrees` into `_normals/`:
+652 of its 1055 sprites have one, and the rest, which had no `_d` depth file, are skipped.
+Windows only; nothing appears on screen.
+
+The sources in `assets/Content` carry the same names, so why export? Because the atlas is what
+the game draws: a sheet is whatever was in its folders when it was built, and `GhostedBuildings`
+is greyed and blurred on the way in. Against the shipped content all 3077 sprites match their
+sources in size, opaque pixels exactly; three have no source file at all (`whiteFace`,
+`Construction`, `EmptyBG_Dark`). Half-transparent edges differ by a few levels, because the
+pipeline premultiplied the alpha and that rounding cannot be undone.
 
 ### The menu background is no longer a video
 

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Exports every sprite of the game's compiled sprite atlases as its own PNG, with an index page
+    per atlas. Kastuk asked for it (Visually Harvested Resources, 2026-10-12) to see which sprites
+    exist and what they look like.
+
+    WindowsDX only. Reading a Texture2D back needs a GraphicsDevice, and a device needs a window
+    handle; a WinForms Form that is never shown gives one without anything appearing on screen.
+    It must reference SpriteSheetRuntime for the same reason ContentProbe does: the XNB files name
+    their reader by assembly-qualified name.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>spriteexport</AssemblyName>
+    <RootNamespace>UW.Tools.SpriteExport</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\base_game\SpriteSheetRuntime\SpriteSheetRuntime.csproj" />
+  </ItemGroup>
+</Project>
