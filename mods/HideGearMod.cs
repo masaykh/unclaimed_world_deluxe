@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using UWGame.ClientSide.Renderables;
+using UWGame.SimSide.AI;
 using UWGame.SimSide.AllGameData;
 using UWGame.SimSide.Combat;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Body;
+using UWGame.SimSide.Entities.Containers.Components;
 using UWGame.SimSide.Items;
 using UWGame.SimSide.Policies;
 using UWGame.SimSide.Processes;
@@ -51,6 +53,19 @@ namespace UWGame.Mods;
 /// tiredness from carrying - read that fraction through <see cref="LoadFelt"/>. Nothing is stored,
 /// so nothing can go wrong in a save. Its effect profile has no effects: the game only treats an
 /// item as a gadget if it names one, and the profile is what the player sees while it is worn.
+///
+/// WEAPONS AT HAND (step 4, its own switch). Why a colonist cannot keep a musket, a knife and a
+/// spear: a weapon fetched for a fight - CompositeGoal.GatherToolsOrWeapons, from GoalAttack,
+/// GoalPatrol and GoalFindPrey - goes into the HAUL storage, which is what hauling fills. The next
+/// haul calls DropUnneededItemsToMakeCapacity and the weapon is left on the ground. The studio's
+/// attack AI already handles several carried weapons (EvaluateAttackJobs compares an uncarried one
+/// with the best carried, refuses a second of a type, and prefers the one in range), so what was
+/// missing is only somewhere to keep them. That is the Equipment storage: 0.5 on a colonist, where a
+/// musket, a knife and a spear take 0.29, and the hide gear fits beside them. With the switch on,
+/// <see cref="CompartmentFor"/> sends a weapon fetched for a fight there, and keeps one already there
+/// from being moved back to haul by a job that uses it as a tool. No storage grows, so nothing about
+/// a save changes: a full Equipment drops what the job does not need, as the studio's code already
+/// does. A pickaxe fetched to mine with is a tool, not a fight, and still goes to haul.
 ///
 /// Hauling asks for it. GoalHaul already calls FindOptionalEquipmentIfNeeded, for a weapon and
 /// food on a long haul, but with no gear task, and ItemType.TaskType.Hauling is marked "not in
@@ -129,6 +144,19 @@ public static class HideGearMod
                      "cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
+    private static ModSetting weaponsAtHand;
+
+    /// <summary>Whether a weapon fetched for a fight is kept in Equipment rather than haul storage.</summary>
+    public static ModSetting WeaponsAtHand =>
+        weaponsAtHand ?? (weaponsAtHand = ModSettings.Toggle(
+            ModId, "weaponsAtHand", "WEAPONS KEPT AT HAND", defaultValue: false,
+            toolTip: "A weapon fetched for a fight, a patrol or a hunt goes into the equipment a " +
+                     "colonist wears rather than the space they haul with, so the next haul does not " +
+                     "leave it on the ground. A colonist can keep a musket, a knife and a spear and " +
+                     "pick the right one when a fight comes. Weapons kept this way are not free for " +
+                     "others to take.",
+            affectsSimulation: true));
+
     /// <summary>Registered from Program.Main BEFORE any data table is built: the loaders read the switch.</summary>
     public static void RegisterSettings()
     {
@@ -137,6 +165,7 @@ public static class HideGearMod
             "Clothing and armour made from tanned hide, picked up as gear: a cloak for comfort on long trips, armour for patrols.",
             "tarpBeige");
         _ = Enabled;
+        _ = WeaponsAtHand;
     }
 
     /// <summary>
@@ -392,6 +421,31 @@ public static class HideGearMod
     public static float LoadFelt(Entity carrier)
     {
         return Enabled.On && Wears(carrier, BackpackKey) ? BackpackLoadFelt : 1f;
+    }
+
+    /// <summary>
+    /// Which storage an item fetched by CompositeGoal.GatherToolsOrWeapons goes into. Called once
+    /// per item; <paramref name="asked"/> is the caller's, Haul for every fight and every tool job.
+    /// </summary>
+    public static StorageCompartment CompartmentFor(Entity carrier, IKnownEntityData item, bool forFight, StorageCompartment asked)
+    {
+        if (!WeaponsAtHand.On || carrier?.AgentStorage?.Equipment == null || item?.EntityType?.ItemType == null)
+        {
+            return asked;
+        }
+        return Compartment(item.EntityType.ItemType.WeaponType != null, forFight,
+            carrier.AgentStorage.Equipment.Contains(item.EntityID), asked);
+    }
+
+    /// <summary>The rule itself, for the self-test.</summary>
+    public static StorageCompartment Compartment(bool isWeapon, bool forFight, bool inEquipment, StorageCompartment asked)
+    {
+        if (!isWeapon || asked != StorageCompartment.Haul)
+        {
+            return asked;
+        }
+        // Fetched to fight with, or already kept and only borrowed as a tool: Equipment.
+        return forFight || inEquipment ? StorageCompartment.Equipment : asked;
     }
 
     /// <summary>

@@ -1050,19 +1050,22 @@ public abstract class CompositeGoal : Goal
 				{
 					continue;
 				}
+				// MOD: HideGearMod.WeaponsAtHand - a weapon fetched for a fight (mounted after pickup)
+				// is kept in Equipment, where hauling does not drop it. The caller's compartment otherwise.
+				StorageCompartment into = UWGame.Mods.HideGearMod.CompartmentFor(entity, item, mountAfterPickup, compartment);
 				if (!entity.AgentStorage.Contains(item.EntityID))
 				{
 					AddSubgoal(new GoalMoveToPosition(entity, ownersOfVehicles, item)
 					{
 						IsFinalDestination = true
 					});
-					DropUnneededItemsToMakeCapacity(item.Bulk, (Entity e) => !items.Contains(e), out var totalDroppedItems, compartment);
+					DropUnneededItemsToMakeCapacity(item.Bulk, (Entity e) => !items.Contains(e), out var totalDroppedItems, into);
 					if (!num.HasValue)
 					{
-						num = entity.AgentStorage.GetCompartment(compartment).UnusedCapacity;
+						num = entity.AgentStorage.GetCompartment(into).UnusedCapacity;
 					}
 					num = num - item.Bulk + totalDroppedItems;
-					if (!PickupItemOrUnloadFirst(item, mountAfterPickup, bendDown: true, standUpAfterwards: true, compartment))
+					if (!PickupItemOrUnloadFirst(item, mountAfterPickup, bendDown: true, standUpAfterwards: true, into))
 					{
 						return false;
 					}
@@ -1073,7 +1076,7 @@ public abstract class CompositeGoal : Goal
 				}
 				else
 				{
-					entity.AgentStorage.MoveCarriedItemToCompartment((Entity)item, compartment);
+					entity.AgentStorage.MoveCarriedItemToCompartment((Entity)item, into);
 				}
 			}
 		}

@@ -6213,6 +6213,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipHidegearEnabled</Key>
     <Value>Adds a hide backpack (long hauls feel 30% lighter), a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
   </String>
+  <String>
+    <Key>SettingHidegearWeaponsAtHand</Key>
+    <Value>WEAPONS KEPT AT HAND</Value>
+  </String>
+  <String>
+    <Key>SettingTipHidegearWeaponsAtHand</Key>
+    <Value>A weapon fetched for a fight, a patrol or a hunt goes into the equipment a colonist wears rather than the space they haul with, so the next haul does not leave it on the ground. A colonist can keep a musket, a knife and a spear and pick the right one when a fight comes. Weapons kept this way are not free for others to take.</Value>
+  </String>
   <!-- settings: homeraid -->
   <String>
     <Key>SettingGroupHomeraid</Key>

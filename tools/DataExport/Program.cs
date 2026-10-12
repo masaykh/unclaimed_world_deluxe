@@ -2227,12 +2227,14 @@ internal static partial class Program
     private static int HideGearSelfTest(bool on)
     {
         UWGame.Mods.ModSetting enabled = UWGame.Mods.ModSettings.Find("hidegear.enabled");
-        if (enabled == null)
+        UWGame.Mods.ModSetting atHand = UWGame.Mods.ModSettings.Find("hidegear.weaponsAtHand");
+        if (enabled == null || atHand == null)
         {
             Console.WriteLine("  the mod is not in this build - nothing to check");
             return 0;
         }
         enabled.Value = on ? "true" : "false";
+        atHand.Value = on ? "true" : "false";
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
 
@@ -2258,6 +2260,18 @@ internal static partial class Program
               "off by default, simulation-affecting, and stock only when off");
         Check(UWGame.Mods.ModSettings.Signature().Contains("hidegear.enabled=true") == on,
               on ? "a save is stamped hidegear.enabled=true" : "a save is not stamped");
+        Check(atHand.AffectsSimulation && atHand.DefaultValue == "false" && atHand.IsStock != on,
+              "weapons at hand: off by default, simulation-affecting, its own switch");
+
+        // Step 4's rule, every case. Haul is what every fight and every tool job asks for.
+        var Haul = UWGame.SimSide.Entities.Containers.Components.StorageCompartment.Haul;
+        var Equip = UWGame.SimSide.Entities.Containers.Components.StorageCompartment.Equipment;
+        Check(UWGame.Mods.HideGearMod.Compartment(true, true, false, Haul) == Equip, "a weapon fetched for a fight goes to Equipment");
+        Check(UWGame.Mods.HideGearMod.Compartment(true, false, true, Haul) == Equip, "a kept weapon borrowed as a tool stays in Equipment");
+        Check(UWGame.Mods.HideGearMod.Compartment(true, false, false, Haul) == Haul, "a weapon fetched as a tool (a pickaxe to mine) goes to haul, as before");
+        Check(UWGame.Mods.HideGearMod.Compartment(false, true, false, Haul) == Haul, "anything not a weapon goes where it was asked");
+        Check(UWGame.Mods.HideGearMod.Compartment(true, true, false, Equip) == Equip, "a caller that asked for Equipment gets it");
+        Check(UWGame.Mods.HideGearMod.CompartmentFor(null, null, true, Haul) == Haul, "no carrier: where it was asked");
 
         var T = new { Patrol = UWGame.SimSide.Items.ItemType.TaskType.PatrolOrAttack,
                       Night = UWGame.SimSide.Items.ItemType.TaskType.NightActivities,
@@ -2385,6 +2399,23 @@ internal static partial class Program
                 && e.ItemType.FinalEffectsWhenEquipped != null && e.ItemType.GetTaskAppropriateLevel(T.Haul) > 0f).ToList();
             Check(haulGadgets.Count == 1 && haulGadgets[0] == backpack,
                   "the only gadget a haul can fetch is the backpack (" + string.Join(", ", haulGadgets.Select(e => e.KeyName)) + ")");
+        }
+
+        // Step 4's room. The colonist's Equipment holds the heaviest musket-or-rifle, knife and spear,
+        // and the heaviest piece of hide gear beside them.
+        var colonists = data.AllEntityTypes.Values.Where(e => e.ContainerType is UWGame.SimSide.Entities.Containers.Components.AgentStorageType a
+            && a.EquipmentStorageType != null && e.IntelligenceType != null && e.IntelligenceType.CanUseWeapons == true).ToList();
+        float Heaviest(Func<string, bool> pick) => data.AllEntityTypes.Values
+            .Where(e => e.ItemType?.WeaponType != null && pick(e.KeyName)).Select(e => e.ItemType.MaximumBulk ?? 0f).DefaultIfEmpty(0f).Max();
+        float gun = Heaviest(k => k.Contains("usket") || k.Contains("Rifle")), knife = Heaviest(k => k.Contains("Knife") && !k.Contains("Spear")),
+              spear = Heaviest(k => k.Contains("Spear"));
+        float gear = new[] { cloak, armour, backpack }.Where(e => e != null).Select(e => e.ItemType.MaximumBulk ?? 0f).DefaultIfEmpty(0f).Max();
+        Check(colonists.Count > 0 && gun > 0f && knife > 0f && spear > 0f, "there are colonists with Equipment, and guns, knives and spears to keep");
+        foreach (var colonist in colonists)
+        {
+            float room = ((UWGame.SimSide.Entities.Containers.Components.AgentStorageType)colonist.ContainerType).EquipmentStorageType.GetTotalCapacity();
+            Check(gun + knife + spear + gear <= room + 0.0001f, FormattableString.Invariant(
+                $"{colonist.KeyName}: Equipment {room} holds gun {gun} + knife {knife} + spear {spear} = {gun + knife + spear}, and {gear} of hide gear"));
         }
 
         // The backpack's arithmetic, worked through the two formulas it is read in, at a full load.
