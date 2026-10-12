@@ -128,6 +128,7 @@ internal static class Program
 		UWGame.Mods.DebugMod.RegisterSettings();
 		UWGame.Mods.StateDumpMod.RegisterSettings();
 		UWGame.Mods.AgentMod.RegisterSettings();
+		UWGame.Mods.HideGearMod.RegisterSettings();
 		// What was the Unhidden Mod (Kastuk, 2026-10-11), last as it was, so a save stamp lists
 		// their switches in the same order as before (ModSettings.Signature).
 		UWGame.Mods.PeatMod.RegisterSettings();

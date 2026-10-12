@@ -63,6 +63,8 @@ internal class GoalPatrol : CompositeGoal, ITopLevelGoal
 		}
 		List<ItemType.TaskType> gearTasks = null;
 		CompositeGoal.AddNightActivityGear(ref gearTasks);
+		// MOD: HideGearMod - a patrol asks for patrol gear (ItemType.TaskType.PatrolOrAttack).
+		UWGame.Mods.HideGearMod.AddPatrolGear(ref gearTasks);
 		FindOptionalEquipmentIfNeeded(location, job, equipWeapon: false, equipFood: true, mountWeapon: true, gearTasks);
 		ReplenishToolsOrWeapons(replenishItemsForTools, ownersOfVehicles, job);
 		AddSubgoal(new GoalMoveToPosition(entity, location, ownersOfVehicles));

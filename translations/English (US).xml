@@ -6200,6 +6200,19 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipHealingNeedsDrivenRate</Key>
     <Value>Healing runs between a third and about twice the normal speed depending on food energy, protein, micronutrients, sleep and morale. Off uses the studio's rate, which only looks at muscle energy.</Value>
   </String>
+  <!-- settings: hidegear -->
+  <String>
+    <Key>SettingGroupHidegear</Key>
+    <Value>HIDE GEAR</Value>
+  </String>
+  <String>
+    <Key>SettingHidegearEnabled</Key>
+    <Value>HIDE CLOTHING AND ARMOUR</Value>
+  </String>
+  <String>
+    <Key>SettingTipHidegearEnabled</Key>
+    <Value>Adds a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol, harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+  </String>
   <!-- settings: homeraid -->
   <String>
     <Key>SettingGroupHomeraid</Key>
@@ -7829,6 +7842,22 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <String>
     <Key>EffectProfileGroundScanner</Key>
     <Value>Ground penetrating sensor</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionHideArmourStealth</Key>
+    <Value>The character is easier to detect.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileHideArmourStealth</Key>
+    <Value>Stiff armour</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionHideCloakComfort</Key>
+    <Value>The character is a little more comfortable.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileHideCloakComfort</Key>
+    <Value>Warm clothing</Value>
   </String>
   <String>
     <Key>EffectProfileImprovedAlcohol</Key>
@@ -11524,6 +11553,38 @@ SURVIVAL GUIDE NOTES
   <String>
     <Key>ItemSummarydescriptionItemHexapineSalad</Key>
     <Value>Vegetable dish made from enzyme-treated hexapine leaves.</Value>
+  </String>
+  <String>
+    <Key>ItemItemHideArmour</Key>
+    <Value>Hide armour</Value>
+  </String>
+  <String>
+    <Key>ItemDescriptionItemHideArmour</Key>
+    <Value>Worn on patrol. Stiff and loud, so the wearer is easier to notice.</Value>
+  </String>
+  <String>
+    <Key>ItemPluralnameItemHideArmour</Key>
+    <Value>Hide armour</Value>
+  </String>
+  <String>
+    <Key>ItemSummarydescriptionItemHideArmour</Key>
+    <Value>Layered whipjaw hide over a megapod hide jerkin.</Value>
+  </String>
+  <String>
+    <Key>ItemItemHideCloak</Key>
+    <Value>Hide cloak</Value>
+  </String>
+  <String>
+    <Key>ItemDescriptionItemHideCloak</Key>
+    <Value>Keeps the wearer warm and dry on long trips and at night, which makes them a little more comfortable.</Value>
+  </String>
+  <String>
+    <Key>ItemPluralnameItemHideCloak</Key>
+    <Value>Hide cloak</Value>
+  </String>
+  <String>
+    <Key>ItemSummarydescriptionItemHideCloak</Key>
+    <Value>A heavy cloak of tanned megapod hide.</Value>
   </String>
   <String>
     <Key>ItemItemHumanPowerUnit</Key>
@@ -15766,6 +15827,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
     <Value>Wounds heal all the way, and how fast depends on how well someone is looked after - food, sleep and morale - not on muscle energy alone.</Value>
   </String>
   <String>
+    <Key>ModDescriptionHidegear</Key>
+    <Value>Clothing and armour made from tanned hide, picked up as gear: a cloak for comfort on long trips, armour for patrols.</Value>
+  </String>
+  <String>
     <Key>ModDescriptionHomeraid</Key>
     <Value>Big predators break into homes with sleeping colonists in them, and into stores with food. Walls are a defence, not a guarantee.</Value>
   </String>
@@ -18710,6 +18775,14 @@ The storehouse also has a space for storage of items that are not intended for s
     <Value>This object can be disassembled without losing any parts.</Value>
   </String>
   <String>
+    <Key>ProcessItemHideArmourDisassemble</Key>
+    <Value>Disassemble</Value>
+  </String>
+  <String>
+    <Key>ProcessSummarydescriptionItemHideArmourDisassemble</Key>
+    <Value>This object can be disassembled without losing any parts.</Value>
+  </String>
+  <String>
     <Key>ProcessItemImprovedFireExtinguisherDisassemble</Key>
     <Value>Disassemble</Value>
   </String>
@@ -19168,6 +19241,14 @@ The storehouse also has a space for storage of items that are not intended for s
   <String>
     <Key>ProcessMakeHexapineSalad</Key>
     <Value>Cooking</Value>
+  </String>
+  <String>
+    <Key>ProcessMakeHideArmour</Key>
+    <Value>Producing</Value>
+  </String>
+  <String>
+    <Key>ProcessMakeHideCloak</Key>
+    <Value>Producing</Value>
   </String>
   <String>
     <Key>ProcessMakeHumanPowerUnit</Key>

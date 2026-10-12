@@ -1572,6 +1572,8 @@ public class BaseDataLoader : DataLoader
 		// Each adds nothing with its switch off.
 		UWGame.Mods.PeatMod.AddProcesses(list);
 		UWGame.Mods.RawhideStringMod.AddProcesses(list);
+		// MOD: HideGearMod's cloak and armour recipes, before disassembly reads the table.
+		UWGame.Mods.HideGearMod.AddProcesses(list);
 		// DISASSEMBLY MOD: a Disassemble recipe per assembled tool, weapon and spear, generated
 		// from the recipe that makes it. Here rather than earlier because it reads the finished
 		// process table - including anything PeatMod and RawhideStringMod just added - and the entity table,
@@ -8538,6 +8540,8 @@ public class BaseDataLoader : DataLoader
 		// Harmony patch postfixed, because both loaders feed this one list and the order is the
 		// same.
 		UWGame.Mods.PeatMod.AddItems(list);
+		// MOD: HideGearMod's hide cloak and hide armour, as gadgets.
+		UWGame.Mods.HideGearMod.AddItems(list);
 		// DISASSEMBLY MOD: it needs the entity table when the PROCESS table is built, several
 		// steps later. See DisassemblyMod.CaptureItems for why it cannot read GameData for it.
 		UWGame.Mods.DisassemblyMod.CaptureItems(list);
@@ -12700,12 +12704,18 @@ public class BaseDataLoader : DataLoader
 
 	protected override List<EffectProfileType> InitEffectProfileTypes()
 	{
-		return EffectProfileLoader.Init();
+		List<EffectProfileType> list = EffectProfileLoader.Init();
+		// MOD: what HideGearMod's items name as their EffectsWhenEquipped.
+		UWGame.Mods.HideGearMod.AddEffectProfiles(list);
+		return list;
 	}
 
 	protected override List<EffectType> InitEffectTypes()
 	{
-		return EffectTypeLoader.Init();
+		List<EffectType> list = EffectTypeLoader.Init();
+		// MOD: the effects HideGearMod's items have while worn.
+		UWGame.Mods.HideGearMod.AddEffects(list);
+		return list;
 	}
 
 	protected override List<SiteData> InitSiteData()

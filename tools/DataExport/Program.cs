@@ -26,6 +26,7 @@ internal static partial class Program
             ?.Substring("--user-scenario=".Length);
         bool faunaSelfTest = args.Contains("--fauna-selftest");
         string fishSelfTest = args.Contains("--fish-selftest") ? "on" : args.Contains("--fish-selftest=off") ? "off" : null;
+        string hideGearSelfTest = args.Contains("--hidegear-selftest") ? "on" : args.Contains("--hidegear-selftest=off") ? "off" : null;
         // Resolved now, before the working directory becomes the installation.
         string saveSelfTest = args.FirstOrDefault(a => a.StartsWith("--save-selftest=", StringComparison.Ordinal))
             ?.Substring("--save-selftest=".Length);
@@ -82,6 +83,11 @@ internal static partial class Program
             Console.Error.WriteLine("               with FishStockMod on: check fishTrapSpawningLoop gained its stock");
             Console.Error.WriteLine("               condition and action, and each trap's best-for-its-place rate. With");
             Console.Error.WriteLine("               =off: check the event is exactly the studio's.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("  --hidegear-selftest[=off]");
+            Console.Error.WriteLine("               with HideGearMod on: the hide cloak and armour are gadgets whose");
+            Console.Error.WriteLine("               effects resolve, made from real hides, and a patrol asks for armour.");
+            Console.Error.WriteLine("               With =off: none of it is in the tables, and a patrol asks as before.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --fauna-selftest");
             Console.Error.WriteLine("               check that every species DangerousFaunaMod names is a creature in the");
@@ -222,6 +228,11 @@ internal static partial class Program
         if (args.Contains("--diet-selftest"))
         {
             return DietSelfTest();
+        }
+
+        if (hideGearSelfTest != null)
+        {
+            return HideGearSelfTest(hideGearSelfTest == "on");
         }
 
         if (args.Contains("--regrowth-selftest"))
@@ -429,6 +440,7 @@ internal static partial class Program
         UWGame.Mods.DebugMod.RegisterSettings();
         UWGame.Mods.StateDumpMod.RegisterSettings();
         UWGame.Mods.AgentMod.RegisterSettings();
+        UWGame.Mods.HideGearMod.RegisterSettings();
         UWGame.Mods.PeatMod.RegisterSettings();
         UWGame.Mods.RawhideStringMod.RegisterSettings();
         UWGame.Mods.RespawnCapMod.RegisterSettings();
@@ -2212,6 +2224,138 @@ internal static partial class Program
     /// - not the domesticated twinkler that shares the swarmer's attacks and body, not a person -
     /// and that a value the mod does not recognise falls back to x1.
     /// </summary>
+    private static int HideGearSelfTest(bool on)
+    {
+        UWGame.Mods.ModSetting enabled = UWGame.Mods.ModSettings.Find("hidegear.enabled");
+        if (enabled == null)
+        {
+            Console.WriteLine("  the mod is not in this build - nothing to check");
+            return 0;
+        }
+        enabled.Value = on ? "true" : "false";
+        int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
+        if (rc != 0) return rc;
+
+        // The pass that resolves keys to objects (FinalEffectsWhenEquipped, Category, a recipe's
+        // FinalEntityTypeToCreate) and validates them: a gadget that only survives building the
+        // tables could still take the game down here.
+        if (!ValidateDataComplete()) return 1;
+        Console.WriteLine($"==> hide gear self-test (mod {(on ? "on" : "off")})");
+        int failures = 0;
+        void Check(bool ok, string what)
+        {
+            Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
+            if (!ok) failures++;
+        }
+
+        var data = GameData.Instance;
+        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey };
+        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey };
+        string[] recipes = { "makeHideCloak", "makeHideArmour" };
+        Check(enabled.IsStock != on && enabled.AffectsSimulation && enabled.DefaultValue == "false",
+              "off by default, simulation-affecting, and stock only when off");
+        Check(UWGame.Mods.ModSettings.Signature().Contains("hidegear.enabled=true") == on,
+              on ? "a save is stamped hidegear.enabled=true" : "a save is not stamped");
+
+        var T = new { Patrol = UWGame.SimSide.Items.ItemType.TaskType.PatrolOrAttack,
+                      Night = UWGame.SimSide.Items.ItemType.TaskType.NightActivities,
+                      Journey = UWGame.SimSide.Items.ItemType.TaskType.LongerJourneys,
+                      Hunt = UWGame.SimSide.Items.ItemType.TaskType.UnspecifiedHunting };
+        List<UWGame.SimSide.Items.ItemType.TaskType> byDay = null;
+        var atNight = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Night };
+        UWGame.Mods.HideGearMod.AddPatrolGear(ref byDay);
+        UWGame.Mods.HideGearMod.AddPatrolGear(ref atNight);
+        UWGame.Mods.HideGearMod.AddPatrolGear(ref atNight);
+
+        if (!on)
+        {
+            foreach (string key in items) Check(!data.AllEntityTypes.ContainsKey(key), key + " is not in the tables");
+            foreach (string key in effects) Check(!data.AllEffectTypes.ContainsKey(key) && !data.AllEffectProfileTypes.ContainsKey(key), key + " is not in the tables");
+            foreach (string key in recipes) Check(!data.AllProcessTypes.ContainsKey(key), key + " is not in the tables");
+            Check(byDay == null && atNight.Count == 1, "a patrol asks for night gear only, as the studio's did");
+            Console.WriteLine(failures == 0 ? "hide gear self-test OK" : $"hide gear self-test: {failures} FAILED");
+            return failures == 0 ? 0 : 1;
+        }
+
+        Check(byDay != null && byDay.Count == 1 && byDay[0] == T.Patrol, "a patrol by day asks for patrol gear");
+        Check(atNight.Count == 2 && atNight.Contains(T.Patrol), "a patrol at night asks for night and patrol gear, once each");
+
+        UWGame.SimSide.Entities.EntityType cloak = null, armour = null;
+        for (int i = 0; i < items.Length; i++)
+        {
+            string key = items[i];
+            if (!data.AllEntityTypes.TryGetValue(key, out var type) || type.ItemType == null)
+            {
+                Check(false, key + " is an item in the tables");
+                continue;
+            }
+            if (i == 0) cloak = type; else armour = type;
+            var item = type.ItemType;
+            // What CompositeGoal.IsGadgetForTask asks of a gadget.
+            Check(item.TaskAppropriateLevels != null && item.FinalEffectsWhenEquipped != null && item.FinalEffectsWhenEquipped.Count == 1,
+                  key + " is a gadget: task levels, and one effect profile when worn");
+            var profile = item.FinalEffectsWhenEquipped?.FirstOrDefault();
+            string effectKey = profile?.Effects?.FirstOrDefault();
+            Check(profile != null && profile.KeyName == effects[i] && effectKey == effects[i] && data.AllEffectTypes.ContainsKey(effectKey),
+                  key + ": its profile " + effects[i] + " names an effect in the tables");
+            Check(type.Category != null && type.Category.KeyName == "equipment", key + " is listed with equipment");
+            Check(item.MaximumBulk <= 0.5f - 0.29f,
+                  FormattableString.Invariant($"{key}: {item.MaximumBulk} bulk fits in Equipment beside the heaviest weapons (0.29 of 0.5)"));
+            if (!data.AllProcessTypes.TryGetValue(recipes[i], out var recipe))
+            {
+                Check(false, recipes[i] + " is in the tables");
+                continue;
+            }
+            Check(recipe.Outputs?.Length == 1 && recipe.Outputs[0].FinalEntityTypeToCreate == type, recipes[i] + " makes " + key);
+            Check(recipe.ProcessToolSet != null, recipes[i] + ": its tool set resolves");
+            foreach (var input in recipe.Inputs ?? new UWGame.SimSide.Processes.Input[0])
+            {
+                bool made = input.EntityType != null && data.AllProcessTypes.Values.Any(p => p.Outputs != null
+                    && p.Outputs.Any(o => o.FinalEntityTypeToCreate == input.EntityType));
+                Check(made && input.Entity.EndsWith("TannedHide", StringComparison.Ordinal),
+                      recipes[i] + ": " + input.Entity + " is a tanned hide the game can make");
+            }
+        }
+
+        if (data.AllEffectTypes.TryGetValue(UWGame.Mods.HideGearMod.CloakEffectKey, out var comfort)
+            && comfort is UWGame.SimSide.SimEffects.NumberEffectType c)
+        {
+            Check(c.Affects == UWGame.SimSide.SimEffects.AffectsNumbers.AgentComfort && c.Intensity > 0f && !c.DurationInDays.HasValue,
+                  FormattableString.Invariant($"the cloak adds {c.Intensity} comfort for as long as it is worn"));
+        }
+        else Check(false, "the cloak's effect is a number effect");
+        if (data.AllEffectTypes.TryGetValue(UWGame.Mods.HideGearMod.ArmourEffectKey, out var stealth)
+            && stealth is UWGame.SimSide.SimEffects.NumberEffectType a)
+        {
+            Check(a.Affects == UWGame.SimSide.SimEffects.AffectsNumbers.Stealth && a.Intensity < 0f
+                  && a.Operator == UWGame.SimSide.SimEffects.NumberEffectOperator.Add && !a.DurationInDays.HasValue,
+                  FormattableString.Invariant($"the armour adds {a.Intensity} stealth for as long as it is worn"));
+        }
+        else Check(false, "the armour's effect is a number effect");
+
+        if (cloak != null && armour != null)
+        {
+            var patrol = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Patrol };
+            var patrolAtNight = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Night, T.Patrol };
+            var journey = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Journey };
+            var hunt = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Hunt };
+            // The desirability ScoreOptionalFoodOrGear weighs: zero is never picked for that task.
+            Check(armour.ItemType.GetTaskAppropriateLevel(patrol) > 0f && cloak.ItemType.GetTaskAppropriateLevel(patrol) == 0f,
+                  "on patrol the armour is wanted and the cloak is not");
+            Check(armour.ItemType.GetTaskAppropriateLevel(patrolAtNight) > cloak.ItemType.GetTaskAppropriateLevel(patrolAtNight),
+                  "on a night patrol the armour beats the cloak");
+            Check(cloak.ItemType.GetTaskAppropriateLevel(journey) > 0f && armour.ItemType.GetTaskAppropriateLevel(journey) == 0f,
+                  "on a long trip the cloak is wanted and the armour is not");
+            Check(armour.ItemType.GetTaskAppropriateLevel(hunt) == 0f && cloak.ItemType.GetTaskAppropriateLevel(hunt) == 0f,
+                  "neither is taken hunting, where stealth matters and the studio's cloak is Best");
+            Check(armour.ItemType.UseGearAtAnyDistanceFromExpedition && !cloak.ItemType.UseGearAtAnyDistanceFromExpedition,
+                  "armour is taken on a patrol near camp; the cloak only beyond normal range");
+        }
+
+        Console.WriteLine(failures == 0 ? "hide gear self-test OK" : $"hide gear self-test: {failures} FAILED");
+        return failures == 0 ? 0 : 1;
+    }
+
     private static int FaunaSelfTest()
     {
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");

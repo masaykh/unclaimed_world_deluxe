@@ -37,6 +37,7 @@
 #  31. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
 #  32. a save with a delivered dog loads headlessly (only when UW_DOG_SAVE names one)
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
+#  40. a hide cloak and hide armour are gadgets, and a patrol asks for armour, only with the switch on
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -990,6 +991,23 @@ else
   echo "$out" | grep -A3 'Unhandled exception' | head -4
   fail "the editor plants self-test reported failures"
 fi
+
+# Hide gear (Colonist equipment, step 1; jerrybi: "Do in numeric order"): with the switch on, a
+# hide cloak and hide armour are gadgets whose effect profiles resolve, made from tanned hides the
+# game can make, and a patrol asks for PatrolOrAttack gear, which no goal of the studio's did. With
+# it off (the default), none of the new keys is in the tables and a patrol asks as before.
+say "==> 40. hide gear: a cloak and armour as gadgets, and a patrol that asks for armour"
+for mode in on off; do
+  flag=--hidegear-selftest; [ "$mode" = off ] && flag=--hidegear-selftest=off
+  out=$( cd "$(new_install case40$mode)" && "$EXPORT" . $flag 2>&1 ) || true
+  if echo "$out" | grep -q "hide gear self-test OK" && echo "$out" | grep -q "^  ok    "; then
+    pass "mod $mode: $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
+    fail "the hide gear self-test (mod $mode) reported failures"
+  fi
+done
 
 # ------------------------------------------------- 8. the settings file round-trips
 #

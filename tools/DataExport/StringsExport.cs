@@ -26,6 +26,12 @@ internal static partial class Program
 {
     private static int WriteStrings(string literalsPath, string countsPath, string outPath)
     {
+        // A mod whose content is off by default would leave its items' names out of the template,
+        // and a translator could not translate what a player sees once it is switched on. Only the
+        // ones that add content and nothing else: switching on, say, hunting would change tables
+        // the template already reads.
+        UWGame.Mods.ModSetting hideGear = UWGame.Mods.ModSettings.Find("hidegear.enabled");
+        if (hideGear != null) hideGear.Value = "true";
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
 
