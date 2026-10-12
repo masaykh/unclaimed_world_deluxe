@@ -37,7 +37,7 @@
 #  31. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
 #  32. a save with a delivered dog loads headlessly (only when UW_DOG_SAVE names one)
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
-#  40. hide cloak, armour and backpack are gadgets, patrols and hauls ask for them, weapons are kept at hand - only when switched on
+#  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -996,7 +996,7 @@ fi
 # hide cloak and hide armour are gadgets whose effect profiles resolve, made from tanned hides the
 # game can make, and a patrol asks for PatrolOrAttack gear, which no goal of the studio's did. With
 # it off (the default), none of the new keys is in the tables and a patrol asks as before.
-say "==> 40. hide gear: cloak, armour, backpack; patrols and hauls ask for them; weapons kept at hand"
+say "==> 40. hide gear: cloak, armour, backpack, cart; weapons at hand; fighters keep a full kit"
 for mode in on off; do
   flag=--hidegear-selftest; [ "$mode" = off ] && flag=--hidegear-selftest=off
   out=$( cd "$(new_install case40$mode)" && "$EXPORT" . $flag 2>&1 ) || true

@@ -750,6 +750,8 @@ namespace UWGame.SimSide.Entities.Containers.Components
                     this.Parent.SimEffects.Start(effect);
                 }
             }
+            // MOD: HideGearMod - a backpack or a cart resizes the haul storage.
+            UWGame.Mods.HideGearMod.EquipmentChanged(this, item, equipped: true);
            
         }
 
@@ -762,6 +764,8 @@ namespace UWGame.SimSide.Entities.Containers.Components
                     this.Parent.SimEffects.Remove(effect);
                 }
             }
+            // MOD: HideGearMod - taking off a backpack or a cart sizes the haul storage back.
+            UWGame.Mods.HideGearMod.EquipmentChanged(this, item, equipped: false);
         }
 
         public void EndEffectsFromEquippedItem(Entity entity)

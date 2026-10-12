@@ -48,7 +48,41 @@ public static class HideGearMod
 
     public static float ArmourFactor(BodyPart part, AttackType attack) => 1f;
 
-    public static float LoadFelt(Entity carrier) => 1f;
+    public static float Felt(Entity carrier, float fraction) => fraction;
+
+    public static void EquipmentChanged(AgentStorage storage, Entity item, bool equipped)
+    {
+    }
+
+    public static bool MayWear(Entity colonist, EntityType gadget) => true;
+
+    public static void FighterKit(Entity colonist, ref bool equipWeapon, ref List<ItemType.TaskType> gearTasks)
+    {
+    }
+
+    public static bool WantsWeapon(Entity colonist) => false;
+
+    public static bool WeaponWanted(Entity colonist, EntityType weapon) => true;
+
+    public static float ComfortPenalty(Entity colonist) => 0f;
+
+    public static float HitChanceFactor(Entity attacker) => 1f;
+
+    public static float AttackSpeedFactor(Entity attacker) => 1f;
+
+    public static float WorkFactor(Entity worker, SkillType skill) => 1f;
+
+    public static float DefenseFactor(Entity agent) => 1f;
+
+    public static EntityID? ArmourToTakeOff(Entity colonist) => null;
+
+    public static void SetRefusesArmour(Entity colonist, bool refuses)
+    {
+    }
+
+    public static bool RefusesArmour(Entity colonist) => false;
+
+    public static bool HasArmourOrder(IKnownEntityData data) => false;
 
     public static StorageCompartment CompartmentFor(Entity carrier, IKnownEntityData item, bool forFight, StorageCompartment asked) => asked;
 

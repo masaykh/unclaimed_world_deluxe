@@ -1,12 +1,20 @@
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using UWGame.ClientSide.PropertyPresentation;
 using UWGame.ClientSide.Renderables;
 using UWGame.SimSide.AI;
+using UWGame.SimSide.AI.Goals;
 using UWGame.SimSide.AllGameData;
+using UWGame.SimSide.Allegiances.Statistics;
 using UWGame.SimSide.Combat;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Body;
+using UWGame.SimSide.Entities.Containers;
 using UWGame.SimSide.Entities.Containers.Components;
+using UWGame.SimSide.Expeditions;
 using UWGame.SimSide.Items;
+using UWGame.SimSide.Jobs;
+using UWGame.SimSide.Maps;
 using UWGame.SimSide.Policies;
 using UWGame.SimSide.Processes;
 using UWGame.SimSide.SimEffects;
@@ -44,15 +52,28 @@ namespace UWGame.Mods;
 /// GoalHunt once) multiply it by <see cref="ArmourFactor(BodyPart, AttackType)"/> and an attacker
 /// sees an armoured colonist as the harder target it is.
 ///
-/// THE BACKPACK (step 3). Not more haul space, which is what a backpack sounds like: haul capacity
-/// is ItemStorage.TotalCapacity, saved with the game and copied into each storage space and into
-/// what colonists remember of each other, so changing it on putting a pack on would have to be
-/// undone exactly on taking it off, through a save. Instead the load FEELS lighter: the two places
-/// the game turns "how full is the haul storage" into a cost - Locomotor.ApplyBurdenModifier's
-/// slowdown when heavily laden, and GoalTraverseEdgeBetweenWaypointsAtomic.GetExertionLevel's
-/// tiredness from carrying - read that fraction through <see cref="LoadFelt"/>. Nothing is stored,
-/// so nothing can go wrong in a save. Its effect profile has no effects: the game only treats an
-/// item as a gadget if it names one, and the profile is what the player sees while it is worn.
+/// THE BACKPACK AND THE HAND CART (step 3, then jerrybi, 2026-10-12: "Backpack should allow to
+/// carry much more stuff ... up to 5 of weight", "the Cart ... 10 of weight with NO speed debuff").
+/// A colonist hauls 1.0. Wearing a backpack it is 5, with a cart 10: <see cref="EquipmentChanged"/>
+/// sets ItemStorage.TotalCapacity and its one storage space each time a pack or cart goes into
+/// Equipment or comes out, the way AgentStorage.NotifyStomachFractionChanged already resizes the
+/// stomach. It is computed from the colonist's TYPE plus what is worn, never from the stored value,
+/// so it cannot drift; the stored value is saved, so a loaded game has what it had. Taking a pack
+/// off with more than 1.0 aboard leaves the colonist over capacity until GoalHaul's
+/// DropItemsOverCapacity sheds it on the next haul; meanwhile <see cref="Felt"/> clamps the load
+/// at full, because Locomotor's Lerp is unclamped and would slow them towards a standstill. GoalHaul
+/// fills a trip from TotalCapacity (FindExtraCargo), so a bigger capacity is fewer trips by itself.
+/// How heavy the load FEELS is read in the two places the game turns "how full" into a cost -
+/// Locomotor.ApplyBurdenModifier's slowdown and GoalTraverseEdgeBetweenWaypointsAtomic's exertion:
+/// a pack 0.7 of it, a cart nothing at all (it rolls). Colonists remember each other's capacity as
+/// last seen (MemoryFact), so another colonist's plans may be a sighting behind; nothing in the
+/// studio's AI plans a haul from SOMEONE ELSE's capacity. Their profiles have no effects: the game
+/// only treats an item as a gadget if it names one, and the profile is what the player sees.
+///
+/// FIGHTERS (jerrybi: "only they should be able to use armour"). A fighter is a colonist whose
+/// profession is Security or Hunting - Intelligence.Profession, the profession of their best skill
+/// once it reaches the expert level (Constants.ExpertSkillLevel, 0.9). <see cref="MayWear"/> keeps
+/// armour out of CompositeGoal.IsGadgetForTask for anyone else.
 ///
 /// WEAPONS AT HAND (step 4, its own switch). Why a colonist cannot keep a musket, a knife and a
 /// spear: a weapon fetched for a fight - CompositeGoal.GatherToolsOrWeapons, from GoalAttack,
@@ -107,6 +128,19 @@ public static class HideGearMod
     /// <summary>How full the haul storage feels with a backpack on: a load of 1 counts as 0.7.</summary>
     public const float BackpackLoadFelt = 0.7f;
 
+    /// <summary>What a colonist can haul wearing a backpack (a colonist alone: 1).</summary>
+    public const float BackpackCapacity = 5f;
+
+    public const string CartKey = "item:handCart";
+
+    public const string CartProfileKey = "handCartLoad";
+
+    /// <summary>What a colonist can haul with a cart, and with no slowdown at all.</summary>
+    public const float CartCapacity = 10f;
+
+    /// <summary>The professions that make a colonist a fighter (ProfessionType keys).</summary>
+    public static readonly string[] FighterProfessions = new string[2] { "securityPerson", "hunter" };
+
     /// <summary>Comfort while wearing the cloak: the studio's stimulant gives 0.05, a strong one 0.08.</summary>
     public const float CloakComfort = 0.05f;
 
@@ -139,8 +173,8 @@ public static class HideGearMod
     public static ModSetting Enabled =>
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "HIDE CLOTHING AND ARMOUR", defaultValue: false,
-            toolTip: "Adds a hide backpack (long hauls feel 30% lighter), a hide cloak (megapod hide, some comfort, worn on long trips and at " +
-                     "night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of " +
+            toolTip: "Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at " +
+                     "night) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of " +
                      "cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
@@ -166,6 +200,7 @@ public static class HideGearMod
             "tarpBeige");
         _ = Enabled;
         _ = WeaponsAtHand;
+        _ = FighterKitSetting;
     }
 
     /// <summary>
@@ -200,9 +235,17 @@ public static class HideGearMod
         {
             KeyName = BackpackProfileKey,
             Name = "Backpack",
-            Description = "A load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.",
+            Description = "Can haul up to 5, and a load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.",
             Effects = new string[0],
             SortOrder = 130
+        });
+        list.Add(new EffectProfileType
+        {
+            KeyName = CartProfileKey,
+            Name = "Hand cart",
+            Description = "Can haul up to 10, with no slowdown however full.",
+            Effects = new string[0],
+            SortOrder = 140
         });
     }
 
@@ -264,8 +307,18 @@ public static class HideGearMod
         // Long hauls only, like the cloak's long trips.
         listOfEntityTypes.Add(Gear(BackpackKey, "Hide backpack",
             "A pack of tanned megapod hide on thunder chicken leather straps.",
-            "Worn on long hauls. A load feels 30% lighter: the wearer is less slowed when heavily laden, and less tired by carrying.",
-            0.1f, BackpackProfileKey, "leatherPouch", atAnyDistance: false,
+            "Taken for hauling. The wearer can haul up to 5 instead of 1, and a load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.",
+            0.1f, BackpackProfileKey, "leatherPouch", atAnyDistance: true,
+            new SerializableDictionary<ItemType.TaskType, ItemType.AppropriateLevel>
+            {
+                { ItemType.TaskType.Hauling, ItemType.AppropriateLevel.Normal }
+            }));
+
+        // Best for hauling, so a colonist who can reach a cart takes it over a pack.
+        listOfEntityTypes.Add(Gear(CartKey, "Hand cart",
+            "A two-wheeled cart of trimmed spoak and hide straps.",
+            "Taken for hauling. Holds up to 10, and rolls: no slowdown however full, and no more tiring than walking.",
+            0.2f, CartProfileKey, "furniture", atAnyDistance: true,
             new SerializableDictionary<ItemType.TaskType, ItemType.AppropriateLevel>
             {
                 { ItemType.TaskType.Hauling, ItemType.AppropriateLevel.Best }
@@ -334,6 +387,23 @@ public static class HideGearMod
         // Thunder chicken leather for the straps, as the bellows use it. Not rawhide string, which
         // this tool set already holds as a TOOL; the validator refuses an item as tool and input both.
         listOfProcessTypes.Add(Recipe("makeHideBackpack", BackpackKey, ("item:megapodTannedHide", 1), ("item:thunderChickenTannedHide", 1)));
+        // Wood, so carpentry, like the studio's furniture. item:wheel exists but nothing makes it.
+        // jerrybi: "megapod hide OR 4 metal sheet". The game has no metal sheet (goldSheet aside),
+        // so the metal cart is bound with wrought iron, on the studio's wood-and-metal tool set.
+        listOfProcessTypes.Add(CartRecipe("makeHandCart", "toolSetCarpentry", ("item:spoakBranchesTrimmed", 6), ("item:megapodTannedHide", 2)));
+        listOfProcessTypes.Add(CartRecipe("makeHandCartWithIron", "toolSetAttachWoodAndMetal", ("item:spoakBranchesTrimmed", 6), ("item:wroughtIron", 4)));
+    }
+
+    private static ProcessType CartRecipe(string key, string toolSet, params (string item, int count)[] inputs)
+    {
+        ProcessType cart = Recipe(key, CartKey, inputs);
+        cart.RequiredSkill = "carpentry";
+        cart.ProcessToolSetKey = toolSet;
+        cart.WorkOrTimeNeeded = new WorkOrTime
+        {
+            DaysNeeded = 1f / 10f
+        };
+        return cart;
     }
 
     private static ProcessType Recipe(string key, string output, params (string item, int count)[] hides)
@@ -414,13 +484,98 @@ public static class HideGearMod
     }
 
     /// <summary>
-    /// How full a load feels to this entity, as a factor on the stored fraction: the backpack's
-    /// <see cref="BackpackLoadFelt"/>, or 1. Called from Locomotor.ApplyBurdenModifier and
+    /// How full a load feels to this entity, given how full it is (stored / capacity): with a cart
+    /// nothing, with a backpack 0.7 of it, otherwise all of it - and never more than full, because
+    /// taking a pack off can leave a colonist over capacity for a while. 1 is "full", as in the
+    /// studio's formulas. Called from Locomotor.ApplyBurdenModifier and
     /// GoalTraverseEdgeBetweenWaypointsAtomic.GetExertionLevel.
     /// </summary>
-    public static float LoadFelt(Entity carrier)
+    public static float Felt(Entity carrier, float fraction)
     {
-        return Enabled.On && Wears(carrier, BackpackKey) ? BackpackLoadFelt : 1f;
+        if (!Enabled.On)
+        {
+            return fraction;
+        }
+        return FeltWith(Wears(carrier, CartKey), Wears(carrier, BackpackKey), fraction);
+    }
+
+    /// <summary>The arithmetic of <see cref="Felt"/>, for the self-test.</summary>
+    public static float FeltWith(bool cart, bool backpack, float fraction)
+    {
+        float full = System.Math.Min(fraction, 1f);
+        return cart ? 0f : backpack ? full * BackpackLoadFelt : full;
+    }
+
+    /// <summary>
+    /// What a colonist of this type can haul with these items in Equipment: the type's own
+    /// capacity, or the largest a carried pack or cart gives. Never less than the type's own.
+    /// </summary>
+    public static float HaulCapacity(float typeCapacity, IEnumerable<string> carriedKeys)
+    {
+        float capacity = typeCapacity;
+        foreach (string key in carriedKeys)
+        {
+            if (key == CartKey) capacity = System.Math.Max(capacity, CartCapacity);
+            else if (key == BackpackKey) capacity = System.Math.Max(capacity, BackpackCapacity);
+        }
+        return capacity;
+    }
+
+    /// <summary>
+    /// Called from AgentStorage.StartEffects and EndEffects - every time an item goes into
+    /// Equipment or comes out, is swapped, or breaks there. <paramref name="item"/> is counted as
+    /// worn when <paramref name="equipped"/>, and as gone otherwise, whatever Equipment says yet.
+    /// Resizes the haul storage when it is a pack or a cart; anything else returns at once.
+    /// </summary>
+    public static void EquipmentChanged(AgentStorage storage, Entity item, bool equipped)
+    {
+        if (!Enabled.On || storage?.ItemStorage == null || storage.Equipment == null || item == null
+            || (item.EntityType.KeyName != BackpackKey && item.EntityType.KeyName != CartKey))
+        {
+            return;
+        }
+        AgentStorageType type = storage.Parent.EntityType.ContainerType as AgentStorageType;
+        if (type?.ItemStorageType == null)
+        {
+            return;
+        }
+        List<string> carried = new List<string>();
+        foreach (EntityID id in storage.Equipment.StoredItems)
+        {
+            Entity worn = Entity.FindByID(id);
+            if (worn != null && worn != item)
+            {
+                carried.Add(worn.EntityType.KeyName);
+            }
+        }
+        if (equipped)
+        {
+            carried.Add(item.EntityType.KeyName);
+        }
+        float capacity = HaulCapacity(type.ItemStorageType.GetTotalCapacity(), carried);
+        // Both, as NotifyStomachFractionChanged does: the storage and its one space.
+        storage.ItemStorage.TotalCapacity = capacity;
+        if (UWGame.SimSide.GameData.Instance.AllStorageConditions.TryGetValue("isolated", out var isolated)
+            && storage.ItemStorage.StorageSpaces.TryGetValue(isolated, out var space))
+        {
+            space.TotalCapacity = capacity;
+        }
+    }
+
+    /// <summary>Whether this colonist is a fighter: Security or Hunting by profession.</summary>
+    public static bool IsFighter(Entity colonist)
+    {
+        string profession = colonist?.Intelligence?.Profession?.KeyName;
+        return profession != null && System.Array.IndexOf(FighterProfessions, profession) >= 0;
+    }
+
+    /// <summary>
+    /// Whether this colonist may take this gadget: armour only if a fighter. Called from
+    /// CompositeGoal.IsGadgetForTask; true for everything when the mod is off.
+    /// </summary>
+    public static bool MayWear(Entity colonist, EntityType gadget)
+    {
+        return !Enabled.On || gadget?.KeyName != ArmourKey || (IsFighter(colonist) && !RefusesArmour(colonist));
     }
 
     /// <summary>
@@ -511,5 +666,367 @@ public static class HideGearMod
         {
             gearTasks.Add(ItemType.TaskType.PatrolOrAttack);
         }
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // FIGHTERS KEEP A FULL KIT (jerrybi, 2026-10-12). Behind its own switch, FighterKitSetting.
+    //
+    //   * a fighter tries to keep one big weapon (ranged, or a spear) and one small one (knife,
+    //     machete, hand axe), and armour once the expedition's security policy is at its third
+    //     tier (medium) - fetched through FindOptionalEquipmentIfNeeded, which almost every goal
+    //     already calls on its way to work (FighterKit, WeaponWanted)
+    //   * while not kitted they lose comfort: a missing big weapon more than a missing small one,
+    //     and armour only after ArmourMissingDays without it (ComfortPenalty, read in
+    //     Intelligence.Comfort beside DiscomfortMod's)
+    //   * "one fully equipped fighter covers all protection needs if there is no active threat
+    //     nearby, 3 if there is": once that many are kitted, the rest feel no pressure and fetch
+    //     nothing (CoverageMet); and a kitted fighter counts for more in the Security rating
+    //     (DefenseFactor, in SecurityStatisticsForAllegiance.GetAgentDefenseRating)
+    //   * kitted out - both weapons and armour - they hit more often and attack faster, and work at
+    //     anything else more slowly (HitChanceFactor, AttackSpeedFactor, WorkFactor): the player's
+    //     reason to think twice about the third tier
+    //   * the player can order a fighter out of their armour, to pass it to a stronger fighter or
+    //     to undress an injured one (SetRefusesArmour, from the colonist's context menu); they put
+    //     it down the next time they look at their gear, and do not take armour again until the
+    //     order is reversed
+    //
+    // Every number below is a first guess, named so it can be tuned.
+    // ------------------------------------------------------------------------------------------
+
+    private static ModSetting fighterKit;
+
+    /// <summary>Whether fighters keep a full kit, feel its absence, and fight better wearing it.</summary>
+    public static ModSetting FighterKitSetting =>
+        fighterKit ?? (fighterKit = ModSettings.Toggle(
+            ModId, "fighterKit", "FIGHTERS KEEP A FULL KIT", defaultValue: false,
+            toolTip: "Security and Hunting colonists fetch a big weapon and a small one, and armour " +
+                     "once the security policy is at its third tier. Missing them costs comfort; " +
+                     "wearing the full kit, they fight better and do other work more slowly. One " +
+                     "kitted fighter covers the camp, three when a threat is near; then the rest " +
+                     "are not pressed. Needs HIDE CLOTHING AND ARMOUR for the armour.",
+            affectsSimulation: true));
+
+    /// <summary>Comfort lost without a big weapon (the studio's stimulant gives 0.05).</summary>
+    public const float BigWeaponMissingComfort = 0.06f;
+
+    /// <summary>Comfort lost without a small weapon: half the big one's.</summary>
+    public const float SmallWeaponMissingComfort = 0.03f;
+
+    /// <summary>Comfort lost without armour, once <see cref="ArmourMissingDays"/> have passed.</summary>
+    public const float ArmourMissingComfort = 0.05f;
+
+    public const float ArmourMissingDays = 5f;
+
+    /// <summary>TierType.Index of the security policy from which fighters want armour: 2, "medium".</summary>
+    public const int ArmourTierIndex = 2;
+
+    public const int CoverageWhenQuiet = 1;
+
+    public const int CoverageUnderThreat = 3;
+
+    /// <summary>How near the camp's centre a threat has to be to count, in tiles.</summary>
+    public const float ThreatNearTiles = 30f;
+
+    public const float KitHitChance = 1.15f;
+
+    public const float KitAttackSpeed = 1.1f;
+
+    public const float KitOtherWork = 0.85f;
+
+    public const float KitDefenseRating = 1.5f;
+
+    /// <summary>Game time (seconds) since which this fighter has been expected to wear armour and has not.</summary>
+    public const string NoArmourSinceField = "hidegear:noArmourSince";
+
+    /// <summary>Set by the player's "take off armour" order; 1 while it stands.</summary>
+    public const string RefusesArmourField = "hidegear:refusesArmour";
+
+    public enum WeaponClass { None, Big, Small }
+
+    /// <summary>
+    /// Big: anything that shoots (an attack that uses ammunition - guns, the bow) or a spear.
+    /// Small: a knife, a machete, a hand axe. Tools that happen to be weapons - pickaxe, hoe, spade,
+    /// hammer - are neither, and nor is anything that is not a weapon.
+    /// </summary>
+    public static WeaponClass ClassOf(EntityType type)
+    {
+        WeaponType weapon = type?.ItemType?.WeaponType;
+        if (weapon == null)
+        {
+            return WeaponClass.None;
+        }
+        string key = type.KeyName;
+        bool shoots = weapon.AttackTypes != null && System.Array.Exists(weapon.AttackTypes, a => a != null && a.UsesAmmo != null);
+        if (shoots || key.Contains("Spear"))
+        {
+            return WeaponClass.Big;
+        }
+        if (key.Contains("Knife") || key.Contains("Machete") || key.Contains("HandAxe"))
+        {
+            return WeaponClass.Small;
+        }
+        return WeaponClass.None;
+    }
+
+    /// <summary>What a colonist carries, anywhere on them: haul storage, Equipment, in hand.</summary>
+    public static void Kit(Entity colonist, out bool big, out bool small, out bool armour)
+    {
+        big = small = armour = false;
+        AgentStorage storage = colonist?.AgentStorage;
+        if (storage == null)
+        {
+            return;
+        }
+        foreach (ItemStorage part in new ItemStorage[2] { storage.ItemStorage, storage.Equipment })
+        {
+            if (part == null)
+            {
+                continue;
+            }
+            foreach (EntityID id in part.StoredItems)
+            {
+                Entity item = Entity.FindByID(id);
+                if (item == null)
+                {
+                    continue;
+                }
+                WeaponClass c = ClassOf(item.EntityType);
+                big |= c == WeaponClass.Big;
+                small |= c == WeaponClass.Small;
+                armour |= item.EntityType.KeyName == ArmourKey;
+            }
+        }
+    }
+
+    private static bool FightersOn => Enabled.On && FighterKitSetting.On;
+
+    /// <summary>Whether this expedition's security policy is at the tier where fighters wear armour.</summary>
+    public static bool ArmourExpected(Expedition expedition)
+    {
+        return expedition?.Policy?.CurrentTiers != null
+            && expedition.Policy.CurrentTiers.TryGetValue(RatingTypes.Security, out UWGame.SimSide.Tiers.TierType tier)
+            && tier != null && tier.Index >= ArmourTierIndex;
+    }
+
+    /// <summary>A fighter with everything their expedition expects: both weapons, and armour if the policy wants it.</summary>
+    public static bool KitComplete(Entity fighter)
+    {
+        Kit(fighter, out bool big, out bool small, out bool armour);
+        return big && small && (armour || RefusesArmour(fighter) || !ArmourExpected(fighter.Intelligence?.CurrentExpedition));
+    }
+
+    /// <summary>Both weapons and armour on: what the buffs and the work penalty need.</summary>
+    public static bool KittedOut(Entity colonist)
+    {
+        if (!FightersOn || !IsFighter(colonist))
+        {
+            return false;
+        }
+        Kit(colonist, out bool big, out bool small, out bool armour);
+        return big && small && armour;
+    }
+
+    /// <summary>Whether a threat the allegiance knows of is within <see cref="ThreatNearTiles"/> of the camp.</summary>
+    public static bool ThreatNear(Entity colonist, Expedition expedition)
+    {
+        var knowledge = colonist?.Intelligence?.Allegiance?.SharedKnowledge;
+        Vector3? centre = expedition?.Center;
+        if (knowledge?.AllKnownEntities?.ThreatJobs == null || !centre.HasValue)
+        {
+            return false;
+        }
+        float reach = ThreatNearTiles * MapManager.tileSize;
+        foreach (var job in knowledge.AllKnownEntities.ThreatJobs)
+        {
+            if (job is ThreatJob threat && threat.Target.HasValue
+                && !GoalEvaluator.EntityDataResultCausesSkip(knowledge.GetKnownData(threat.Target.Value, out IKnownEntityData target))
+                && Vector3.DistanceSquared(target.PlaySiteLocation, centre.Value) <= reach * reach)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>How many kitted fighters the camp needs: 1, or 3 with a threat near.</summary>
+    public static int CoverageNeeded(bool threatNear) => threatNear ? CoverageUnderThreat : CoverageWhenQuiet;
+
+    /// <summary>Whether enough of this colonist's expedition's fighters have a complete kit.</summary>
+    public static bool CoverageMet(Entity colonist)
+    {
+        Expedition expedition = colonist?.Intelligence?.CurrentExpedition;
+        if (expedition == null)
+        {
+            return true;
+        }
+        int kitted = 0;
+        foreach (EntityID id in expedition.Members)
+        {
+            Entity member = Entity.FindByID(id);
+            if (member != null && IsFighter(member) && KitComplete(member))
+            {
+                kitted++;
+            }
+        }
+        return kitted >= CoverageNeeded(ThreatNear(colonist, expedition));
+    }
+
+    /// <summary>Whether this colonist is a fighter who should be completing their kit now.</summary>
+    public static bool Pressed(Entity colonist)
+    {
+        return FightersOn && IsFighter(colonist) && !KitComplete(colonist) && !CoverageMet(colonist);
+    }
+
+    private static float? Number(Entity colonist, string key)
+    {
+        return colonist?.CustomFields != null && colonist.CustomFields.TryGetValue(key, out PropertyResult r) ? r.NumberResult : null;
+    }
+
+    public static bool RefusesArmour(Entity colonist) => Number(colonist, RefusesArmourField) == 1f;
+
+    /// <summary>
+    /// Called from CompositeGoal.FindOptionalEquipmentIfNeeded: makes a pressed fighter look for
+    /// the weapon class they lack and, at the armour tier, for armour (PatrolOrAttack gear), and
+    /// keeps the "no armour since" stamp - simulation side, so the comfort getter only reads it.
+    /// </summary>
+    public static void FighterKit(Entity colonist, ref bool equipWeapon, ref List<ItemType.TaskType> gearTasks)
+    {
+        if (!FightersOn || !IsFighter(colonist))
+        {
+            return;
+        }
+        Kit(colonist, out bool big, out bool small, out bool armour);
+        bool expected = ArmourExpected(colonist.Intelligence?.CurrentExpedition) && !RefusesArmour(colonist);
+        double now = The.Sim.TotalUnPausedGameTimeInSeconds;
+        if (expected && !armour)
+        {
+            if (!Number(colonist, NoArmourSinceField).HasValue)
+            {
+                Entity.SetPropertyValue(ref colonist.CustomFields, NoArmourSinceField, new PropertyResult { NumberResult = (float)now });
+            }
+        }
+        else if (Number(colonist, NoArmourSinceField).HasValue)
+        {
+            Entity.SetPropertyValue(ref colonist.CustomFields, NoArmourSinceField, null);
+        }
+        if (CoverageMet(colonist))
+        {
+            return;
+        }
+        if (!big || !small)
+        {
+            equipWeapon = true;
+        }
+        if (expected && !armour)
+        {
+            AddPatrolGear(ref gearTasks);
+        }
+    }
+
+    /// <summary>Whether a pressed fighter wants weapons at any distance from camp.</summary>
+    public static bool WantsWeapon(Entity colonist)
+    {
+        if (!Pressed(colonist))
+        {
+            return false;
+        }
+        Kit(colonist, out bool big, out bool small, out _);
+        return !big || !small;
+    }
+
+    /// <summary>
+    /// Called from CompositeGoal.IsWeaponForEquipment: a pressed fighter only looks at the class
+    /// of weapon they lack. Everyone else sees every weapon, as in the studio's game.
+    /// </summary>
+    public static bool WeaponWanted(Entity colonist, EntityType weapon)
+    {
+        if (!Pressed(colonist))
+        {
+            return true;
+        }
+        Kit(colonist, out bool big, out bool small, out _);
+        WeaponClass c = ClassOf(weapon);
+        return (c == WeaponClass.Big && !big) || (c == WeaponClass.Small && !small);
+    }
+
+    /// <summary>The comfort a pressed fighter loses for what their kit lacks (the arithmetic of ComfortPenalty).</summary>
+    public static float PenaltyFor(bool big, bool small, bool armourOverdue)
+    {
+        return (big ? 0f : BigWeaponMissingComfort) + (small ? 0f : SmallWeaponMissingComfort) + (armourOverdue ? ArmourMissingComfort : 0f);
+    }
+
+    /// <summary>
+    /// Called from the Intelligence.Comfort getter. Reads only - it is reached from the interface as
+    /// well as the simulation.
+    /// </summary>
+    public static float ComfortPenalty(Entity colonist)
+    {
+        if (!Pressed(colonist))
+        {
+            return 0f;
+        }
+        Kit(colonist, out bool big, out bool small, out bool armour);
+        float? since = Number(colonist, NoArmourSinceField);
+        bool overdue = !armour && since.HasValue
+            && The.Sim.TotalUnPausedGameTimeInSeconds - since.Value >= ArmourMissingDays * UWGame.SimSide.DateAndTime.secondsPerDay;
+        return PenaltyFor(big, small, overdue);
+    }
+
+    /// <summary>Called from GoalDoAttack.ComputeChanceToHit, beside DangerousFaunaMod's.</summary>
+    public static float HitChanceFactor(Entity attacker) => KittedOut(attacker) ? KitHitChance : 1f;
+
+    /// <summary>Called from GoalDoAttack.AttackSpeed, beside DangerousFaunaMod's.</summary>
+    public static float AttackSpeedFactor(Entity attacker) => KittedOut(attacker) ? KitAttackSpeed : 1f;
+
+    /// <summary>Whether a skill is a fighter's own work: the combat skills and hunting.</summary>
+    public static bool FightersWork(SkillType skill)
+    {
+        return skill == null || skill.KeyName == "hunting" || skill.Category?.KeyName == "combat";
+    }
+
+    /// <summary>Called from Intelligence.GetSkillProductionFactor: a kitted fighter works slower at anything else.</summary>
+    public static float WorkFactor(Entity worker, SkillType skill)
+    {
+        return !FightersWork(skill) && KittedOut(worker) ? KitOtherWork : 1f;
+    }
+
+    /// <summary>Called from SecurityStatisticsForAllegiance.GetAgentDefenseRating: a kitted fighter counts for more.</summary>
+    public static float DefenseFactor(Entity agent) => KittedOut(agent) ? KitDefenseRating : 1f;
+
+    /// <summary>
+    /// Called from CompositeGoal.FindOptionalEquipmentIfNeeded: the armour a colonist ordered out
+    /// of it is still wearing, for that goal to put down; null otherwise.
+    /// </summary>
+    public static EntityID? ArmourToTakeOff(Entity colonist)
+    {
+        if (!Enabled.On || !RefusesArmour(colonist) || colonist.AgentStorage?.Equipment == null)
+        {
+            return null;
+        }
+        foreach (EntityID id in colonist.AgentStorage.Equipment.StoredItems)
+        {
+            Entity item = Entity.FindByID(id);
+            if (item != null && item.EntityType.KeyName == ArmourKey)
+            {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>Executed by the SetRefusesArmour command: the player's "take off armour" order, or its reversal.</summary>
+    public static void SetRefusesArmour(Entity colonist, bool refuses)
+    {
+        if (!Enabled.On || colonist == null)
+        {
+            return;
+        }
+        Entity.SetPropertyValue(ref colonist.CustomFields, RefusesArmourField, refuses ? new PropertyResult { NumberResult = 1f } : (PropertyResult?)null);
+    }
+
+    /// <summary>Whether the context menu offers the armour order for this entity: one of our fighters.</summary>
+    public static bool HasArmourOrder(IKnownEntityData data)
+    {
+        return Enabled.On && data is Entity colonist && IsFighter(colonist);
     }
 }

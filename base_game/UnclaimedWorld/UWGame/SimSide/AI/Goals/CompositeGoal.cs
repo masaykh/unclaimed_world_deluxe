@@ -580,7 +580,9 @@ public abstract class CompositeGoal : Goal
 	private bool IsGadgetForTask(EntityID entityID, List<ItemType.TaskType> taskTypes, bool taskIsBeyondNormalRange)
 	{
 		// MOD: ToolCareMod - not what this goal has just set down to make room.
-		if (!WasSetDownToMakeRoom(entityID) && !GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.TaskAppropriateLevels != null && data.EntityType.ItemType.FinalEffectsWhenEquipped != null && (data.EntityType.ItemType.UseGearAtAnyDistanceFromExpedition || taskIsBeyondNormalRange) && entity.IsOwnedByUs(data) && GoalEvaluator.IsValidPlaysiteItem(entity, data, mustCarryItem: true))
+		if (!WasSetDownToMakeRoom(entityID) && !GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.TaskAppropriateLevels != null && data.EntityType.ItemType.FinalEffectsWhenEquipped != null && (data.EntityType.ItemType.UseGearAtAnyDistanceFromExpedition || taskIsBeyondNormalRange) && entity.IsOwnedByUs(data) && GoalEvaluator.IsValidPlaysiteItem(entity, data, mustCarryItem: true)
+			// MOD: HideGearMod - armour only for a fighter (Security or Hunting).
+			&& UWGame.Mods.HideGearMod.MayWear(entity, data.EntityType))
 		{
 			return true;
 		}
@@ -590,7 +592,9 @@ public abstract class CompositeGoal : Goal
 	private bool IsWeaponForEquipment(EntityID entityID)
 	{
 		// MOD: ToolCareMod - not the weapon this goal has just set down to make room (the coil-rifle shuffle).
-		if (!WasSetDownToMakeRoom(entityID) && !GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.WeaponType != null && entity.IsOwnedByUs(data) && EvaluateAttackJobs.IsValidPlaysiteWeapon(entity, data, null, null, null, doNotCheckAmmunitionAndBulk: true))
+		if (!WasSetDownToMakeRoom(entityID) && !GoalEvaluator.EntityDataResultCausesSkip(entityIntelligence.GetKnownData(entityID, out var data)) && data.EntityType.ItemType != null && data.EntityType.ItemType.WeaponType != null && entity.IsOwnedByUs(data) && EvaluateAttackJobs.IsValidPlaysiteWeapon(entity, data, null, null, null, doNotCheckAmmunitionAndBulk: true)
+			// MOD: HideGearMod - a fighter completing their kit looks only at the class they lack.
+			&& UWGame.Mods.HideGearMod.WeaponWanted(entity, data.EntityType))
 		{
 			return true;
 		}
@@ -806,6 +810,14 @@ public abstract class CompositeGoal : Goal
 		{
 			return GoalEvaluator.CalculateResult.Done;
 		}
+		// MOD: HideGearMod - a fighter completes their kit (the class of weapon they lack, armour at
+		// the armour tier); a colonist ordered out of their armour puts it down. Nothing without it.
+		UWGame.Mods.HideGearMod.FighterKit(entity, ref equipWeapon, ref taskTypesForGear);
+		EntityID? armourToTakeOff = UWGame.Mods.HideGearMod.ArmourToTakeOff(entity);
+		if (armourToTakeOff.HasValue)
+		{
+			AddSubgoal(new GoalDropItem(entity, armourToTakeOff.Value));
+		}
 		bool distanceOKToBringFood = false;
 		bool distanceOKToBringEquipment = false;
 		bool distanceOKToBringEquipment2 = false;
@@ -818,7 +830,9 @@ public abstract class CompositeGoal : Goal
 		List<IKnownEntityData> results2 = null;
 		List<IKnownEntityData> results3 = null;
 		Dictionary<EntityID, float> cachedDistances = new Dictionary<EntityID, float>();
-		if (equipWeapon && distanceOKToBringFood)
+		// MOD: HideGearMod - a fighter lacking a weapon looks at any distance. (This decompiled
+		// local is the studio's distanceOKToBringWeapons: IsEquipmentNeeded's outs are crossed.)
+		if (equipWeapon && (distanceOKToBringFood || UWGame.Mods.HideGearMod.WantsWeapon(entity)))
 		{
 			bool? canUseWeapons = entity.EntityType.IntelligenceType.CanUseWeapons;
 			bool flag = true;

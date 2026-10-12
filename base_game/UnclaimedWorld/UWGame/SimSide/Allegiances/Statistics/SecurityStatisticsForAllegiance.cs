@@ -278,7 +278,8 @@ public class SecurityStatisticsForAllegiance : SecurityStatistics
 		{
 			ConsumeAmmo(security, ammoRounds, bestAttackType);
 		}
-		return bestDefenseRating;
+		// MOD: HideGearMod - a fighter in full kit counts for more in the Security rating.
+		return bestDefenseRating * UWGame.Mods.HideGearMod.DefenseFactor(agent);
 	}
 
 	private static float GetWeaponDefenseRating(IKnownEntityData weapon, Security security, Dictionary<EntityType, int> ammoRounds)

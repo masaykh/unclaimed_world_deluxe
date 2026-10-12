@@ -1245,6 +1245,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>CLAIM</Value>
   </String>
   <String>
+    <Key>GuiTAKEOFFARMOUR</Key>
+    <Value>TAKE OFF ARMOUR</Value>
+  </String>
+  <String>
     <Key>GuiDISCARD</Key>
     <Value>DISCARD</Value>
   </String>
@@ -1287,6 +1291,18 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>GuiCLAIMIncludeThisItemInTheColonySPossessions_9cf841908cd8</Key>
     <Value>CLAIM. Include this item in the colony's possessions</Value>
+  </String>
+  <String>
+    <Key>GuiALLOWARMOUR</Key>
+    <Value>ALLOW ARMOUR</Value>
+  </String>
+  <String>
+    <Key>GuiALLOWARMOURThisFighterMayWearArmourAgain_29f0cc122ace</Key>
+    <Value>ALLOW ARMOUR. This fighter may wear armour again.</Value>
+  </String>
+  <String>
+    <Key>GuiTAKEOFFARMOURThisFighterPutsTheirArmourDownAndD_409a72664983</Key>
+    <Value>TAKE OFF ARMOUR. This fighter puts their armour down and does not take armour again until allowed, so a stronger fighter can wear it, or an injured one can rest out of it.</Value>
   </String>
   <String>
     <Key>GuiThisTaskIsOngoingUseTheTaskPanelToViewOrCancelI_2e5741720375</Key>
@@ -6211,7 +6227,15 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipHidegearEnabled</Key>
-    <Value>Adds a hide backpack (long hauls feel 30% lighter), a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+    <Value>Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+  </String>
+  <String>
+    <Key>SettingHidegearFighterKit</Key>
+    <Value>FIGHTERS KEEP A FULL KIT</Value>
+  </String>
+  <String>
+    <Key>SettingTipHidegearFighterKit</Key>
+    <Value>Security and Hunting colonists fetch a big weapon and a small one, and armour once the security policy is at its third tier. Missing them costs comfort; wearing the full kit, they fight better and do other work more slowly. One kitted fighter covers the camp, three when a threat is near; then the rest are not pressed. Needs HIDE CLOTHING AND ARMOUR for the armour.</Value>
   </String>
   <String>
     <Key>SettingHidegearWeaponsAtHand</Key>
@@ -7852,6 +7876,14 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
     <Value>Ground penetrating sensor</Value>
   </String>
   <String>
+    <Key>EffectProfileDescriptionHandCartLoad</Key>
+    <Value>Can haul up to 10, with no slowdown however full.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileHandCartLoad</Key>
+    <Value>Hand cart</Value>
+  </String>
+  <String>
     <Key>EffectProfileDescriptionHideArmourStealth</Key>
     <Value>The character is easier to detect, and takes less from cuts and bites to the body, arms and legs.</Value>
   </String>
@@ -7861,7 +7893,7 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <String>
     <Key>EffectProfileDescriptionHideBackpackLoad</Key>
-    <Value>A load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.</Value>
+    <Value>Can haul up to 5, and a load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.</Value>
   </String>
   <String>
     <Key>EffectProfileHideBackpackLoad</Key>
@@ -11502,6 +11534,22 @@ SURVIVAL GUIDE NOTES
     <Value>A good quality hammer useful for smithing</Value>
   </String>
   <String>
+    <Key>ItemItemHandCart</Key>
+    <Value>Hand cart</Value>
+  </String>
+  <String>
+    <Key>ItemDescriptionItemHandCart</Key>
+    <Value>Taken for hauling. Holds up to 10, and rolls: no slowdown however full, and no more tiring than walking.</Value>
+  </String>
+  <String>
+    <Key>ItemPluralnameItemHandCart</Key>
+    <Value>Hand cart</Value>
+  </String>
+  <String>
+    <Key>ItemSummarydescriptionItemHandCart</Key>
+    <Value>A two-wheeled cart of trimmed spoak and hide straps.</Value>
+  </String>
+  <String>
     <Key>ItemItemHandDrill</Key>
     <Value>Hand drill</Value>
   </String>
@@ -11592,7 +11640,7 @@ SURVIVAL GUIDE NOTES
   </String>
   <String>
     <Key>ItemDescriptionItemHideBackpack</Key>
-    <Value>Worn on long hauls. A load feels 30% lighter: the wearer is less slowed when heavily laden, and less tired by carrying.</Value>
+    <Value>Taken for hauling. The wearer can haul up to 5 instead of 1, and a load feels 30% lighter: less slowed when heavily laden, and less tired by carrying.</Value>
   </String>
   <String>
     <Key>ItemPluralnameItemHideBackpack</Key>
@@ -18807,6 +18855,14 @@ The storehouse also has a space for storage of items that are not intended for s
     <Value>This object can be disassembled without losing any parts.</Value>
   </String>
   <String>
+    <Key>ProcessItemHandCartDisassemble</Key>
+    <Value>Disassemble</Value>
+  </String>
+  <String>
+    <Key>ProcessSummarydescriptionItemHandCartDisassemble</Key>
+    <Value>This object can be disassembled without losing any parts.</Value>
+  </String>
+  <String>
     <Key>ProcessItemHideArmourDisassemble</Key>
     <Value>Disassemble</Value>
   </String>
@@ -19264,6 +19320,14 @@ The storehouse also has a space for storage of items that are not intended for s
   </String>
   <String>
     <Key>ProcessMakeHammer</Key>
+    <Value>Producing</Value>
+  </String>
+  <String>
+    <Key>ProcessMakeHandCart</Key>
+    <Value>Producing</Value>
+  </String>
+  <String>
+    <Key>ProcessMakeHandCartWithIron</Key>
     <Value>Producing</Value>
   </String>
   <String>

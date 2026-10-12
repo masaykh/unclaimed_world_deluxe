@@ -150,7 +150,7 @@ namespace UWGame.SimSide.Entities
             get
             {                
                 // MOD: less what DiscomfortMod measured of stink and noise where this colonist sleeps; 0 without it.
-                return Parent.GetEffect(SimEffects.AffectsNumbers.AgentComfort, 0f) - UWGame.Mods.DiscomfortMod.Penalty(Parent);
+                return Parent.GetEffect(SimEffects.AffectsNumbers.AgentComfort, 0f) - UWGame.Mods.DiscomfortMod.Penalty(Parent) - UWGame.Mods.HideGearMod.ComfortPenalty(Parent);
             }
         }
         
@@ -539,7 +539,8 @@ namespace UWGame.SimSide.Entities
             {
                 return 0.0f;
             }
-            return skill.ProductionFactor;
+            // MOD: HideGearMod - a fighter in full kit is slower at anything but fighting and hunting.
+            return skill.ProductionFactor * UWGame.Mods.HideGearMod.WorkFactor(Parent, skillType);
         }
 
         private bool panicLevelIsDirty = true; // false;

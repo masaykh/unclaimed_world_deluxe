@@ -113,7 +113,8 @@ internal class GoalDoAttack : CompositeGoal
 	/// </summary>
 	private float AttackSpeed()
 	{
-		return UWGame.Mods.DangerousFaunaMod.AttackSpeedFactor(entity);
+		// MOD: HideGearMod - a fighter in full kit attacks faster.
+		return UWGame.Mods.DangerousFaunaMod.AttackSpeedFactor(entity) * UWGame.Mods.HideGearMod.AttackSpeedFactor(entity);
 	}
 
 	private float GetAttackTypeActionPointOrDefault()
@@ -553,7 +554,7 @@ internal class GoalDoAttack : CompositeGoal
 		}
 		// MOD: DangerousFaunaMod's per-species hit chance - 1 unless a row is changed, and always 1
 		// for anything it does not list. See mods/DangerousFaunaMod.cs.
-		return num5 * attackType.AccuracyFactor * num4 * num2 * (num + num3 + num6) * UWGame.Mods.DangerousFaunaMod.HitChanceFactor(attacker);
+		return num5 * attackType.AccuracyFactor * num4 * num2 * (num + num3 + num6) * UWGame.Mods.DangerousFaunaMod.HitChanceFactor(attacker) * UWGame.Mods.HideGearMod.HitChanceFactor(attacker);
 	}
 
 	public override bool HandleMessage(Message message)

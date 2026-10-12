@@ -2228,13 +2228,15 @@ internal static partial class Program
     {
         UWGame.Mods.ModSetting enabled = UWGame.Mods.ModSettings.Find("hidegear.enabled");
         UWGame.Mods.ModSetting atHand = UWGame.Mods.ModSettings.Find("hidegear.weaponsAtHand");
-        if (enabled == null || atHand == null)
+        UWGame.Mods.ModSetting fighterKit = UWGame.Mods.ModSettings.Find("hidegear.fighterKit");
+        if (enabled == null || atHand == null || fighterKit == null)
         {
             Console.WriteLine("  the mod is not in this build - nothing to check");
             return 0;
         }
         enabled.Value = on ? "true" : "false";
         atHand.Value = on ? "true" : "false";
+        fighterKit.Value = on ? "true" : "false";
         int rc = Run(Sim.SerializeMode.NoSerialize, "base tables, the way the game loads them");
         if (rc != 0) return rc;
 
@@ -2251,17 +2253,26 @@ internal static partial class Program
         }
 
         var data = GameData.Instance;
-        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey, UWGame.Mods.HideGearMod.BackpackKey };
+        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey, UWGame.Mods.HideGearMod.BackpackKey, UWGame.Mods.HideGearMod.CartKey };
         // Each item's profile; the cloak's and the armour's are keyed like the effect they name,
         // the backpack's names none (its work is done in Locomotor and the exertion level).
-        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey, UWGame.Mods.HideGearMod.BackpackProfileKey };
-        string[] recipes = { "makeHideCloak", "makeHideArmour", "makeHideBackpack" };
+        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey, UWGame.Mods.HideGearMod.BackpackProfileKey, UWGame.Mods.HideGearMod.CartProfileKey };
+        string[] recipes = { "makeHideCloak", "makeHideArmour", "makeHideBackpack", "makeHandCart" };
         Check(enabled.IsStock != on && enabled.AffectsSimulation && enabled.DefaultValue == "false",
               "off by default, simulation-affecting, and stock only when off");
         Check(UWGame.Mods.ModSettings.Signature().Contains("hidegear.enabled=true") == on,
               on ? "a save is stamped hidegear.enabled=true" : "a save is not stamped");
         Check(atHand.AffectsSimulation && atHand.DefaultValue == "false" && atHand.IsStock != on,
               "weapons at hand: off by default, simulation-affecting, its own switch");
+        Check(fighterKit.AffectsSimulation && fighterKit.DefaultValue == "false" && fighterKit.IsStock != on,
+              "fighters keep a full kit: off by default, simulation-affecting, its own switch");
+        // Whatever the switches, nobody (null) is ever pressed, buffed or slowed.
+        Check(UWGame.Mods.HideGearMod.ComfortPenalty(null) == 0f && UWGame.Mods.HideGearMod.HitChanceFactor(null) == 1f
+              && UWGame.Mods.HideGearMod.AttackSpeedFactor(null) == 1f && UWGame.Mods.HideGearMod.WorkFactor(null, null) == 1f
+              && UWGame.Mods.HideGearMod.DefenseFactor(null) == 1f && UWGame.Mods.HideGearMod.ArmourToTakeOff(null) == null
+              && !UWGame.Mods.HideGearMod.WantsWeapon(null) && UWGame.Mods.HideGearMod.WeaponWanted(null, null)
+              && !UWGame.Mods.HideGearMod.HasArmourOrder(null),
+              "no colonist: no penalty, no buff, nothing to take off, every weapon looked at");
 
         // Step 4's rule, every case. Haul is what every fight and every tool job asks for.
         var Haul = UWGame.SimSide.Entities.Containers.Components.StorageCompartment.Haul;
@@ -2293,7 +2304,12 @@ internal static partial class Program
             foreach (string key in recipes) Check(!data.AllProcessTypes.ContainsKey(key), key + " is not in the tables");
             Check(byDay == null && atNight.Count == 1, "a patrol asks for night gear only, as the studio's did");
             Check(haul == null, "a haul asks for no gear, as the studio's did");
-            Check(UWGame.Mods.HideGearMod.LoadFelt(null) == 1f, "a load weighs what it weighs");
+            Check(UWGame.Mods.HideGearMod.Felt(null, 0.5f) == 0.5f && UWGame.Mods.HideGearMod.Felt(null, 2f) == 2f,
+                  "a load weighs what it weighs, even over capacity, as the studio's formula has it");
+            Check(UWGame.Mods.HideGearMod.MayWear(null, null), "anyone may take any gadget");
+            Check(UWGame.Mods.HideGearMod.ComfortPenalty(null) == 0f && UWGame.Mods.HideGearMod.HitChanceFactor(null) == 1f
+                  && UWGame.Mods.HideGearMod.WorkFactor(null, null) == 1f && UWGame.Mods.HideGearMod.DefenseFactor(null) == 1f,
+                  "no penalties, buffs or slowing");
             Check(UWGame.Mods.HideGearMod.ArmourFactor((UWGame.SimSide.Entities.Body.BodyPart)null, null) == 1f,
                   "no armour factor: a blow lands as the studio's layers decide");
             Console.WriteLine(failures == 0 ? "hide gear self-test OK" : $"hide gear self-test: {failures} FAILED");
@@ -2304,7 +2320,7 @@ internal static partial class Program
         Check(atNight.Count == 2 && atNight.Contains(T.Patrol), "a patrol at night asks for night and patrol gear, once each");
         Check(haul != null && haul.Count == 1 && haul[0] == T.Haul, "a long haul asks for hauling gear");
 
-        UWGame.SimSide.Entities.EntityType cloak = null, armour = null, backpack = null;
+        UWGame.SimSide.Entities.EntityType cloak = null, armour = null, backpack = null, cart = null;
         for (int i = 0; i < items.Length; i++)
         {
             string key = items[i];
@@ -2313,14 +2329,14 @@ internal static partial class Program
                 Check(false, key + " is an item in the tables");
                 continue;
             }
-            if (i == 0) cloak = type; else if (i == 1) armour = type; else backpack = type;
+            if (i == 0) cloak = type; else if (i == 1) armour = type; else if (i == 2) backpack = type; else cart = type;
             var item = type.ItemType;
             // What CompositeGoal.IsGadgetForTask asks of a gadget.
             Check(item.TaskAppropriateLevels != null && item.FinalEffectsWhenEquipped != null && item.FinalEffectsWhenEquipped.Count == 1,
                   key + " is a gadget: task levels, and one effect profile when worn");
             var profile = item.FinalEffectsWhenEquipped?.FirstOrDefault();
             string effectKey = profile?.Effects?.FirstOrDefault();
-            if (type == backpack)
+            if (type == backpack || type == cart)
             {
                 Check(profile != null && profile.KeyName == effects[i] && profile.Effects != null && profile.Effects.Length == 0,
                       key + ": its profile " + effects[i] + " is shown and names no effect");
@@ -2344,8 +2360,7 @@ internal static partial class Program
             {
                 bool made = input.EntityType != null && data.AllProcessTypes.Values.Any(p => p.Outputs != null
                     && p.Outputs.Any(o => o.FinalEntityTypeToCreate == input.EntityType));
-                Check(made && input.Entity.EndsWith("TannedHide", StringComparison.Ordinal),
-                      recipes[i] + ": " + input.Entity + " is a tanned hide the game can make");
+                Check(made, recipes[i] + ": " + input.Entity + " is something the game can make");
             }
         }
 
@@ -2383,23 +2398,100 @@ internal static partial class Program
             Check(armour.ItemType.UseGearAtAnyDistanceFromExpedition && !cloak.ItemType.UseGearAtAnyDistanceFromExpedition,
                   "armour is taken on a patrol near camp; the cloak only beyond normal range");
         }
-        if (backpack != null && cloak != null && armour != null)
+        if (backpack != null && cart != null && cloak != null && armour != null)
         {
             var haulTask = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Haul };
             var patrolTask = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Patrol };
-            Check(backpack.ItemType.GetTaskAppropriateLevel(haulTask) > 0f
+            Check(cart.ItemType.GetTaskAppropriateLevel(haulTask) > backpack.ItemType.GetTaskAppropriateLevel(haulTask)
+                  && backpack.ItemType.GetTaskAppropriateLevel(haulTask) > 0f
                   && cloak.ItemType.GetTaskAppropriateLevel(haulTask) == 0f && armour.ItemType.GetTaskAppropriateLevel(haulTask) == 0f,
-                  "on a haul the backpack is wanted and nothing else of ours");
-            Check(backpack.ItemType.GetTaskAppropriateLevel(patrolTask) == 0f, "on patrol the backpack is not");
-            Check(!backpack.ItemType.UseGearAtAnyDistanceFromExpedition, "the backpack only on hauls beyond normal range");
+                  "on a haul a cart is wanted over a backpack, and nothing else of ours");
+            Check(backpack.ItemType.GetTaskAppropriateLevel(patrolTask) == 0f && cart.ItemType.GetTaskAppropriateLevel(patrolTask) == 0f,
+                  "on patrol neither the backpack nor the cart");
+            Check(backpack.ItemType.UseGearAtAnyDistanceFromExpedition && cart.ItemType.UseGearAtAnyDistanceFromExpedition,
+                  "both are taken for any haul, near camp too: carrying it in one go is the point");
             // Hauling was "not in use", but 21 of the studio's weapons and tools say Minor for it. They are
             // not gadgets - CompositeGoal.IsGadgetForTask wants FinalEffectsWhenEquipped, and they have
             // none - so a haul asking for gear cannot send anyone for a musket. Only gadgets count.
             var haulGadgets = data.AllEntityTypes.Values.Where(e => e.ItemType?.TaskAppropriateLevels != null
                 && e.ItemType.FinalEffectsWhenEquipped != null && e.ItemType.GetTaskAppropriateLevel(T.Haul) > 0f).ToList();
-            Check(haulGadgets.Count == 1 && haulGadgets[0] == backpack,
-                  "the only gadget a haul can fetch is the backpack (" + string.Join(", ", haulGadgets.Select(e => e.KeyName)) + ")");
+            Check(haulGadgets.Count == 2 && haulGadgets.Contains(backpack) && haulGadgets.Contains(cart),
+                  "the only gadgets a haul can fetch are the backpack and the cart (" + string.Join(", ", haulGadgets.Select(e => e.KeyName)) + ")");
+            // jerrybi: "megapod hide OR 4 metal sheet". There is no metal sheet; wrought iron binds it.
+            if (data.AllProcessTypes.TryGetValue("makeHandCartWithIron", out var ironCart))
+            {
+                Check(ironCart.Outputs?[0].FinalEntityTypeToCreate == cart && ironCart.ProcessToolSet != null
+                      && ironCart.Inputs.Any(x => x.Entity == "item:wroughtIron" && x.Amount.NoOfItems == 4)
+                      && ironCart.Inputs.All(x => x.Entity != "item:megapodTannedHide"),
+                      "makeHandCartWithIron: the same cart from 4 wrought iron instead of hide, its tool set resolves");
+            }
+            else Check(false, "makeHandCartWithIron is in the tables");
         }
+
+        // Capacity (jerrybi: a backpack "up to 5", the cart "10 ... with NO speed debuff").
+        Check(UWGame.Mods.HideGearMod.HaulCapacity(1f, new string[0]) == 1f
+              && UWGame.Mods.HideGearMod.HaulCapacity(1f, new[] { UWGame.Mods.HideGearMod.BackpackKey }) == 5f
+              && UWGame.Mods.HideGearMod.HaulCapacity(1f, new[] { UWGame.Mods.HideGearMod.BackpackKey, UWGame.Mods.HideGearMod.CartKey }) == 10f
+              && UWGame.Mods.HideGearMod.HaulCapacity(1f, new[] { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey }) == 1f
+              && UWGame.Mods.HideGearMod.HaulCapacity(12f, new[] { UWGame.Mods.HideGearMod.BackpackKey }) == 12f,
+              "haul capacity: 1 alone, 5 with a backpack, 10 with a cart (and both), never below the type's own");
+        if (data.AllEntityTypes.TryGetValue("entity:human", out var human)
+            && human.ContainerType is UWGame.SimSide.Entities.Containers.Components.AgentStorageType humanStorage)
+        {
+            Check(humanStorage.ItemStorageType.GetTotalCapacity() == 1f, "a colonist hauls 1 of their own (entity:human)");
+        }
+        Check(UWGame.Mods.HideGearMod.FeltWith(false, false, 0.5f) == 0.5f && UWGame.Mods.HideGearMod.FeltWith(false, false, 2f) == 1f,
+              "a load feels as full as it is, and never more than full when over capacity");
+        Check(UWGame.Mods.HideGearMod.FeltWith(true, true, 1f) == 0f, "with a cart a full load feels like nothing (no slowdown)");
+
+        // Fighters keep a full kit (jerrybi, 2026-10-12): one big weapon and one small.
+        var H = typeof(UWGame.Mods.HideGearMod);
+        UWGame.Mods.HideGearMod.WeaponClass ClassOfKey(string key) =>
+            data.AllEntityTypes.TryGetValue(key, out var t) ? UWGame.Mods.HideGearMod.ClassOf(t) : (UWGame.Mods.HideGearMod.WeaponClass)(-1);
+        var Big = UWGame.Mods.HideGearMod.WeaponClass.Big;
+        var Small = UWGame.Mods.HideGearMod.WeaponClass.Small;
+        var NoClass = UWGame.Mods.HideGearMod.WeaponClass.None;
+        foreach (string key in new[] { "item:musket", "item:gunpowderRifle", "item:improvisedBow", "item:improvisedBasicSpear", "item:ironSpear" })
+        {
+            Check(ClassOfKey(key) == Big, key + " is a big weapon");
+        }
+        foreach (string key in new[] { "item:steelKnife", "item:flintKnife", "item:steelMachete", "item:steelHandAxe" })
+        {
+            Check(ClassOfKey(key) == Small, key + " is a small weapon");
+        }
+        foreach (string key in new[] { "item:steelPickaxe", "item:hammer", "item:steelHoe", "item:hideCloak" })
+        {
+            Check(ClassOfKey(key) == NoClass, key + " is neither");
+        }
+        // Every weapon the studio marks for patrol gets a class, except the tools it also lets fight
+        // with and a turret - named here, so a weapon added later shows up rather than slipping out.
+        var patrolWeapons = data.AllEntityTypes.Values.Where(e => e.ItemType?.WeaponType != null
+            && e.ItemType.GetTaskAppropriateLevel(UWGame.SimSide.Items.ItemType.TaskType.PatrolOrAttack) > 0f).ToList();
+        var unclassed = patrolWeapons.Where(e => UWGame.Mods.HideGearMod.ClassOf(e) == NoClass).Select(e => e.KeyName).OrderBy(k => k).ToList();
+        string notKit = "item:farmingHoe, item:improvisedPickaxe, item:sentryLaserGun, item:steelHoe, item:steelPickaxe";
+        Check(patrolWeapons.Count > 0 && string.Join(", ", unclassed) == notKit,
+              $"{patrolWeapons.Count - unclassed.Count} of {patrolWeapons.Count} patrol weapons are big or small; not kit: " + string.Join(", ", unclassed));
+        Check(Math.Abs(UWGame.Mods.HideGearMod.PenaltyFor(false, false, false) - 0.09f) < 1e-6f
+              && UWGame.Mods.HideGearMod.PenaltyFor(false, true, false) > UWGame.Mods.HideGearMod.PenaltyFor(true, false, false)
+              && UWGame.Mods.HideGearMod.PenaltyFor(true, true, false) == 0f && UWGame.Mods.HideGearMod.PenaltyFor(true, true, true) == 0.05f,
+              "comfort: no weapons 0.09, a missing big weapon costs more than a small one, armour 5 days overdue 0.05");
+        Check(UWGame.Mods.HideGearMod.CoverageNeeded(false) == 1 && UWGame.Mods.HideGearMod.CoverageNeeded(true) == 3,
+              "one kitted fighter covers the camp, three with a threat near");
+        var armourTier = data.AllTierTypes.Values.FirstOrDefault(t => t.Index == UWGame.Mods.HideGearMod.ArmourTierIndex);
+        Check(armourTier != null && armourTier.KeyName == "medium", "armour is expected from the security policy's third tier (" + armourTier?.KeyName + ")");
+        Check(UWGame.Mods.HideGearMod.ArmourExpected(null) == false, "no expedition: no armour expected");
+        bool Works(string skill) => data.AllSkillTypes.TryGetValue(skill, out var t) && UWGame.Mods.HideGearMod.FightersWork(t);
+        Check(Works("hunting") && Works("shooting") && Works("armedMelee") && !Works("carpentry") && !Works("bushcraft"),
+              "a fighter's own work: hunting and the combat skills, not carpentry or bushcraft");
+
+        // Fighters (jerrybi: "only they should be able to use armour").
+        foreach (string profession in UWGame.Mods.HideGearMod.FighterProfessions)
+        {
+            Check(data.AllProfessionTypes.ContainsKey(profession), profession + " is a profession in the tables");
+        }
+        Check(!UWGame.Mods.HideGearMod.IsFighter(null) && !UWGame.Mods.HideGearMod.MayWear(null, armour)
+              && UWGame.Mods.HideGearMod.MayWear(null, cloak) && UWGame.Mods.HideGearMod.MayWear(null, backpack),
+              "armour only for a fighter; the rest for anyone");
 
         // Step 4's room. The colonist's Equipment holds the heaviest musket-or-rifle, knife and spear,
         // and the heaviest piece of hide gear beside them.
@@ -2409,7 +2501,7 @@ internal static partial class Program
             .Where(e => e.ItemType?.WeaponType != null && pick(e.KeyName)).Select(e => e.ItemType.MaximumBulk ?? 0f).DefaultIfEmpty(0f).Max();
         float gun = Heaviest(k => k.Contains("usket") || k.Contains("Rifle")), knife = Heaviest(k => k.Contains("Knife") && !k.Contains("Spear")),
               spear = Heaviest(k => k.Contains("Spear"));
-        float gear = new[] { cloak, armour, backpack }.Where(e => e != null).Select(e => e.ItemType.MaximumBulk ?? 0f).DefaultIfEmpty(0f).Max();
+        float gear = new[] { cloak, armour, backpack, cart }.Where(e => e != null).Select(e => e.ItemType.MaximumBulk ?? 0f).DefaultIfEmpty(0f).Max();
         Check(colonists.Count > 0 && gun > 0f && knife > 0f && spear > 0f, "there are colonists with Equipment, and guns, knives and spears to keep");
         foreach (var colonist in colonists)
         {
@@ -2419,8 +2511,8 @@ internal static partial class Program
         }
 
         // The backpack's arithmetic, worked through the two formulas it is read in, at a full load.
-        float felt = UWGame.Mods.HideGearMod.BackpackLoadFelt;
-        Check(felt == 0.7f && UWGame.Mods.HideGearMod.LoadFelt(null) == 1f, "a load feels 0.7 of itself with a backpack, and nobody is wearing one here");
+        float felt = UWGame.Mods.HideGearMod.FeltWith(false, true, 1f);
+        Check(felt == 0.7f && UWGame.Mods.HideGearMod.Felt(null, 1f) == 1f, "a full load feels 0.7 of itself with a backpack, and nobody is wearing one here");
         float bareSpeed = Microsoft.Xna.Framework.MathHelper.Lerp(1f, 0.6f, 1f), packSpeed = Microsoft.Xna.Framework.MathHelper.Lerp(1f, 0.6f, felt);
         Check(packSpeed > bareSpeed, FormattableString.Invariant(
             $"Locomotor.ApplyBurdenModifier, full haul: {bareSpeed:0.##} of walking speed bare, {packSpeed:0.##} with a backpack"));

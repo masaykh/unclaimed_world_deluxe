@@ -39,6 +39,7 @@ namespace UWGame.Control.Commands;
 [XmlInclude(typeof(SetHouseholdProduction))]
 [XmlInclude(typeof(GiveToHousehold))]
 [XmlInclude(typeof(SetAutoclaimCampKills))]
+[XmlInclude(typeof(SetRefusesArmour))]
 [XmlInclude(typeof(AddCredits))]
 public abstract class Command
 {

@@ -39,6 +39,9 @@ public class HUDEntityContextMenu : HUDWindow
 
 	private TextButton tbClaim;
 
+	/// <summary>MOD: HideGearMod - TAKE OFF ARMOUR / ALLOW ARMOUR, for one of our fighters.</summary>
+	private TextButton tbArmour;
+
 	private DataTypeButton btSalvageProcess;
 
 	private Grid grdSpecialActions;
@@ -95,6 +98,11 @@ public class HUDEntityContextMenu : HUDWindow
 		tbClaim.Init(TextButton.TextButtonType.HUDClaim);
 		tbClaim.Click += tbClaim_Click;
 		tbClaim.ScaleWidthToFitText();
+		tbArmour = new TextButton(gui);
+		tbArmour.Text = UWGame.Locale.Text("TAKE OFF ARMOUR");
+		tbArmour.Init(TextButton.TextButtonType.HUDClaim);
+		tbArmour.Click += tbArmour_Click;
+		tbArmour.ScaleWidthToFitText();
 		tbDiscard = new TextButton(gui);
 		tbDiscard.Text = UWGame.Locale.Text("DISCARD");
 		tbDiscard.ToolTip = UWGame.Locale.Text("Choose the types of items that can be stored in this structure");
@@ -158,6 +166,14 @@ public class HUDEntityContextMenu : HUDWindow
 	{
 		stockpileWindow.Hide();
 		UpgradeWindow.Hide();
+	}
+
+	private void tbArmour_Click(UIComponent sender, EventArgs e)
+	{
+		if (entityID.HasValue && Entity.FindByID(entityID.Value) is Entity colonist && UWGame.Mods.HideGearMod.HasArmourOrder(colonist))
+		{
+			The.Client.Controller.StoreAndExecuteCommand(new SetRefusesArmour(entityID.Value, !UWGame.Mods.HideGearMod.RefusesArmour(colonist)));
+		}
 	}
 
 	private void tbClaim_Click(UIComponent sender, EventArgs e)
@@ -539,6 +555,23 @@ public class HUDEntityContextMenu : HUDWindow
 		{
 			Remove(tbClaim);
 		}
+		if (UWGame.Mods.HideGearMod.HasArmourOrder(entityData))
+		{
+			Add(tbArmour);
+			tbArmour.Y = num + 6;
+			tbArmour.X = 6;
+			num += tbArmour.Height;
+			bool refuses = UWGame.Mods.HideGearMod.RefusesArmour(entityData as Entity);
+			tbArmour.Text = refuses ? UWGame.Locale.Text("ALLOW ARMOUR") : UWGame.Locale.Text("TAKE OFF ARMOUR");
+			tbArmour.ToolTip = refuses
+				? UWGame.Locale.Text("ALLOW ARMOUR. This fighter may wear armour again.")
+				: UWGame.Locale.Text("TAKE OFF ARMOUR. This fighter puts their armour down and does not take armour again until allowed, so a stronger fighter can wear it, or an injured one can rest out of it.");
+			tbArmour.ScaleWidthToFitText();
+		}
+		else
+		{
+			Remove(tbArmour);
+		}
 		PopulateSpecialActionGrid(hasSpecialActions, entityData);
 		if (hasSpecialActions)
 		{
@@ -755,7 +788,8 @@ public class HUDEntityContextMenu : HUDWindow
 			}
 			EntityListWindow.GetAllowedActions(entityData, out canBeSalvaged, out canBeDiscarded, out canBeClaimed);
 		}
-		return canBeHunted | canBeSalvaged | hasSpecialActions | canBeDiscarded | canBeClaimed | canSetTradeOffers | canSetStockpile | canUpgrade;
+		// MOD: HideGearMod - one of our fighters has the armour order.
+		return canBeHunted | canBeSalvaged | hasSpecialActions | canBeDiscarded | canBeClaimed | canSetTradeOffers | canSetStockpile | canUpgrade | UWGame.Mods.HideGearMod.HasArmourOrder(entityData);
 	}
 
 	public override void Hide()
