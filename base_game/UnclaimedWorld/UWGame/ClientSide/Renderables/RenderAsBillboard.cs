@@ -118,6 +118,12 @@ public class RenderAsBillboard : ILocatable, IComparable, IUpdatable
 
 	public void CopyShadowQuadToVertexBuffer(VertexFeatureQuad[] featureVertices, ref int index)
 	{
+		// Decorative fish over fished-out water are not drawn, with the switch on. Drawing only;
+		// leaving index where it is is what an off-screen quad does. See mods/FishStockMod.cs.
+		if (UWGame.Mods.FishStockMod.HidesDecoration(Parent?.Parent))
+		{
+			return;
+		}
 		if (spriteIsDirty)
 		{
 			SetupQuadVertices();
@@ -130,6 +136,10 @@ public class RenderAsBillboard : ILocatable, IComparable, IUpdatable
 
 	public void CopyQuadToVertexBuffer(VertexFeatureQuad[] featureVertices, ref int index, Renderable.AdditionalEffect? overridingEffectID = null)
 	{
+		if (UWGame.Mods.FishStockMod.HidesDecoration(Parent?.Parent))
+		{
+			return;
+		}
 		if (spriteIsDirty)
 		{
 			SetupQuadVertices();

@@ -154,7 +154,10 @@ public class Crop : ResourceContainer
 		}
 		if (ParentEntity != null && resourceType.CropType.TreeSpriteFlag.HasValue)
 		{
-			ParentEntity.Renderable.SetOrClearSpriteStateFlag(TotalBulk > resourceType.CropType.BulkLimitToShowFlag, resourceType.CropType.TreeSpriteFlag.Value);
+			// The studio's test counts new buds, so a cut plant looks grown again almost at once.
+			// RegrowthMod can count grown items instead; it returns the studio's answer when off.
+			// The flag only picks a sprite.
+			ParentEntity.Renderable.SetOrClearSpriteStateFlag(UWGame.Mods.RegrowthMod.ShowsGrownLook(TotalBulk > resourceType.CropType.BulkLimitToShowFlag, cropItems), resourceType.CropType.TreeSpriteFlag.Value);
 			if (resourceType.CropType.RipeSpeed.HasValue)
 			{
 				ParentEntity.Renderable.SetOrClearSpriteStateFlag(NoOfHarvestableItems > 0, StateModifier.Ripe);

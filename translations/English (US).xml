@@ -6106,6 +6106,22 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>Each fish trap fishes down a stock that grows back over time, instead of catching forever. Rest a trap with "Don't use bait" and it recovers.</Value>
   </String>
   <String>
+    <Key>SettingFishstockFishedOutLook</Key>
+    <Value>FISHED-OUT WATER SHOWS NO FISH</Value>
+  </String>
+  <String>
+    <Key>SettingTipFishstockFishedOutLook</Key>
+    <Value>The fish seen circling in the water disappear while every fishing spot near them is fished out, and come back as the fish do. Traps count too when FISH TRAPS DEPLETE THE WATER is on.</Value>
+  </String>
+  <String>
+    <Key>SettingFishstockLookRange</Key>
+    <Value>FISHING SPOTS CHECKED (TILES)</Value>
+  </String>
+  <String>
+    <Key>SettingTipFishstockLookRange</Key>
+    <Value>How far from the circling fish to look for fishing spots and traps that still have fish.</Value>
+  </String>
+  <String>
     <Key>SettingFishstockRegrowth</Key>
     <Value>FISH REGROWTH (OF CATCH RATE)</Value>
   </String>
@@ -6564,6 +6580,26 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingGroupRegrowth</Key>
     <Value>REGROWTH</Value>
+  </String>
+  <String>
+    <Key>SettingRegrowthCutLook</Key>
+    <Value>CUT PLANTS LOOK CUT</Value>
+  </String>
+  <String>
+    <Key>SettingTipRegrowthCutLook</Key>
+    <Value>Spoak, shadeleaf, daysheen, wingweed and water cane show their cut look after harvesting until they have grown back, instead of looking full again at once.</Value>
+  </String>
+  <String>
+    <Key>SettingRegrowthCutLookUntil</Key>
+    <Value>LOOKS FULL AGAIN AT</Value>
+  </String>
+  <String>
+    <Key>SettingTipRegrowthCutLookUntil</Key>
+    <Value>How much of a cut plant must have grown back before it looks full again: one grown item, or a share of everything it is growing.</Value>
+  </String>
+  <String>
+    <Key>SettingChoiceRegrowthCutLookUntil1Item</Key>
+    <Value>1 item</Value>
   </String>
   <String>
     <Key>SettingRegrowthWoodOverharvest</Key>

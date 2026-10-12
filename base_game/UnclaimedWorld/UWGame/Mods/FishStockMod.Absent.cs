@@ -33,4 +33,15 @@ public static class FishStockMod
     public static IEnumerable<EntityType> TrapsBuiltAt(EntityType place) => new EntityType[0];
 
     public static float Regrow(float stock, double since, double now, float max, float perSecond) => stock;
+
+    /// <summary>Every decorative fish is drawn, as the studio drew them.</summary>
+    public static bool HidesDecoration(UWGame.SimSide.AI.IKnownEntityData shown) => false;
+
+    public static readonly string[] DecorationKeys = new string[0];
+
+    public static readonly string[] FishResourceKeys = new string[0];
+
+    public static bool IsFishResource(UWGame.SimSide.Resources.ResourceType type) => false;
+
+    public static bool ShowsFish(Microsoft.Xna.Framework.Point at, int range, int width, int height, System.Func<int, int, int> fishAt) => true;
 }

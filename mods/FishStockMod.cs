@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using UWGame.ClientSide.PropertyPresentation;
 using UWGame.SimSide;
 using UWGame.SimSide.AI;
@@ -11,7 +12,9 @@ using UWGame.SimSide.InGameEvents.Actions;
 using UWGame.SimSide.InGameEvents.Conditions;
 using UWGame.SimSide.InGameEvents.Expressions;
 using UWGame.SimSide.InGameEvents.PropertyObjects;
+using UWGame.SimSide.Maps;
 using UWGame.SimSide.Processes;
+using UWGame.SimSide.Resources;
 
 namespace UWGame.Mods;
 
@@ -46,6 +49,17 @@ namespace UWGame.Mods;
 /// The stock's size and its regrowth are both measured against the best of those (highest
 /// spawnChance x maxNoOfFishToSpawnAtATime / 2), so swapping a net weir for a stick weir neither
 /// shrinks the fish nor slows their return.
+///
+/// FISHED-OUT WATER SHOWS NO FISH (<see cref="FishedOutLook"/>), a switch of its own. Kastuk asked
+/// for this in Visually Harvested Resources, 2026-10-12: the decorative fish the maps place
+/// (terrain:fishCircling, terrain:fishSwarm) keep circling over water that has been fished empty.
+/// With it on, a decoration is not drawn while every fish source within <see cref="LookRange"/>
+/// tiles is empty. A source is a tile holding a fish resource (minnows, alabaster ray, streak fin,
+/// carbon tail: the resources drawn with the hook icon), or a trap whose stock is under one fish.
+/// Traps count only with FISH TRAPS DEPLETE THE WATER on, since without it they never run out. A
+/// decoration with no source in range at all is left alone. It is part of this mod's group but
+/// does not need its switch: Kastuk, "not be depended on it". Drawing only: the simulation never
+/// reads it, so replays and saves are unaffected.
 /// </summary>
 public static class FishStockMod
 {
@@ -76,6 +90,24 @@ public static class FishStockMod
                      "place catches. Below 1, a trap that is always fishing slowly runs the water down.",
             affectsSimulation: true));
 
+    private static ModSetting fishedOutLook;
+    private static ModSetting lookRange;
+
+    public static ModSetting FishedOutLook =>
+        fishedOutLook ?? (fishedOutLook = ModSettings.Toggle(
+            ModId, "fishedOutLook", "FISHED-OUT WATER SHOWS NO FISH", defaultValue: false,
+            toolTip: "The fish seen circling in the water disappear while every fishing spot near " +
+                     "them is fished out, and come back as the fish do. Traps count too when " +
+                     "FISH TRAPS DEPLETE THE WATER is on.",
+            affectsSimulation: false));
+
+    public static ModSetting LookRange =>
+        lookRange ?? (lookRange = ModSettings.Choice(
+            ModId, "lookRange", "FISHING SPOTS CHECKED (TILES)", new[] { "3", "5", "10", "15", "20" }, "10",
+            toolTip: "How far from the circling fish to look for fishing spots and traps that still " +
+                     "have fish.",
+            affectsSimulation: false));
+
     private static bool registered;
 
     public static void RegisterSettings()
@@ -88,6 +120,8 @@ public static class FishStockMod
         _ = Enabled;
         _ = StockDays;
         _ = Regrowth;
+        _ = FishedOutLook;
+        _ = LookRange;
         if (!registered)
         {
             registered = true;
@@ -163,19 +197,151 @@ public static class FishStockMod
         {
             return null;
         }
-        float perPoll = BestCatchPerPoll(trap.EntityType);
-        float pollSeconds = PollSeconds();
-        float max = perPoll * (float)(DateAndTime.secondsPerDay / pollSeconds) * ParseNumber(StockDays.Value, 3f);
-        float perSecond = perPoll / pollSeconds * ParseNumber(Regrowth.Value, 0.5f);
         double now = The.Sim.TotalUnPausedGameTimeInSeconds;
-
-        float stock = trap.CustomFields.TryGetValue(StockKey, out PropertyResult s) && s.NumberResult.HasValue ? s.NumberResult.Value : max;
-        double since = trap.CustomFields.TryGetValue(SecondsKey, out PropertyResult t) && t.NumberResult.HasValue ? t.NumberResult.Value : now;
-        stock = Regrow(stock, since, now, max, perSecond);
+        float stock = StockNow(trap, now);
 
         trap.CustomFields[StockKey] = new PropertyResult { NumberResult = stock };
         trap.CustomFields[SecondsKey] = new PropertyResult { NumberResult = (float)now };
         return new PropertyResult { NumberResult = stock };
+    }
+
+    /// <summary>
+    /// The trap's stock regrown to <paramref name="now"/>, WITHOUT storing it. The event's property
+    /// stores it; the decoration check must not, because it runs while drawing and a write there
+    /// would make the simulation depend on what was on screen.
+    /// </summary>
+    private static float StockNow(Entity trap, double now)
+    {
+        float perPoll = BestCatchPerPoll(trap.EntityType);
+        float pollSeconds = PollSeconds();
+        float max = perPoll * (float)(DateAndTime.secondsPerDay / pollSeconds) * ParseNumber(StockDays.Value, 3f);
+        float perSecond = perPoll / pollSeconds * ParseNumber(Regrowth.Value, 0.5f);
+
+        float stock = trap.CustomFields.TryGetValue(StockKey, out PropertyResult s) && s.NumberResult.HasValue ? s.NumberResult.Value : max;
+        double since = trap.CustomFields.TryGetValue(SecondsKey, out PropertyResult t) && t.NumberResult.HasValue ? t.NumberResult.Value : now;
+        return Regrow(stock, since, now, max, perSecond);
+    }
+
+    // ---- the decorative fish ---------------------------------------------------------------
+
+    /// <summary>The map-placed decorations this hides (TerrainFeatureLoader.AddBillboardAnimTerrain).</summary>
+    public static readonly string[] DecorationKeys = { "terrain:fishCircling", "terrain:fishSwarm" };
+
+    /// <summary>
+    /// The fish caught in open water, minnows included (Kastuk: "Add minnows into list"). Named
+    /// rather than found by the hook icon, which the imp eel shares: it lives in the muckroot
+    /// canals on land, and counting its spots would keep fish circling over empty water.
+    /// </summary>
+    public static readonly string[] FishResourceKeys = { "minnowsLive", "alabasterRay", "streakFin", "carbonTail", "daggermouth" };
+
+    public static bool IsFishResource(ResourceType type) =>
+        type != null && Array.IndexOf(FishResourceKeys, type.KeyName) >= 0;
+
+    /// <summary>How often the answer is worked out again, in real milliseconds. Drawing only.</summary>
+    private const int RefreshMilliseconds = 2000;
+
+    private static readonly Dictionary<Point, bool> hiddenAt = new Dictionary<Point, bool>();
+    private static long refreshedAt = long.MinValue;
+    private static MapManager refreshedFor;
+    private static bool lookOn;
+    private static int range;
+    private static EntityType[] decorations = new EntityType[0];
+
+    /// <summary>
+    /// Called by RenderAsBillboard before it draws a billboard and its shadow: true skips both.
+    /// Runs for every billboard every frame, so with the switch off it is one bool read, and the
+    /// answer for a decoration is kept for <see cref="RefreshMilliseconds"/>.
+    /// </summary>
+    public static bool HidesDecoration(IKnownEntityData shown)
+    {
+        long tick = Environment.TickCount64;
+        if (tick - refreshedAt > RefreshMilliseconds || refreshedFor != The.Map)
+        {
+            Refresh(tick);
+        }
+        if (!lookOn || shown == null || Array.IndexOf(decorations, shown.EntityType) < 0)
+        {
+            return false;
+        }
+        Point? at = shown.MapPosition;
+        if (!at.HasValue)
+        {
+            return false;
+        }
+        if (!hiddenAt.TryGetValue(at.Value, out bool hidden))
+        {
+            hidden = The.Map?.TileMap != null
+                     && !ShowsFish(at.Value, range, The.Map.mapTileWidth, The.Map.mapTileHeight, FishAt);
+            hiddenAt[at.Value] = hidden;
+        }
+        return hidden;
+    }
+
+    private static void Refresh(long tick)
+    {
+        refreshedAt = tick;
+        refreshedFor = The.Map;
+        hiddenAt.Clear();
+        lookOn = FishedOutLook.On;
+        range = (int)ParseNumber(LookRange.Value, 10f);
+        if (decorations.Length == 0 && GameData.Instance?.AllEntityTypes != null)
+        {
+            decorations = DecorationKeys
+                .Select(k => GameData.Instance.AllEntityTypes.TryGetValue(k, out EntityType t) ? t : null)
+                .Where(t => t != null).ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Whether a decoration at <paramref name="at"/> should be drawn: no fish source within
+    /// <paramref name="range"/> tiles (a square, as RegrowthMod's zone), or at least one with fish.
+    /// <paramref name="fishAt"/> answers per tile: -1 for no fish source there, 0 for sources that
+    /// are all empty, more than 0 for fish.
+    /// </summary>
+    public static bool ShowsFish(Point at, int range, int width, int height, Func<int, int, int> fishAt)
+    {
+        bool anySource = false;
+        for (int x = Math.Max(0, at.X - range); x <= Math.Min(width - 1, at.X + range); x++)
+        {
+            for (int y = Math.Max(0, at.Y - range); y <= Math.Min(height - 1, at.Y + range); y++)
+            {
+                int fish = fishAt(x, y);
+                if (fish > 0)
+                {
+                    return true;
+                }
+                anySource |= fish == 0;
+            }
+        }
+        return !anySource;
+    }
+
+    /// <summary>The fish on one tile, for <see cref="ShowsFish"/>: its fish resources, and traps on it.</summary>
+    private static int FishAt(int x, int y)
+    {
+        TerrainTile tile = The.Map.TileMap[x][y];
+        int result = -1;
+        if (tile.TileResources != null)
+        {
+            foreach (KeyValuePair<ResourceType, TileResourceContainer> held in tile.TileResources)
+            {
+                if (IsFishResource(held.Key))
+                {
+                    result = Math.Max(result, held.Value?.NoOfHarvestableItems ?? 0);
+                }
+            }
+        }
+        if (result <= 0 && Enabled.On && tile.EntitiesOnTile != null && The.Sim != null)
+        {
+            foreach (Entity e in tile.EntitiesOnTile)
+            {
+                if (e?.CustomFields != null && IsFishTrap(e.EntityType))
+                {
+                    result = Math.Max(result, (int)StockNow(e, The.Sim.TotalUnPausedGameTimeInSeconds));
+                }
+            }
+        }
+        return result;
     }
 
     /// <summary>The stock after regrowing from <paramref name="since"/> to <paramref name="now"/>, capped.</summary>

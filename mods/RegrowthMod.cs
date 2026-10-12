@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UWGame.SimSide;
 using UWGame.SimSide.Resources;
 
@@ -58,6 +59,36 @@ public static class RegrowthMod
                      "normal again from 40% left. Firewood, which is dead wood, by at most 20%.",
             affectsSimulation: true));
 
+    private static ModSetting cutLook;
+    private static ModSetting cutLookUntil;
+
+    /// <summary>
+    /// CUT PLANTS LOOK CUT. Kastuk, Visually Harvested Resources (2026-10-11): spoak, shadeleaf,
+    /// daysheen, wingweed and water cane have "_grown_cut" sprites that never show. The studio
+    /// draws the grown sprite while the crop's TotalBulk is over BulkLimitToShowFlag, which is 0
+    /// for all five (Crop.UpdateBulkAndSprites, "// 0f, // 1f,"), and a cut plant starts new buds
+    /// straight away (Crop.SetNewCropItemBuds), so the cut sprite lasts until the next update. With
+    /// this on, only FULLY GROWN items count. Part of this mod's group, and independent of its
+    /// switch: Kastuk, "Regrowth is not need to be switched on". Drawing only: nothing in the
+    /// simulation reads the sprite flag.
+    /// </summary>
+    public static ModSetting CutLook =>
+        cutLook ?? (cutLook = ModSettings.Toggle(
+            ModId, "cutLook", "CUT PLANTS LOOK CUT", defaultValue: false,
+            toolTip: "Spoak, shadeleaf, daysheen, wingweed and water cane show their cut look after " +
+                     "harvesting until they have grown back, instead of looking full again at once.",
+            affectsSimulation: false));
+
+    /// <summary>How much must have grown back before the full look returns. For testing which reads best.</summary>
+    public static ModSetting CutLookUntil =>
+        cutLookUntil ?? (cutLookUntil = ModSettings.Choice(
+            ModId, "cutLookUntil", "LOOKS FULL AGAIN AT", CutLookChoices, "1 item",
+            toolTip: "How much of a cut plant must have grown back before it looks full again: one " +
+                     "grown item, or a share of everything it is growing.",
+            affectsSimulation: false));
+
+    public static readonly string[] CutLookChoices = { "1 item", "25%", "50%", "100%" };
+
     public static void RegisterSettings()
     {
         // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
@@ -65,6 +96,43 @@ public static class RegrowthMod
             "Wood and living plants grow back more slowly where those around them have been gathered down. Leave some standing.",
             "HUD_thumbnail_spoak");
         _ = WoodOverharvest;
+        _ = CutLook;
+        _ = CutLookUntil;
+    }
+
+    /// <summary>
+    /// Called by Crop.UpdateBulkAndSprites for a crop that sets a sprite flag: whether the plant
+    /// shows its grown sprite. <paramref name="stock"/> is the studio's answer, returned with the
+    /// switch off.
+    /// </summary>
+    public static bool ShowsGrownLook(bool stock, IList<IResourceItem> items)
+    {
+        if (!CutLook.On || items == null)
+        {
+            return stock;
+        }
+        int grown = 0;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] is CropItem item && item.IsFullyGrown)
+            {
+                grown++;
+            }
+        }
+        return GrownLook(grown, items.Count, CutLookUntil.Value);
+    }
+
+    /// <summary>Whether <paramref name="grown"/> of <paramref name="total"/> items is enough for the grown look.</summary>
+    public static bool GrownLook(int grown, int total, string threshold)
+    {
+        if (grown <= 0)
+        {
+            return false;
+        }
+        int percent = threshold != null && threshold.EndsWith("%", StringComparison.Ordinal)
+                      && int.TryParse(threshold.TrimEnd('%'), System.Globalization.NumberStyles.Integer,
+                                      System.Globalization.CultureInfo.InvariantCulture, out int p) ? p : 0;
+        return grown * 100 >= percent * total;
     }
 
     /// <summary>The resources this applies to.</summary>

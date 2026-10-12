@@ -1825,6 +1825,45 @@ internal static partial class Program
         Check(UWGame.Mods.RegrowthMod.ForecastRegrowth(null, 7f) == 7f, "switch on: no tile, nothing to slow");
         overharvest.Value = was;
 
+        // CUT PLANTS LOOK CUT. Its premise is the studio's data: these five crops pick a sprite
+        // with HasBranches and show it above a bulk of 0, which new buds always exceed.
+        foreach (string key in new[] { "crop:spoakBranches", "crop:waterCaneStem", "crop:shadeleafCanes", "crop:daysheenLeaves", "crop:wingweedLeaves" })
+        {
+            GameData.Instance.AllResourceTypes.TryGetValue(key, out var crop);
+            Check(crop?.CropType?.TreeSpriteFlag == UWGame.ClientSide.Renderables.StateModifier.HasBranches && crop.CropType.BulkLimitToShowFlag == 0f,
+                  key + " looks grown by HasBranches above a bulk of 0 (CUT PLANTS LOOK CUT)");
+        }
+        // Three items: one grown, two buds - what a plant holds soon after a cut.
+        var items = new List<UWGame.SimSide.Resources.IResourceItem>();
+        foreach (bool grown in new[] { true, false, false })
+        {
+            var item = (UWGame.SimSide.Resources.CropItem)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UWGame.SimSide.Resources.CropItem));
+            item.IsFullyGrown = grown;
+            items.Add(item);
+        }
+        var cutLook = UWGame.Mods.RegrowthMod.CutLook;
+        var cutLookUntil = UWGame.Mods.RegrowthMod.CutLookUntil;
+        string wasCut = cutLook.Value, wasUntil = cutLookUntil.Value;
+        cutLook.Value = "false";
+        overharvest.Value = "false";
+        Check(UWGame.Mods.RegrowthMod.ShowsGrownLook(true, items) && !UWGame.Mods.RegrowthMod.ShowsGrownLook(false, items),
+              "cut look off: the studio's answer, whatever has grown");
+        cutLook.Value = "true";
+        Check(cutLookUntil.Value == "1 item", "cut look on, regrowth switch off: it works on its own, 1 item by default");
+        Check(UWGame.Mods.RegrowthMod.ShowsGrownLook(true, items), "one grown item of three: grown look at \"1 item\"");
+        cutLookUntil.Value = "50%";
+        Check(!UWGame.Mods.RegrowthMod.ShowsGrownLook(true, items), "...but cut look at \"50%\"");
+        cutLookUntil.Value = "25%";
+        Check(UWGame.Mods.RegrowthMod.ShowsGrownLook(true, items), "...and grown at \"25%\"");
+        ((UWGame.SimSide.Resources.CropItem)items[0]).IsFullyGrown = false;
+        Check(!UWGame.Mods.RegrowthMod.ShowsGrownLook(true, items), "only buds: cut look, though the studio's test says grown");
+        Check(UWGame.Mods.RegrowthMod.GrownLook(4, 4, "100%") && !UWGame.Mods.RegrowthMod.GrownLook(3, 4, "100%"),
+              "\"100%\": grown only when everything has grown back");
+        Check(UWGame.Mods.ModSettings.Find("regrowth.cutLook")?.AffectsSimulation == false, "drawing only: the setting does not affect the simulation");
+        cutLook.Value = wasCut;
+        cutLookUntil.Value = wasUntil;
+        overharvest.Value = was;
+
         // BirdHopMod, the other nature mod: its premise is that each hopper is a real creature the
         // studio made immobile but gave legs. If a data change made one mobile, the mod's branch
         // would silently stop mattering; if one lost its legs, the step would go nowhere.
@@ -2101,6 +2140,49 @@ internal static partial class Program
         {
             Check(!hasStockCondition && !hasStockAction, "with the mod off, fishTrapSpawningLoop is the studio's, untouched");
         }
+
+        // FISHED-OUT WATER SHOWS NO FISH, checked in both modes: Kastuk wants it to work without
+        // the trap switch. The decorations and the fish resources are named by the mod, so what it
+        // cannot report for itself is a key or an icon that stopped matching.
+        foreach (string key in UWGame.Mods.FishStockMod.DecorationKeys)
+        {
+            GameData.Instance.AllEntityTypes.TryGetValue(key, out var decoration);
+            string animation = decoration?.RenderableType?.DefaultClientState?.RenderAsBillboardType?.FirstOrDefault()?.AnimationAssetName;
+            Check(decoration?.TerrainType != null && animation != null,
+                  $"{key} is a map-placed terrain feature drawn as an animated billboard ({animation})");
+        }
+        // The hook icon marks everything caught rather than gathered. All of it is the mod's list
+        // but the imp eel, which lives in the muckroot canals on land - so a new fish in the data
+        // shows up here instead of being silently ignored.
+        var hooked = GameData.Instance.AllResourceTypes.Values
+            .Where(r => r.TileResourceType?.RenderableType?.RenderAsIconType?.IconToRender == UWGame.SimSide.Resources.IconToRender.Hook)
+            .Select(r => r.KeyName).ToList();
+        var fishResources = GameData.Instance.AllResourceTypes.Values.Where(UWGame.Mods.FishStockMod.IsFishResource)
+            .Select(r => r.KeyName).ToList();
+        Check(fishResources.Count == UWGame.Mods.FishStockMod.FishResourceKeys.Length && fishResources.Contains("minnowsLive"),
+              $"the fish counted are real resources, minnows included: {string.Join(", ", fishResources)}");
+        Check(string.Join(",", hooked.Except(fishResources).OrderBy(k => k, StringComparer.Ordinal)) == "impEel",
+              $"every hook-icon resource is counted but the imp eel (hooked: {string.Join(", ", hooked)})");
+        var lookRange = UWGame.Mods.ModSettings.Find("fishstock.lookRange");
+        Check(lookRange != null && lookRange.Value == "10", "the range to check is a setting, 10 tiles by default");
+
+        // A 30x30 water, the decoration at (15,15); fishAt: -1 no source, 0 fished out, >0 fish.
+        int[,] water = new int[30, 30];
+        bool Shows(int range) => UWGame.Mods.FishStockMod.ShowsFish(new Microsoft.Xna.Framework.Point(15, 15), range, 30, 30, (x, y) => water[x, y]);
+        for (int x = 0; x < 30; x++) for (int y = 0; y < 30; y++) water[x, y] = -1;
+        Check(Shows(10), "no fishing spot in range: the fish stay, nothing to judge by");
+        water[17, 14] = 0;
+        water[5, 15] = 0;
+        Check(!Shows(10), "every spot in range fished out: the fish go");
+        water[24, 24] = 3;
+        Check(Shows(10), "one spot 9 tiles away still has fish: they stay");
+        Check(!Shows(5), "...but with the range at 5 that spot is out of range: they go");
+        water[24, 24] = -1;
+        water[17, 14] = 2;
+        Check(Shows(3) && Shows(20), "the spot beside them recovers: they come back at any range");
+        water[17, 14] = 0;
+        water[0, 0] = 1;
+        Check(Shows(20) && !Shows(10), "the range is clamped at the map's edge, not wrapped");
 
         Console.WriteLine(failures == 0 ? "fish stock self-test OK" : $"fish stock self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;

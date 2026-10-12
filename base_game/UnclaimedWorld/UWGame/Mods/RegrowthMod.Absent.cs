@@ -31,4 +31,9 @@ public static class RegrowthMod
     public static string RegrowthLabel(float current, bool maximumReached) => null;
 
     public static string RegrowthToolTipNote(ResourceType type) => null;
+
+    /// <summary>The studio's test: any bulk at all, buds included.</summary>
+    public static bool ShowsGrownLook(bool stock, System.Collections.Generic.IList<IResourceItem> items) => stock;
+
+    public static bool GrownLook(int grown, int total, string threshold) => grown > 0;
 }
