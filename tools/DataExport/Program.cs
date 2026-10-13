@@ -30,6 +30,9 @@ internal static partial class Program
         // Resolved now, before the working directory becomes the installation.
         string saveSelfTest = args.FirstOrDefault(a => a.StartsWith("--save-selftest=", StringComparison.Ordinal))
             ?.Substring("--save-selftest=".Length);
+        saveReport = args.FirstOrDefault(a => a.StartsWith("--save-resources=", StringComparison.Ordinal))
+            ?.Substring("--save-resources=".Length);
+        if (saveReport != null) saveSelfTest = saveReport;
         if (saveSelfTest != null) saveSelfTest = Path.GetFullPath(saveSelfTest);
         printTraces = args.Contains("--traces");
 
@@ -98,6 +101,7 @@ internal static partial class Program
             Console.Error.WriteLine("               draws, which is what loading a save now does. Loads nothing.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --save-selftest=<file.sav>");
+            Console.Error.WriteLine("  --save-resources=<file.sav>   what is left on the ground, and what burns fuel");
             Console.Error.WriteLine("               read a saved game with no window - its mod switches, its scenario's");
             Console.Error.WriteLine("               tables, then the whole simulation - and check the creatures a Port");
             Console.Error.WriteLine("               delivered: none waits as a passenger with nothing to ride, each");
@@ -441,6 +445,7 @@ internal static partial class Program
         UWGame.Mods.StateDumpMod.RegisterSettings();
         UWGame.Mods.AgentMod.RegisterSettings();
         UWGame.Mods.HideGearMod.RegisterSettings();
+        UWGame.Mods.FirewoodMod.RegisterSettings();
         UWGame.Mods.PeatMod.RegisterSettings();
         UWGame.Mods.RawhideStringMod.RegisterSettings();
         UWGame.Mods.RespawnCapMod.RegisterSettings();
@@ -1778,6 +1783,48 @@ internal static partial class Program
             Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what);
             if (!ok) failures++;
         }
+        // RespawnCapMod: what a place holds when it is gathered is the most it has held (Kastuk's
+        // firewood, 2026-10-12: 85 of 240 places had a maximum of 0 and could never grow back).
+        var cap = UWGame.Mods.ModSettings.Find("respawncap.capResourceRespawn");
+        if (cap != null)
+        {
+            string capWas = cap.Value;
+            var replenish = new UWGame.SimSide.Resources.ResourceReplenish();
+            cap.Value = "false";
+            UWGame.Mods.RespawnCapMod.BeforeGather(replenish, 3);
+            Check(replenish.MaxItemsEverSet == 0, "cap off: gathering records nothing, as the studio's game");
+            cap.Value = "true";
+            UWGame.Mods.RespawnCapMod.BeforeGather(replenish, 3);
+            Check(replenish.MaxItemsEverSet == 3, "cap on: a place gathered while holding 3 has held 3");
+            UWGame.Mods.RespawnCapMod.BeforeGather(replenish, 1);
+            Check(replenish.MaxItemsEverSet == 3, "and gathering it down further does not lower that");
+            UWGame.Mods.RespawnCapMod.BeforeGather(null, 5);
+            Check(true, "a resource that never grows back (no replenish) is left alone");
+            cap.Value = capWas;
+        }
+
+        // FirewoodMod (Kastuk, "Firewood out of any wood", 2026-10-13): wet firewood from sticks 4,
+        // water cane stem 2, shadeleaf bow stave 2, shadeleaf canes 4 - one each, on the studio's
+        // weak-wood tool set. On by default, so the default tables have them.
+        if (UWGame.Mods.FirewoodMod.Recipes.Length > 0)
+        {
+            var want = new System.Collections.Generic.Dictionary<string, int>
+            {
+                ["item:sticks"] = 4, ["item:waterCaneStem"] = 2, ["item:shadeleafBowStave"] = 2, ["item:shadeleafCanes"] = 4,
+            };
+            foreach (var (key, wood, count) in UWGame.Mods.FirewoodMod.Recipes)
+            {
+                bool found = GameData.Instance.AllProcessTypes.TryGetValue(key, out var p);
+                Check(found && p.Inputs.Length == 1 && p.Inputs[0].Entity == wood && p.Inputs[0].Amount.NoOfItems == count
+                      && want.TryGetValue(wood, out int asked) && asked == count
+                      && p.Outputs.Length == 1 && p.Outputs[0].EntityTypeToCreate == "item:wetFirewood" && p.Outputs[0].Amount.NoOfItems == 1
+                      && GameData.Instance.AllProcessToolSets.ContainsKey(p.ProcessToolSetKey),
+                      $"{key}: {count} {wood} -> 1 wet firewood, on {p?.ProcessToolSetKey}");
+                want.Remove(wood);
+            }
+            Check(want.Count == 0, "every wood Kastuk listed has a recipe" + (want.Count > 0 ? " - not: " + string.Join(", ", want.Keys) : ""));
+        }
+
         var keys = UWGame.Mods.RegrowthMod.PlantKeys;
         if (keys.Length == 0)
         {

@@ -16,4 +16,9 @@ public static class RespawnCapMod
     public static void RegisterSettings()
     {
     }
+
+    /// <summary>Records nothing: the studio's maximum.</summary>
+    public static void BeforeGather(SimSide.Resources.ResourceReplenish replenish, int held)
+    {
+    }
 }

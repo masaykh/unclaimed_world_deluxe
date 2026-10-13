@@ -4989,16 +4989,20 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>How is anyone supposed to sleep with that racket?</Value>
   </String>
   <String>
-    <Key>GuiWhoIsExcrementingOutThere_63254099fbbe</Key>
-    <Value>Who is excrementing out there?</Value>
-  </String>
-  <String>
     <Key>GuiThatSQuiteUnappetizing_25847cb6cf3f</Key>
     <Value>That's quite unappetizing.</Value>
   </String>
   <String>
     <Key>GuiSuchABreathOfTheWild_0ec354f51e51</Key>
     <Value>Such a breath of the wild.</Value>
+  </String>
+  <String>
+    <Key>GuiSomebodyGotCallFromTheNature_369f626fa132</Key>
+    <Value>Somebody got call from the nature.</Value>
+  </String>
+  <String>
+    <Key>GuiFeelsLikeImportantScientificExcrementGotABreakt_66b081f7ee4a</Key>
+    <Value>Feels like important scientific excrement got a breakthrough!</Value>
   </String>
   <!-- mods/HudMod.cs -->
   <String>
@@ -6108,6 +6112,19 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipFaunaWhipjawToughness</Key>
     <Value>How much it takes to bring down. Damage it receives is divided by this, after armour. x1 is the studio's number.</Value>
   </String>
+  <!-- settings: firewood -->
+  <String>
+    <Key>SettingGroupFirewood</Key>
+    <Value>FIREWOOD</Value>
+  </String>
+  <String>
+    <Key>SettingFirewoodFromAnyWood</Key>
+    <Value>FIREWOOD FROM ANY WOOD</Value>
+  </String>
+  <String>
+    <Key>SettingTipFirewoodFromAnyWood</Key>
+    <Value>Adds recipes that cut wet firewood from sticks (4), water cane stems (2), shadeleaf bow staves (2) or shadeleaf canes (4), as well as from spoak branches. Changes what a save contains: a save made with this on names recipes a build without it does not have.</Value>
+  </String>
   <!-- settings: fishstock -->
   <String>
     <Key>SettingGroupFishstock</Key>
@@ -6678,7 +6695,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipRespawncapCapResourceRespawn</Key>
-    <Value>Tops a resource tile back up to the most it has ever held, instead of adding that much again on top. Without it, shellfish and other fully-replenishing resources multiply every time they are harvested.</Value>
+    <Value>Tops a resource tile back up to the most it has ever held, instead of adding that much again on top. Without it, shellfish and other fully-replenishing resources multiply every time they are harvested, and firewood that came with the map never grows back once gathered.</Value>
   </String>
   <!-- settings: safesleep -->
   <String>
@@ -15891,6 +15908,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
     <Value>Tune how dangerous each dangerous animal is: a multiplier per species for how often it hits, how hard, how far away it notices you, how fast it moves and how much it takes to bring down.</Value>
   </String>
   <String>
+    <Key>ModDescriptionFirewood</Key>
+    <Value>Wet firewood from sticks, water cane stems, shadeleaf bow staves and canes, not only from spoak branches.</Value>
+  </String>
+  <String>
     <Key>ModDescriptionFishstock</Key>
     <Value>Fish traps fish down a stock that grows back, so a trap left in one spot catches less and less until the water recovers.</Value>
   </String>
@@ -17888,6 +17909,22 @@ The storehouse also has a space for storage of items that are not intended for s
   </String>
   <String>
     <Key>ProcessChopFirewood</Key>
+    <Value>Chopping</Value>
+  </String>
+  <String>
+    <Key>ProcessChopFirewoodFromShadeleafBowStave</Key>
+    <Value>Chopping</Value>
+  </String>
+  <String>
+    <Key>ProcessChopFirewoodFromShadeleafCanes</Key>
+    <Value>Chopping</Value>
+  </String>
+  <String>
+    <Key>ProcessChopFirewoodFromSticks</Key>
+    <Value>Chopping</Value>
+  </String>
+  <String>
+    <Key>ProcessChopFirewoodFromWaterCaneStem</Key>
     <Value>Chopping</Value>
   </String>
   <String>

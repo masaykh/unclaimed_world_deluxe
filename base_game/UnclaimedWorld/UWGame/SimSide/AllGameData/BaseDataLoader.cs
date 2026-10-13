@@ -1574,6 +1574,8 @@ public class BaseDataLoader : DataLoader
 		UWGame.Mods.RawhideStringMod.AddProcesses(list);
 		// MOD: HideGearMod's cloak and armour recipes, before disassembly reads the table.
 		UWGame.Mods.HideGearMod.AddProcesses(list);
+		// MOD: FirewoodMod's wet firewood from sticks, water cane and shadeleaf.
+		UWGame.Mods.FirewoodMod.AddProcesses(list);
 		// DISASSEMBLY MOD: a Disassemble recipe per assembled tool, weapon and spear, generated
 		// from the recipe that makes it. Here rather than earlier because it reads the finished
 		// process table - including anything PeatMod and RawhideStringMod just added - and the entity table,

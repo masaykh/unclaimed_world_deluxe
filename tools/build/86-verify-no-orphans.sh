@@ -70,7 +70,7 @@ perl -0777 -e '
     open my $h, "<:raw", $f or next; local $/; my $t = <$h>; $t =~ s/\r\n/\n/g; $text{$f} = $t;
   }
   my @out;
-  my $member = qr/^\s*(?:public|internal)\s+(?:(?:static|const|readonly|virtual|new|unsafe|extern|async)\s+)*(?!class\b|struct\b|enum\b|interface\b|record\b|delegate\b)[\w<>\[\],.?]+(?:<[^>]*>)?\s+(\w+)\s*(?:<[^>]*>)?\s*(?:\(|=>|=|;|\{|$)/;
+  my $member = qr/^\s*(?:public|internal)\s+(?:(?:static|const|readonly|virtual|new|unsafe|extern|async)\s+)*(?!class\b|struct\b|enum\b|interface\b|record\b|delegate\b)(?:\([^()]*\)[\[\]?]*|[\w<>\[\],.?]+)(?:<[^>]*>)?\s+(\w+)\s*(?:<[^>]*>)?\s*(?:\(|=>|=|;|\{|$)/;
 
   # --- stub: members of Absent stubs, per declaring class
   for my $stub (grep { m{^base_game/UnclaimedWorld/UWGame/Mods/[^/]+\.Absent\.cs$} } sort keys %text) {

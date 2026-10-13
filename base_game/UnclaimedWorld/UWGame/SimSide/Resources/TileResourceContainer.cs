@@ -211,6 +211,9 @@ public class TileResourceContainer : ResourceContainer, ISleepingUpdatable
 	{
 		if (resourceItems.Contains(resourceItem))
 		{
+			// MOD: RespawnCapMod records what the place holds before it is taken, so firewood the
+			// map put down by bulk counts toward the most it has held. Nothing with the mod off.
+			UWGame.Mods.RespawnCapMod.BeforeGather(base.Replenish, resourceItems.Count);
 			resourceItems.Remove(resourceItem);
 			SetTotalHarvestableBulk((float)resourceItems.Count * base.ResourceType.ResourceItemType.ItemType.MaximumBulk.Value);
 			return true;

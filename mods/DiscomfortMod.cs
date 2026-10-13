@@ -52,8 +52,8 @@ namespace UWGame.Mods;
 /// generator, so replays are untouched by it.
 ///
 /// A stink line says what smells (Kastuk, 2026-10-10: "May add more lines with hints, what's
-/// smelling"): the most of the filth near the bed decides - fertiliser, guano and sulphur "Who is
-/// excrementing out there?", rotten food "That's quite unappetizing.", carcasses and fresh hides
+/// smelling"): the most of the filth near the bed decides - fertiliser, guano and sulphur "Somebody
+/// got call from the nature." (now and then the scientific one, see RareExcrementOneIn), rotten food "That's quite unappetizing.", carcasses and fresh hides
 /// "Such a breath of the wild." Other waste keeps the two general lines. Rotten food and spoiled
 /// meals stink too since then.
 ///
@@ -156,14 +156,34 @@ public static class DiscomfortMod
     private static string[] StinkLines => new[] { UWGame.Locale.Text("What is this smell!?"), UWGame.Locale.Text("It's hard to even breathe here.") };
     private static string[] NoiseLines => new[] { UWGame.Locale.Text("Can you be quiet please..."), UWGame.Locale.Text("How is anyone supposed to sleep with that racket?") };
 
+    /// <summary>
+    /// How often the rare excrement line comes up: once in this many. Kastuk, 2026-10-13: "Who is
+    /// excrementing out there?" was "too much out of game style ... Let's change it to common
+    /// 'Somebody got call from the nature'", and "Still want to use it: 'Feels like important
+    /// scientific excrement got a breakthrough!' in rare cases". Complain picks a line by the
+    /// sleeper and the day, so the common one is listed this many times less one.
+    /// </summary>
+    public const int RareExcrementOneIn = 6;
+
     /// <summary>The lines for the filth there is most of near the bed.</summary>
     public static string[] LinesFor(Smell smell) => smell switch
     {
-        Smell.Excrement => new[] { UWGame.Locale.Text("Who is excrementing out there?") },
+        Smell.Excrement => ExcrementLines(),
         Smell.Rotten => new[] { UWGame.Locale.Text("That's quite unappetizing.") },
         Smell.Wild => new[] { UWGame.Locale.Text("Such a breath of the wild.") },
         _ => StinkLines,
     };
+
+    private static string[] ExcrementLines()
+    {
+        string[] lines = new string[RareExcrementOneIn];
+        for (int i = 0; i < lines.Length - 1; i++)
+        {
+            lines[i] = UWGame.Locale.Text("Somebody got call from the nature.");
+        }
+        lines[lines.Length - 1] = UWGame.Locale.Text("Feels like important scientific excrement got a breakthrough!");
+        return lines;
+    }
 
     /// <summary>Whether an item stinks.</summary>
     public static bool IsFilthy(EntityType type) => SmellOf(type) != Smell.None;

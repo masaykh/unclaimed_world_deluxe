@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UWGame;
@@ -70,7 +71,7 @@ internal static partial class Program
         }
         foreach (string key in new[] { "item:organicFertilizer", "item:guanoFertilizer", "item:guano", "item:sulfurBlocks", "item:sulfurPowder" })
         {
-            Check(Smell(key) == UWGame.Mods.DiscomfortMod.Smell.Excrement, key + ": \"Who is excrementing out there?\"");
+            Check(Smell(key) == UWGame.Mods.DiscomfortMod.Smell.Excrement, key + ": \"Somebody got call from the nature.\"");
         }
         Check(Smell("item:megapodGreenHide") == UWGame.Mods.DiscomfortMod.Smell.Wild && UWGame.Mods.DiscomfortMod.SmellOf(carcass) == UWGame.Mods.DiscomfortMod.Smell.Wild,
               "a fresh hide and a carcass: \"Such a breath of the wild.\"");
@@ -87,6 +88,11 @@ internal static partial class Program
         Check(UWGame.Mods.DiscomfortMod.LinesFor(UWGame.Mods.DiscomfortMod.Smell.Rotten)[0] == "That's quite unappetizing."
               && UWGame.Mods.DiscomfortMod.LinesFor(UWGame.Mods.DiscomfortMod.Smell.Waste).Length == 2,
               "each smell has its line");
+        string[] excrement = UWGame.Mods.DiscomfortMod.LinesFor(UWGame.Mods.DiscomfortMod.Smell.Excrement);
+        Check(excrement.Length == UWGame.Mods.DiscomfortMod.RareExcrementOneIn
+              && excrement.Count(l => l == "Somebody got call from the nature.") == excrement.Length - 1
+              && excrement.Count(l => l == "Feels like important scientific excrement got a breakthrough!") == 1,
+              $"excrement: the common line, and the scientific one once in {UWGame.Mods.DiscomfortMod.RareExcrementOneIn}");
 
         foreach (string key in new[] { "structure:improvisedWorkbench", "structure:mudBrickWorkbench", "structure:improvisedSmithy",
                                        "structure:simpleSmithy", "structure:workshopBuilding", "structure:rareMetalRefinery", "structure:saltMine" })
