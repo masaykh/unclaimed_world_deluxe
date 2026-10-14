@@ -1,0 +1,10 @@
+# New 3D models, built by tools/build/38-build-models.sh into artifacts/content/models.
+# Put the FBX (exported from Blender, in metres) and its textures in this folder, and add a line:
+#
+#   <name> <processor> [Param=Value ...]
+#
+#   handCart AnimatedVehicleProcessor
+#   handCart AnimatedVehicleProcessor DetailsMap=Models/handCart_details_256.tga
+#
+# AnimatedVehicleProcessor builds a rigid model (a vehicle, a tool), as the studio built the MULE.
+# See docs/modding.md, "New 3D models", for how to make one.

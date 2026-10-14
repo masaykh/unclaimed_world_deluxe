@@ -31,6 +31,29 @@ internal static class Program
     internal static bool EffectParamNames;
 
     /// <summary>
+    /// Set by --model-details: each model's bones by name (with parent) and its bounding sphere -
+    /// what a new model is checked against. The game finds a vehicle's seats and wheels by bone
+    /// name (ModelData.DriverAttachor.BoneName, SteerableFrontWheels), and its size only by
+    /// comparison with the studio's models.
+    /// </summary>
+    internal static bool ModelDetails;
+
+    /// <summary>
+    /// Set by --export-obj &lt;dir&gt;: each probed model written there as a Wavefront OBJ in
+    /// METRES (game units / <see cref="UnitsPerMetre"/>), Y up, in its rest pose. A reference for
+    /// modelling something new to scale in Blender, which cannot open the studio's FBX 6.1 files.
+    /// </summary>
+    internal static string? ExportObjDir;
+
+    /// <summary>
+    /// Game units per metre. A colonist (Models/man_idle, drawn at scale 1: humans set no
+    /// ModelScale) stands 24 units tall in the rest pose; taken as 1.75 m. The scale
+    /// tools/build/38-build-models.sh applies to a model made in metres, so it stands beside them
+    /// at true size. The MULE (entity:utilityvehicle) is drawn at ModelScale 2.
+    /// </summary>
+    internal const float UnitsPerMetre = 13.75f;
+
+    /// <summary>
     /// The assets worth probing by default. The six sprite-sheet assets are the ones bound to
     /// SpriteSheetRuntime by assembly-qualified name via ReflectiveReader, and the models are
     /// bound to Xclna.Xna.Animationx86 the same way - between them they cover all 53
@@ -124,6 +147,9 @@ internal static class Program
         // no offline equivalent of `mgfxtranscode compare-params`, because those effects are D3D9
         // fx_2_0 blobs rather than MGFX. Reading them back off a live device is the only way.
         EffectParamNames = args.Contains("--effect-params");
+        ModelDetails = args.Contains("--model-details");
+        int eo = Array.IndexOf(args, "--export-obj");
+        if (eo >= 0 && eo + 1 < args.Length) ExportObjDir = Path.GetFullPath(args[eo + 1]);
 
         // --override <dir>: load through that folder in preference to <ContentDir>, exactly as
         // the game does with port-content (PORT DEVIATION 18). This is what lets the build gate
@@ -137,6 +163,7 @@ internal static class Program
         var explicitProbes = args.Skip(1)
             .Where(a => !a.StartsWith("--"))
             .Where(a => overrideDir == null || a != args[ov + 1])
+            .Where(a => eo < 0 || eo + 1 >= args.Length || a != args[eo + 1])
             .ToArray();
 
         var probes = new List<string>(explicitProbes.Length > 0 ? explicitProbes : DefaultProbes);
@@ -369,6 +396,10 @@ internal static class Program
                         font.MeasureString(ForeignTextProbe);
                     }
                     Console.WriteLine($"  OK      {asset,-42} -> {Describe(loaded)}{Source(asset)}");
+                    if (ExportObjDir != null && loaded is Model model)
+                    {
+                        Console.WriteLine("          wrote " + ExportObj(model, asset));
+                    }
                     ok++;
                 }
                 catch (Exception ex)
@@ -780,7 +811,7 @@ internal static class Program
             SpriteSheet s => $"SpriteSheet, {s.spriteRectangles?.Count ?? -1} rects" +
                 DescribeTextureContent(s.Texture),
             Model m => $"Model, {m.Meshes.Count} meshes, {m.Bones.Count} bones" +
-                DescribeModelTag(m) + DescribeVertexLayouts(m),
+                DescribeModelTag(m) + DescribeVertexLayouts(m) + (ModelDetails ? DescribeModelDetails(m) : ""),
             Effect fx => $"Effect, {fx.Techniques.Count} techniques, {fx.Parameters.Count} params" +
                 DescribeEffectInitialValues(fx),
             // Glyph count and which scripts have REAL glyphs rather than the fallback - the
@@ -792,6 +823,78 @@ internal static class Program
             Texture2D t => $"Texture2D {t.Width}x{t.Height} {t.Format}" + DescribeTextureContent(t),
             _ => o.GetType().Name,
         };
+
+        private static string DescribeModelDetails(Model m)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("\n            bones:");
+            foreach (ModelBone b in m.Bones)
+            {
+                sb.Append(' ').Append(b.Name ?? "(unnamed)");
+                if (b.Parent != null) sb.Append('<').Append(b.Parent.Name ?? "(unnamed)");
+            }
+            BoundingSphere? sphere = null;
+            foreach (ModelMesh mesh in m.Meshes)
+            {
+                BoundingSphere s = mesh.BoundingSphere.Transform(Absolute(mesh.ParentBone));
+                sphere = sphere.HasValue ? BoundingSphere.CreateMerged(sphere.Value, s) : s;
+            }
+            if (sphere.HasValue)
+            {
+                sb.Append(System.FormattableString.Invariant(
+                    $"\n            bounds: radius {sphere.Value.Radius:0.##} around ({sphere.Value.Center.X:0.##}, {sphere.Value.Center.Y:0.##}, {sphere.Value.Center.Z:0.##})"));
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>Writes <paramref name="m"/> as an OBJ in metres under <see cref="ExportObjDir"/>; returns the path.</summary>
+        private static string ExportObj(Model m, string asset)
+        {
+            Directory.CreateDirectory(ExportObjDir!);
+            string path = Path.Combine(ExportObjDir!, Path.GetFileName(asset) + ".obj");
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            using var w = new StreamWriter(path);
+            w.WriteLine("# " + asset + ", exported by contentprobe --export-obj: metres, Y up, rest pose");
+            int baseIndex = 1;
+            foreach (ModelMesh mesh in m.Meshes)
+            {
+                Matrix world = Absolute(mesh.ParentBone) * Matrix.CreateScale(1f / UnitsPerMetre);
+                w.WriteLine("o " + (mesh.Name ?? "mesh"));
+                foreach (ModelMeshPart part in mesh.MeshParts)
+                {
+                    int stride = part.VertexBuffer.VertexDeclaration.VertexStride;
+                    var bytes = new byte[part.NumVertices * stride];
+                    part.VertexBuffer.GetData(part.VertexOffset * stride, bytes, 0, bytes.Length, 1);
+                    for (int v = 0; v < part.NumVertices; v++)
+                    {
+                        var p = new Vector3(BitConverter.ToSingle(bytes, v * stride), BitConverter.ToSingle(bytes, v * stride + 4), BitConverter.ToSingle(bytes, v * stride + 8));
+                        p = Vector3.Transform(p, world);
+                        w.WriteLine(string.Format(inv, "v {0:0.#####} {1:0.#####} {2:0.#####}", p.X, p.Y, p.Z));
+                    }
+                    int count = part.PrimitiveCount * 3;
+                    var idx = new int[count];
+                    if (part.IndexBuffer.IndexElementSize == IndexElementSize.SixteenBits)
+                    {
+                        var s = new ushort[count];
+                        part.IndexBuffer.GetData(part.StartIndex * 2, s, 0, count);
+                        for (int i = 0; i < count; i++) idx[i] = s[i];
+                    }
+                    else
+                    {
+                        part.IndexBuffer.GetData(part.StartIndex * 4, idx, 0, count);
+                    }
+                    for (int i = 0; i < count; i += 3)
+                    {
+                        w.WriteLine($"f {baseIndex + idx[i]} {baseIndex + idx[i + 1]} {baseIndex + idx[i + 2]}");
+                    }
+                    baseIndex += part.NumVertices;
+                }
+            }
+            return path;
+        }
+
+        private static Matrix Absolute(ModelBone bone) =>
+            bone == null ? Matrix.Identity : bone.Transform * Absolute(bone.Parent);
 
         protected override void Draw(GameTime gameTime) { }
     }

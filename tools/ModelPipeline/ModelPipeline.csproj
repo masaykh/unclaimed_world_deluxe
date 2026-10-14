@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The studio's model processors (original_src/AnimationComponentPipeline and VehiclePipeline),
+       built for the mgcb this repository installs (tools/build/36-build-fonts.sh), so an FBX can be
+       compiled into a model .xnb the game loads. mgcb loads this with /reference. Compiled against
+       mgcb's own pipeline assemblies rather than a NuGet copy, so the two can never disagree. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>UwModelPipeline</AssemblyName>
+    <RootNamespace>Xclna.Xna.Animation.Content</RootNamespace>
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS0168;CS0169;CS0219;CS0414;CS0649;CS0618</NoWarn>
+    <MgcbDir>$(MSBuildThisFileDirectory)..\..\artifacts\tools\mgcb-3.8.5.1\.store\dotnet-mgcb\3.8.5.1\dotnet-mgcb\3.8.5.1\tools\net8.0\any</MgcbDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MonoGame.Framework.Content.Pipeline">
+      <HintPath>$(MgcbDir)\MonoGame.Framework.Content.Pipeline.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(MgcbDir)\MonoGame.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

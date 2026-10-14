@@ -146,6 +146,44 @@ itself no longer needs it: this DesktopGL build compiles its own effects from
 there is nothing left for it to shadow. Your own Steam install is untouched either way — the
 package is a separate directory.
 
+### New 3D models: `tools/build/38-build-models.sh`
+
+A new rigid model (a cart, a vehicle, a tool) is made in Blender and built into a model `.xnb`
+with the studio's own processors, ported unchanged in `tools/ModelPipeline` (from
+`original_src/AnimationComponentPipeline` and `VehiclePipeline`). Put the FBX and its textures
+in `assets/port-models/`, add a line to `assets/port-models/models.txt`, and run the script. It
+writes to `artifacts/content/models/`.
+
+**Making one.**
+- **Format: FBX from Blender** (binary 7.4, the default export). mgcb's importer, Assimp,
+  reads FBX 2011 and later.
+- **Model in metres, at real size.** Make it inside the reference scene that
+  `38-build-models.sh --reference DIR` writes (`model_reference.blend`): the colonist (1.76 m)
+  and the MULE as the game draws them. Face the way the MULE faces. The build scales metres to
+  game units (13.75 a metre).
+- **Rigid, no armature deformation.** Name the body mesh `hull`, which is what
+  `ModelData.DriverAttachor` and the passenger seats hang from by bone name. Put each wheel
+  under its own empty: `wheel_rear_left_joint`, `wheel_rear_right_joint`, and
+  `wheel_front_left_joint` / `wheel_front_right_joint` for wheels that steer
+  (`SteerableFrontWheels`). Add an empty named `DriversSeat` where the driver goes. The node
+  names come through as the model's bones.
+- **One 256×256 TGA** (a power of two), assigned in the material and saved next to the FBX.
+  A details map and a dirt map (also 256) are optional, as the MULE's are.
+
+**What it cannot do: rebuild a studio model.** All 247 studio sources in
+`assets/Content/Models` are ASCII FBX 6.1. Neither Assimp nor Blender can read that. So a new
+colonist animation, which has to be merged into `man_idle` and `woman_idle`, can't be built
+yet: it needs an importer for FBX 6.1 first.
+
+**Effects are not compiled here.** A model names its effect as a separate asset (`../Vehicle`,
+`../skinFX`), as the studio's do. The port builds those effects from `assets/effects` with
+ShadowDusk.
+
+`38-build-models.sh --selftest` builds a stand-in cart (`tools/ModelPipeline/test`) and loads it
+through the game's own readers with `contentprobe --model-details`. It checks the bones above, the
+scale and the effect reference. `contentprobe --export-obj DIR` writes any loaded model as an OBJ
+in metres.
+
 ### Seeing every sprite: `tools/SpriteExport`
 
 The world, the ground sprites, the ghosted buildings and the interface are drawn from six compiled

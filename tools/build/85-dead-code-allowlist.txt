@@ -35,3 +35,9 @@ IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalMoveAsGroup.cs  Go
 # CS0162 on a guard whose condition is a const in one build and not another is not listed here:
 # it is silenced at the site with #pragma warning disable CS0162 and a comment saying why, so the
 # tools build with -warnaserror.
+
+# --- The studio's model processors (tools/ModelPipeline), ported unchanged from original_src so a
+# --- diff against it shows only the port's edits. Their leftovers stay with them.
+IDE0051  tools/ModelPipeline/MeshSplitter.cs  ModelSplitter.GetWeightChannel             # studio code, unchanged
+IDE0052  tools/ModelPipeline/AnimatedVehicleProcessor.cs  AnimatedVehicleProcessor.vertices  # studio code, unchanged
+IDE0052  tools/ModelPipeline/MeshSplitter.cs  MeshSplitter.parts                          # studio code, unchanged

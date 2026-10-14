@@ -62,6 +62,10 @@ fi
 
 WORK=$(mktemp -d)
 trap 'rm -f "$UW_REPO/.editorconfig"; rm -rf "$WORK"' EXIT INT TERM
+# The studio's own code that lives under tools/: the model processors, ported unchanged from
+# original_src so they can be diffed against it (tools/ModelPipeline). Held to the decompiled
+# game's standard, not ours - a later section of an .editorconfig wins.
+STUDIO_TOOLS='tools/ModelPipeline/**.cs'
 OURS='{mods/**.cs,tools/**.cs,base_game/Shared/**.cs,base_game/UnclaimedWorld/UWGame/Port/**.cs,base_game/UnclaimedWorld/UWGame/Mods/**.cs,base_game/UnclaimedWorld/UWGame/Control/Replays/ReplayTrace.cs}'
 cat > .editorconfig <<EOF
 root = true
@@ -72,6 +76,9 @@ dotnet_diagnostic.CS0162.severity = warning
 [$OURS]
 dotnet_diagnostic.IDE0060.severity = warning
 dotnet_diagnostic.IDE0059.severity = warning
+[$STUDIO_TOOLS]
+dotnet_diagnostic.IDE0060.severity = none
+dotnet_diagnostic.IDE0059.severity = none
 EOF
 
 # GL builds everywhere, so CI (ubuntu) can run this. DX is added on Windows, which is the only

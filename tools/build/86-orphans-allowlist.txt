@@ -7,6 +7,10 @@
 # --- Types reached by name at runtime, which a text search cannot see.
 # An .xnb names its reader by assembly-qualified name; the skin content is read through it.
 type  base_game/WindowSystem/WindowSystem/SkinReader.cs  SkinReader
+# mgcb finds a ContentTypeWriter by its [ContentTypeWriter] attribute, by reflection over the
+# assembly it is given (/reference), and asks it to write the model's tag.
+type  tools/ModelPipeline/PaletteEffectContent.cs  PaletteMaterialWriter
+type  tools/ModelPipeline/SkinInfoContent.cs  SkinInfoContentCollectionWriter
 # ISnapshot types: a save file names the type of every object in it, and Snapshotter.ResolveSavedType
 # must still find these in a save written by a build that used them.
 type  base_game/UnclaimedWorld/UWGame/SimSide/Items/PowerCell.cs  PowerCell
