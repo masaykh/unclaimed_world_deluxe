@@ -944,6 +944,12 @@ namespace Xclna.Xna.Animation.Content
             long duration = 0;
             foreach (KeyValuePair<string, AnimationChannel> c in input.Channels)
             {
+                // PORT: a channel with one key (a node Blender exports but nothing moves) has no
+                // second key to read. Maya's exports keyed every channel, so the studio never met one.
+                if (c.Value.Count < 2)
+                {
+                    continue;
+                }
                 if (c.Value[1].Time.Ticks > duration)
                 {
                     duration = c.Value[1].Time.Ticks;

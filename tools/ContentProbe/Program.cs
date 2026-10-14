@@ -45,6 +45,10 @@ internal static class Program
     /// </summary>
     internal static string? ExportObjDir;
 
+    /// <summary>Set by --export-rig &lt;dir&gt;; see RigExport. --clips a,b limits the clips written.</summary>
+    internal static string? ExportRigDir;
+    internal static HashSet<string>? ExportRigClips;
+
     /// <summary>
     /// Game units per metre. A colonist (Models/man_idle, drawn at scale 1: humans set no
     /// ModelScale) stands 24 units tall in the rest pose; taken as 1.75 m. The scale
@@ -150,6 +154,10 @@ internal static class Program
         ModelDetails = args.Contains("--model-details");
         int eo = Array.IndexOf(args, "--export-obj");
         if (eo >= 0 && eo + 1 < args.Length) ExportObjDir = Path.GetFullPath(args[eo + 1]);
+        int er = Array.IndexOf(args, "--export-rig");
+        if (er >= 0 && er + 1 < args.Length) ExportRigDir = Path.GetFullPath(args[er + 1]);
+        int ec = Array.IndexOf(args, "--clips");
+        if (ec >= 0 && ec + 1 < args.Length) ExportRigClips = new HashSet<string>(args[ec + 1].Split(',', StringSplitOptions.RemoveEmptyEntries));
 
         // --override <dir>: load through that folder in preference to <ContentDir>, exactly as
         // the game does with port-content (PORT DEVIATION 18). This is what lets the build gate
@@ -164,6 +172,8 @@ internal static class Program
             .Where(a => !a.StartsWith("--"))
             .Where(a => overrideDir == null || a != args[ov + 1])
             .Where(a => eo < 0 || eo + 1 >= args.Length || a != args[eo + 1])
+            .Where(a => er < 0 || er + 1 >= args.Length || a != args[er + 1])
+            .Where(a => ec < 0 || ec + 1 >= args.Length || a != args[ec + 1])
             .ToArray();
 
         var probes = new List<string>(explicitProbes.Length > 0 ? explicitProbes : DefaultProbes);
@@ -399,6 +409,10 @@ internal static class Program
                     if (ExportObjDir != null && loaded is Model model)
                     {
                         Console.WriteLine("          wrote " + ExportObj(model, asset));
+                    }
+                    if (ExportRigDir != null && loaded is Model rigged)
+                    {
+                        Console.WriteLine("          wrote " + RigExport.Write(rigged, asset, ExportRigDir, ExportRigClips));
                     }
                     ok++;
                 }

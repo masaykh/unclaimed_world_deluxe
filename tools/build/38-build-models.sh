@@ -7,6 +7,9 @@
 #   sh tools/build/38-build-models.sh --reference DIR
 #                                                  write DIR/model_reference.blend: the colonist,
 #                                                  the woman and the MULE at true size, in metres
+#   sh tools/build/38-build-models.sh --rig DIR    write DIR/colonist_rig.blend: the colonist's
+#                                                  skeleton and skinned mesh as the game holds them,
+#                                                  with studio clips as actions - to animate on
 #
 # OUT defaults to artifacts/content/models; a model lands at OUT/Models/<name>.xnb with its
 # textures beside it. Not packaged yet: nothing in the game asks for a new model until code does.
@@ -42,6 +45,7 @@ MODE=build
 case "$1" in
   --selftest) MODE=selftest; OUT="$WORK/selftest-out" ;;
   --reference) MODE=reference; REFDIR=${2:?usage: 38-build-models.sh --reference DIR} ;;
+  --rig) MODE=rig; REFDIR=${2:?usage: 38-build-models.sh --rig DIR} ;;
   *) OUT=${1:-artifacts/content/models} ;;
 esac
 case "${OUT:-}" in ''|/*|?:*) ;; *) OUT="$UW_REPO/$OUT" ;; esac
@@ -76,9 +80,25 @@ probe() {
   "$PROBE" "$(winpath "$UW_STEAM/Content")" --override "$(winpath "$WORK/override")" "$@"
 }
 
-# ---- reference ----------------------------------------------------------------------------
+BLENDER=${UW_BLENDER:-"/c/Program Files/Blender Foundation/Blender 5.0/blender.exe"}
+# The studio clips a new colonist animation is most likely to start from: walking, carrying
+# something heavy, pulling (construction), standing.
+RIG_CLIPS=gaitWalk,haulHeavy,constructPull,idle
+
+# The colonist rig (tools/ModelPipeline/make_rig.py), from man_idle as the game loads it.
+make_rig() {   # <dir>
+  mkdir -p "$1"
+  probe "" --export-rig "$(winpath "$1")" --clips "$RIG_CLIPS" Models/man_idle:Model | grep -E 'wrote|FAIL'
+  "$BLENDER" -b --factory-startup --python "$(winpath tools/ModelPipeline/make_rig.py)" --     "$(winpath "$1/man_idle.rig.json")" "$(winpath "$1/colonist_rig.blend")" | grep -E 'colonist|SAVED|Error'
+}
+
+# ---- reference, rig -----------------------------------------------------------------------
+if [ "$MODE" = rig ]; then
+  [ -x "$BLENDER" ] || { echo "FATAL: no Blender at $BLENDER - set UW_BLENDER" >&2; exit 1; }
+  make_rig "$REFDIR"
+  exit 0
+fi
 if [ "$MODE" = reference ]; then
-  BLENDER=${UW_BLENDER:-"/c/Program Files/Blender Foundation/Blender 5.0/blender.exe"}
   [ -x "$BLENDER" ] || { echo "FATAL: no Blender at $BLENDER - set UW_BLENDER" >&2; exit 1; }
   mkdir -p "$REFDIR"
   probe "" --export-obj "$(winpath "$REFDIR")" Models/man_idle:Model Models/woman_idle:Model Models/utility_vehicle:Model | grep -E 'wrote|FAIL'
@@ -97,6 +117,22 @@ cp assets/Content/landscapeSquare.png "$WORK/src/"
 if [ "$MODE" = selftest ]; then
   cp tools/ModelPipeline/test/cart_test.fbx tools/ModelPipeline/test/cart_base_256.tga "$WORK/src/Models/"
   LIST="cart_test AnimatedVehicleProcessor"
+  # The animation round trip: the studio's walk, taken off the game's own man_idle onto the
+  # Blender rig and exported the way an animator would, must build back into the same keys.
+  if [ -x "$BLENDER" ]; then
+    make_rig "$WORK/rig"
+    "$BLENDER" -b "$(winpath "$WORK/rig/colonist_rig.blend")" --python "$(winpath tools/ModelPipeline/export_clip.py)" --       gaitWalk "$(winpath "$WORK/src/Models/man_rtWalk.fbx")" | grep -E 'WROTE|Error'
+    # The studio's walk: a gait, its first 0.0625 s the bind pose (contentprobe reads these back).
+    printf '<root>
+  <startoffset>625000</startoffset>
+  <isgait>true</isgait>
+</root>
+' > "$WORK/src/Models/man_rtWalk.xml"
+    LIST="$LIST
+man_rtWalk AnimatedModelProcessor"
+  else
+    say "  SKIP  no Blender at $BLENDER (set UW_BLENDER): the animation round trip does not run"
+  fi
 else
   cp -r assets/port-models/. "$WORK/src/Models/"
   LIST=$(grep -v '^[[:space:]]*#' assets/port-models/models.txt | grep -v '^[[:space:]]*$' || true)
@@ -157,4 +193,12 @@ done
 radius=$(echo "$out" | sed -n 's/.*bounds: radius \([0-9.]*\).*/\1/p')
 # 1.04 m in Blender (a 1.2 m box on 0.35 m wheels) x 13.75 units a metre
 awk -v r="$radius" 'BEGIN { exit !(r > 13.5 && r < 15.0) }'; check $? "made in metres, built to game size (radius ${radius:-?}, expected ~14.3)"
+if [ -f "$OUT/Models/man_rtWalk.xnb" ]; then
+  say "==> self-test: the studio walk through the Blender rig and back"
+  probe "$OUT" --export-rig "$(winpath "$WORK/rt")" Models/man_rtWalk:Model | grep -E 'wrote|FAIL'
+  cmp=$("$BLENDER" -b --factory-startup --python "$(winpath tools/ModelPipeline/compare_clip.py)" --         "$(winpath "$WORK/rig/man_idle.rig.json")" gaitWalk "$(winpath "$WORK/rt/man_rtWalk.rig.json")" rtWalk 0.5 0.05 2>&1 | grep -E '^  ')
+  echo "$cmp"
+  echo "$cmp" | grep -q 'channels compared' && ! echo "$cmp" | grep -q 'FAIL'
+  check $? "every key of the studio walk comes back (rotation within 0.5 degrees, position within 0.05 units)"
+fi
 [ "$failures" = 0 ] && say "model pipeline self-test OK" || { say "model pipeline self-test FAILED - $failures check(s)"; exit 1; }

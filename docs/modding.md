@@ -170,10 +170,12 @@ writes to `artifacts/content/models/`.
 - **One 256×256 TGA** (a power of two), assigned in the material and saved next to the FBX.
   A details map and a dirt map (also 256) are optional, as the MULE's are.
 
-**What it cannot do: rebuild a studio model.** All 247 studio sources in
-`assets/Content/Models` are ASCII FBX 6.1. Neither Assimp nor Blender can read that. So a new
-colonist animation, which has to be merged into `man_idle` and `woman_idle`, can't be built
-yet: it needs an importer for FBX 6.1 first.
+**The studio's own FBX files.** All 247 sources in `assets/Content/Models` are ASCII FBX 6.1.
+mgcb's Assimp can't read them. Blender 4.5+ can, but only through its newer importer,
+`bpy.ops.wm.fbx_import` (File → Import → FBX, built on ufbx); the older Python importer rejects
+them. That makes them usable as reference or for editing: a converted MULE builds back within 2%
+of the studio's. It does not make them exact for animation. The studio walk converted this way
+comes back up to 16° off on some bones, so new colonist animations use the rig below instead.
 
 **Effects are not compiled here.** A model names its effect as a separate asset (`../Vehicle`,
 `../skinFX`), as the studio's do. The port builds those effects from `assets/effects` with
@@ -183,6 +185,37 @@ ShadowDusk.
 through the game's own readers with `contentprobe --model-details`. It checks the bones above, the
 scale and the effect reference. `contentprobe --export-obj DIR` writes any loaded model as an OBJ
 in metres.
+
+### New colonist animations: the colonist rig
+
+The game keeps every colonist animation inside `man_idle` and `woman_idle`, one clip per bone
+channel, keyed by bone name. A new clip (pushing a cart, for one) is made on the skeleton the game
+actually plays clips on:
+
+```
+sh tools/build/38-build-models.sh --rig DIR      # DIR/colonist_rig.blend
+```
+
+`contentprobe --export-rig` writes `man_idle` as the game holds it in memory: bones and their rest
+pose, the skin, the skinned mesh, and four studio clips (walk, heavy haul, construction pull,
+idle). `tools/ModelPipeline/make_rig.py` turns that into a Blender armature. Every bone keeps the
+game's own local frame, so the game's bones point along X and look sideways in Blender. The
+clips become actions, and the armature object alone is stood upright.
+
+**The proof.** `38-build-models.sh --selftest` takes the studio's walk onto the rig, exports it
+with `tools/ModelPipeline/export_clip.py` as an animator would, builds it, and compares every
+key with the original (`compare_clip.py`). All 30 compared channels come back within 0.06°.
+Positions and scale come back exact, and so do the duration, the start offset and the gait flag.
+
+**Making one.** Animate on `colonist_rig.blend` at 30 fps, in place (the game moves the
+colonist). Frame 0 is the rest pose, and the clip starts after it, as the studio's do. The
+studio's clips carry their start offset and flags in a sidecar `Models/<file>.xml`
+(`<startoffset>` in ticks, `<isgait>`, `<actionpoint>`), which the processor reads.
+
+**Not done yet: adding the clip to the colonist.** A built clip lives in its own `.xnb`. Adding
+it to `man_idle` and `woman_idle` at load time is still to be written. That step must also keep
+the studio's key for `AttachorPalmRight`: every studio clip holds it at one mirrored key (scale
+1, −1, 1), and Blender's FBX loses the mirror.
 
 ### Seeing every sprite: `tools/SpriteExport`
 
