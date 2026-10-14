@@ -14,3 +14,6 @@ using System.Runtime.Versioning;
 [assembly: Guid("8e9532b6-9ba4-4405-a2d9-82a5e593659e")]
 [assembly: AssemblyFileVersion("1.0.2.0")]
 [assembly: AssemblyVersion("1.0.2.0")]
+// PORT: UWGame.Port.ExtraClips builds the clips it adds to a studio model with the internal
+// constructors of AnimationInfo, AnimationChannelCollection and BoneKeyFrameCollection.
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UnclaimedWorld")]

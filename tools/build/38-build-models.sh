@@ -14,16 +14,17 @@
 # OUT defaults to artifacts/content/models; a model lands at OUT/Models/<name>.xnb with its
 # textures beside it. Not packaged yet: nothing in the game asks for a new model until code does.
 #
-# WHAT IT CAN BUILD, AND WHAT IT CANNOT. mgcb's FBX importer is Assimp, which reads FBX 2011 and
-# later - what Blender writes. The studio's 247 sources in assets/Content/Models are all ASCII FBX
-# 6.1 ("FBX-DOM unsupported, old format version"), and Blender cannot open them either, so NO
-# STUDIO MODEL CAN BE REBUILT here. That matters for one thing above all: a new colonist animation
-# has to be merged into man_idle and woman_idle, i.e. those rebuilt from their 6.1 sources. New
-# rigid models - a cart, a vehicle, a tool - need nothing of the kind.
+# WHAT IT BUILDS. mgcb's FBX importer is Assimp, which reads FBX 2011 and later - what Blender
+# writes. The studio's 247 sources in assets/Content/Models are ASCII FBX 6.1, which Assimp refuses;
+# none of them is rebuilt here, and none needs to be (docs/modding.md, "New 3D models").
 #
 # models.txt, one model per line:   <name> <processor> [Param=Value ...]
 #   AnimatedVehicleProcessor   rigid models: vehicles, tools, props (how the studio built the MULE)
-#   AnimatedModelProcessor     skinned models, with MergeAnimations=<name_clip>;<name_clip>...
+#   Clip                       a colonist animation made on the colonist rig (--rig): built with
+#                              the studio's AnimatedModelProcessor into Models/clips/<name>.xnb,
+#                              and added to man_idle and woman_idle when the game loads them
+#                              (UWGame.Port.ExtraClips). Name it man_<clip>; its start offset and
+#                              flags go in <name>.xml beside the FBX, as the studio's do.
 # Scale defaults to the game's units per metre (13.75: a colonist, drawn at scale 1, is 24 units
 # tall in the rest pose, taken as 1.75 m), so a model made at real size in metres stands beside
 # them at true size. Set Scale= on the line to override.
@@ -70,6 +71,12 @@ winpath() { if command -v cygpath >/dev/null 2>&1; then cygpath -m "$1"; else pr
 # The probe loads what was built through the game's own readers, on a real GraphicsDevice, with
 # the game's GL effects in front of the Steam content - the combination a player has.
 probe() {
+  # The probe loads through the game's own UwContentManager (ExtraClips included), from the GL
+  # game build - so that build must be this tree's, not whatever was built last.
+  if [ -z "$GAME_BUILT" ]; then
+    "$DOTNET" build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlatform=GL -v q --nologo >/dev/null
+    GAME_BUILT=1
+  fi
   "$DOTNET" build tools/ContentProbe/ContentProbe.csproj -c Release -p:UwPlatform=GL -v q --nologo >/dev/null
   PROBE="$UW_REPO/$(find artifacts/bin/ContentProbe -name 'contentprobe*' -path '*release_gl*' ! -name '*.pdb' ! -name '*.json' ! -name '*.dll' | head -1)"
   [ -d artifacts/content/effects-gl ] || { echo "FATAL: no artifacts/content/effects-gl - run tools/build/34-build-gl-effects-shadowdusk.sh" >&2; exit 1; }
@@ -122,14 +129,14 @@ if [ "$MODE" = selftest ]; then
   if [ -x "$BLENDER" ]; then
     make_rig "$WORK/rig"
     "$BLENDER" -b "$(winpath "$WORK/rig/colonist_rig.blend")" --python "$(winpath tools/ModelPipeline/export_clip.py)" --       gaitWalk "$(winpath "$WORK/src/Models/man_rtWalk.fbx")" | grep -E 'WROTE|Error'
-    # The studio's walk: a gait, its first 0.0625 s the bind pose (contentprobe reads these back).
+    # The studio's walk: a gait, its first 0.0625 s the bind pose.
     printf '<root>
   <startoffset>625000</startoffset>
   <isgait>true</isgait>
 </root>
 ' > "$WORK/src/Models/man_rtWalk.xml"
     LIST="$LIST
-man_rtWalk AnimatedModelProcessor"
+man_rtWalk Clip"
   else
     say "  SKIP  no Blender at $BLENDER (set UW_BLENDER): the animation round trip does not run"
   fi
@@ -150,10 +157,12 @@ fi
     echo ""
     echo "#begin Models/$name.fbx"
     echo "/importer:FbxImporter"
+    dest=Models/$name.fbx
+    if [ "$processor" = Clip ]; then processor=AnimatedModelProcessor; dest=Models/clips/$name.fbx; fi
     echo "/processor:$processor"
     case " $params " in *" Scale="*) ;; *) echo "/processorParam:Scale=$UNITS_PER_METRE" ;; esac
     for p in $params; do echo "/processorParam:$p"; done
-    echo "/build:Models/$name.fbx"
+    echo "/build:Models/$name.fbx;$dest"
   done
 } > "$WORK/src/models.mgcb"
 
@@ -193,12 +202,18 @@ done
 radius=$(echo "$out" | sed -n 's/.*bounds: radius \([0-9.]*\).*/\1/p')
 # 1.04 m in Blender (a 1.2 m box on 0.35 m wheels) x 13.75 units a metre
 awk -v r="$radius" 'BEGIN { exit !(r > 13.5 && r < 15.0) }'; check $? "made in metres, built to game size (radius ${radius:-?}, expected ~14.3)"
-if [ -f "$OUT/Models/man_rtWalk.xnb" ]; then
-  say "==> self-test: the studio walk through the Blender rig and back"
-  probe "$OUT" --export-rig "$(winpath "$WORK/rt")" Models/man_rtWalk:Model | grep -E 'wrote|FAIL'
-  cmp=$("$BLENDER" -b --factory-startup --python "$(winpath tools/ModelPipeline/compare_clip.py)" --         "$(winpath "$WORK/rig/man_idle.rig.json")" gaitWalk "$(winpath "$WORK/rt/man_rtWalk.rig.json")" rtWalk 0.5 0.05 2>&1 | grep -E '^  ')
+if [ -f "$OUT/Models/clips/man_rtWalk.xnb" ]; then
+  # Built as a clip, the walk is added to the game's own man_idle and woman_idle when they load
+  # (UWGame.Port.ExtraClips) as "rtWalk" - and must then be the studio's walk, key for key, the
+  # mirrored hand attachment included (kept from the studio's clips, as Blender loses a mirror).
+  say "==> self-test: the studio walk through the Blender rig, back into man_idle and woman_idle"
+  probe "$OUT" --export-rig "$(winpath "$WORK/rt")" --clips rtWalk Models/man_idle:Model Models/woman_idle:Model | grep -E 'wrote|FAIL'
+  cmp=$("$BLENDER" -b --factory-startup --python "$(winpath tools/ModelPipeline/compare_clip.py)" --         "$(winpath "$WORK/rig/man_idle.rig.json")" gaitWalk "$(winpath "$WORK/rt/man_idle.rig.json")" rtWalk 0.5 0.05 all 2>&1 | grep -E '^  ')
   echo "$cmp"
   echo "$cmp" | grep -q 'channels compared' && ! echo "$cmp" | grep -q 'FAIL'
-  check $? "every key of the studio walk comes back (rotation within 0.5 degrees, position within 0.05 units)"
+  check $? "man_idle plays the rebuilt walk as the studio's (rotation within 0.5 degrees, position within 0.05 units, every bone)"
+  grep -q '"rtWalk"' "$WORK/rt/woman_idle.rig.json"; check $? "woman_idle has it too"
+  grep -q '"gaitWalk"' "$WORK/rt/man_idle.rig.json" && grep -o '"allClipNames":\[[^]]*' "$WORK/rt/man_idle.rig.json" | grep -q 'useHoe'
+  check $? "the studio's own clips are all still there"
 fi
 [ "$failures" = 0 ] && say "model pipeline self-test OK" || { say "model pipeline self-test FAILED - $failures check(s)"; exit 1; }

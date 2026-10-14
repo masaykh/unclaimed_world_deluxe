@@ -212,10 +212,15 @@ colonist). Frame 0 is the rest pose, and the clip starts after it, as the studio
 studio's clips carry their start offset and flags in a sidecar `Models/<file>.xml`
 (`<startoffset>` in ticks, `<isgait>`, `<actionpoint>`), which the processor reads.
 
-**Not done yet: adding the clip to the colonist.** A built clip lives in its own `.xnb`. Adding
-it to `man_idle` and `woman_idle` at load time is still to be written. That step must also keep
-the studio's key for `AttachorPalmRight`: every studio clip holds it at one mirrored key (scale
-1, −1, 1), and Blender's FBX loses the mirror.
+**Adding it to the colonist.** In `assets/port-models/models.txt`, a line
+`man_<clip> Clip` builds the clip into `Models/clips/man_<clip>.xnb`. When the game loads
+`man_idle` or `woman_idle`, `UWGame.Port.ExtraClips` (called from `UwContentManager.Load`) adds
+every `Models/clips/man_*` clip under its own name: `man_pushCart` becomes `pushCart`, and the
+woman gets the man's clips, as in the studio's project. The studio's clips are never replaced.
+The two hand attachments keep the studio's key: every studio clip that animates them holds one
+key, and `AttachorPalmRight`'s is mirrored (scale 1, −1, 1), which Blender's FBX can't carry. The
+self-test reads the rebuilt walk back out of the real `man_idle`: all 31 channels match, the
+mirrored one included.
 
 ### Seeing every sprite: `tools/SpriteExport`
 

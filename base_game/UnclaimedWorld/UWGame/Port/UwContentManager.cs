@@ -170,6 +170,23 @@ public sealed class UwContentManager : ContentManager
             GiveFallbackCharacter(font);
         }
 
+        if (asset is Model withClips)
+        {
+            // PORT: clips built for this model after the studio built it (ExtraClips).
+            string folder = OverrideFolder ?? OverrideFolderFor(RootDirectory);
+            foreach (string clipAsset in ExtraClips.ClipAssetsFor(assetName, folder, RootDirectory))
+            {
+                try
+                {
+                    ExtraClips.Merge(withClips, base.Load<Model>(clipAsset));
+                }
+                catch (ContentLoadException)
+                {
+                    // A broken clip leaves the model with the studio's clips.
+                }
+            }
+        }
+
 #if UW_GL
         if (asset is Model model)
         {

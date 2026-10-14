@@ -3,7 +3,10 @@
 # Every key of the studio clip is compared with the rebuilt clip at the same time, interpolated
 # the way the game interpolates (slerp / lerp), because the processor drops keys it can rebuild.
 #
-#   python compare_clip.py <studio.rig.json> <clip> <rebuilt.rig.json> <clip> [max degrees] [max units]
+#   python compare_clip.py <studio.rig.json> <clip> <rebuilt.rig.json> <clip> [max degrees] [max units] [all]
+#
+# "all" compares the mirrored hand attachment too: right for a clip read back out of man_idle,
+# where UWGame.Port.ExtraClips has put the studio's key back.
 #
 # Run by tools/build/38-build-models.sh --selftest on Blender's own Python (no other dependency).
 # Exit code: the number of channels over tolerance.
@@ -13,6 +16,7 @@ args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
 studio_path, studio_clip, built_path, built_clip = args[:4]
 MAX_DEG = float(args[4]) if len(args) > 4 else 0.5
 MAX_UNITS = float(args[5]) if len(args) > 5 else 0.05
+ALL = len(args) > 6 and args[6] == "all"
 
 studio = json.load(open(studio_path))
 built = json.load(open(built_path))
@@ -52,7 +56,7 @@ if abs(a["durationTicks"] - b["durationTicks"]) > 1000 or abs(a["startOffsetTick
     failures += 1
 worst = (0.0, 0.0, None)
 for bone, keys in a["channels"].items():
-    if bone in constant:
+    if bone in constant and not ALL:
         print("  note  %s: held at one mirrored key in every studio clip - kept from the studio's at load, not compared" % bone)
         continue
     other = b["channels"].get(bone)
@@ -73,5 +77,5 @@ for bone, keys in a["channels"].items():
     if deg > worst[0]:
         worst = (deg, units, bone)
 print("  %d channels compared; worst %.3f degrees (%s); tolerance %.2f degrees, %.3f units" % (
-    len(a["channels"]) - len(constant), worst[0], worst[2], MAX_DEG, MAX_UNITS))
+    len(a["channels"]) - (0 if ALL else len(constant)), worst[0], worst[2], MAX_DEG, MAX_UNITS))
 sys.exit(failures)
