@@ -3843,11 +3843,12 @@ namespace UWGame.SimSide.Maps
 
             return null;
         }
-
+        /*
         private bool TerrainDepthIsUnderWaterLevel(float terrainDepth, float waterLevelBelowTerrain)
         {
             return terrainDepth - waterLevelBelowTerrain > 0f;
         }
+        */
 
         /// <summary>
         /// update tile map based on current water level and depth map data

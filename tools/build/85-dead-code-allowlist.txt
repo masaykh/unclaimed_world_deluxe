@@ -17,14 +17,14 @@ IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Overland/OtherSiteAllegianceMan
 
 # --- Struct fields. A struct's default equality and hash compare every field; these two are
 # --- dictionary keys, so a field nobody reads by name still decides which entries are distinct.
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/FromTo.cs  FromTo.From
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/FromTo.cs  FromTo.To
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/FromTo.cs  FromTo.Transport
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.Approach
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.Destination
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.DriverType
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.ProtectionLevel
-IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/NoParkingSpot.cs  NoParkingSpot.VehicleType
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  FromTo.From
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  FromTo.To
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  FromTo.Transport
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.Approach
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.Destination
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.DriverType
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.ProtectionLevel
+IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.VehicleType
 
 # --- Saves. The assignment is a read or write on the save stream (sn.SnapshotID): the value is
 # --- unused, the stream position is not.
