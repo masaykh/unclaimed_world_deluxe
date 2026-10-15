@@ -95,6 +95,14 @@
     <UwGameplayMods>$(UwFeatureList.Contains(';gameplaymods;'))</UwGameplayMods>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <!--
     Exactly one implementation of each feature is compiled. The *.Absent.cs files are no-op
     stubs with a `const bool Enabled = false`, which keeps the game's own call sites
@@ -136,8 +144,7 @@
     a no-op on the studio's tables.
   -->
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\mods\**\*.cs"
-             Link="UWGame\Mods\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\mods\**\*.cs" Link="UWGame\Mods\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!--
@@ -278,15 +285,10 @@
     assets from microsoft.netcore.* only, and cannot touch MonoGame, SharpDX, Steamworks.NET
     or our own projects. 47 files removed; verified by running the game afterwards.
   -->
-  <Target Name="UwPruneLegacyNetCoreAssets"
-          AfterTargets="ResolveAssemblyReferences;ComputeResolvedFilesToPublishList">
+  <Target Name="UwPruneLegacyNetCoreAssets" AfterTargets="ResolveAssemblyReferences;ComputeResolvedFilesToPublishList">
     <ItemGroup>
-      <ReferenceCopyLocalPaths
-        Remove="@(ReferenceCopyLocalPaths)"
-        Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('\microsoft.netcore.'))" />
-      <ResolvedFileToPublish
-        Remove="@(ResolvedFileToPublish)"
-        Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('\microsoft.netcore.'))" />
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('\microsoft.netcore.'))" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('\microsoft.netcore.'))" />
     </ItemGroup>
   </Target>
 
@@ -297,13 +299,9 @@
     for DX only: the DesktopGL build is meant to be portable, so it KEEPS every RID -
     that is the whole point of it.
   -->
-  <Target Name="UwPruneForeignRidAssets" AfterTargets="ComputeResolvedFilesToPublishList"
-          Condition="'$(UwPlatform)' == 'DX'">
+  <Target Name="UwPruneForeignRidAssets" AfterTargets="ComputeResolvedFilesToPublishList" Condition="'$(UwPlatform)' == 'DX'">
     <ItemGroup>
-      <ResolvedFileToPublish
-        Remove="@(ResolvedFileToPublish)"
-        Condition="$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('runtimes/')) AND
-                   !$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('runtimes/win-'))" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('runtimes/')) AND&#xD;&#xA;                   !$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('runtimes/win-'))" />
     </ItemGroup>
   </Target>
 </Project>

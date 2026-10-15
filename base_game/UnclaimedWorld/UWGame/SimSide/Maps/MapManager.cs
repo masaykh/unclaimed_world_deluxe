@@ -43,11 +43,6 @@ using UWGame.SimSide.Vegetation;
 using UWGame.SimSide.Vehicles;
 using WindowSystem;
 
-
-using Microsoft.Xna.Framework.Graphics;
-using UWGame.SimSide.Soil;
-using UWGame.SimSide.Vegetation;
-
 #endregion
 
 namespace UWGame.SimSide.Maps
