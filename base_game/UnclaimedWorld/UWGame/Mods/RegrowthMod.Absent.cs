@@ -22,9 +22,7 @@ public static class RegrowthMod
 
     public static int AdjustReplenish(ResourceContainer tile, int amount) => amount;
 
-    public static float Curve(float fractionLeft, float floor = 0.5f) => 1f;
-
-    public static float Floor(ResourceType type) => 1f;
+    public static float Curve(float fractionLeft) => 1f;
 
     public static float ForecastRegrowth(ResourceContainer tile, float yearlyRegrowth) => yearlyRegrowth;
 

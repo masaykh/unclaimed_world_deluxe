@@ -11,7 +11,7 @@ namespace UWGame.Mods;
 ///
 /// THE REQUEST. Kastuk, "Firewood out of any wood" (2026-10-13): "Let's add alternative recipes of
 /// wet firewood (how much is need): sticks (4), water cane stem (2), shadeleafBowStave (2),
-/// shadeleafCanes (4)." Each makes 1 wet firewood, which dries into firewood on the studio's
+/// shadeleafCanes (4)." Then, 2026-10-14: "Tweak recipes: 3 sticks, 3 shadeleaf canes." Each makes 1 wet firewood, which dries into firewood on the studio's
 /// firewood stack (makeFirewood, 10 at a time) like the studio's own chopped spoak.
 ///
 /// HOW. The studio's chopFirewood is the template: 1 spoak branch -> 2 wet firewood, crafting,
@@ -28,8 +28,8 @@ public static class FirewoodMod
     public static ModSetting FromAnyWood =>
         fromAnyWood ?? (fromAnyWood = ModSettings.Toggle(
             ModId, "fromAnyWood", "FIREWOOD FROM ANY WOOD", defaultValue: true,
-            toolTip: "Adds recipes that cut wet firewood from sticks (4), water cane stems (2), " +
-                     "shadeleaf bow staves (2) or shadeleaf canes (4), as well as from spoak " +
+            toolTip: "Adds recipes that cut wet firewood from sticks (3), water cane stems (2), " +
+                     "shadeleaf bow staves (2) or shadeleaf canes (3), as well as from spoak " +
                      "branches. Changes what a save contains: a save made with this on names " +
                      "recipes a build without it does not have.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
@@ -46,10 +46,10 @@ public static class FirewoodMod
     /// <summary>The recipes: key, the wood, and how many of it make one wet firewood.</summary>
     public static readonly (string key, string wood, int count)[] Recipes =
     {
-        ("chopFirewoodFromSticks", "item:sticks", 4),
+        ("chopFirewoodFromSticks", "item:sticks", 3),
         ("chopFirewoodFromWaterCaneStem", "item:waterCaneStem", 2),
         ("chopFirewoodFromShadeleafBowStave", "item:shadeleafBowStave", 2),
-        ("chopFirewoodFromShadeleafCanes", "item:shadeleafCanes", 4),
+        ("chopFirewoodFromShadeleafCanes", "item:shadeleafCanes", 3),
     };
 
     /// <summary>Called by BaseDataLoader.InitProcessTypes. Adds nothing with the switch off.</summary>

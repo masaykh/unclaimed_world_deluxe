@@ -1803,14 +1803,14 @@ internal static partial class Program
             cap.Value = capWas;
         }
 
-        // FirewoodMod (Kastuk, "Firewood out of any wood", 2026-10-13): wet firewood from sticks 4,
-        // water cane stem 2, shadeleaf bow stave 2, shadeleaf canes 4 - one each, on the studio's
-        // weak-wood tool set. On by default, so the default tables have them.
+        // FirewoodMod (Kastuk, "Firewood out of any wood", 2026-10-13, amounts tweaked 10-14): wet
+        // firewood from sticks 3, water cane stem 2, shadeleaf bow stave 2, shadeleaf canes 3 - one
+        // each, on the studio's weak-wood tool set. On by default, so the default tables have them.
         if (UWGame.Mods.FirewoodMod.Recipes.Length > 0)
         {
             var want = new System.Collections.Generic.Dictionary<string, int>
             {
-                ["item:sticks"] = 4, ["item:waterCaneStem"] = 2, ["item:shadeleafBowStave"] = 2, ["item:shadeleafCanes"] = 4,
+                ["item:sticks"] = 3, ["item:waterCaneStem"] = 2, ["item:shadeleafBowStave"] = 2, ["item:shadeleafCanes"] = 3,
             };
             foreach (var (key, wood, count) in UWGame.Mods.FirewoodMod.Recipes)
             {
@@ -1845,19 +1845,14 @@ internal static partial class Program
             rising &= UWGame.Mods.RegrowthMod.Curve(i / 100f) >= UWGame.Mods.RegrowthMod.Curve((i - 1) / 100f);
         }
         Check(rising, "never goes down as more is left");
-        // Kastuk, 2026-10-04: the six living-plant resources, a 3-tile zone, firewood at most -20%.
+        // Kastuk, 2026-10-04: the six living-plant resources, a 3-tile zone. 2026-10-14: firewood out.
         foreach (string key in new[] { "crop:shadeleafCanes", "crop:wingweedLeaves", "crop:waterCaneStem", "crop:waterCaneLeaves", "crop:daysheenLeaves", "firegrassSod" })
         {
             Check(Array.IndexOf(keys, key) >= 0, key + " regrows slowly when gathered down");
         }
         Check(Array.IndexOf(keys, "commonOilTubers") < 0 && Array.IndexOf(keys, "spottedOilTubers") < 0, "oil tubers do not (early survival)");
         Check(UWGame.Mods.RegrowthMod.ZoneRadius == 3, "the zone is 3 tiles around the place");
-        var firewoodType = GameData.Instance.AllResourceTypes["firewood"];
-        var sticksType = GameData.Instance.AllResourceTypes["crop:sticks"];
-        float firewoodFloor = UWGame.Mods.RegrowthMod.Floor(firewoodType), sticksFloor = UWGame.Mods.RegrowthMod.Floor(sticksType);
-        Check(UWGame.Mods.RegrowthMod.Curve(0f, firewoodFloor) == 0.8f && UWGame.Mods.RegrowthMod.Curve(0.4f, firewoodFloor) == 1f,
-              FormattableString.Invariant($"firewood, nothing left: x{UWGame.Mods.RegrowthMod.Curve(0f, firewoodFloor):0.##} (-20%), x1 from 40%"));
-        Check(UWGame.Mods.RegrowthMod.Curve(0f, sticksFloor) == 0.5f, "sticks, nothing left: x0.5, as before");
+        Check(Array.IndexOf(keys, "firewood") < 0, "firewood is not slowed (it washes up on shores too)");
 
         // The Gather window's Regrowth column: the studio's "+x.x" with the switch off; with it on
         // "+current" rounded down to a whole number, short enough for a column 50 pixels wide even
