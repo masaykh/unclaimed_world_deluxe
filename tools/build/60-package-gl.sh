@@ -9,6 +9,8 @@
 #
 # Inputs, in overlay order:
 #   1. the pristine Steam Content/ and data/            (original assets, untouched)
+#      and this repository's data/ over it: scenarios/ is data/Maps, translations/ is
+#      data/BaseData/Strings, as 70-make-release.sh ships them
 #   2. the OpenGL-profile effects   from tools/build/34-build-gl-effects-shadowdusk.sh
 #   3. content/media-gl/**         from 32-convert-media.sh      (Ogg Vorbis music + stubs)
 #   4. the GL publish output                                     (8 managed assemblies, no SharpDX)
@@ -109,6 +111,13 @@ rm -rf "$STASH"; mkdir -p "$STASH"
 for keep in user Saves Options.xml; do
   [ -e "$PKG/$keep" ] && mv "$PKG/$keep" "$STASH/" || true
 done
+# So do the player's own maps and language files (Kastuk, 2026-10-12: "not clean new created
+# files in data\Maps (user created maps) and data\BaseData\Strings (localization files)"). They go
+# back after the build's own data, and only where the build has no file of that name: the build's
+# always wins, so a stale copy of a shipped file cannot hide the new one.
+for keep in Maps BaseData/Strings; do
+  [ -d "$PKG/data/$keep" ] && { mkdir -p "$STASH/data/$keep"; cp -rp "$PKG/data/$keep"/. "$STASH/data/$keep"/; } || true
+done
 
 find "$PKG" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
 echo "==> binaries"
@@ -135,6 +144,23 @@ rmdir "$STASH" 2>/dev/null || true
 echo "==> original assets from the pristine install"
 cp -rp "$UW_STEAM/Content" "$PKG/Content"
 cp -rp "$UW_STEAM/data"    "$PKG/data"
+# data/ from this repository over Steam's, as 70-make-release.sh ships it. Without it the package
+# kept Steam's English (US).xml - the studio's, with none of the port's keys - and Locale only
+# translates a table's text (an item, a recipe, a scenario's name and summary) that the template
+# holds (Locale.TranslatedData): Kastuk's Russian scenario summaries stayed English.
+cp -r scenarios/. "$PKG/data/Maps/"
+cp translations/*.xml "$PKG/data/BaseData/Strings/"
+for keep in Maps BaseData/Strings; do
+  [ -d "$STASH/data/$keep" ] || continue
+  ( cd "$STASH/data/$keep" && find . -type f ) | while IFS= read -r f; do
+    if [ ! -e "$PKG/data/$keep/$f" ]; then
+      mkdir -p "$(dirname "$PKG/data/$keep/$f")"
+      cp -p "$STASH/data/$keep/$f" "$PKG/data/$keep/$f"
+      echo "    kept data/$keep/${f#./}"
+    fi
+  done
+done
+rm -rf "$STASH"
 cp -p  "$UW_STEAM/steam_appid.txt" "$PKG/" 2>/dev/null || true
 
 # ---- 4. GL content overlays ----------------------------------------------------------------

@@ -347,6 +347,33 @@ internal static partial class Program
         Check(before == after, $"and nothing else in the tables changes - {before.Length} characters of numbers, flags and enums, identical"
               + (before == after ? "" : $" (first difference at {Enumerable.Range(0, Math.Min(before.Length, after.Length)).FirstOrDefault(i => before[i] != after[i])})"));
 
+        // The New Game list (Kastuk, "Translation", 2026-10-14: scenario names and summaries stay
+        // English). Every built-in header, loaded the way SelectScenarioPanel loads it, with a file that
+        // has every scenario text the template holds: each of the header's texts translates.
+        language.Value = Locale.InvariantCulture;
+        Dictionary<string, string> templateFile = null;
+        Locale.Load(ref templateFile, Locale.InvariantCulture);
+        var headersFile = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<ArrayOfString>\r\n");
+        foreach (var entry in templateFile.Where(e => e.Key.StartsWith("Scenario", StringComparison.Ordinal)))
+        {
+            headersFile.Append("<String><Key>").Append(System.Security.SecurityElement.Escape(entry.Key)).Append("</Key><Value>")
+                       .Append(System.Security.SecurityElement.Escape("Ψ" + entry.Value)).Append("</Value></String>\r\n");
+        }
+        headersFile.Append("</ArrayOfString>\r\n");
+        File.WriteAllText(Path.Combine(folder, "Headers.xml"), headersFile.ToString(), new UTF8Encoding(false));
+        UWGame.Mods.PortSettings.RefreshLanguageChoices();
+        language.Value = "Headers";
+        var pickerHeaders = UWGame.SimSide.AllGameData.Scenarios.RGScenarioLoader.LoadAllScenarioHeaders();
+        foreach (var pickerHeader in pickerHeaders)
+        {
+            Locale.TranslateScenario(pickerHeader);
+        }
+        var stillEnglish = pickerHeaders.SelectMany(h => Locale.ScenarioTexts(h))
+            .Where(t => !string.IsNullOrEmpty(t.English) && !t.English.StartsWith("Ψ", StringComparison.Ordinal)).Select(t => t.Key).ToList();
+        Check(pickerHeaders.Count > 0 && stillEnglish.Count == 0,
+              $"the New Game list: every built-in scenario's name and summary translates ({pickerHeaders.Count} scenarios)"
+              + (stillEnglish.Count == 0 ? "" : $" - {stillEnglish.Count} stay English: {string.Join(", ", stillEnglish.Take(6))}"));
+
         language.Value = "Broken";
         Check(Locale.Text("SAVE GAME") == "SAVE GAME", "a file that cannot be read: English, no crash");
         language.Value = Locale.InvariantCulture;

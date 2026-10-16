@@ -5109,8 +5109,8 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <!-- mods/RegrowthMod.cs -->
   <String>
-    <Key>GuiTheColumnShowsCurrentRegrowthRoundedDownCurrent_e8fe849c2ad8</Key>
-    <Value>The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast, firewood to 80% (GATHERED-DOWN PLANTS REGROW SLOWLY).</Value>
+    <Key>GuiTheColumnShowsCurrentRegrowthRoundedDownCurrent_3b6c14003de8</Key>
+    <Value>The column shows current regrowth, rounded down. Current counts the same plants within 3 tiles of each place: where they are gathered down, it regrows down to half as fast (GATHERED-DOWN PLANTS REGROW SLOWLY).</Value>
   </String>
   <String>
     <Key>GuiTheColumnShowsCurrentRegrowthRoundedDownThisRes_a47273df5456</Key>
@@ -6123,7 +6123,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipFirewoodFromAnyWood</Key>
-    <Value>Adds recipes that cut wet firewood from sticks (4), water cane stems (2), shadeleaf bow staves (2) or shadeleaf canes (4), as well as from spoak branches. Changes what a save contains: a save made with this on names recipes a build without it does not have.</Value>
+    <Value>Adds recipes that cut wet firewood from sticks (3), water cane stems (2), shadeleaf bow staves (2) or shadeleaf canes (3), as well as from spoak branches. Changes what a save contains: a save made with this on names recipes a build without it does not have.</Value>
   </String>
   <!-- settings: fishstock -->
   <String>
@@ -6669,7 +6669,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipRegrowthWoodOverharvest</Key>
-    <Value>Sticks, spoak branches, shadeleaf canes, wingweed and daysheen leaves, water cane stems and leaves and firegrass sod respawn more slowly where the same plants within 3 tiles have been gathered down: half speed with nothing left, normal again from 40% left. Firewood, which is dead wood, by at most 20%.</Value>
+    <Value>Sticks, spoak branches, shadeleaf canes, wingweed and daysheen leaves, water cane stems and leaves and firegrass sod respawn more slowly where the same plants within 3 tiles have been gathered down: half speed with nothing left, normal again from 40% left. Firewood is not slowed.</Value>
   </String>
   <!-- settings: reserve -->
   <String>
