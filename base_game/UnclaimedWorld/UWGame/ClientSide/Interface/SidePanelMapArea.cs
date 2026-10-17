@@ -254,6 +254,7 @@ public class SidePanelMapArea : RosterPanel
 		dataTypeButton.Init(TextButton.TextButtonType.LCDToolTipBlack);
 		dataTypeButton.ID = UIComponent.DataControlID.Caption;
 		dataTypeButton.IsRoot = true;
+		dataTypeButton.OpensInEditor = true; // PORT: its description opens in the map editor too
 		uIComponent.Add(dataTypeButton);
 		dataTypeButton.TextAlignment = TextButton.TextAlign.Left;
 		dataTypeButton.Width = 160;
@@ -322,6 +323,7 @@ public class SidePanelMapArea : RosterPanel
 		dataTypeButton.Init(TextButton.TextButtonType.LCDToolTipBlack);
 		dataTypeButton.ID = UIComponent.DataControlID.Caption;
 		dataTypeButton.IsRoot = true;
+		dataTypeButton.OpensInEditor = true; // PORT: its description opens in the map editor too
 		dataTypeButton.Text = entityType.Name;
 		uIComponent.Add(dataTypeButton);
 		dataTypeButton.TextAlignment = TextButton.TextAlign.Left;

@@ -27,6 +27,17 @@ public class DataTypeButton : TextButton
 
 	public ProcessType processType { get; private set; }
 
+	/// <summary>
+	/// PORT: the studio turns these buttons off in the map editor - "many UIs in editor can use the
+	/// button to show the type name, but should not allow clicks" (EntityTypeButton). The selected
+	/// area's lists (SidePanelMapArea) are not such a UI: there the name is all there is to click.
+	/// Kastuk, 2026-10-12: "let player open the description window of clicked names of things of
+	/// Plants and Terrain in selected area, just like in normal gameplay." True on those rows only.
+	/// </summary>
+	public bool OpensInEditor;
+
+	private bool Inactive => The.Sim.Mode != Sim.EngineMode.Game && !OpensInEditor;
+
 	public DataTypeButton(GUIManager gui, DataSheet.InfoToShow infoToShow, EntityType entityType, EntityGroupID? owner, bool useUIOwner, EntityID? entityID = null)
 		: base(gui)
 	{
@@ -90,7 +101,7 @@ public class DataTypeButton : TextButton
 
 	protected override void OnMouseOut(UIComponent sender, MouseEventArgs args)
 	{
-		if (The.Sim.Mode != Sim.EngineMode.Game)
+		if (Inactive)
 		{
 			return;
 		}
@@ -107,7 +118,7 @@ public class DataTypeButton : TextButton
 
 	protected override void OnMouseOver(UIComponent sender, MouseEventArgs args)
 	{
-		if (The.Sim.Mode == Sim.EngineMode.Game)
+		if (!Inactive)
 		{
 			if (The.InGameUI.GetAnySpawnedTooltip(this) == null)
 			{
@@ -119,7 +130,7 @@ public class DataTypeButton : TextButton
 
 	public void HandleEntityTypeButtonClick(EventArgs e)
 	{
-		if (The.Sim.Mode != Sim.EngineMode.Game)
+		if (Inactive)
 		{
 			return;
 		}
