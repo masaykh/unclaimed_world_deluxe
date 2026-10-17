@@ -1027,7 +1027,8 @@ namespace UWGame.SimSide.Entities
             {
                 conditionLimit = GameData.Instance.AIConstants.OtherStructureConditionToStartRepair;
             }
-            return conditionLimit;
+            // MOD: RepairMod's REPAIR STRUCTURES BELOW, one limit for every structure (the studio's two when STUDIO).
+            return UWGame.Mods.RepairMod.ConditionLimit(conditionLimit);
         }
 
 

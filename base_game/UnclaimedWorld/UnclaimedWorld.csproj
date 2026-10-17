@@ -189,6 +189,7 @@
     <Compile Remove="UWGame\Mods\MainMenuMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\HideGearMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\FirewoodMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\RepairMod.Absent.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
@@ -232,6 +233,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\MainMenuMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HideGearMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\FirewoodMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\RepairMod.cs" />
   </ItemGroup>
 
   <Target Name="ReportUwFeatures" BeforeTargets="Build">

@@ -6679,6 +6679,23 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipRegrowthWoodOverharvest</Key>
     <Value>Sticks, spoak branches, shadeleaf canes, wingweed and daysheen leaves, water cane stems and leaves and firegrass sod respawn more slowly where the same plants within 3 tiles have been gathered down: half speed with nothing left, normal again from 40% left. Firewood is not slowed.</Value>
   </String>
+  <!-- settings: repair -->
+  <String>
+    <Key>SettingGroupRepair</Key>
+    <Value>REPAIR</Value>
+  </String>
+  <String>
+    <Key>SettingRepairRepairBelow</Key>
+    <Value>REPAIR STRUCTURES BELOW</Value>
+  </String>
+  <String>
+    <Key>SettingTipRepairRepairBelow</Key>
+    <Value>Colonists start repairing a structure when its integrity, or one of its parts' condition, falls below this. The studio repairs homes below 90% and everything else below 40%; a percentage here is used for every structure.</Value>
+  </String>
+  <String>
+    <Key>SettingChoiceRepairRepairBelowSTUDIOHOMES90OTHERS4_5328954aa777</Key>
+    <Value>STUDIO: HOMES 90%, OTHERS 40%</Value>
+  </String>
   <!-- settings: reserve -->
   <String>
     <Key>SettingGroupReserve</Key>
@@ -15990,6 +16007,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   <String>
     <Key>ModDescriptionRegrowth</Key>
     <Value>Wood and living plants grow back more slowly where those around them have been gathered down. Leave some standing.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionRepair</Key>
+    <Value>One repair limit for every structure, instead of homes at 90% and everything else at 40%.</Value>
   </String>
   <String>
     <Key>ModDescriptionReserve</Key>

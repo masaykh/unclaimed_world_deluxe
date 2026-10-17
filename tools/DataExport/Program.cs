@@ -446,6 +446,7 @@ internal static partial class Program
         UWGame.Mods.AgentMod.RegisterSettings();
         UWGame.Mods.HideGearMod.RegisterSettings();
         UWGame.Mods.FirewoodMod.RegisterSettings();
+        UWGame.Mods.RepairMod.RegisterSettings();
         UWGame.Mods.PeatMod.RegisterSettings();
         UWGame.Mods.RawhideStringMod.RegisterSettings();
         UWGame.Mods.RespawnCapMod.RegisterSettings();
@@ -1828,6 +1829,20 @@ internal static partial class Program
                 want.Remove(wood);
             }
             Check(want.Count == 0, "every wood Kastuk listed has a recipe" + (want.Count > 0 ? " - not: " + string.Join(", ", want.Keys) : ""));
+        }
+
+        // RepairMod (Kastuk, "Repairing", 2026-10-14): REPAIR STRUCTURES BELOW 50-80% for every
+        // structure, or the studio's two limits (homes 0.9, the rest 0.4, AIConstants).
+        var repairBelow = UWGame.Mods.ModSettings.Find("repair.repairBelow");
+        if (repairBelow != null)
+        {
+            float home = GameData.Instance.AIConstants.ResidenceConditionToStartRepair, other = GameData.Instance.AIConstants.OtherStructureConditionToStartRepair;
+            Check(repairBelow.Value == UWGame.Mods.RepairMod.Studio && repairBelow.AffectsSimulation
+                  && UWGame.Mods.RepairMod.ConditionLimit(home) == home && UWGame.Mods.RepairMod.ConditionLimit(other) == other,
+                  FormattableString.Invariant($"repair: the studio's limits by default (homes {home}, others {other}), a simulation setting"));
+            Check(UWGame.Mods.RepairMod.Limit("50%", home) == 0.5f && UWGame.Mods.RepairMod.Limit("80%", other) == 0.8f
+                  && UWGame.Mods.RepairMod.Limit("60%", home) == UWGame.Mods.RepairMod.Limit("60%", other),
+                  "repair: a percentage is one limit for homes and the rest alike");
         }
 
         var keys = UWGame.Mods.RegrowthMod.PlantKeys;
