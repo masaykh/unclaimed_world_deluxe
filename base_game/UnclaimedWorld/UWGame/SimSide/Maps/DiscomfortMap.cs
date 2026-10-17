@@ -141,6 +141,9 @@ public class DiscomfortMap : IMap, ILookUp<IMap, IMapID>, ISnapshot
 					sector2.AddSector(tileSector, child.Weight);
 				}
 			}
+			// MOD: DiscomfortMod - the colonists' maps also add stink from filthy items, capped below
+			// what makes anyone flee, stop work or give up a rest.
+			UWGame.Mods.DiscomfortMod.AddWaste(this, sector2);
 		});
 	}
 
@@ -169,6 +172,8 @@ public class DiscomfortMap : IMap, ILookUp<IMap, IMapID>, ISnapshot
 		case Phase.GetSectorsToAdd:
 			GetChildSectorsThatHaveChanged();
 			GetChildSectorsThatHaveBeenRemoved();
+			// MOD: DiscomfortMod - redraws the waste map and names the sectors to re-add for it.
+			UWGame.Mods.DiscomfortMod.AddWasteSectors(this, childSectorsThatHaveChangedCC, childSectorsThatHaveBeenRemovedCR);
 			phase = Phase.ClearSectors;
 			return false;
 		case Phase.ClearSectors:
@@ -196,7 +201,8 @@ public class DiscomfortMap : IMap, ILookUp<IMap, IMapID>, ISnapshot
 		sectorsToRemove.Clear();
 		foreach (Point item in allSectors)
 		{
-			if (Children.TrueForAll((Dependence d) => d.Child.Map.GetSector(item.X, item.Y) == null))
+			// MOD: DiscomfortMod - a sector with stink in it is kept, as one with threat is.
+			if (Children.TrueForAll((Dependence d) => d.Child.Map.GetSector(item.X, item.Y) == null) && !UWGame.Mods.DiscomfortMod.WasteKeepsSector(this, item.X, item.Y))
 			{
 				sectorsToRemove.Add(item);
 			}

@@ -5522,6 +5522,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipDiscomfortTalk</Key>
     <Value>"What is this smell!?" - at most two colonists a day.</Value>
   </String>
+  <String>
+    <Key>SettingDiscomfortWasteMap</Key>
+    <Value>WASTE ON THE DISCOMFORT MAP</Value>
+  </String>
+  <String>
+    <Key>SettingTipDiscomfortWasteMap</Key>
+    <Value>Filthy items are drawn on the colonists' discomfort map - the map they flee danger by - fading out over the stink's reach, and the comfort lost in sleep is read from it: an item at the door counts fully, one further off less. Colonists will also avoid dirty ground when they path, and may be slower to haul waste. Stink alone never makes them flee or stop work.</Value>
+  </String>
   <!-- settings: emergencyeating -->
   <String>
     <Key>SettingGroupEmergencyeating</Key>

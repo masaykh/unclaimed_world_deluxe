@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using UWGame.ClientSide.PropertyPresentation;
 using UWGame.SimSide;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Maps;
 using UWGame.SimSide.InGameEvents.Actions;
 using UWGame.SimSide.Processes;
 using UWGame.SimSide.Snapshots;
@@ -40,10 +43,32 @@ namespace UWGame.Mods;
 /// rating and the colony's. It holds until the next day's first sleep, and lapses if a day passes
 /// without one.
 ///
-/// WHAT IT LEAVES ALONE. The discomfort influence map (DiscomfortMap/ThreatMap): its values mean
-/// THREAT - they block tiles and send colonists fleeing - so filth near a compost pit is not
-/// written there. Noise is measured at lying down only, as asked; work that starts later in the
-/// night is not heard until the next day.
+/// WHAT IT LEAVES ALONE, by default. The discomfort influence map (DiscomfortMap/ThreatMap): its
+/// values mean THREAT - they block tiles and send colonists fleeing - so filth near a compost pit
+/// is not written there unless WASTE ON THE DISCOMFORT MAP is on (below). Noise is measured at
+/// lying down only, as asked; work that starts later in the night is not heard until the next day.
+///
+/// WASTE ON THE DISCOMFORT MAP (a second switch, off by default). Kastuk, "Discomfort", 2026-10-17:
+/// "I see in source code the unused DiscomfortMap. I suppose, it's expected to draw map of Dirty
+/// tiles with effect radius just like Threat map", and, told it would make colonists route around a
+/// dirty camp: "Must try it as option, even if it will make them reluctant to move waste into
+/// compost collectors." The studio's note on DiscomfortMap: "this map should have Fire and Threat
+/// as children... and maybe also a map for general discomfort such as wetness, poison etc. The
+/// discomfort map is the added result of its child maps!" (Its FireMap was never built - nothing
+/// constructs one - so Threat is the only child the game has.) With the switch on, each of the
+/// player's colonist discomfort maps (Normal and Cautious stance; Bold is the stance that ignores
+/// danger, and animals have their own maps) gets a WASTE MAP drawn the way ThreatMap draws: every
+/// tile with filth on it - the same items IsFilthy names, on the ground or inside a structure -
+/// paints a circle of (reach + 1) per filthy item at its centre, one less per tile out
+/// (Common.DistanceOctile), to nothing just past the reach (HOW FAR STINK AND NOISE REACH). What
+/// that adds to the discomfort map is one point per whole or part (reach + 1) of stink, at most
+/// WasteDiscomfortCap (4) - the stance-cautious colonist's lowest panic level and the most at which
+/// a rest may start (AIConstants.HighestDiscomfortLevelForLeisureActivityToStart), a quarter of
+/// what stops work (16) - so stink alone never makes anyone flee or down tools, but every step
+/// across dirty ground costs 1-4 more (MovementMap adds the discomfort to the terrain cost), and
+/// colonists route around it. At lying down, the stink is read off the waste map at the sleeping
+/// place's exit: units = value / (reach + 1), so a filthy item at the exit is a unit and one at the
+/// edge of the reach a sixth of one (at 5 tiles). Noise is still counted as above.
 ///
 /// TALK. A colonist who loses comfort may say so, through the studio's own talk path (a
 /// Conversation of one line, as TalkAction.Execute does): a stink line or a noise line,
@@ -68,6 +93,7 @@ public static class DiscomfortMod
     private static ModSetting percent;
     private static ModSetting cap;
     private static ModSetting talk;
+    private static ModSetting wasteMap;
 
     public static ModSetting EnabledSetting =>
         enabled ?? (enabled = ModSettings.Toggle(
@@ -99,6 +125,15 @@ public static class DiscomfortMod
             ModId, "talk", "COLONISTS COMPLAIN ABOUT IT", defaultValue: true,
             toolTip: "\"What is this smell!?\" - at most two colonists a day."));
 
+    public static ModSetting WasteMapSetting =>
+        wasteMap ?? (wasteMap = ModSettings.Toggle(
+            ModId, "wasteMap", "WASTE ON THE DISCOMFORT MAP", defaultValue: false,
+            toolTip: "Filthy items are drawn on the colonists' discomfort map - the map they flee danger by - " +
+                     "fading out over the stink's reach, and the comfort lost in sleep is read from it: an item " +
+                     "at the door counts fully, one further off less. Colonists will also avoid dirty ground " +
+                     "when they path, and may be slower to haul waste. Stink alone never makes them flee or stop work.",
+            affectsSimulation: true));
+
     public static void RegisterSettings()
     {
         // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
@@ -111,9 +146,13 @@ public static class DiscomfortMod
         _ = PercentSetting;
         _ = CapSetting;
         _ = TalkSetting;
+        _ = WasteMapSetting;
     }
 
     public static bool Enabled => EnabledSetting.On;
+
+    /// <summary>Whether filth is drawn on the colonists' discomfort maps.</summary>
+    public static bool WasteMapOn => Enabled && WasteMapSetting.On;
 
     /// <summary>Waste of every kind is filthy by its category.</summary>
     private const string WasteCategory = "waste";
@@ -265,7 +304,7 @@ public static class DiscomfortMod
             return;
         }
         Vector3 exit = (sleepingPlace?.EntityType?.StructureType != null ? sleepingPlace.AccessPoint : null) ?? sleeper.PlaySiteLocation;
-        Measure(exit, out int stink, out int noise, out Smell strongest);
+        MeasureSleep(sleeper.EntityType, exit, out int stink, out int noise, out Smell strongest);
         float penalty = PenaltyFor(stink, noise, ChoiceValue(PercentSetting, 3), ChoiceValue(CapSetting, 40));
         Entity.SetPropertyValue(ref sleeper.CustomFields, DayKey, new PropertyResult { NumberResult = today });
         Entity.SetPropertyValue(ref sleeper.CustomFields, PenaltyKey, new PropertyResult { NumberResult = penalty });
@@ -294,6 +333,21 @@ public static class DiscomfortMod
     }
 
     /// <summary>
+    /// What a <paramref name="sleeperType"/> lying down with its exit at <paramref name="exit"/>
+    /// smells and hears: Measure, with the stink read off the waste map instead while WASTE ON THE
+    /// DISCOMFORT MAP is on and the map has been drawn (it is, within one movement-map update of
+    /// loading or switching on; until then, and for anyone who is not the player's, it is counted).
+    /// </summary>
+    public static void MeasureSleep(EntityType sleeperType, Vector3 exit, out int stink, out int noise, out Smell strongest)
+    {
+        Measure(exit, out stink, out noise, out strongest);
+        if (WasteMapOn && WasteUnitsAt(sleeperType, exit) is int units)
+        {
+            stink = units;
+        }
+    }
+
+    /// <summary>
     /// Filthy items and workers at loud workplaces within the distance of a point, and what most of
     /// the filth smells of.
     /// </summary>
@@ -310,7 +364,7 @@ public static class DiscomfortMod
                 bySmell[(int)smell]++;
             }
         }
-        float range = ChoiceValue(DistanceSetting, 5) * TileSize;
+        float range = Reach * TileSize;
         int reach = (int)Math.Ceiling(range / TileSize);
         int cx = (int)(at.X / TileSize), cy = (int)(at.Y / TileSize);
         for (int tx = Math.Max(0, cx - reach); tx <= Math.Min(The.Map.mapTileWidth - 1, cx + reach); tx++)
@@ -394,9 +448,331 @@ public static class DiscomfortMod
         sleeper.Intelligence.SpeakLine(null, line, 4f, turnTowardsListeners: false, conversation);
     }
 
+    /// <summary>How far stink and noise reach, in tiles.</summary>
+    private static int Reach => ChoiceValue(DistanceSetting, 5);
+
     private static float? Number(Entity entity, string key) =>
         entity.CustomFields != null && entity.CustomFields.TryGetValue(key, out var stored) ? stored.NumberResult : null;
 
     private static int ChoiceValue(ModSetting setting, int fallback) =>
         int.TryParse(setting.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int v) ? v : fallback;
+
+    // ---------------------------------------------------------------------------------------------
+    // WASTE ON THE DISCOMFORT MAP
+    //
+    // The waste map is a child of a DiscomfortMap in the studio's sense - drawn like ThreatMap,
+    // added sector by sector - but it is not in DiscomfortMap.Children, because Children is saved
+    // (DiscomfortMap.DoSnapshot -> Dependence -> an IMapID), and a save naming a map type that a
+    // build without this mod does not have would not load. It lives here instead, one per colonist
+    // discomfort map, and is never saved: on load it is drawn again from the items, which the save
+    // holds. Three hooks in DiscomfortMap let it take part: AddWasteSectors (GetSectorsToAdd phase),
+    // AddWaste (AddChildMaps phase) and WasteKeepsSector (RemoveEmptySectors phase).
+    // ---------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// The most stink adds to a tile of a discomfort map. AIConstants: a rest may start at 4 or less
+    /// (HighestDiscomfortLevelForLeisureActivityToStart), work stops above 16
+    /// (HighestDiscomfortLevelForWorkToContinue); a colonist flees above their PanicLevel, never
+    /// below 4 (ThreatStance.Cautious). Read from the constants, so it stays under all three.
+    /// </summary>
+    public static int WasteDiscomfortCap =>
+        Math.Min((int)ThreatStance.Cautious, Math.Min((int)GameData.Instance.AIConstants.HighestDiscomfortLevelForLeisureActivityToStart,
+                                                      (int)GameData.Instance.AIConstants.HighestDiscomfortLevelForWorkToContinue));
+
+    /// <summary>A colonist discomfort map's waste map; not saved.</summary>
+    private sealed class WasteMap
+    {
+        /// <summary>Whether its parent is one of the player's colonist maps (Normal or Cautious stance).</summary>
+        public bool Applies;
+
+        /// <summary>The stink: (reach + 1) per filthy item at its tile, one less a tile out. Never blocks.</summary>
+        public TileLayer Map;
+
+        /// <summary>The reach it was drawn with.</summary>
+        public int Reach;
+
+        /// <summary>The tiles with filth and how much, as last drawn; an unchanged list is not drawn again.</summary>
+        public List<(Point Tile, int Count)> Sources;
+
+        /// <summary>Re-add every sector the parent has, once: on first sight, after a load or a switch-on.</summary>
+        public bool RefreshAll = true;
+    }
+
+    private static readonly ConditionalWeakTable<DiscomfortMap, WasteMap> wasteMaps = new ConditionalWeakTable<DiscomfortMap, WasteMap>();
+
+    /// <summary>
+    /// Called from DiscomfortMap.DoCycle (GetSectorsToAdd), after the studio has gathered the
+    /// sectors its children changed (<paramref name="changed"/>, which it then re-adds) and removed
+    /// (<paramref name="childRemoved"/>). Draws the waste map again if the filth moved, and adds to
+    /// <paramref name="changed"/> what has to be re-added for it: the waste map's changed sectors,
+    /// the sectors it dropped, and - since stink now keeps sectors alive - the sectors a threat map
+    /// dropped, whose threat would otherwise stay. Switched off, re-adds everything once without it.
+    /// Does nothing at all while off with no waste map drawn, so the studio's maps are untouched.
+    /// </summary>
+    public static void AddWasteSectors(DiscomfortMap map, HashSet<Point> changed, HashSet<Point> childRemoved)
+    {
+        if (map?.Map == null || changed == null)
+        {
+            return;
+        }
+        wasteMaps.TryGetValue(map, out WasteMap waste);
+        if (!WasteMapOn)
+        {
+            if (waste != null)
+            {
+                wasteMaps.Remove(map);
+                if (waste.Applies)
+                {
+                    foreach (Point sector in map.Map.GetAllSectors())
+                    {
+                        if (ChildHasSector(map, sector))
+                        {
+                            changed.Add(sector);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        if (waste == null)
+        {
+            bool? applies = IsColonistMap(map);
+            if (!applies.HasValue)
+            {
+                return;
+            }
+            waste = new WasteMap { Applies = applies.Value };
+            wasteMaps.Add(map, waste);
+        }
+        if (!waste.Applies)
+        {
+            return;
+        }
+        Draw(waste, FindWaste(), Reach, out HashSet<Point> wasteChanged, out HashSet<Point> wasteRemoved);
+        changed.UnionWith(wasteChanged);
+        if (waste.RefreshAll)
+        {
+            waste.RefreshAll = false;
+            changed.UnionWith(waste.Map.GetAllSectors());
+            foreach (Point sector in map.Map.GetAllSectors())
+            {
+                if (ChildHasSector(map, sector))
+                {
+                    changed.Add(sector);
+                }
+            }
+        }
+        void ReAddIfKept(Point sector)
+        {
+            if (map.Map.GetSector(sector.X, sector.Y) != null && (waste.Map.GetSector(sector.X, sector.Y) != null || ChildHasSector(map, sector)))
+            {
+                changed.Add(sector);
+            }
+        }
+        foreach (Point sector in wasteRemoved)
+        {
+            ReAddIfKept(sector);
+        }
+        if (childRemoved != null)
+        {
+            foreach (Point sector in childRemoved)
+            {
+                ReAddIfKept(sector);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Called from DiscomfortMap.AddSectors for each sector it re-adds, after its children: adds
+    /// one point per whole or part (reach + 1) of stink, at most WasteDiscomfortCap. Runs on the
+    /// studio's Parallel.ForEach; reads only this sector's waste and writes only <paramref name="own"/>.
+    /// </summary>
+    public static void AddWaste(DiscomfortMap map, TileSector own)
+    {
+        if (own == null || map == null || !wasteMaps.TryGetValue(map, out WasteMap waste) || !waste.Applies || waste.Map == null)
+        {
+            return;
+        }
+        TileSector stink = waste.Map.GetSector(own.Coords.X, own.Coords.Y);
+        if (stink == null)
+        {
+            return;
+        }
+        int perPoint = waste.Reach + 1;
+        int cap = WasteDiscomfortCap;
+        for (int i = 0; i < own.TileArea.Width; i++)
+        {
+            byte[] column = own.Map[i];
+            byte[] stinkColumn = stink.Map[i];
+            for (int j = 0; j < own.TileArea.Height; j++)
+            {
+                int value = stinkColumn[j];
+                if (value > 0)
+                {
+                    column[j] = (byte)Math.Min(255, column[j] + Math.Min(cap, (value + perPoint - 1) / perPoint));
+                }
+            }
+        }
+    }
+
+    /// <summary>Called from DiscomfortMap.RemoveEmptySectors: a sector with stink in it is kept.</summary>
+    public static bool WasteKeepsSector(DiscomfortMap map, int sectorX, int sectorY) =>
+        map != null && wasteMaps.TryGetValue(map, out WasteMap waste) && waste.Applies && waste.Map?.GetSector(sectorX, sectorY) != null;
+
+    /// <summary>
+    /// The stink at a point, in units (filthy items at the point; further ones count less), off the
+    /// waste map of the player's <paramref name="personType"/> colonists; null with none drawn.
+    /// </summary>
+    public static int? WasteUnitsAt(EntityType personType, Vector3 at)
+    {
+        var maps = The.Sim?.PlaySite?.PlayerAllegiance?.SharedKnowledge?.PlaySiteKnowledge?.DiscomfortMaps;
+        if (personType == null || maps == null || !maps.TryGetValue(ProtectionLevel.Exposed, out var byType)
+            || !byType.TryGetValue(personType, out var byStance))
+        {
+            return null;
+        }
+        foreach (ThreatStance stance in new[] { ThreatStance.Normal, ThreatStance.Cautious })
+        {
+            if (byStance.TryGetValue(stance, out DiscomfortMap map) && map != null && wasteMaps.TryGetValue(map, out WasteMap waste)
+                && waste.Applies && waste.Map != null)
+            {
+                int x = Math.Clamp((int)(at.X / TileSize), 0, waste.Map.Width - 1);
+                int y = Math.Clamp((int)(at.Y / TileSize), 0, waste.Map.Height - 1);
+                return waste.Map.GetValue(x, y) / (waste.Reach + 1);
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Whether a discomfort map is one of the player's colonists' (a person type, Normal or
+    /// Cautious stance); null while the player's maps are not there to look in.
+    /// </summary>
+    private static bool? IsColonistMap(DiscomfortMap map)
+    {
+        var maps = The.Sim?.PlaySite?.PlayerAllegiance?.SharedKnowledge?.PlaySiteKnowledge?.DiscomfortMaps;
+        if (maps == null)
+        {
+            return null;
+        }
+        foreach (var byType in maps.Values)
+        {
+            foreach (var byStance in byType)
+            {
+                foreach (var stanceMap in byStance.Value)
+                {
+                    if (stanceMap.Value == map)
+                    {
+                        return byStance.Key?.Person != null && stanceMap.Key != ThreatStance.Bold;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static bool ChildHasSector(DiscomfortMap map, Point sector) =>
+        map.Children.Exists(d => d.Child?.Map?.GetSector(sector.X, sector.Y) != null);
+
+    /// <summary>
+    /// Every tile with filth, and how many filthy items: on the ground, and inside whatever stands
+    /// there (a compost pile, a hide rack, a storage hut). What a colonist or an animal carries is
+    /// left out - it would move the map with every haul. In tile order, so the same filth always
+    /// gives the same list.
+    /// </summary>
+    private static List<(Point Tile, int Count)> FindWaste()
+    {
+        var found = new List<(Point Tile, int Count)>();
+        MapManager map = The.Map;
+        if (map?.TileMap == null)
+        {
+            return found;
+        }
+        for (int x = 0; x < map.mapTileWidth; x++)
+        {
+            for (int y = 0; y < map.mapTileHeight; y++)
+            {
+                var onTile = map.TileMap[x][y]?.EntitiesOnTile;
+                if (onTile == null || onTile.Count == 0)
+                {
+                    continue;
+                }
+                int count = 0;
+                foreach (Entity e in onTile)
+                {
+                    if (e?.EntityType == null || e.EntityType.IntelligenceType?.IsMobile == true)
+                    {
+                        continue;
+                    }
+                    if (IsFilthy(e.EntityType))
+                    {
+                        count++;
+                    }
+                    e.Contains?.IterateContained(delegate(Entity inside)
+                    {
+                        if (IsFilthy(inside?.EntityType))
+                        {
+                            count++;
+                        }
+                    });
+                }
+                if (count > 0)
+                {
+                    found.Add((new Point(x, y), count));
+                }
+            }
+        }
+        return found;
+    }
+
+    /// <summary>
+    /// Draws the waste map as ThreatMap.DoCycle draws a threat map, in one go: swap the buffers,
+    /// clear, paint, drop the sectors nothing was painted in, mark the ones that differ from last
+    /// time. Not drawn at all when the filth and the reach are as last time.
+    /// </summary>
+    private static void Draw(WasteMap waste, List<(Point Tile, int Count)> sources, int reach, out HashSet<Point> changed, out HashSet<Point> removed)
+    {
+        changed = new HashSet<Point>();
+        removed = new HashSet<Point>();
+        if (waste.Map != null && waste.Reach == reach && waste.Sources != null && SameSources(waste.Sources, sources))
+        {
+            return;
+        }
+        if (waste.Map == null)
+        {
+            waste.Map = new TileLayer((ushort)The.Map.mapTileWidth, (ushort)The.Map.mapTileHeight);
+        }
+        waste.Reach = reach;
+        waste.Sources = sources;
+        TileLayer layer = waste.Map;
+        layer.BeginDrawing();
+        layer.ClearMaps();
+        foreach ((Point tile, int count) in sources)
+        {
+            // FalloffEachTile = count gives a radius of reach + 1 and count * (reach + 1 - distance).
+            layer.DrawLinearInfluenceCircle(tile, count * (reach + 1), InfluenceMap.Operation.AddToExisting,
+                InfluenceMap.Falloff.Yes, InfluenceMap.CircleParameter.FalloffEachTile, count);
+        }
+        removed.UnionWith(layer.GetAllSectors());
+        removed.ExceptWith(layer.AffectedSectors);
+        layer.RemoveSectors(removed);
+        layer.CompareOldAndNewSectors();
+        layer.GetDirtySectors(ref changed);
+    }
+
+    private static bool SameSources(List<(Point Tile, int Count)> a, List<(Point Tile, int Count)> b)
+    {
+        if (a.Count != b.Count)
+        {
+            return false;
+        }
+        for (int i = 0; i < a.Count; i++)
+        {
+            if (a[i] != b[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -732,6 +732,64 @@ nights, and the cold (alone and with a bad stomach) through the real `Locomotor`
 `BiologicalEntity`. **Not verified in a running colony:** whether colonists walk to a hut instead of
 lying down by the fire is for a game.
 
+## Stink and noise — `discomfort.enabled`, `discomfort.wasteMap`
+
+Kastuk, "Discomfort" (2026-10-05): filthy items (all waste, fertilisers, sulphur, carcasses, fresh
+hides) and busy workbenches, smithies, workshops, refineries and mines near where a colonist sleeps
+cost Comfort, measured once a day at the first sleep. `GoalDoSleep.Activate` → `DiscomfortMod.OnSleepStart`
+counts what is within the reach (5 tiles) of the sleeping place's exit; `Intelligence.Comfort` →
+`DiscomfortMod.Penalty` takes off 3% per 5 units, at most 40%. Off by default; the numbers and the
+details are in `mods/DiscomfortMod.cs`, and `dataexport --discomfort-selftest` is gate 80's case 34.
+
+### Waste on the discomfort map — `discomfort.wasteMap`
+
+Kastuk (2026-10-17): *"I see in source code the unused DiscomfortMap. I suppose, it's expected to
+draw map of Dirty tiles with effect radius just like Threat map"*, and, told it would make colonists
+route around a dirty camp, *"Must try it as option, even if it will make them reluctant to move waste
+into compost collectors."* A second switch in the DISCOMFORT category, off by default.
+
+`DiscomfortMap` is not unused: it is the sum of its child maps, and colonists flee by it, route by
+it (`MovementMap` adds it to the terrain cost) and pick where to rest by it (`GoalTakeFive`). The
+studio's note on it reads *"this map should have Fire and Threat as children... and maybe also a map
+for general discomfort such as wetness, poison etc."* — but `FireMap` was never constructed, so
+`ThreatMap` is its only child. The switch gives the player's colonist maps (Normal and Cautious
+stance; Bold ignores danger, and animals have maps of their own) a second child, a waste map drawn
+the way `ThreatMap.DoCycle` draws: every tile with filth — the items `DiscomfortMod.IsFilthy` names,
+on the ground or inside what stands there, not what a colonist or animal carries — paints
+`count × (reach + 1)` at its centre, `count` less per tile out (`Common.DistanceOctile`), nothing past
+the reach.
+
+| hook | what changes with the switch on |
+|---|---|
+| `DiscomfortMap.DoCycle` (GetSectorsToAdd) → `DiscomfortMod.AddWasteSectors` | the waste map is drawn again if the filth moved, and its changed and dropped sectors are re-added along with the threat map's. Also the sectors a threat map dropped where stink keeps the sector alive — with one child the studio removes such a sector, with two its threat would stay behind |
+| `DiscomfortMap.AddSectors` → `DiscomfortMod.AddWaste` | each re-added sector gets one point per whole or part `reach + 1` of stink, at most `DiscomfortMod.WasteDiscomfortCap` = 4 |
+| `DiscomfortMap.RemoveEmptySectors` → `DiscomfortMod.WasteKeepsSector` | a sector with stink is kept, as one with threat is |
+| `DiscomfortMod.OnSleepStart` → `MeasureSleep` | the stink a sleeper smells is the waste map's value at the exit divided by `reach + 1`: an item at the exit is one unit, one at the edge of the reach a sixth (at 5 tiles). Noise is still counted |
+
+The cap of 4 is the cautious stance's lowest panic level and the most at which a rest may start
+(`AIConstants.HighestDiscomfortLevelForLeisureActivityToStart`), a quarter of what stops work (16):
+stink alone never makes a colonist flee, down tools or give up a rest. What it does do is cost 1–4
+more per step across dirty ground, so colonists path around it and may be slower to haul waste; a
+threat over dirty ground reaches panic up to 4 sooner. The waste map never blocks a tile.
+
+**Saves:** nothing new. The waste map is kept beside its discomfort map
+(`ConditionalWeakTable`), not in `DiscomfortMap.Children`, which is saved as map ids — a save naming a
+map type that a build without the mod lacks would not load. It is drawn again from the items after a
+load, and the first update re-adds every sector. What a save does hold is the discomfort map's own
+values, stink included, in the format they always had. Loaded with the mod compiled out, sectors with
+only stink in them go at the first update; a sector shared with a threat keeps up to 4 of stale stink
+until that threat moves. Switched off in a game, the next update takes it all out.
+
+**Cost:** a redraw scans the map's tiles once (80 × 80 to 256 × 256: 6,400–65,536 lookups) and
+paints `(2 × reach + 3)²` tiles per filthy tile (169 at 5), per colonist discomfort map — two per
+colonist type — once per movement-map update (`AIConstants.PlayerMovementMapUpdateInterval`, 5 s).
+When the filth and the reach are as last time nothing is painted and nothing downstream moves; when
+they change, only the sectors that differ are re-added to the discomfort and movement maps, as for a
+threat. Reading it at bedtime is one lookup. `--discomfort-selftest` runs the studio's
+`DiscomfortMap.DoCycle` through the three hooks on a 48 × 48 map: values and falloff, the cap, the
+sleeper's units, a threat leaving dirty ground, removal, Bold, switching off and on, and the map left
+untouched with the switch off.
+
 ## Mod settings: `user/ModSettings.xml`
 
 Mods get a configuration file and a **MODS** section in the in-game options menu. Both come from

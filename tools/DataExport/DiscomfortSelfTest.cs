@@ -18,7 +18,8 @@ namespace UW.Tools.DataExport;
 /// arithmetic, and the day stamp: a measurement holds today and tomorrow, and lapses after.
 ///
 /// NOT HERE. DiscomfortMod.Measure walks the map's tiles, which a data tool has none of; the walk
-/// itself is the BirdHopMod.Startler loop the game already runs.
+/// itself is the BirdHopMod.Startler loop the game already runs. WASTE ON THE DISCOMFORT MAP builds
+/// a small map of its own for that, in DiscomfortWasteMapSelfTest.cs.
 /// </summary>
 internal static partial class Program
 {
@@ -131,6 +132,8 @@ internal static partial class Program
         var unmeasured = (Entity)RuntimeHelpers.GetUninitializedObject(typeof(Entity));
         Check(UWGame.Mods.DiscomfortMod.Penalty(unmeasured) == 0f, "a colonist never measured loses nothing");
         enabled.Value = enabled.DefaultValue;
+
+        failures += DiscomfortWasteMapChecks((ok, what) => Console.WriteLine((ok ? "  ok    " : "  FAIL  ") + what), waste);
 
         Console.WriteLine(failures == 0 ? "discomfort self-test OK" : $"discomfort self-test FAILED - {failures} check(s)");
         return failures == 0 ? 0 : 1;
