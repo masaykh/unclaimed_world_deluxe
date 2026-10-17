@@ -12709,6 +12709,8 @@ public class BaseDataLoader : DataLoader
 		List<EffectProfileType> list = EffectProfileLoader.Init();
 		// MOD: what HideGearMod's items name as their EffectsWhenEquipped.
 		UWGame.Mods.HideGearMod.AddEffectProfiles(list);
+		// MOD: EmergencyEatingMod's "Raw food" and "Bad stomach", registered whether or not it is on.
+		UWGame.Mods.EmergencyEatingMod.AddEffectProfiles(list);
 		return list;
 	}
 
@@ -12717,6 +12719,8 @@ public class BaseDataLoader : DataLoader
 		List<EffectType> list = EffectTypeLoader.Init();
 		// MOD: the effects HideGearMod's items have while worn.
 		UWGame.Mods.HideGearMod.AddEffects(list);
+		// MOD: the comfort EmergencyEatingMod's profiles take, registered whether or not it is on.
+		UWGame.Mods.EmergencyEatingMod.AddEffects(list);
 		return list;
 	}
 

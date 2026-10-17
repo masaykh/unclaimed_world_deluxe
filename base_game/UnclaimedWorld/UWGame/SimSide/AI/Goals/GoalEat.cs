@@ -378,7 +378,8 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 
 	private void AddConsumeGoals(Entity itemToConsume)
 	{
-		ProcessType processType = entity.BiologicalEntity.ConsumeProcesses[itemToConsume.EntityType];
+		// MOD: EmergencyEatingMod - a raw ingredient has the mod's own consume process (null for anything else).
+		ProcessType processType = UWGame.Mods.EmergencyEatingMod.ConsumeProcessFor(entity, itemToConsume.EntityType) ?? entity.BiologicalEntity.ConsumeProcesses[itemToConsume.EntityType];
 		ChangeToEatingStance(processType);
 		AddSubgoal(new GoalDoProduce(entity, processType, itemToConsume, null, limitExtractionByNutrients: true, null, null, null, entity.EntityID, StorageCompartment.Stomach));
 	}
@@ -498,6 +499,8 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 			if (foodItem.EntityType.ItemType != null && foodItem.EntityType.ItemType.FoodType != null)
 			{
 				foodItem.Item.Food.ConsumeBy(entity, UWGame.Mods.BalancedDietMod.MonotonyFactor(entity, foodItem.EntityType));
+				// MOD: EmergencyEatingMod - a raw ingredient costs comfort, and may upset the stomach.
+				UWGame.Mods.EmergencyEatingMod.OnEaten(entity, foodItem.EntityType);
 				foodItem.Destroy();
 			}
 		});

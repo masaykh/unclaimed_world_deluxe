@@ -5491,6 +5491,31 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipDiscomfortTalk</Key>
     <Value>"What is this smell!?" - at most two colonists a day.</Value>
   </String>
+  <!-- settings: emergencyeating -->
+  <String>
+    <Key>SettingGroupEmergencyeating</Key>
+    <Value>EMERGENCY EATING</Value>
+  </String>
+  <String>
+    <Key>SettingEmergencyeatingBadStomach</Key>
+    <Value>RAW FOOD CAN UPSET THE STOMACH</Value>
+  </String>
+  <String>
+    <Key>SettingTipEmergencyeatingBadStomach</Key>
+    <Value>After raw food a colonist may get a bad stomach for a day: slower walking and work, less comfort, and energy at most 60%. The chance and how bad it is rise from berries to meat.</Value>
+  </String>
+  <String>
+    <Key>SettingEmergencyeatingChance</Key>
+    <Value>CHANCE OF A BAD STOMACH (% OF 5% BERRIES ... 60% MEAT)</Value>
+  </String>
+  <String>
+    <Key>SettingEmergencyeatingEnabled</Key>
+    <Value>RAW FOOD WHEN STARVING</Value>
+  </String>
+  <String>
+    <Key>SettingTipEmergencyeatingEnabled</Key>
+    <Value>A starving colonist with no food left eats raw ingredients: crystal berries first, then glassy creeper pods, common oil tubers, raw fish and raw meat. Comfort drops for a day, from 5% for berries to 60% for meat.</Value>
+  </String>
   <!-- settings: fauna -->
   <String>
     <Key>SettingGroupFauna</Key>
@@ -7891,6 +7916,66 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <!-- data: EFFECT -->
   <String>
+    <Key>EffectProfileDescriptionBadStomach1</Key>
+    <Value>The crystal berries did not agree with the character: walks 4% slower, work takes 6% longer, and energy is at most 60%.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileBadStomach1</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectBadStomach1Comfort</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionBadStomach2</Key>
+    <Value>The glassy creeper pods did not agree with the character: walks 8% slower, work takes 12% longer, and energy is at most 60%.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileBadStomach2</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectBadStomach2Comfort</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionBadStomach3</Key>
+    <Value>The common oil tubers did not agree with the character: walks 12% slower, work takes 18% longer, and energy is at most 60%.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileBadStomach3</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectBadStomach3Comfort</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionBadStomach4</Key>
+    <Value>The raw fish did not agree with the character: walks 16% slower, work takes 24% longer, and energy is at most 60%.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileBadStomach4</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectBadStomach4Comfort</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionBadStomach5</Key>
+    <Value>The raw meat did not agree with the character: walks 20% slower, work takes 30% longer, and energy is at most 60%.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileBadStomach5</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
+    <Key>EffectBadStomach5Comfort</Key>
+    <Value>Bad stomach</Value>
+  </String>
+  <String>
     <Key>EffectProfileDescriptionCaffeine</Key>
     <Value>Caffeine is a stimulant. It increases the character's comfort level as well as the negative effects from lack of sleep.</Value>
   </String>
@@ -8013,6 +8098,66 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <String>
     <Key>EffectProfileOpenStove</Key>
     <Value>Open stove</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionRawFood1</Key>
+    <Value>Had to eat crystal berries raw: there was no proper food left.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileRawFood1</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectRawFood1Comfort</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionRawFood2</Key>
+    <Value>Had to eat glassy creeper pods raw: there was no proper food left.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileRawFood2</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectRawFood2Comfort</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionRawFood3</Key>
+    <Value>Had to eat common oil tubers raw: there was no proper food left.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileRawFood3</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectRawFood3Comfort</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionRawFood4</Key>
+    <Value>Had to eat raw fish raw: there was no proper food left.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileRawFood4</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectRawFood4Comfort</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionRawFood5</Key>
+    <Value>Had to eat raw meat raw: there was no proper food left.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileRawFood5</Key>
+    <Value>Raw food</Value>
+  </String>
+  <String>
+    <Key>EffectRawFood5Comfort</Key>
+    <Value>Raw food</Value>
   </String>
   <String>
     <Key>EffectProfileDescriptionSimpleBed</Key>
@@ -15948,6 +16093,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   <String>
     <Key>ModDescriptionDiscomfort</Key>
     <Value>Stink and noise near where a colonist sleeps cost Comfort - waste, fresh hides and busy workshops are better kept away from the beds - and the colonists say so.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionEmergencyeating</Key>
+    <Value>A starving colonist with no food left eats raw ingredients - berries before tubers, fish before meat - at a cost in comfort, and maybe a bad stomach.</Value>
   </String>
   <String>
     <Key>ModDescriptionFauna</Key>

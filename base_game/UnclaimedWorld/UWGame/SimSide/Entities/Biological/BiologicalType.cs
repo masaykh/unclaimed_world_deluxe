@@ -464,6 +464,10 @@ namespace UWGame.SimSide.Entities.Biological
                     item);
             }
 
+            // MOD: EmergencyEatingMod - a colonist's processes for eating raw ingredients when starving,
+            // kept by the mod and NOT in ConsumeProcesses, so they count as food nowhere else.
+            UWGame.Mods.EmergencyEatingMod.AddConsumeProcesses(parent, this);
+
            
             // Perhaps later? allow designer to override the default process with custom process types:
              /* if (ConsumeProcessTypes != null)
@@ -479,8 +483,18 @@ namespace UWGame.SimSide.Entities.Biological
 
         private void InitConsumeProcess(EntityType parent, EntityType item)
         {
+            ConsumeProcesses.Add(item, CreateConsumeProcess(parent, item, "_defaultConsume_"));
+        }
+
+        /// <summary>
+        /// MOD: the body of the studio's InitConsumeProcess, less its last line (ConsumeProcesses.Add),
+        /// so EmergencyEatingMod builds its processes exactly as the studio builds a consume process.
+        /// The key is parent + keyInfix + item; the studio's infix is "_defaultConsume_".
+        /// </summary>
+        public ProcessType CreateConsumeProcess(EntityType parent, EntityType item, string keyInfix)
+        {
             ProcessType eatingProcess = new ProcessType();
-            eatingProcess.KeyName = parent.KeyName + "_defaultConsume_" + item.KeyName;
+            eatingProcess.KeyName = parent.KeyName + keyInfix + item.KeyName;
 
             eatingProcess.WorkOrTimeNeeded = new WorkOrTime()
             {
@@ -523,8 +537,7 @@ namespace UWGame.SimSide.Entities.Biological
             }
             eatingProcess.PostLoadContentInitialize();// ??
 
-            ConsumeProcesses.Add(item, eatingProcess);
-           
+            return eatingProcess;
         }
 
         public bool GetBioPropertyType(string propertyKey, out BioPropertyType bioPropertyType)

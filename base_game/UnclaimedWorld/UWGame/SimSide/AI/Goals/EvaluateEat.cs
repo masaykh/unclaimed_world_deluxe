@@ -227,6 +227,8 @@ public class EvaluateEat : GoalEvaluator
 		}
 		// MOD: OwnershipMod - a person also eats its household's food; the studio searched only the expedition's.
 		UWGame.Mods.OwnershipMod.AddHouseholdFood(entity, bioEntity, sharedKnowledge, allFoodItems);
+		// MOD: EmergencyEatingMod - a starving colonist also looks at the expedition's raw ingredients.
+		UWGame.Mods.EmergencyEatingMod.AddRawFood(entity, bioEntity, sharedKnowledge, foodItemsGroup, allFoodItems);
 	}
 
 	public static bool IsValidFoodItem(EntityID foodID, Entity entity, BiologicalEntity bioEntity, SharedKnowledge sharedKnowledge, EntityGroup foodItemsGroup, out IKnownEntityData itemData)
@@ -365,6 +367,8 @@ public class EvaluateEat : GoalEvaluator
 		}
 		allScores.RemoveAll((Tuple<IKnownEntityData, ProcessType, double> c) => c.Item3 == 0.0);
 		allScores.Sort((Tuple<IKnownEntityData, ProcessType, double> a, Tuple<IKnownEntityData, ProcessType, double> b) => b.Item3.CompareTo(a.Item3));
+		// MOD: EmergencyEatingMod - raw ingredients only when no food will do, and berries before meat.
+		UWGame.Mods.EmergencyEatingMod.OrderRawFood(entity, allScores, minimumRatingToConsider);
 		Tuple<IKnownEntityData, ProcessType, double> tuple = null;
 		Tuple<IKnownEntityData, ProcessType, double> tuple2 = null;
 		for (int num = 0; num < allScores.Count; num++)
@@ -457,7 +461,8 @@ public class EvaluateEat : GoalEvaluator
 			return CalculateResult.Done;
 		default:
 		{
-			double num = ((!bioEntity.ConsumeProcesses.ContainsKey(foodData.EntityType)) ? ScoreNutrientsInExtractedItems(foodData, ref extractionProcess) : ScoreNutrients(foodData.EntityType, foodData.Bulk, foodData.NutrientBulkAmounts));
+			// MOD: EmergencyEatingMod - a raw ingredient the mod lets a colonist eat is scored as eaten directly.
+			double num = ((!bioEntity.ConsumeProcesses.ContainsKey(foodData.EntityType) && !UWGame.Mods.EmergencyEatingMod.IsRawFood(entity, foodData.EntityType)) ? ScoreNutrientsInExtractedItems(foodData, ref extractionProcess) : ScoreNutrients(foodData.EntityType, foodData.Bulk, foodData.NutrientBulkAmounts));
 			if (Common.IsZero(num))
 			{
 				score = 0.0;
@@ -470,6 +475,11 @@ public class EvaluateEat : GoalEvaluator
 				if (num >= (double)GameData.Instance.AIConstants.NutrientsScoreToTriggerStarvedEating)
 				{
 					score = ComputePeopleStarvingScore(travelTimeScore, num, conditionScore, num2);
+				}
+				else if (UWGame.Mods.EmergencyEatingMod.IsRawFood(entity, foodData.EntityType))
+				{
+					// MOD: EmergencyEatingMod - raw ingredients only at the studio's starving score.
+					score = 0.0;
 				}
 				else if (num >= (double)GameData.Instance.AIConstants.NutrientsScoreForEating)
 				{

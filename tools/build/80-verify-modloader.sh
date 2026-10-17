@@ -39,6 +39,8 @@
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #  41. the woodpile keeps the firewood it dried
+#  42. weather: seasons follow their names, a subtropical year, spoilage follows the air
+#  43. emergency eating: raw food when starving, its comfort cost and a bad stomach
 #  44. interface: a resize edge left onto a higher sibling gives the cursor back
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
@@ -1055,6 +1057,22 @@ else
   echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
   echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
   fail "the weather self-test reported failures"
+fi
+
+# EmergencyEatingMod (Kastuk, "SimEffects and Emergency eating", 2026-10-17): a starving colonist
+# with no food left eats crystal berries, glassy creeper pods, common oil tubers, raw fish, raw meat,
+# in that order, losing 5..60% comfort, with a 5..60% chance of a "Bad stomach". The tiers against
+# the tables, the colonist's raw-food processes kept out of ConsumeProcesses (so nothing else counts
+# raw stock as food), the effects registered with the switch off, the evaluator's ordering, the
+# seeded rolls, and the bad stomach through Locomotor, ProcessJob and BiologicalEntity themselves.
+say "==> 43. emergency eating: raw food in Kastuk's order when starving, its comfort cost and a bad stomach"
+out=$( cd "$(new_install case43)" && "$EXPORT" . --emergency-eating-selftest 2>&1 ) || true
+if echo "$out" | grep -q "emergency eating self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
+  fail "the emergency eating self-test reported failures"
 fi
 
 # ------------------------------------------------- 44. interface: the hover lets go

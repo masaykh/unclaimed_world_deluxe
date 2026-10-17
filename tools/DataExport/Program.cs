@@ -269,6 +269,11 @@ internal static partial class Program
             return WeatherSelfTest();
         }
 
+        if (args.Contains("--emergency-eating-selftest"))
+        {
+            return EmergencyEatingSelfTest();
+        }
+
         if (args.Contains("--homeraid-selftest"))
         {
             return HomeRaidSelfTest();
@@ -458,6 +463,7 @@ internal static partial class Program
         UWGame.Mods.FirewoodMod.RegisterSettings();
         UWGame.Mods.RepairMod.RegisterSettings();
         UWGame.Mods.WeatherMod.RegisterSettings();
+        UWGame.Mods.EmergencyEatingMod.RegisterSettings();
         UWGame.Mods.PeatMod.RegisterSettings();
         UWGame.Mods.RawhideStringMod.RegisterSettings();
         UWGame.Mods.RespawnCapMod.RegisterSettings();
