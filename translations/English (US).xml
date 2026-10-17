@@ -6956,6 +6956,19 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipTradeRoughEta</Key>
     <Value>The ETA in the missions list reads "half a day" or "a day or two" instead of "0.48 days", and its tooltip names the part of the day, not the clock.</Value>
   </String>
+  <!-- settings: weather -->
+  <String>
+    <Key>SettingGroupWeather</Key>
+    <Value>WEATHER</Value>
+  </String>
+  <String>
+    <Key>SettingWeatherEnabled</Key>
+    <Value>SEASONS AND TEMPERATURE</Value>
+  </String>
+  <String>
+    <Key>SettingTipWeatherEnabled</Key>
+    <Value>The sun is highest in mid summer and lowest in mid winter, as the season names say. The air follows a warm subtropical year: about 5 C on a mid-winter night to 12 C at noon, 17 C on a mid-summer night to 34 C at noon, warmer in sunshine than under cloud. Food and materials outside, and in storage that is not cooled, spoil faster in the heat and slower in the cold. The date panel shows the temperature.</Value>
+  </String>
   <!-- data: ALLEGIANCE -->
   <String>
     <Key>AllegianceDestinyRiverDeltaDescentAllegiance</Key>
@@ -16051,6 +16064,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   <String>
     <Key>ModDescriptionTrade</Key>
     <Value>Goods sold on a trade run are paid for when the barge loads them, not when the run starts, and missions say roughly when they arrive.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionWeather</Key>
+    <Value>Seasons and temperature: the sun follows the season names, and a subtropical year of warm summers and cool winters decides how fast things spoil outside.</Value>
   </String>
   <!-- data: NUTRIENT -->
   <String>

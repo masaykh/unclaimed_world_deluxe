@@ -32,6 +32,13 @@ public class HUDDateAndWeather : HUDWindow
 		weatherNow.Text = $"{cloudCover}/{wind}";
 	}
 
+	// MOD: the studio's SetTemp (original_src HUDDateAndWeather.cs), which nothing called; WeatherMod
+	// calls it.
+	public void SetTemp(int temp)
+	{
+		tempNow.Text = $"{temp}° C";
+	}
+
 	public void SetTime(string timePhrase)
 	{
 		time.Text = timePhrase;

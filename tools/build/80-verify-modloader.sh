@@ -1042,6 +1042,21 @@ else
   fail "the woodpile self-test reported failures"
 fi
 
+# WeatherMod's SEASONS AND TEMPERATURE (Kastuk, "Weather and temperature", 2026-10-17: subtropical
+# seasons, "Not freezing temperatures, but still cold enough for sickness. Then high solar heat during
+# usually hot summer"). The real DateAndTime stepped through a year: the studio's sun peaks on "Mid
+# winter" (a sawtooth) and the mod's on "Mid summer"; the air's range per season; spoilage through
+# the real NonLivingEntity.ComputeDegradeDamage on a one-tile map; the shelf-life tooltips.
+say "==> 42. weather: the sun follows the season names, a subtropical year, spoilage and tooltips follow the air"
+out=$( cd "$(new_install case42)" && "$EXPORT" . --weather-selftest 2>&1 ) || true
+if echo "$out" | grep -q "weather self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
+  fail "the weather self-test reported failures"
+fi
+
 # ------------------------------------------------- 44. interface: the hover lets go
 #
 # The stuck double-arrow cursor (Kastuk, "Small interface issue"): test/UnclaimedWorld.Test's

@@ -107,7 +107,9 @@ public class DegradeType : IGameData
 
 	public void PostDataCompleteInitialize()
 	{
-		float meanAmbientTemperature = GameData.Instance.Constants.MeanAmbientTemperature;
+		// MOD: the shelf-life tooltips' outside temperature - the mid-summer day's average with
+		// SEASONS AND TEMPERATURE on, the studio's 15 C otherwise. See mods/WeatherMod.cs.
+		float meanAmbientTemperature = UWGame.Mods.WeatherMod.ShelfLifeTemperature(GameData.Instance.Constants.MeanAmbientTemperature);
 		StorageDurationToDisplay[] storageDurationToDisplay = GameData.Instance.GUIConstants.StorageDurationToDisplay;
 		foreach (StorageDurationToDisplay storageDurationToDisplay2 in storageDurationToDisplay)
 		{

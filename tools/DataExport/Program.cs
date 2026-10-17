@@ -264,6 +264,11 @@ internal static partial class Program
             return WoodpileSelfTest();
         }
 
+        if (args.Contains("--weather-selftest"))
+        {
+            return WeatherSelfTest();
+        }
+
         if (args.Contains("--homeraid-selftest"))
         {
             return HomeRaidSelfTest();
@@ -452,6 +457,7 @@ internal static partial class Program
         UWGame.Mods.HideGearMod.RegisterSettings();
         UWGame.Mods.FirewoodMod.RegisterSettings();
         UWGame.Mods.RepairMod.RegisterSettings();
+        UWGame.Mods.WeatherMod.RegisterSettings();
         UWGame.Mods.PeatMod.RegisterSettings();
         UWGame.Mods.RawhideStringMod.RegisterSettings();
         UWGame.Mods.RespawnCapMod.RegisterSettings();

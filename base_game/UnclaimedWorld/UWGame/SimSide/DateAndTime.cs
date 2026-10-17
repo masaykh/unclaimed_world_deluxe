@@ -287,7 +287,10 @@ public class DateAndTime : ISnapshot
 	{
 		float num = (float)((TimeOfDay - 0.5) * 6.2831854820251465);
 		float num2 = (float)Math.Cos(num);
-		float num3 = (float)(0.39269909262657166 * (-1.0 + 2.0 * TimeOfYear));
+		// MOD: the sun's declination. The studio's is a sawtooth over TimeOfYear, highest on the
+		// "Mid winter" day; with SEASONS AND TEMPERATURE on it peaks on "Mid summer". The studio's
+		// value otherwise. See mods/WeatherMod.cs.
+		float num3 = UWGame.Mods.WeatherMod.Declination(TimeOfYear, (float)(0.39269909262657166 * (-1.0 + 2.0 * TimeOfYear)));
 		float num4 = (float)Math.Cos(num3);
 		double num5 = (double)(num2 * num4 * cosLatitude) + Math.Sin(num3) * (double)sinLatitude;
 		SunElevation = (float)Math.Asin(num5);

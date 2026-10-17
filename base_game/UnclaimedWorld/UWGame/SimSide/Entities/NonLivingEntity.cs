@@ -285,7 +285,9 @@ namespace UWGame.SimSide.Entities
         public static float ComputeDegradeDamage(IKnownEntityData item, StorageCondition storedIn, bool? storageIsPowered, Point mapPosition, double daysElapsed)
         {
             TerrainTile tile = The.Map.GetTile(mapPosition);
-            float temperature = tile.Temperature;
+            // MOD: the air temperature for a tile at the studio's 15 C, with SEASONS AND TEMPERATURE
+            // on; the tile's own otherwise. See mods/WeatherMod.cs.
+            float temperature = UWGame.Mods.WeatherMod.OutsideTemperature(tile.Temperature);
             return ComputeDegradeDamage(item.EntityType.NonLivingType.FinalDegradeType, storedIn, item.IsWeatherProof(),/* item.IsEnclosed(),*/
                 temperature, The.Sim.PlaySite.PlaySite.Weather.SunIntensity,
                 storageIsPowered, daysElapsed);

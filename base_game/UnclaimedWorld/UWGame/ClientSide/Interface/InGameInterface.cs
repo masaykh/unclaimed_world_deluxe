@@ -1465,6 +1465,9 @@ public class InGameInterface : CommonInterface
 		dateAndWeather.HUDPanel.SetTime(timeOfDayString);
 		dateAndWeather.HUDPanel.SetSeason(season);
 		dateAndWeather.HUDPanel.SetDate(date);
+		// MOD: the air temperature on the WEATHER NOW line, with SEASONS AND TEMPERATURE on.
+		// See mods/WeatherMod.cs.
+		UWGame.Mods.WeatherMod.ShowTemperature(dateAndWeather.HUDPanel);
 	}
 
 	public override void Update(GameTime gameTime)

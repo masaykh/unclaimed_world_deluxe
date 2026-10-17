@@ -637,6 +637,28 @@ run the entity table dies half-built.) `tools/build/80-verify-modloader.sh` case
 output, comparing each recovery against the production recipe it came from rather than against
 numbers written in the test.
 
+## Seasons and temperature — `weather.enabled`
+
+Kastuk, "Weather and temperature" (2026-10-17): *"rainstorms during winter time with cold winds
+between them. Not freezing temperatures, but still cold enough for sickness. Then high solar heat
+during usually hot summer. Can take references from subtropic seasons."* This is step 1, the
+seasons and the air; rain, wind and what the cold does to people come later. Off by default.
+
+| hook | what changes with the switch on |
+|---|---|
+| `DateAndTime.ComputeSunAndLight` → `WeatherMod.Declination` | the studio's declination is `axialTilt * (-1 + 2 * TimeOfYear)`, a sawtooth: highest on "Mid winter", lowest the next day. The mod's is `axialTilt * cos(2π(TimeOfYear - 5.5/12))`, highest mid "Mid summer" |
+| `NonLivingEntity.ComputeDegradeDamage` → `WeatherMod.OutsideTemperature` | a tile at the studio's 288 K (`Constants.MeanAmbientTemperature`, "15 C - replace this!") spoils things at the air temperature; storage that derives from it ("isolated") follows; a tile set to anything else (the studio's `DecompositionTest`) keeps its own |
+| `DegradeType.PostDataCompleteInitialize` → `WeatherMod.ShelfLifeTemperature` | the shelf-life tooltips are worked out for the mid-summer day's average (~23.5 C) instead of 15 C, from the next game loaded |
+| `InGameInterface.SetTimeAndDate` → `WeatherMod.ShowTemperature` | the date panel's WEATHER NOW line shows the air temperature through the studio's `HUDDateAndWeather.SetTemp`, which nothing called |
+
+The air is `NightCelsius + NightSeasonalSwing * cos(season) + DaySwing * sunshine`, sunshine being
+the studio's `SunIntensity` formula and `DaySwing` the studio's 20 degrees from
+`WeatherManager.globalTemperature`. The constants are at the top of `mods/WeatherMod.cs`. Nothing
+new is saved and no tile is written: the temperature is computed from `TimeOfYear`, the sun's
+elevation and the cloud cover, which a save already holds. `dataexport --weather-selftest` (case 42)
+steps the real `DateAndTime` through a year and spoils a food through the real
+`ComputeDegradeDamage`.
+
 ## Mod settings: `user/ModSettings.xml`
 
 Mods get a configuration file and a **MODS** section in the in-game options menu. Both come from
