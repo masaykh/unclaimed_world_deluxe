@@ -29,14 +29,33 @@ public class DataTypeButton : TextButton
 
 	/// <summary>
 	/// PORT: the studio turns these buttons off in the map editor - "many UIs in editor can use the
-	/// button to show the type name, but should not allow clicks" (EntityTypeButton). The selected
-	/// area's lists (SidePanelMapArea) are not such a UI: there the name is all there is to click.
-	/// Kastuk, 2026-10-12: "let player open the description window of clicked names of things of
-	/// Plants and Terrain in selected area, just like in normal gameplay." True on those rows only.
+	/// button to show the type name, but should not allow clicks" (EntityTypeButton). Kastuk,
+	/// 2026-10-12, wanted the selected area's names (SidePanelMapArea) described there too. The data
+	/// sheet cannot be: it counts the expedition's stock (EntityDataSheet.GetStockButtonColor, and
+	/// some 60 more uses of the owner), and the editor has no expedition - opening one crashed
+	/// (Kastuk, 2026-10-17). So in the editor these rows show a plain tooltip instead - name, summary
+	/// and description - and a click still does nothing. Set by <see cref="DescribeInEditor"/>.
 	/// </summary>
-	public bool OpensInEditor;
+	private bool describesInEditor;
 
-	private bool Inactive => The.Sim.Mode != Sim.EngineMode.Game && !OpensInEditor;
+	/// <summary>PORT: in the map editor, <paramref name="button"/> shows its type's description as a plain tooltip.</summary>
+	public static void DescribeInEditor(DataTypeButton button, EntityType entityType)
+	{
+		if (The.Sim.Mode == Sim.EngineMode.Game || entityType == null)
+		{
+			return;
+		}
+		button.describesInEditor = true;
+		var parts = new System.Collections.Generic.List<string>();
+		foreach (string text in new[] { entityType.Name, entityType.SummaryDescription, entityType.Description })
+		{
+			if (!string.IsNullOrWhiteSpace(text))
+			{
+				parts.Add(text.Trim());
+			}
+		}
+		button.ToolTip = string.Join("\n\n", parts);
+	}
 
 	public DataTypeButton(GUIManager gui, DataSheet.InfoToShow infoToShow, EntityType entityType, EntityGroupID? owner, bool useUIOwner, EntityID? entityID = null)
 		: base(gui)
@@ -101,8 +120,12 @@ public class DataTypeButton : TextButton
 
 	protected override void OnMouseOut(UIComponent sender, MouseEventArgs args)
 	{
-		if (Inactive)
+		if (The.Sim.Mode != Sim.EngineMode.Game)
 		{
+			if (describesInEditor)
+			{
+				base.OnMouseOut(sender, args);
+			}
 			return;
 		}
 		if (The.InGameUI.EntityTypeTooltipsStack.Count > 0)
@@ -118,7 +141,7 @@ public class DataTypeButton : TextButton
 
 	protected override void OnMouseOver(UIComponent sender, MouseEventArgs args)
 	{
-		if (!Inactive)
+		if (The.Sim.Mode == Sim.EngineMode.Game)
 		{
 			if (The.InGameUI.GetAnySpawnedTooltip(this) == null)
 			{
@@ -126,11 +149,15 @@ public class DataTypeButton : TextButton
 			}
 			base.OnMouseOver(sender, args);
 		}
+		else if (describesInEditor)
+		{
+			base.OnMouseOver(sender, args);
+		}
 	}
 
 	public void HandleEntityTypeButtonClick(EventArgs e)
 	{
-		if (Inactive)
+		if (The.Sim.Mode != Sim.EngineMode.Game)
 		{
 			return;
 		}
