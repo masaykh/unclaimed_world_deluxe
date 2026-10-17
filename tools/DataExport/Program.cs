@@ -259,6 +259,11 @@ internal static partial class Program
             return StockpilePrioritySelfTest();
         }
 
+        if (args.Contains("--woodpile-selftest"))
+        {
+            return WoodpileSelfTest();
+        }
+
         if (args.Contains("--homeraid-selftest"))
         {
             return HomeRaidSelfTest();

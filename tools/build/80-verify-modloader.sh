@@ -1025,6 +1025,21 @@ for mode in on off; do
   fi
 done
 
+# FirewoodMod's KEEP DRY FIREWOOD IN THE WOODPILE (Kastuk, "Firewood out of any wood", 2026-10-17:
+# "I like to have visual pile of firewood to check remained quantity"). The studio's tables must
+# still give the woodpile room for one batch kept and one being made; the hauling planner's own
+# ItemIsOK must leave a woodpile's firewood alone with the switch on and plan it with it off; a new
+# batch puts outside only what it needs room for.
+say "==> 41. woodpile: dried firewood stays in it, the next batch still fits, the overflow is hauled"
+out=$( cd "$(new_install case41)" && "$EXPORT" . --woodpile-selftest 2>&1 ) || true
+if echo "$out" | grep -q "woodpile self-test OK" && echo "$out" | grep -q "^  ok    "; then
+  pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+else
+  echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+  echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
+  fail "the woodpile self-test reported failures"
+fi
+
 # ------------------------------------------------- 8. the settings file round-trips
 #
 # The WRITE side of user/ModSettings.xml, which nothing else here exercises: a value survives a

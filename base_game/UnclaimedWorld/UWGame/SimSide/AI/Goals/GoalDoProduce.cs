@@ -137,7 +137,7 @@ public class GoalDoProduce : CompositeGoal, IIDEventSubscriber
 				return;
 			}
 		}
-		if (CheckHandTools(toolsData, Job) && EmptyToolContainers(toolsData))
+		if (CheckHandTools(toolsData, Job) && EmptyToolContainers(toolsData, simProcess.ProcessType))
 		{
 			if (simProcess.ProcessType.IsReplenishProcess)
 			{
@@ -253,7 +253,7 @@ public class GoalDoProduce : CompositeGoal, IIDEventSubscriber
 		return FilterTools(tools, out handTools, (Entity t) => t.EntityType.ToolType.ToolHandling == ToolHandlingType.HandTool || t.EntityType.ToolType.ToolHandling == ToolHandlingType.Intrinsic);
 	}
 
-	private bool EmptyToolContainers(List<IKnownEntityData> toolsData)
+	private bool EmptyToolContainers(List<IKnownEntityData> toolsData, ProcessType processType)
 	{
 		if (toolsData != null)
 		{
@@ -261,7 +261,9 @@ public class GoalDoProduce : CompositeGoal, IIDEventSubscriber
 			{
 				if (toolsDatum is Entity entity)
 				{
-					if (entity.EntityType.ContainerType != null && entity.Contains is IHoldsProductionOutput holdsProductionOutput)
+					// MOD: a woodpile keeps the firewood it dried and makes room for the next batch only (FirewoodMod.MakeRoomForBatch).
+					if (entity.EntityType.ContainerType != null && entity.Contains is IHoldsProductionOutput holdsProductionOutput
+						&& !UWGame.Mods.FirewoodMod.MakeRoomForBatch(entity, processType))
 					{
 						holdsProductionOutput.UncontainAllProductionOutput();
 					}

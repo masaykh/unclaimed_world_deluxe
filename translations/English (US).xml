@@ -6125,6 +6125,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipFirewoodFromAnyWood</Key>
     <Value>Adds recipes that cut wet firewood from sticks (3), water cane stems (2), shadeleaf bow staves (2) or shadeleaf canes (3), as well as from spoak branches. Changes what a save contains: a save made with this on names recipes a build without it does not have.</Value>
   </String>
+  <String>
+    <Key>SettingFirewoodKeepInWoodpile</Key>
+    <Value>KEEP DRY FIREWOOD IN THE WOODPILE</Value>
+  </String>
+  <String>
+    <Key>SettingTipFirewoodKeepInWoodpile</Key>
+    <Value>Dried firewood stays in the woodpile instead of being hauled to a stockpile, so the pile shows how much is left. Fires, kitchens and kilns take it from there. A woodpile holds one dried batch and the next one drying; more than that is put down beside it and hauled away as before.</Value>
+  </String>
   <!-- settings: fishstock -->
   <String>
     <Key>SettingGroupFishstock</Key>
@@ -15934,7 +15942,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionFirewood</Key>
-    <Value>Wet firewood from sticks, water cane stems, shadeleaf bow staves and canes, not only from spoak branches.</Value>
+    <Value>Wet firewood from sticks, water cane stems, shadeleaf bow staves and canes, not only from spoak branches. Dried firewood stays in the woodpile.</Value>
   </String>
   <String>
     <Key>ModDescriptionFishstock</Key>

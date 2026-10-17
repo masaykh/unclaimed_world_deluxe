@@ -817,7 +817,8 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 
 	private static bool ItemIsOK(IKnownEntityData item)
 	{
-		if (item.CanBeHauled())
+		// MOD: dried firewood stays in its woodpile, where fires and kitchens take it from (FirewoodMod.StaysInWoodpile).
+		if (item.CanBeHauled() && !UWGame.Mods.FirewoodMod.StaysInWoodpile(item))
 		{
 			return ItemAssignmentOK(item);
 		}
