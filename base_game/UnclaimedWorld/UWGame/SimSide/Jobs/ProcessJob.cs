@@ -427,8 +427,8 @@ public class ProcessJob : Job, IIDEventSubscriber
 			energyLevelFactor = MathHelper.Lerp(GameData.Instance.Constants.ZeroEnergyProductionFactor, 1f, worker.BiologicalEntity.EnergyLevel);
 		}
 		float totalFactorProductivity = GetTotalFactorProductivity(energyLevelFactor, toolProductivityFactor.Value, worker.Intelligence.GetSkillProductionFactor(skill), averageLaborEfficiency);
-		// MOD: EmergencyEatingMod - work takes longer with a bad stomach from raw food; 1 otherwise.
-		return workTimeNeeded / totalFactorProductivity * UWGame.Mods.EmergencyEatingMod.WorkTimeFactor(worker);
+		// MOD: SicknessEffects - work takes longer with a bad stomach (EmergencyEatingMod) or a cold (WeatherMod); 1 otherwise.
+		return workTimeNeeded / totalFactorProductivity * UWGame.Mods.SicknessEffects.WorkTimeFactor(worker);
 	}
 
 	public static float GetTotalFactorProductivity(float energyLevelFactor, float toolFactor, float skillFactor, float averageLaborEfficiency = 1f)

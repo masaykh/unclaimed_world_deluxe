@@ -13,7 +13,7 @@ namespace UWGame.Mods;
 /// The emergency eating mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// A colonist eats only what its food tags name, as the studio has it: no raw-food processes, no
-/// "Raw food" or "Bad stomach" effects, and nutrition, speed, work time and energy as the studio computes them.
+/// "Raw food" or "Bad stomach" effects, and nutrition as the studio computes it.
 /// </summary>
 public static class EmergencyEatingMod
 {
@@ -56,10 +56,4 @@ public static class EmergencyEatingMod
     public static float NutritionFactor(Entity eater) => 1f;
 
     public static float RawNutrientFactor(Entity eater, EntityType food, FoodNutrientType nutrient) => 1f;
-
-    public static float SpeedFactor(Entity entity) => 1f;
-
-    public static float WorkTimeFactor(Entity worker) => 1f;
-
-    public static float CapEnergy(Entity entity, float energy) => energy;
 }

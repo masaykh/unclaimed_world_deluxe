@@ -643,7 +643,8 @@ numbers written in the test.
 Kastuk, "Weather and temperature" (2026-10-17): *"rainstorms during winter time with cold winds
 between them. Not freezing temperatures, but still cold enough for sickness. Then high solar heat
 during usually hot summer. Can take references from subtropic seasons."* This is step 1, the
-seasons and the air; rain, wind and what the cold does to people come later. Off by default.
+seasons and the air; rain and wind (step 2) and what the cold does to people (step 3) are the two
+switches below. Off by default.
 
 | hook | what changes with the switch on |
 |---|---|
@@ -692,9 +693,44 @@ wind speed hold the schedule's values, in the fields and format they always had,
 schedule is worked out again from the seed and the date. **Not here:** no rain is drawn or heard —
 the game has no rain particle, texture or sound, its particles are puffs drawn with the map tile
 their emitter stands on, and rain would need a streak texture (a new binary asset) or a particle
-drawn stretched along its velocity, plus an emitter that follows the camera. What the cold does
-to people is step 3. `--weather-selftest` checks the schedule, the climate over ten seeds, the
-real `WeatherManager.Update` through a winter storm and the forecast against the day that comes.
+drawn stretched along its velocity, plus an emitter that follows the camera. `--weather-selftest`
+checks the schedule, the climate over ten seeds, the real `WeatherManager.Update` through a winter
+storm and the forecast against the day that comes.
+
+### Cold and wet hurt — `weather.exposure`
+
+Step 3, a third switch in the WEATHER category: it works with SEASONS AND TEMPERATURE on, and brings
+in the rain and the wind when RAIN AND WIND is on too. Off by default. *"Not freezing temperatures,
+but still cold enough for sickness."* The studio decides only how well a place lets a colonist sleep
+(`GoalDoSleep.ComputeSleepConditions`: the open, a prepared campfire, a residence) and
+`EvaluateSleep.ScoreComfort` prefers huts by that; nothing about the weather. Its
+`PhysicalEffects.LimitForIncreasedSickness` / `SicknessFactor` are read nowhere, and describe
+sickness from an unmet need, not the weather, so they are left alone.
+
+**Exposure** (`WeatherMod.ExposureOf`, `NightExposure`): an hour in the open is
+`cold × (0.5 + 0.3 × rain + 0.2 × wind)`, with `cold = (12 C − air) / 10` clamped to 0–1 (full at the
+2 C floor) and `wind` 0 at 3 m/s, 1 at 15 m/s. The night is the next 8 hours from lying down, from the
+schedule — the night that comes, with no random draw; without RAIN AND WIND it is dry and still. A
+prepared campfire lets half of it through, a residence (or any other container, which the studio
+sleeps like a house) none. Thirty years of one seed, lying down at 21:00: the stormiest mid-winter
+night 0.95 in the open, 0.47 by a fire; dry winter nights 0.30–0.48 (0.26–0.34 without rain and
+wind); "Spring" and "Mid autumn" mostly below 0.25; every summer night 0.
+
+| hook | what changes with the switch on |
+|---|---|
+| `GoalDoSleep.Activate` → `WeatherMod.OnSleepStart` | measures the night where the colonist lies (the worst of the day is kept in `CustomFields` `weather:exposureDay` / `weather:exposure`); once a day, at exposure 0.25 or more, rolls the game's seeded generator for a cold at `0.3 × exposure` — up to ~28% after a storm night out, ~14% by a fire, none in a hut and no draw then; not while already ill |
+| `Intelligence.Comfort` → `WeatherMod.ExposurePenalty` | the next day's comfort is `0.2 × exposure` lower (up to ~19% after a storm night out, ~9.5% by a fire), until the next day's first sleep, beside DiscomfortMod's |
+| `EvaluateSleep.ScoreComfort` → `WeatherMod.ShelterScore` | a place's comfort score loses `0.5 × its exposure tonight`: on the storm night the ground 0.32 (studio 0.61), a fire 0.50 (0.66), a hut 0.92 as before — at most ~4% of the sleep goal's score, so it reorders the places rather than delaying sleep |
+| `BaseDataLoader.InitEffectTypes` / `InitEffectProfileTypes` → `WeatherMod.AddEffects`, `AddEffectProfiles` | the "Cold" effect profile, always registered: comfort −10% for 1.5 days, shown in the colonist's effect panel and saved with them |
+| `Locomotor.CalculateSpeed`, `ProcessJob.CalculateWorkDurationInDays`, `BiologicalEntity.EnergyLevel` → `SicknessEffects` | with a cold, walking ×0.9, work time ×1.2, energy at most 0.75. `mods/SicknessEffects.cs` is shared with EmergencyEatingMod's "Bad stomach": each mod registers its profiles' factors; two at once multiply and the lower cap holds. They follow the effect, not the switch |
+
+The numbers are constants at the `cold and wet` block of `mods/WeatherMod.cs`, documented as
+tunable. **Saves:** no new format — three numbers in a colonist's `CustomFields` and an effect that
+is registered either way. `--weather-selftest` checks the exposure of those nights by place, the
+real `Intelligence.Comfort`, the real `EvaluateSleep.ScoreComfort`, the cold's rate over 4000 seeded
+nights, and the cold (alone and with a bad stomach) through the real `Locomotor`, `ProcessJob` and
+`BiologicalEntity`. **Not verified in a running colony:** whether colonists walk to a hut instead of
+lying down by the fire is for a game.
 
 ## Mod settings: `user/ModSettings.xml`
 

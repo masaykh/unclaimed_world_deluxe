@@ -55,6 +55,8 @@ internal class GoalDoSleep : CompositeGoal
 		ComputeSleepConditions(entity, container, out maximumSleepGainFromThisLocation, out increaseAmountPerDay);
 		// MOD: DiscomfortMod measures stink and noise around the sleeping place, once a day.
 		UWGame.Mods.DiscomfortMod.OnSleepStart(entity, container);
+		// MOD: WeatherMod measures how cold and wet the night ahead is where the colonist lies, once a day.
+		UWGame.Mods.WeatherMod.OnSleepStart(entity, container);
 		base.Status = Status.Active;
 		if (entity.EntityType.Person != null)
 		{

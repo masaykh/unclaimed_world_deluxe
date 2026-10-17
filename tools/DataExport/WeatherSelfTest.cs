@@ -31,6 +31,8 @@ namespace UW.Tools.DataExport;
 /// - shelf-life tooltips: DegradeType.PostDataCompleteInitialize works "Outside" out for the
 ///   mid-summer day's average instead of 15 C.
 ///
+/// Step 3, COLD AND WET HURT: <see cref="ColdAndWetSelfTest"/> (WeatherExposureSelfTest.cs).
+///
 /// Step 2, RAIN AND WIND (<see cref="RainAndWindSelfTest"/>):
 /// - the schedule: the same seed gives the same weather to the bit, another seed other weather;
 /// - the climate over ten seeds of thirty years: winter days mostly have a rain spell and nearly
@@ -250,6 +252,7 @@ internal static partial class Program
               "the date panel's whole degrees: 306.6 K is 34, 272.6 K is 0");
 
         RainAndWindSelfTest(Check, date, weather, enabled);
+        ColdAndWetSelfTest(Check, date, weather, enabled);
 
         enabled.Value = enabled.DefaultValue;
         Console.WriteLine(failures == 0 ? "weather self-test OK" : $"weather self-test FAILED - {failures} check(s)");

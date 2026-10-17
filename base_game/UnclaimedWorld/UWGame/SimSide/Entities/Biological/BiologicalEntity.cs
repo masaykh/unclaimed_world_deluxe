@@ -226,8 +226,8 @@ namespace UWGame.SimSide.Entities.Biological
             {
                 if (energyLevelIsDirty)
                 {
-                    // MOD: EmergencyEatingMod - a bad stomach from raw food caps the energy level; unchanged otherwise.
-                    energyLevel = UWGame.Mods.EmergencyEatingMod.CapEnergy(Parent, ComputeEnergyLevel());
+                    // MOD: SicknessEffects - a bad stomach (EmergencyEatingMod) or a cold (WeatherMod) caps the energy level; unchanged otherwise.
+                    energyLevel = UWGame.Mods.SicknessEffects.CapEnergy(Parent, ComputeEnergyLevel());
                     energyLevelIsDirty = false;
                 }
 

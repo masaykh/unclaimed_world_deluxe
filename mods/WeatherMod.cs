@@ -1,13 +1,19 @@
 using System;
+using System.Collections.Generic;
 using UWGame.ClientSide.Interface.DateAndWeatherPanel;
+using UWGame.ClientSide.PropertyPresentation;
 using UWGame.SimSide;
+using UWGame.SimSide.AI;
+using UWGame.SimSide.Entities;
+using UWGame.SimSide.SimEffects;
 
 namespace UWGame.Mods;
 
 /// <summary>
 /// Seasons and temperature: the sun follows the season names, and the air is warm in summer, cool
-/// in winter and warmer by day than by night (step 1 of "Weather and temperature"); and, behind a
-/// second switch, rain and wind (step 2). What the cold does to people comes later.
+/// in winter and warmer by day than by night (step 1 of "Weather and temperature"); behind a
+/// second switch, rain and wind (step 2); and behind a third, what a cold, wet night slept out in
+/// the open does to people (step 3).
 ///
 /// THE REQUEST. Kastuk, "Weather and temperature" (2026-10-17): "rainstorms during winter time with
 /// cold winds between them. Not freezing temperatures, but still cold enough for sickness. Then
@@ -96,7 +102,57 @@ namespace UWGame.Mods;
 ///   tile their emitter stands on (GameWorldRenderer), at one scale in both directions. Rain would
 ///   need a streak texture (a new binary asset) or a particle drawn stretched along its velocity,
 ///   and an emitter moved from tile to tile with the camera; a sound would need a new asset too.
-///   What the cold does to people is step 3.
+///
+/// COLD AND WET HURT (step 3), a third switch that works with SEASONS AND TEMPERATURE on, and uses the
+/// rain and the wind when RAIN AND WIND is on too (off by default). Kastuk: "Not freezing
+/// temperatures, but still cold enough for sickness."
+/// - WHAT THE STUDIO HAS. Where a colonist sleeps sets how fast and how far the sleep need refills
+///   (GoalDoSleep.ComputeSleepConditions, SleepNeed): in the open at most 0.94 at x0.8, by a
+///   prepared campfire (a gathering site with IsPrepared) 0.97 at x0.9, in a residence by its
+///   condition and comfort level. EvaluateSleep.ScoreComfort scores a place by that (the open 0.5
+///   for its cap), so huts are preferred already. Nothing about the weather. The studio's
+///   PhysicalEffects.LimitForIncreasedSickness and SicknessFactor (set per need in CreatureLoader)
+///   are read nowhere: they describe sickness from an unmet NEED (hunger, thirst), not from the
+///   weather, so they are left alone - a night out has no need to hang them on.
+/// - EXPOSURE (<see cref="ExposureOf"/>, <see cref="NightExposure"/>). An hour in the open: cold =
+///   (12 C - air) / 10, between 0 and 1 (none at 12 C and above, all of it at the 2 C floor), times
+///   0.5 + 0.3 x rain (0-1) + 0.2 x wind (0 at 3 m/s, all of it at 15 m/s). The night is the next
+///   <see cref="NightHours"/> hours from lying down, hour by hour, worked out from the schedule
+///   (step 2) - so it is the night that comes, deterministic, with no draw. Without RAIN AND WIND it
+///   is dry and still (the studio's 1.5 m/s): the cold alone. Where a colonist lies
+///   (<see cref="ShelterOf"/>): in the open (the ground, or a gathering site not prepared) all of it,
+///   by a prepared campfire <see cref="CampfireShelter"/> of it, in a residence or any other
+///   container (a vehicle: the studio sleeps those like a house) none. With the defaults (thirty
+///   years of one seed, lying down at 21:00, in the open unless said):
+///     the stormiest mid-winter night   0.95, by a campfire 0.47, in a hut 0
+///     a dry winter night               0.30-0.48 (the cold and the wind); 0.26-0.34 without RAIN AND WIND
+///     "Spring", "Mid autumn"           mostly below 0.25; a rainy one up to about 0.3
+///     every summer night               0
+/// - COMFORT (<see cref="OnSleepStart"/>, <see cref="ExposurePenalty"/>, from GoalDoSleep.Activate
+///   and Intelligence.Comfort, beside DiscomfortMod's). <see cref="ExposureComfortCost"/> x exposure:
+///   a storm night out costs up to about 19% of the next day's comfort, by a campfire 9.5%. Kept on the
+///   colonist (CustomFields "weather:exposureDay", "weather:exposure", saved with them), the worst
+///   lie-down of the day; it holds until the next day's first sleep and lapses if a day passes
+///   without one.
+/// - A COLD (<see cref="ColdChance"/>). After a night of exposure <see cref="ColdFromExposure"/> or
+///   more, once a day, a roll on the game's seeded generator (The.Sim.GameplayRandomGenerator, as
+///   EmergencyEatingMod rolls a bad stomach, so a replay rolls the same) at
+///   <see cref="ColdChanceAtFullExposure"/> x exposure: up to about 28% after a storm night in the
+///   open, 14% by a campfire, 9-15% on a dry winter night out (8-10% without RAIN AND WIND), none in a
+///   hut or in summer - and no draw then. Not while a colonist has
+///   a cold already (no draw then): it does not stack or restart. "Cold" is a studio SimEffect
+///   profile, registered always (<see cref="AddEffectProfiles"/>), shown in the colonist's effect
+///   panel, saved with them, gone after <see cref="ColdDurationInDays"/> days: comfort -10% (its own
+///   effect), and through <see cref="SicknessEffects"/>, shared with EmergencyEatingMod's bad
+///   stomach, walking x0.9, work time x1.2 and energy at most 0.75. Those follow the effect, not the
+///   switch.
+/// - SHELTER (<see cref="ShelterScore"/>, from EvaluateSleep.ScoreComfort). The comfort score of a
+///   place loses <see cref="ShelterScoreWeight"/> x its exposure tonight: on the storm night the open
+///   scores 0.32 instead of 0.61, a campfire 0.50 instead of 0.66, a hut 0.92 as before. Comfort is 0.35 of a place's score and the
+///   place 0.4 of the sleep goal's, so at most about 4% of the goal: it reorders the places a
+///   colonist picks from - a hut, then a fire, then the ground - but hardly delays sleep itself.
+/// - Off: no measuring, no roll, no penalty, the studio's sleep scores. A "Cold" already caught runs
+///   its course.
 ///
 /// NOTHING NEW IS SAVED. The temperature is worked out each time from what a save already holds:
 /// TimeOfYear and TimeOfDay (DateAndTime) and the cloud cover (WeatherManager). No tile is written,
@@ -108,6 +164,10 @@ namespace UWGame.Mods;
 /// drift back to the studio's random targets. The sun's elevation is
 /// used rather than SunIntensity because the port's shadow toggle (PortSettings.ShadowsDisabled)
 /// forces SunIsUp off and with it SunIntensity; that is a display option and must not cool the air.
+/// COLD AND WET HURT is the exception on both counts, and needs no new save format: it keeps three
+/// numbers in a colonist's CustomFields (saved as any CustomFields are) and draws one number from the
+/// game's generator per colonist and day after a night out at exposure 0.25 or more; "Cold" is
+/// registered whether or not the switch is on, so a save with one loads either way.
 /// </summary>
 public static class WeatherMod
 {
@@ -139,17 +199,33 @@ public static class WeatherMod
     public static void RegisterSettings()
     {
         ModSettings.Describe(ModId, "Jerrybi",
-            "Seasons and temperature: the sun follows the season names, and a subtropical year of warm summers and cool winters decides how fast things spoil outside.",
+            "Seasons and temperature: the sun follows the season names, and a subtropical year of warm summers and cool winters decides how fast things spoil outside - and, if you like, a cold, wet night slept outside makes people ill.",
             "HUD_thumbnail_weatherAntenna");
         ModSettings.SetCategoryLabel(ModId, "WEATHER");
         _ = EnabledSetting;
         _ = RainSetting;
+        _ = ExposureSetting;
     }
 
     public static bool On => EnabledSetting.On;
 
     /// <summary>RAIN AND WIND, which needs SEASONS AND TEMPERATURE: the rain cools the air that switch makes.</summary>
     public static bool RainOn => On && RainSetting.On;
+
+    private static ModSetting exposure;
+
+    public static ModSetting ExposureSetting =>
+        exposure ?? (exposure = ModSettings.Toggle(
+            ModId, "exposure", "COLD AND WET HURT", defaultValue: false,
+            toolTip: "Works with SEASONS AND TEMPERATURE on, and with RAIN AND WIND brings in the rain and the wind. " +
+                     "A colonist who sleeps out in the open on a night below about 12 C loses comfort the next " +
+                     "day - up to about 19% after a winter rainstorm - and may catch a cold: slower walking and " +
+                     "work, energy at most 75%, for a day and a half. A lit campfire halves it, a hut keeps it off, " +
+                     "and on cold, wet nights colonists look for shelter more.",
+            affectsSimulation: true));
+
+    /// <summary>COLD AND WET HURT, which needs SEASONS AND TEMPERATURE: it is that switch's air that is cold.</summary>
+    public static bool ExposureOn => On && ExposureSetting.On;
 
     // ---------------------------------------------------------------- the climate, tunable here
 
@@ -576,4 +652,315 @@ public static class WeatherMod
 
     /// <summary>The studio's wind term (its Beaufort list) for a wind speed in m/s.</summary>
     public static string WindTerm(float wind) => windTerms[Common.GetStairStepIndex(wind, windEdges)];
+
+    // ---------------------------------------------------------------- cold and wet: tunable here
+
+    /// <summary>Air (C) below which a night in the open chills a sleeper.</summary>
+    public const float ExposureFromCelsius = 12f;
+
+    /// <summary>Degrees below <see cref="ExposureFromCelsius"/> for the full cold: 10, so 2 C, the floor (<see cref="FloorCelsius"/>).</summary>
+    public const float ExposureColdSpan = 10f;
+
+    /// <summary>The share of the full exposure dry, still cold gives.</summary>
+    public const float ExposureColdShare = 0.5f;
+
+    /// <summary>The share a full rainstorm adds to the cold.</summary>
+    public const float ExposureRainShare = 0.3f;
+
+    /// <summary>The share wind adds to the cold, all of it at <see cref="ExposureWindSpan"/> m/s above <see cref="ChillFromWind"/>.</summary>
+    public const float ExposureWindShare = 0.2f;
+
+    /// <summary>Wind (m/s) above <see cref="ChillFromWind"/> for the whole wind share: 15 m/s, the studio's "High wind".</summary>
+    public const float ExposureWindSpan = 12f;
+
+    /// <summary>The share of the night's exposure that reaches a sleeper by a prepared campfire.</summary>
+    public const float CampfireShelter = 0.5f;
+
+    /// <summary>How long the night measured from lying down is (hours).</summary>
+    public const int NightHours = 8;
+
+    /// <summary>The comfort (a fraction, like the comfort effects) the next day loses at exposure 1.</summary>
+    public const float ExposureComfortCost = 0.2f;
+
+    /// <summary>The chance of a cold after a night at exposure 1; proportional below.</summary>
+    public const float ColdChanceAtFullExposure = 0.3f;
+
+    /// <summary>Exposure below which no cold is caught (and nothing is drawn).</summary>
+    public const float ColdFromExposure = 0.25f;
+
+    /// <summary>How long a cold lasts (days).</summary>
+    public const double ColdDurationInDays = 1.5;
+
+    /// <summary>A cold's comfort (its own effect, in the panel).</summary>
+    public const float ColdComfort = 0.1f;
+
+    /// <summary>Walking with a cold (x).</summary>
+    public const float ColdSpeedFactor = 0.9f;
+
+    /// <summary>Work time with a cold (x).</summary>
+    public const float ColdWorkTimeFactor = 1.2f;
+
+    /// <summary>The most energy a colonist with a cold has.</summary>
+    public const float ColdEnergyCap = 0.75f;
+
+    /// <summary>The share of a sleeping place's comfort score lost at exposure 1 (EvaluateSleep.ScoreComfort).</summary>
+    public const float ShelterScoreWeight = 0.5f;
+
+    public const string ColdProfile = "weatherCold";
+    private const string ColdComfortEffect = ColdProfile + "Comfort";
+
+    public const string ExposureDayKey = "weather:exposureDay";
+    public const string ExposureKey = "weather:exposure";
+    public const string ColdRollDayKey = "weather:coldRollDay";
+
+    // ---------------------------------------------------------------- cold and wet: the model
+
+    /// <summary>Where a colonist sleeps, as the weather reaches them.</summary>
+    public enum Shelter { Open, Campfire, Roof }
+
+    /// <summary>
+    /// The studio's classes of sleeping place (GoalDoSleep.ComputeSleepConditions): none, or a
+    /// gathering site not prepared, is the open; a prepared gathering site is a campfire; a residence
+    /// - or any other container, which the studio sleeps like a house - has a roof.
+    /// </summary>
+    public static Shelter ShelterOf(IKnownEntityData place)
+    {
+        EntityType type = place?.EntityType;
+        if (type == null)
+        {
+            return Shelter.Open;
+        }
+        if (type.ContainerType?.ResidenceType != null)
+        {
+            return Shelter.Roof;
+        }
+        if (type.GatheringSiteType != null)
+        {
+            return place.IsPrepared == true ? Shelter.Campfire : Shelter.Open;
+        }
+        return Shelter.Roof;
+    }
+
+    /// <summary>The share of the exposure in the open that reaches a sleeper in this shelter.</summary>
+    public static float Sheltered(float exposureInTheOpen, Shelter shelter) =>
+        shelter == Shelter.Open ? exposureInTheOpen
+        : shelter == Shelter.Campfire ? exposureInTheOpen * CampfireShelter
+        : 0f;
+
+    /// <summary>
+    /// An hour in the open (0-1) at this air (K), rain (0-1) and wind (m/s): the cold, (12 C - air) / 10
+    /// between 0 and 1, times 0.5 + 0.3 x rain + 0.2 x wind (0 at 3 m/s, 1 at 15 m/s).
+    /// </summary>
+    public static float ExposureOf(float airKelvin, float rainAmount, float wind)
+    {
+        float cold = Common.Clamp((ExposureFromCelsius - (airKelvin - ZeroCelsius)) / ExposureColdSpan, 0f, 1f);
+        float windy = Common.Clamp((wind - ChillFromWind) / ExposureWindSpan, 0f, 1f);
+        return cold * (ExposureColdShare + ExposureRainShare * rainAmount + ExposureWindShare * windy);
+    }
+
+    /// <summary>
+    /// The night ahead in the open, from a moment: the average of <see cref="NightHours"/> hours, each
+    /// at its middle. With <paramref name="rainAndWind"/> the schedule's rain, wind, cloud and cooled
+    /// air; without, the air under <paramref name="cloudCover"/>, dry, at the studio's still wind.
+    /// </summary>
+    public static float NightExposure(int seed, int year, double timeOfYear, double timeOfDay, bool rainAndWind, float cloudCover)
+    {
+        double now = ScheduleDays(year, timeOfYear);
+        float sum = 0f;
+        for (int h = 0; h < NightHours; h++)
+        {
+            double offset = (h + 0.5) * Hour;
+            double days = now + offset;
+            double toy = YearFraction(days / DateAndTime.DaysPerYear);
+            float elevation = SunElevation(toy, YearFraction(timeOfDay + offset));
+            if (rainAndWind)
+            {
+                State s = Scheduled(seed, days);
+                sum += ExposureOf(Cooled(AirTemperature(toy, elevation, s.Cloud), s), s.Rain, s.Wind);
+            }
+            else
+            {
+                sum += ExposureOf(AirTemperature(toy, elevation, cloudCover), 0f, StudioWindSpeed);
+            }
+        }
+        return sum / NightHours;
+    }
+
+    private static double cachedNightDays = double.NaN;
+    private static int cachedNightSeed;
+    private static bool cachedNightRain;
+    private static float cachedNightCloud;
+    private static float cachedNight;
+
+    /// <summary>
+    /// The night ahead in the open from now (<see cref="NightExposure"/>), or null with no play site.
+    /// Kept for the moment: EvaluateSleep asks it for every place it scores.
+    /// </summary>
+    public static float? TonightExposure()
+    {
+        WeatherManager weather = The.Sim?.PlaySite?.PlaySite?.Weather;
+        DateAndTime date = The.Sim?.DateAndTime;
+        if (weather == null || date == null)
+        {
+            return null;
+        }
+        double days = ScheduleDays(date.Year, date.TimeOfYear);
+        int seed = Seed;
+        bool rainOn = RainOn;
+        float cloud = weather.CloudCover;
+        if (days != cachedNightDays || seed != cachedNightSeed || rainOn != cachedNightRain || cloud != cachedNightCloud)
+        {
+            cachedNight = NightExposure(seed, date.Year, date.TimeOfYear, date.TimeOfDay, rainOn, cloud);
+            cachedNightDays = days;
+            cachedNightSeed = seed;
+            cachedNightRain = rainOn;
+            cachedNightCloud = cloud;
+        }
+        return cachedNight;
+    }
+
+    /// <summary>The chance of a cold after a night at this exposure: none below <see cref="ColdFromExposure"/>.</summary>
+    public static float ColdChance(float exposureTonight) =>
+        exposureTonight < ColdFromExposure ? 0f : Math.Min(1f, ColdChanceAtFullExposure * exposureTonight);
+
+    /// <summary>Today, as Year * 1000 + Day (as DiscomfortMod counts); Day goes up at midnight and back to 1 at the new year.</summary>
+    private static int Today => The.Sim.DateAndTime.Year * 1000 + The.Sim.DateAndTime.Day;
+
+    /// <summary>
+    /// Whether a day counted as <see cref="Today"/> is today or yesterday - across the new year too,
+    /// where yesterday is the old year's last day (12th or later).
+    /// </summary>
+    private static bool TodayOrYesterday(float measured)
+    {
+        DateAndTime date = The.Sim.DateAndTime;
+        int today = Today;
+        return measured == today || measured == today - 1
+               || (date.Day == 1 && measured >= (date.Year - 1) * 1000 + (int)DateAndTime.DaysPerYear && measured < date.Year * 1000);
+    }
+
+    // ---------------------------------------------------------------- cold and wet: hooks
+
+    /// <summary>
+    /// Called from GoalDoSleep.Activate as a colonist lies down in <paramref name="sleepingPlace"/>
+    /// (null on the ground): the night's exposure there, the worst of the day kept for the comfort;
+    /// and, once a day, the roll for a cold.
+    /// </summary>
+    public static void OnSleepStart(Entity sleeper, Entity sleepingPlace)
+    {
+        if (!ExposureOn || sleeper?.EntityType?.Person == null || The.Sim?.DateAndTime == null)
+        {
+            return;
+        }
+        float? night = TonightExposure();
+        if (!night.HasValue)
+        {
+            return;
+        }
+        float exposed = Sheltered(night.Value, ShelterOf(sleepingPlace));
+        int today = Today;
+        bool measuredToday = Number(sleeper, ExposureDayKey) == today;
+        if (!measuredToday || exposed > (Number(sleeper, ExposureKey) ?? 0f))
+        {
+            Entity.SetPropertyValue(ref sleeper.CustomFields, ExposureDayKey, new PropertyResult { NumberResult = today });
+            Entity.SetPropertyValue(ref sleeper.CustomFields, ExposureKey, new PropertyResult { NumberResult = exposed });
+        }
+        float chance = ColdChance(exposed);
+        if (chance <= 0f || sleeper.SimEffects == null || HasCold(sleeper) || Number(sleeper, ColdRollDayKey) == today)
+        {
+            return;
+        }
+        Entity.SetPropertyValue(ref sleeper.CustomFields, ColdRollDayKey, new PropertyResult { NumberResult = today });
+        if (The.Sim.GameplayRandomGenerator.RandomBetween(0f, 1f) < chance
+            && GameData.Instance.AllEffectProfileTypes.TryGetValue(ColdProfile, out EffectProfileType cold))
+        {
+            sleeper.SimEffects.Start(cold);
+        }
+    }
+
+    /// <summary>
+    /// Called from the Intelligence.Comfort getter: the comfort lost to the night measured today or
+    /// yesterday (<see cref="ExposureComfortCost"/> x its exposure); 0 otherwise.
+    /// </summary>
+    public static float ExposurePenalty(Entity colonist)
+    {
+        if (!ExposureOn || colonist?.CustomFields == null || The.Sim?.DateAndTime == null)
+        {
+            return 0f;
+        }
+        float? day = Number(colonist, ExposureDayKey);
+        if (!day.HasValue || !TodayOrYesterday(day.Value))
+        {
+            return 0f;
+        }
+        return ExposureComfortCost * (Number(colonist, ExposureKey) ?? 0f);
+    }
+
+    /// <summary>
+    /// Called from EvaluateSleep.ScoreComfort with the studio's comfort score of a sleeping place: for
+    /// a person, less <see cref="ShelterScoreWeight"/> x the exposure there tonight; the studio's otherwise.
+    /// </summary>
+    public static double ShelterScore(Entity sleeper, IKnownEntityData place, double stock)
+    {
+        if (!ExposureOn || sleeper?.EntityType?.Person == null)
+        {
+            return stock;
+        }
+        float? night = TonightExposure();
+        return night.HasValue ? stock * (1.0 - ShelterScoreWeight * Sheltered(night.Value, ShelterOf(place))) : stock;
+    }
+
+    /// <summary>Whether a colonist has a cold now.</summary>
+    public static bool HasCold(Entity colonist)
+    {
+        if (colonist?.SimEffects?.EffectProfiles == null)
+        {
+            return false;
+        }
+        foreach (SimEffectProfile active in colonist.SimEffects.EffectProfiles)
+        {
+            if (active?.EffectProfileType?.KeyName == ColdProfile)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Called at the end of BaseDataLoader.InitEffectTypes - always, so a save with a cold loads.</summary>
+    public static void AddEffects(List<EffectType> list)
+    {
+        list.Add(new NumberEffectType
+        {
+            KeyName = ColdComfortEffect,
+            Name = "Cold",
+            Affects = AffectsNumbers.AgentComfort,
+            FormatAsPercentage = true,
+            DurationInDays = ColdDurationInDays,
+            Intensity = -ColdComfort
+        });
+    }
+
+    /// <summary>
+    /// Called at the end of BaseDataLoader.InitEffectProfileTypes - always, as AddEffects - and
+    /// registers the cold's walking, work and energy with <see cref="SicknessEffects"/>.
+    /// </summary>
+    public static void AddEffectProfiles(List<EffectProfileType> list)
+    {
+        list.Add(new EffectProfileType
+        {
+            KeyName = ColdProfile,
+            Name = "Cold",
+            Description = "Caught a cold sleeping out on a cold, wet night: walks " + Percent(1f - ColdSpeedFactor) + " slower, work takes " +
+                          Percent(ColdWorkTimeFactor - 1f) + " longer, and energy is at most " + Percent(ColdEnergyCap) + ".",
+            Effects = new[] { ColdComfortEffect },
+            SortOrder = 170
+        });
+        SicknessEffects.Register(ColdProfile, ColdSpeedFactor, ColdWorkTimeFactor, ColdEnergyCap);
+    }
+
+    private static string Percent(float fraction) =>
+        Math.Round(fraction * 100f).ToString(System.Globalization.CultureInfo.InvariantCulture) + "%";
+
+    private static float? Number(Entity entity, string key) =>
+        entity.CustomFields != null && entity.CustomFields.TryGetValue(key, out var stored) ? stored.NumberResult : null;
 }

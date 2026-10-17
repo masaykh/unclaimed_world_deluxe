@@ -7026,6 +7026,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>The sun is highest in mid summer and lowest in mid winter, as the season names say. The air follows a warm subtropical year: about 5 C on a mid-winter night to 12 C at noon, 17 C on a mid-summer night to 34 C at noon, warmer in sunshine than under cloud. Food and materials outside, and in storage that is not cooled, spoil faster in the heat and slower in the cold. The date panel shows the temperature.</Value>
   </String>
   <String>
+    <Key>SettingWeatherExposure</Key>
+    <Value>COLD AND WET HURT</Value>
+  </String>
+  <String>
+    <Key>SettingTipWeatherExposure</Key>
+    <Value>Works with SEASONS AND TEMPERATURE on, and with RAIN AND WIND brings in the rain and the wind. A colonist who sleeps out in the open on a night below about 12 C loses comfort the next day - up to about 19% after a winter rainstorm - and may catch a cold: slower walking and work, energy at most 75%, for a day and a half. A lit campfire halves it, a hut keeps it off, and on cold, wet nights colonists look for shelter more.</Value>
+  </String>
+  <String>
     <Key>SettingWeatherRain</Key>
     <Value>RAIN AND WIND</Value>
   </String>
@@ -8205,6 +8213,18 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <String>
     <Key>EffectProfileSimpleBed</Key>
     <Value>Beds</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionWeatherCold</Key>
+    <Value>Caught a cold sleeping out on a cold, wet night: walks 10% slower, work takes 20% longer, and energy is at most 75%.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileWeatherCold</Key>
+    <Value>Cold</Value>
+  </String>
+  <String>
+    <Key>EffectWeatherColdComfort</Key>
+    <Value>Cold</Value>
   </String>
   <!-- data: ENTITY -->
   <String>
@@ -16255,7 +16275,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionWeather</Key>
-    <Value>Seasons and temperature: the sun follows the season names, and a subtropical year of warm summers and cool winters decides how fast things spoil outside.</Value>
+    <Value>Seasons and temperature: the sun follows the season names, and a subtropical year of warm summers and cool winters decides how fast things spoil outside - and, if you like, a cold, wet night slept outside makes people ill.</Value>
   </String>
   <!-- data: NUTRIENT -->
   <String>

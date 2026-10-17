@@ -317,26 +317,26 @@ internal static partial class Program
 
         // The bad stomach's hooks, at each tier.
         ClearAll();
-        Check(UWGame.Mods.EmergencyEatingMod.SpeedFactor(colonist) == 1f && UWGame.Mods.EmergencyEatingMod.WorkTimeFactor(colonist) == 1f
-              && UWGame.Mods.EmergencyEatingMod.CapEnergy(colonist, 0.95f) == 0.95f, "no bad stomach: speed, work time and energy are the studio's");
+        Check(UWGame.Mods.SicknessEffects.SpeedFactor(colonist) == 1f && UWGame.Mods.SicknessEffects.WorkTimeFactor(colonist) == 1f
+              && UWGame.Mods.SicknessEffects.CapEnergy(colonist, 0.95f) == 0.95f, "no bad stomach: speed, work time and energy are the studio's");
         for (int t = 1; t <= 5; t++)
         {
             ClearAll();
             UWGame.Mods.EmergencyEatingMod.StartWorst(effects, "badStomach", (UWGame.Mods.EmergencyEatingMod.Tier)t);
             float m = modifier[t];
-            Check(UWGame.Common.IsEqual(UWGame.Mods.EmergencyEatingMod.SpeedFactor(colonist), 1f - 0.2f * m)
-                  && UWGame.Common.IsEqual(UWGame.Mods.EmergencyEatingMod.WorkTimeFactor(colonist), 1f + 0.3f * m)
+            Check(UWGame.Common.IsEqual(UWGame.Mods.SicknessEffects.SpeedFactor(colonist), 1f - 0.2f * m)
+                  && UWGame.Common.IsEqual(UWGame.Mods.SicknessEffects.WorkTimeFactor(colonist), 1f + 0.3f * m)
                   && UWGame.Common.IsEqual(colonist.GetEffect(AffectsNumbers.AgentComfort, 0f), -0.2f * m)
-                  && UWGame.Mods.EmergencyEatingMod.CapEnergy(colonist, 0.95f) == 0.6f && UWGame.Mods.EmergencyEatingMod.CapEnergy(colonist, 0.4f) == 0.4f,
+                  && UWGame.Mods.SicknessEffects.CapEnergy(colonist, 0.95f) == 0.6f && UWGame.Mods.SicknessEffects.CapEnergy(colonist, 0.4f) == 0.4f,
                   $"bad stomach {t} (m={m}): walks x{1f - 0.2f * m}, work takes x{1f + 0.3f * m}, comfort {-0.2f * m:P0}, energy at most 60%");
         }
         UWGame.Mods.EmergencyEatingMod.StartWorst(effects, "badStomach", T.Berries);
         Check(Active("badStomach") == T.Meat, "a lesser bad stomach does not replace a worse one: the worse restarts");
         enabled.Value = "false";
-        Check(UWGame.Common.IsEqual(UWGame.Mods.EmergencyEatingMod.SpeedFactor(colonist), 0.8f),
+        Check(UWGame.Common.IsEqual(UWGame.Mods.SicknessEffects.SpeedFactor(colonist), 0.8f),
               "switched off mid-day: the bad stomach the panel shows still applies until it expires");
         enabled.Value = enabled.DefaultValue;
-        Check(UWGame.Mods.EmergencyEatingMod.SpeedFactor(Colonist(animal)) == 1f, "an animal is never slowed by it");
+        Check(UWGame.Mods.SicknessEffects.SpeedFactor(Colonist(animal)) == 1f, "an animal is never slowed by it");
 
         // Through the studio's own code, where the hooks are.
         Entity walker = Colonist(human);

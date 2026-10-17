@@ -192,6 +192,7 @@
     <Compile Remove="UWGame\Mods\RepairMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\WeatherMod.Absent.cs" />
     <Compile Remove="UWGame\Mods\EmergencyEatingMod.Absent.cs" />
+    <Compile Remove="UWGame\Mods\SicknessEffects.Absent.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UwGameplayMods)' != 'true'">
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\AgentMod.cs" />
@@ -238,6 +239,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\RepairMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\WeatherMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\EmergencyEatingMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\SicknessEffects.cs" />
   </ItemGroup>
 
   <Target Name="ReportUwFeatures" BeforeTargets="Build">

@@ -12711,6 +12711,8 @@ public class BaseDataLoader : DataLoader
 		UWGame.Mods.HideGearMod.AddEffectProfiles(list);
 		// MOD: EmergencyEatingMod's "Raw food" and "Bad stomach", registered whether or not it is on.
 		UWGame.Mods.EmergencyEatingMod.AddEffectProfiles(list);
+		// MOD: WeatherMod's "Cold", registered whether or not it is on.
+		UWGame.Mods.WeatherMod.AddEffectProfiles(list);
 		return list;
 	}
 
@@ -12721,6 +12723,8 @@ public class BaseDataLoader : DataLoader
 		UWGame.Mods.HideGearMod.AddEffects(list);
 		// MOD: the comfort EmergencyEatingMod's profiles take, registered whether or not it is on.
 		UWGame.Mods.EmergencyEatingMod.AddEffects(list);
+		// MOD: the comfort WeatherMod's "Cold" takes, registered whether or not it is on.
+		UWGame.Mods.WeatherMod.AddEffects(list);
 		return list;
 	}
 

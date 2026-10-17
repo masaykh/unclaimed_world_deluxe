@@ -1,10 +1,15 @@
+using System.Collections.Generic;
 using UWGame.ClientSide.Interface.DateAndWeatherPanel;
+using UWGame.SimSide.AI;
+using UWGame.SimSide.Entities;
+using UWGame.SimSide.SimEffects;
 
 namespace UWGame.Mods;
 
 /// <summary>
 /// Seasons and temperature, compiled OUT. See PeatMod.Absent.cs for the pattern: the studio's
-/// sawtooth sun, 15 C everywhere, and the date panel's fixed temperature.
+/// sawtooth sun, 15 C everywhere, and the date panel's fixed temperature. No "Cold" effect; nobody
+/// minds where they sleep beyond what the studio scores.
 /// </summary>
 public static class WeatherMod
 {
@@ -36,4 +41,23 @@ public static class WeatherMod
 
     /// <summary>The studio's cloud term; there is no rain.</summary>
     public static string SkyTerm(string stock) => stock;
+
+    public static void AddEffects(List<EffectType> list)
+    {
+    }
+
+    public static void AddEffectProfiles(List<EffectProfileType> list)
+    {
+    }
+
+    /// <summary>The studio's: lying down outside on a cold night costs nothing.</summary>
+    public static void OnSleepStart(Entity sleeper, Entity sleepingPlace)
+    {
+    }
+
+    /// <summary>The studio's: comfort is the sum of the comfort effects.</summary>
+    public static float ExposurePenalty(Entity colonist) => 0f;
+
+    /// <summary>The studio's comfort score of a sleeping place.</summary>
+    public static double ShelterScore(Entity sleeper, IKnownEntityData place, double stock) => stock;
 }

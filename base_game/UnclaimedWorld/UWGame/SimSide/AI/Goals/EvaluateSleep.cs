@@ -309,7 +309,8 @@ public class EvaluateSleep : GoalEvaluator
 	{
 		GoalDoSleep.ComputeSleepConditions(entity, containerData, out var maximumSleepGainFromThisLocation, out var increaseAmountPerDay);
 		double num = ((!((double)maximumSleepGainFromThisLocation >= 1.0)) ? 0.5 : 1.0);
-		return Common.Clamp(0.5 * num + 0.5 * (double)increaseAmountPerDay / (double)MaxSleepIncreasePerDay, 0.0, 1.0);
+		// MOD: WeatherMod - on a cold, wet night a spot in the open (less so by a lit campfire) scores less; the studio's score otherwise.
+		return UWGame.Mods.WeatherMod.ShelterScore(entity, containerData, Common.Clamp(0.5 * num + 0.5 * (double)increaseAmountPerDay / (double)MaxSleepIncreasePerDay, 0.0, 1.0));
 	}
 
 	private double ScoreCrowdedTile(IKnownEntityData ContainerEntity, ExpeditionID? expeditionID, WorldLocation? GroundLocation)

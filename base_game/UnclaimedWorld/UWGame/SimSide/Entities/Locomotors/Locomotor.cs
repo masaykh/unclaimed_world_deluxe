@@ -407,8 +407,8 @@ namespace UWGame.SimSide.Entities.Locomotors
             // for anything it does not list. See mods/DangerousFaunaMod.cs.
             speed = speed * UWGame.Mods.DangerousFaunaMod.SpeedFactor(Parent);
 
-            // MOD: EmergencyEatingMod - a bad stomach from raw food slows a colonist; 1 otherwise.
-            speed = speed * UWGame.Mods.EmergencyEatingMod.SpeedFactor(Parent);
+            // MOD: SicknessEffects - a bad stomach (EmergencyEatingMod) or a cold (WeatherMod) slows a colonist; 1 otherwise.
+            speed = speed * UWGame.Mods.SicknessEffects.SpeedFactor(Parent);
 
             // apply all modifiers - most likely this will slow the speed down:
             // if needed, we can add more complex logic here, such as clamping, overriding modifiers etc.

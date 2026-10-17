@@ -149,8 +149,9 @@ namespace UWGame.SimSide.Entities
         {
             get
             {                
-                // MOD: less what DiscomfortMod measured of stink and noise where this colonist sleeps; 0 without it.
-                return Parent.GetEffect(SimEffects.AffectsNumbers.AgentComfort, 0f) - UWGame.Mods.DiscomfortMod.Penalty(Parent) - UWGame.Mods.HideGearMod.ComfortPenalty(Parent);
+                // MOD: less what DiscomfortMod measured of stink and noise where this colonist sleeps, and
+                // what WeatherMod measured of a cold, wet night slept out in the open; 0 without them.
+                return Parent.GetEffect(SimEffects.AffectsNumbers.AgentComfort, 0f) - UWGame.Mods.DiscomfortMod.Penalty(Parent) - UWGame.Mods.HideGearMod.ComfortPenalty(Parent) - UWGame.Mods.WeatherMod.ExposurePenalty(Parent);
             }
         }
         

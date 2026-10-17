@@ -77,11 +77,12 @@ namespace UWGame.Mods;
 ///   all its nutrients (<see cref="NutritionFactor"/>). The roll comes before the meal is credited,
 ///   so "the last one" - the meal that upset the stomach - already feeds half: nothing to take back.
 /// - Bad stomach. The comfort part is the effect's own (-0.2 x modifier). The studio's effects can
-///   not touch speed, work or energy (AffectsNumbers has none of them), so while a colonist has the
-///   effect: Locomotor.CalculateSpeed x <see cref="SpeedFactor"/> (1 - 0.2m), ProcessJob.
-///   CalculateWorkDurationInDays x <see cref="WorkTimeFactor"/> (1 + 0.3m), and BiologicalEntity.
-///   EnergyLevel at most <see cref="EnergyCap"/> (<see cref="CapEnergy"/>). They follow the effect,
-///   not the switch: what the panel shows is what applies, until it expires.
+///   not touch speed, work or energy (AffectsNumbers has none of them), so each tier is registered
+///   with <see cref="SicknessEffects"/> (shared with WeatherMod's "Cold"), which the hooks ask: while
+///   a colonist has the effect, Locomotor.CalculateSpeed x (1 - 0.2m), ProcessJob.
+///   CalculateWorkDurationInDays x (1 + 0.3m), and BiologicalEntity.EnergyLevel at most
+///   <see cref="EnergyCap"/>. They follow the effect, not the switch: what the panel shows is what
+///   applies, until it expires.
 ///
 /// WHICH FISH. From the data: a raw meat some process needing the fishing skill catches (alabaster
 /// ray, streak fin, carbon tail, daggermouth, imp eel, minnows), plus the two shellfish gathered by
@@ -348,6 +349,7 @@ public static class EmergencyEatingMod
                 Effects = new[] { stomach + ComfortEffectSuffix },
                 SortOrder = 160
             });
+            SicknessEffects.Register(stomach, 1f - SpeedPerModifier * m, 1f + WorkTimePerModifier * m, EnergyCap);
         }
     }
 
@@ -629,16 +631,6 @@ public static class EmergencyEatingMod
     /// <summary>The bad stomach modifier of a person now; 0 without one.</summary>
     public static float StomachModifierOf(Entity entity) =>
         entity?.EntityType?.Person == null ? 0f : StomachModifier[(int)ActiveTier(entity.SimEffects, BadStomachProfile)];
-
-    /// <summary>Called from Locomotor.CalculateSpeed: 1 - 0.2 x modifier.</summary>
-    public static float SpeedFactor(Entity entity) => 1f - SpeedPerModifier * StomachModifierOf(entity);
-
-    /// <summary>Called from ProcessJob.CalculateWorkDurationInDays: 1 + 0.3 x modifier.</summary>
-    public static float WorkTimeFactor(Entity worker) => 1f + WorkTimePerModifier * StomachModifierOf(worker);
-
-    /// <summary>Called from the BiologicalEntity.EnergyLevel getter: at most <see cref="EnergyCap"/> with a bad stomach.</summary>
-    public static float CapEnergy(Entity entity, float energy) =>
-        StomachModifierOf(entity) > 0f ? Math.Min(energy, EnergyCap) : energy;
 
     private static float? Number(Entity entity, string key) =>
         entity.CustomFields != null && entity.CustomFields.TryGetValue(key, out var stored) ? stored.NumberResult : null;
