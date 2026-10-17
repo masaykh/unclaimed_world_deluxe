@@ -152,6 +152,16 @@ public static partial class HudMod
                      "when HOLD LEFT ALT FOR NAMES AND MARKERS is on. Press it twice quickly to keep " +
                      "them shown, and twice again to go back. Drag-select still uses LeftAlt."));
 
+    private static ModSetting zoneHighlight;
+
+    /// <summary>A placed zone lights up from its label - see HudModZoneHighlight.cs.</summary>
+    public static ModSetting ZoneHighlightSetting =>
+        zoneHighlight ?? (zoneHighlight = ModSettings.Toggle(
+            ModId, "zoneHighlight", "LIGHT UP A ZONE FROM ITS LABEL", defaultValue: true,
+            toolTip: "A placed zone shows in yellow, as a freshly drawn one does, while the cursor is on " +
+                     "its label or while its window is open.",
+            affectsSimulation: false));
+
     private static ModSetting labelList;
 
     /// <summary>Overlapping labels open into a list - see HudModLabelList.cs.</summary>

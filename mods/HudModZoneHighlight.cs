@@ -25,15 +25,6 @@ namespace UWGame.Mods;
 /// </summary>
 public static partial class HudMod
 {
-    private static ModSetting zoneHighlight;
-
-    public static ModSetting ZoneHighlightSetting =>
-        zoneHighlight ?? (zoneHighlight = ModSettings.Toggle(
-            ModId, "zoneHighlight", "LIGHT UP A ZONE FROM ITS LABEL", defaultValue: true,
-            toolTip: "A placed zone shows in yellow, as a freshly drawn one does, while the cursor is on " +
-                     "its label or while its window is open.",
-            affectsSimulation: false));
-
     /// <summary>The label the cursor is on, while it is a zone's.</summary>
     private static MarkerWindow hoveredMarker;
 
@@ -57,7 +48,7 @@ public static partial class HudMod
     /// <summary>The zone to light up now, or null.</summary>
     public static Zone ZoneToLight(InGameInterface ui)
     {
-        if (!ZoneHighlightSetting.On || ui == null)
+        if (!HudMod.ZoneHighlightSetting.On || ui == null)
         {
             return null;
         }
