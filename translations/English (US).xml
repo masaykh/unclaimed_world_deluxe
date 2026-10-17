@@ -5226,6 +5226,19 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>GuiOverAWeek</Key>
     <Value>over a week</Value>
   </String>
+  <!-- mods/WeatherMod.cs -->
+  <String>
+    <Key>GuiLightRain</Key>
+    <Value>Light rain</Value>
+  </String>
+  <String>
+    <Key>GuiRain</Key>
+    <Value>Rain</Value>
+  </String>
+  <String>
+    <Key>GuiRainstorm</Key>
+    <Value>Rainstorm</Value>
+  </String>
   <!-- numbers with their nouns: forms separated by | -->
   <String>
     <Key>Count0CHANGED_8f9710c595a3</Key>
@@ -7011,6 +7024,14 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipWeatherEnabled</Key>
     <Value>The sun is highest in mid summer and lowest in mid winter, as the season names say. The air follows a warm subtropical year: about 5 C on a mid-winter night to 12 C at noon, 17 C on a mid-summer night to 34 C at noon, warmer in sunshine than under cloud. Food and materials outside, and in storage that is not cooled, spoil faster in the heat and slower in the cold. The date panel shows the temperature.</Value>
+  </String>
+  <String>
+    <Key>SettingWeatherRain</Key>
+    <Value>RAIN AND WIND</Value>
+  </String>
+  <String>
+    <Key>SettingTipWeatherRain</Key>
+    <Value>Works with SEASONS AND TEMPERATURE on. Winter brings rainstorms of several hours with cold winds between them; spring and autumn some showers; summer is mostly clear. Rain and wind cool the air by up to about 5 C, never to freezing, and cloud keeps the sun off. The date panel says when it rains and forecasts tomorrow.</Value>
   </String>
   <!-- data: ALLEGIANCE -->
   <String>

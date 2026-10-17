@@ -39,6 +39,19 @@ public class HUDDateAndWeather : HUDWindow
 		tempNow.Text = $"{temp}° C";
 	}
 
+	// MOD: the studio's SetWeatherAhead (original_src HUDDateAndWeather.cs), which nothing called,
+	// and its counterpart for the WEATHER AHEAD line's temperature (built as a fixed "13 C");
+	// WeatherMod calls both with tomorrow's forecast.
+	public void SetWeatherAhead(string cloudCover, string wind)
+	{
+		weatherAhead.Text = $"{cloudCover}/{wind}";
+	}
+
+	public void SetTempAhead(int temp)
+	{
+		tempAhead.Text = $"{temp}° C";
+	}
+
 	public void SetTime(string timePhrase)
 	{
 		time.Text = timePhrase;

@@ -150,14 +150,28 @@ public class WeatherManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISnapsh
 	private void UpdateWeatherDisplay()
 	{
 		int stairStepIndex = Common.GetStairStepIndex(cloudCover, cloudEdges);
-		string text = cloudCoverTerms[stairStepIndex];
+		// MOD: "Light rain", "Rain" or "Rainstorm" instead of the cloud term while it rains, with
+		// RAIN AND WIND on. See mods/WeatherMod.cs. The steering in Update can change the cloud cover
+		// on a sim's first frame, before the interface exists, which the studio's never did: hence ?.
+		string text = UWGame.Mods.WeatherMod.SkyTerm(cloudCoverTerms[stairStepIndex]);
 		stairStepIndex = Common.GetStairStepIndex(WindSpeed, windEdges);
 		string wind = windTerms[stairStepIndex];
-		The.InGameUI.SetWeatherNow(text, wind);
+		The.InGameUI?.SetWeatherNow(text, wind);
 	}
 
 	public void Update(GameTime gameTime)
 	{
+		// MOD: with RAIN AND WIND on, the cloud cover (and its target, so the lerp below keeps it)
+		// and the wind speed follow WeatherMod's seeded schedule; the studio's random rolls further
+		// down still happen, so the random stream is the same. Off, the studio's 1.5 m/s wind.
+		// See mods/WeatherMod.cs.
+		float? scheduledCloudCover = UWGame.Mods.WeatherMod.SteerCloudCover();
+		if (scheduledCloudCover.HasValue)
+		{
+			cloudCoverTarget = scheduledCloudCover.Value;
+			CloudCover = scheduledCloudCover.Value;
+		}
+		WindSpeed = UWGame.Mods.WeatherMod.SteerWindSpeed(WindSpeed);
 		if (The.Sim.DateAndTime.SunIsUp)
 		{
 			SunIntensity = Common.Clamp((1f - 0.5f * CloudCover) * (float)Math.Sin(The.Sim.DateAndTime.SunElevation), 0f, 1f);

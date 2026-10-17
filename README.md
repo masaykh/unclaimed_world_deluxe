@@ -52,7 +52,7 @@ or all off with `-nomods`. Some of them:
 | **Balanced diet** | meat carries protein, plants carry micronutrients, only a cooked meal carries both; one food source stops feeding a colonist indefinitely |
 | **Magnification** | zoom *below* 1, which the stock game clamps away: less screen for the interface, more for the world |
 | **Map edge** | the camera stops at the edge of the map instead of allowing half a screen of empty grid |
-| **Weather** | seasons and temperature: the sun is highest in mid summer as the calendar says, a subtropical year of cool winters and hot summers, and food outside spoils faster in the heat - off by default |
+| **Weather** | seasons and temperature: the sun is highest in mid summer as the calendar says, a subtropical year of cool winters and hot summers, and food outside spoils faster in the heat; with rain and wind, winter rainstorms with cold winds between them, a mostly dry summer, and a forecast for tomorrow - off by default |
 
 Most exist because **Kastuk** asked for them, and each mod's source opens with the report that
 prompted it. [how_to_use_mods.md](docs/how_to_use_mods.md) has the switches and the two things worth

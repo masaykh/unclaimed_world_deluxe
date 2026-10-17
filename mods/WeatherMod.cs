@@ -6,8 +6,8 @@ namespace UWGame.Mods;
 
 /// <summary>
 /// Seasons and temperature: the sun follows the season names, and the air is warm in summer, cool
-/// in winter and warmer by day than by night. Step 1 of "Weather and temperature"; rain, wind and
-/// what the cold does to people come later.
+/// in winter and warmer by day than by night (step 1 of "Weather and temperature"); and, behind a
+/// second switch, rain and wind (step 2). What the cold does to people comes later.
 ///
 /// THE REQUEST. Kastuk, "Weather and temperature" (2026-10-17): "rainstorms during winter time with
 /// cold winds between them. Not freezing temperatures, but still cold enough for sickness. Then
@@ -59,10 +59,53 @@ namespace UWGame.Mods;
 ///    which nothing called (the panel showed a fixed "17 C"). The line is in the panel's lower half;
 ///    drag its bottom edge down to see it.
 ///
+/// RAIN AND WIND (step 2), a second switch that works with SEASONS AND TEMPERATURE on (off by
+/// default). Separate because it replaces the studio's random cloud cover, and with it the
+/// sunshine that dries and spoils things: the seasons can be played without it.
+/// - WHAT THE STUDIO HAS. WeatherManager (Sim/Weather.cs) keeps a cloud cover and a wind. Every 2 s
+///   it rolls a 1 in 50 chance of a new wind direction and a 1 in 80 chance of a new cloud cover
+///   target, any value equally likely; windSpeed is 1.5 m/s and never changes. UpdateWeatherDisplay
+///   puts a cloud term ("Clear" to "Overcast") and a wind term (its Beaufort list, "Calm" to
+///   "Hurricane") on the date panel's WEATHER NOW line. There is no rain anywhere in the game. The
+///   panel's WEATHER AHEAD line had SetWeatherAhead, which nothing called: it showed "13 C".
+/// - THE SCHEDULE (<see cref="Scheduled"/>). The weather is a function of the game's random seed
+///   (the gameplay RandomGenerator's RandomSeed, saved with every game and reused by replays) and
+///   of the time, Year * 12 + TimeOfYear * 12 days. Nothing is drawn from the studio's random
+///   stream - a draw would shift every random number the game takes after it - and so the weather
+///   can be looked ahead at, which is what the forecast does. Each calendar day rolls one rain
+///   spell, with a chance that follows the season: about 90% on "Mid winter", 80% on "Late winter"
+///   and "Start of winter", a quarter at the equinoxes and 5% in mid summer. A winter spell is a
+///   rainstorm of up to 12 hours; a summer one a shower of 2-4. The wind blows by the season,
+///   1-5 m/s in summer, 5-12 m/s in winter (the cold winds between the storms), and a storm adds
+///   up to 10 more; it never reaches the studio's "Storm" (24 m/s and up). Clouds gather two hours
+///   before the rain and break two hours after it; between spells the sky is clear to partly cloudy.
+/// - WHAT FOLLOWS (<see cref="SteerCloudCover"/>, <see cref="SteerWindSpeed"/>, from
+///   WeatherManager.Update). The cloud cover and the wind speed are the schedule's. Cloud cuts the
+///   studio's SunIntensity, so a rainy day is cooler and things dry and spoil less in the sun; the
+///   cloud shadows (GameWorldRenderer) follow; the wind blows the cloud shadows and the smoke that
+///   the studio lets the wind push (ParticleSystem, IsAffectedByWind).
+/// - THE AIR (<see cref="Cooled"/>). Rain cools it by up to <see cref="RainChill"/> C and wind above
+///   <see cref="ChillFromWind"/> m/s by <see cref="WindChill"/> C a m/s - a winter storm 3-5 C
+///   colder - never below <see cref="FloorCelsius"/> C: "Not freezing temperatures".
+/// - THE PANEL. WEATHER NOW says "Light rain", "Rain" or "Rainstorm" in place of the cloud term
+///   while it rains (<see cref="SkyTerm"/>, from WeatherManager.UpdateWeatherDisplay). WEATHER AHEAD
+///   shows tomorrow, midnight to midnight, from the schedule (<see cref="Tomorrow"/>): the wettest
+///   it will be (or the daytime cloud), the strongest wind, and the warmest it will get.
+/// - NOT HERE. No rain is drawn and none is heard: the game has no rain particle, texture or sound.
+///   Its particles are puffs of the smoke, explosion, fog and pollen textures, drawn with the map
+///   tile their emitter stands on (GameWorldRenderer), at one scale in both directions. Rain would
+///   need a streak texture (a new binary asset) or a particle drawn stretched along its velocity,
+///   and an emitter moved from tile to tile with the camera; a sound would need a new asset too.
+///   What the cold does to people is step 3.
+///
 /// NOTHING NEW IS SAVED. The temperature is worked out each time from what a save already holds:
 /// TimeOfYear and TimeOfDay (DateAndTime) and the cloud cover (WeatherManager). No tile is written,
 /// so there is no per-tile cost and switching off puts the studio's 15 C back at once. No random
-/// numbers are drawn; replays are unaffected beyond what the switch changes. The sun's elevation is
+/// numbers are drawn; replays are unaffected beyond what the switch changes. With RAIN AND WIND on,
+/// WeatherManager's own saved cloud cover, cloud target and wind speed hold the schedule's values,
+/// in the fields and the format they always had; on load the schedule is worked out again from the
+/// seed and the date. Switched off, the wind goes back to the studio's 1.5 m/s and the clouds
+/// drift back to the studio's random targets. The sun's elevation is
 /// used rather than SunIntensity because the port's shadow toggle (PortSettings.ShadowsDisabled)
 /// forces SunIsUp off and with it SunIntensity; that is a display option and must not cool the air.
 /// </summary>
@@ -82,6 +125,17 @@ public static class WeatherMod
                      "slower in the cold. The date panel shows the temperature.",
             affectsSimulation: true));
 
+    private static ModSetting rain;
+
+    public static ModSetting RainSetting =>
+        rain ?? (rain = ModSettings.Toggle(
+            ModId, "rain", "RAIN AND WIND", defaultValue: false,
+            toolTip: "Works with SEASONS AND TEMPERATURE on. Winter brings rainstorms of several hours " +
+                     "with cold winds between them; spring and autumn some showers; summer is mostly " +
+                     "clear. Rain and wind cool the air by up to about 5 C, never to freezing, and cloud " +
+                     "keeps the sun off. The date panel says when it rains and forecasts tomorrow.",
+            affectsSimulation: true));
+
     public static void RegisterSettings()
     {
         ModSettings.Describe(ModId, "Jerrybi",
@@ -89,9 +143,13 @@ public static class WeatherMod
             "HUD_thumbnail_weatherAntenna");
         ModSettings.SetCategoryLabel(ModId, "WEATHER");
         _ = EnabledSetting;
+        _ = RainSetting;
     }
 
     public static bool On => EnabledSetting.On;
+
+    /// <summary>RAIN AND WIND, which needs SEASONS AND TEMPERATURE: the rain cools the air that switch makes.</summary>
+    public static bool RainOn => On && RainSetting.On;
 
     // ---------------------------------------------------------------- the climate, tunable here
 
@@ -124,6 +182,33 @@ public static class WeatherMod
 
     /// <summary>The studio's starting cloud cover, "set cloud cover here" (WeatherManager.cloudCover).</summary>
     public const float StudioCloudCover = 0.2f;
+
+    /// <summary>The studio's wind, which never changes: WeatherManager.windSpeed = 1.5f.</summary>
+    public const float StudioWindSpeed = 1.5f;
+
+    /// <summary>Degrees (C) a full rainstorm takes off the air.</summary>
+    public const float RainChill = 3f;
+
+    /// <summary>Degrees (C) taken off the air for each m/s of wind above <see cref="ChillFromWind"/>.</summary>
+    public const float WindChill = 0.12f;
+
+    /// <summary>Wind (m/s) below which it does not cool the air.</summary>
+    public const float ChillFromWind = 3f;
+
+    /// <summary>Rain and wind never cool the air below this (C); the seasons alone never go below 5 C.</summary>
+    public const float FloorCelsius = 2f;
+
+    /// <summary>Rain below this (0-1) is not called rain.</summary>
+    public const float RainThreshold = 0.05f;
+
+    /// <summary>Wind (m/s) a full rainstorm adds.</summary>
+    public const float StormWind = 10f;
+
+    /// <summary>
+    /// The strongest wind (m/s): inside the studio's "Strong gale" (20-24 in WeatherManager.windEdges),
+    /// short of its "Storm"; the sky term says "Rainstorm".
+    /// </summary>
+    public const float MaxWind = 23.5f;
 
     // ---------------------------------------------------------------- hooks
 
@@ -166,6 +251,36 @@ public static class WeatherMod
         {
             panel.SetTemp(Celsius(air.Value));
         }
+        DateAndTime date = The.Sim?.DateAndTime;
+        if (RainOn && date != null)
+        {
+            Forecast ahead = Tomorrow(Seed, date.Year, date.TimeOfYear, date.TimeOfDay);
+            panel.SetWeatherAhead(ahead.Sky, ahead.Wind);
+            panel.SetTempAhead(Celsius(ahead.HighK));
+        }
+    }
+
+    /// <summary>
+    /// Called at the top of WeatherManager.Update: with RAIN AND WIND on, the schedule's cloud cover,
+    /// which the studio's code then also takes as its target; null leaves the studio's.
+    /// </summary>
+    public static float? SteerCloudCover() => RainOn ? Now()?.Cloud : null;
+
+    /// <summary>
+    /// Called at the top of WeatherManager.Update with its wind speed: with RAIN AND WIND on, the
+    /// schedule's. Off, the studio's 1.5 m/s - which every save made without the switch holds
+    /// already, and which a save made with it gets back.
+    /// </summary>
+    public static float SteerWindSpeed(float stock) => RainOn ? Now()?.Wind ?? stock : StudioWindSpeed;
+
+    /// <summary>
+    /// Called by WeatherManager.UpdateWeatherDisplay with the studio's cloud term: while it rains,
+    /// "Light rain", "Rain" or "Rainstorm" instead.
+    /// </summary>
+    public static string SkyTerm(string stock)
+    {
+        float rainNow = RainOn ? Now()?.Rain ?? 0f : 0f;
+        return rainNow >= RainThreshold ? RainTerm(rainNow) : stock;
     }
 
     // ---------------------------------------------------------------- the model
@@ -179,7 +294,8 @@ public static class WeatherMod
         {
             return null;
         }
-        return AirTemperature(date.TimeOfYear, date.SunElevation, weather.CloudCover);
+        float air = AirTemperature(date.TimeOfYear, date.SunElevation, weather.CloudCover);
+        return RainOn ? Cooled(air, Scheduled(Seed, ScheduleDays(date.Year, date.TimeOfYear))) : air;
     }
 
     /// <summary>
@@ -223,4 +339,241 @@ public static class WeatherMod
 
     /// <summary>Kelvin to whole degrees Celsius, as the date panel shows them.</summary>
     public static int Celsius(float kelvin) => (int)Math.Round(kelvin - ZeroCelsius, MidpointRounding.AwayFromZero);
+
+    // ---------------------------------------------------------------- rain and wind: the schedule
+
+    /// <summary>The weather at one moment: rain 0-1, wind in m/s, cloud cover 0-1.</summary>
+    public readonly struct State
+    {
+        public readonly float Rain;
+        public readonly float Wind;
+        public readonly float Cloud;
+
+        public State(float rain, float wind, float cloud)
+        {
+            Rain = rain;
+            Wind = wind;
+            Cloud = cloud;
+        }
+    }
+
+    /// <summary>Tomorrow, midnight to midnight: what the WEATHER AHEAD line shows.</summary>
+    public readonly struct Forecast
+    {
+        public readonly string Sky;
+        public readonly string Wind;
+        public readonly float HighK;
+        public readonly float MaxRain;
+        public readonly float MaxWind;
+
+        public Forecast(string sky, string wind, float highK, float maxRain, float maxWind)
+        {
+            Sky = sky;
+            Wind = wind;
+            HighK = highK;
+            MaxRain = maxRain;
+            MaxWind = maxWind;
+        }
+    }
+
+    /// <summary>
+    /// The game's random seed: the gameplay generator's RandomSeed, which every save holds and a
+    /// replay reuses. 0 for a generator started without one.
+    /// </summary>
+    public static int Seed => The.Sim?.GameplayRandomGenerator?.RandomSeed ?? 0;
+
+    /// <summary>The schedule's clock in days: (Year + TimeOfYear) * 12. The two wrap together.</summary>
+    public static double ScheduleDays(int year, double timeOfYear) => (year + timeOfYear) * DateAndTime.DaysPerYear;
+
+    private static double cachedDays = double.NaN;
+    private static int cachedSeed;
+    private static State cachedState;
+
+    /// <summary>The weather now, or null with no clock.</summary>
+    private static State? Now()
+    {
+        DateAndTime date = The.Sim?.DateAndTime;
+        if (date == null)
+        {
+            return null;
+        }
+        double days = ScheduleDays(date.Year, date.TimeOfYear);
+        int seed = Seed;
+        if (days != cachedDays || seed != cachedSeed)
+        {
+            cachedState = Scheduled(seed, days);
+            cachedDays = days;
+            cachedSeed = seed;
+        }
+        return cachedState;
+    }
+
+    /// <summary>
+    /// How wet the season is: 1 in the middle of "Mid winter", 0 in the middle of "Mid summer", a
+    /// half at the equinoxes - step 1's season curve turned over.
+    /// </summary>
+    public static double Wetness(double timeOfYear) => (1.0 - Math.Cos(2.0 * Math.PI * (timeOfYear - MidSummer))) / 2.0;
+
+    /// <summary>The chance of a rain spell on a calendar day of this wetness: 4% to 90%.</summary>
+    public static double RainChance(double wetness) => 0.04 + 0.86 * wetness * wetness;
+
+    private const double Hour = 1.0 / 24.0;
+
+    /// <summary>The weather a seed gives at a time on the schedule's clock (<see cref="ScheduleDays"/>).</summary>
+    public static State Scheduled(int seed, double days)
+    {
+        long day = (long)Math.Floor(days);
+        float rainNow = 0f, gathering = 0f, cloudAtPeak = 0f;
+        // A spell starts on its own day and may run into the next; clouds gather two hours before it.
+        for (long d = day - 1; d <= day + 1; d++)
+        {
+            if (!Spell(seed, d, out double start, out double end, out float peak))
+            {
+                continue;
+            }
+            rainNow = Math.Max(rainNow, peak * Envelope(days, start, end, Hour));
+            float gather = Envelope(days, start - 2.0 * Hour, end + 2.0 * Hour, 2.0 * Hour);
+            if (gather > gathering)
+            {
+                gathering = gather;
+                cloudAtPeak = 0.7f + 0.3f * peak;
+            }
+        }
+        float clear = Between(DayCloud(seed, day - 1), DayCloud(seed, day), DayCloud(seed, day + 1), days - day);
+        float cloud = clear + (Math.Max(clear, cloudAtPeak) - clear) * gathering;
+        double block = days * 8.0; // the wind changes every three hours
+        long b = (long)Math.Floor(block);
+        float t = (float)(block - b);
+        float wind = BlockWind(seed, b) * (1f - t) + BlockWind(seed, b + 1) * t + StormWind * rainNow;
+        return new State(rainNow, Math.Min(wind, MaxWind), Common.Clamp(cloud, 0f, 1f));
+    }
+
+    /// <summary>
+    /// A calendar day's rain spell, if it rolls one: when it starts and ends on the schedule's clock
+    /// and how hard it rains at its height (0-1).
+    /// </summary>
+    public static bool Spell(int seed, long day, out double start, out double end, out float peak)
+    {
+        double wet = Wetness(YearFraction((day + 0.5) / DateAndTime.DaysPerYear));
+        start = end = 0.0;
+        peak = 0f;
+        if (Uniform(seed, day, 1) >= RainChance(wet))
+        {
+            return false;
+        }
+        double hours = 2.0 + Uniform(seed, day, 3) * (2.0 + 8.0 * wet); // summer 2-4 h, winter up to 12
+        start = day + Uniform(seed, day, 2);
+        end = start + hours * Hour;
+        peak = (float)(0.2 + 0.5 * wet + 0.3 * Uniform(seed, day, 4)); // a summer shower to a winter storm
+        return true;
+    }
+
+    /// <summary>A day's cloud cover between spells: clear to partly cloudy, 0.05-0.35.</summary>
+    private static float DayCloud(int seed, long day) => (float)(0.05 + 0.3 * Uniform(seed, day, 5));
+
+    /// <summary>The wind (m/s) at the start of a three-hour block: about 1-4 in summer, 5-12 in winter.</summary>
+    private static float BlockWind(int seed, long block)
+    {
+        double wet = Wetness(YearFraction(block / (DateAndTime.DaysPerYear * 8.0)));
+        double mean = 2.5 + 6.0 * Math.Pow(wet, 1.5);
+        double spread = 1.5 + 2.0 * wet;
+        return (float)Math.Max(0.0, mean + spread * (2.0 * Uniform(seed, block, 6) - 1.0));
+    }
+
+    private static double YearFraction(double years) => years - Math.Floor(years);
+
+    /// <summary>0 outside (start, end); 1 a ramp in from both ends; smooth between.</summary>
+    private static float Envelope(double t, double start, double end, double ramp)
+    {
+        if (t <= start || t >= end)
+        {
+            return 0f;
+        }
+        double x = Math.Min(1.0, Math.Min(t - start, end - t) / ramp);
+        return (float)(x * x * (3.0 - 2.0 * x));
+    }
+
+    /// <summary>A day's value, moving in a straight line from the middle of yesterday through today to the middle of tomorrow.</summary>
+    private static float Between(float yesterday, float today, float tomorrow, double dayFraction)
+    {
+        return dayFraction < 0.5
+            ? yesterday + (today - yesterday) * (float)(dayFraction + 0.5)
+            : today + (tomorrow - today) * (float)(dayFraction - 0.5);
+    }
+
+    /// <summary>A number in [0, 1) from the seed, an index and a purpose (SplitMix64): the same three, the same number.</summary>
+    private static double Uniform(int seed, long index, int purpose)
+    {
+        ulong z = Mix(Mix((ulong)(uint)seed | ((ulong)(uint)purpose << 32)) ^ (ulong)index);
+        return (z >> 11) * (1.0 / (1UL << 53));
+    }
+
+    private static ulong Mix(ulong z)
+    {
+        z += 0x9E3779B97F4A7C15UL;
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+        return z ^ (z >> 31);
+    }
+
+    /// <summary>
+    /// The air (K) after rain and wind: <see cref="RainChill"/> C for a full storm and
+    /// <see cref="WindChill"/> C a m/s above <see cref="ChillFromWind"/>, never below
+    /// <see cref="FloorCelsius"/> (and never warmer than it was).
+    /// </summary>
+    public static float Cooled(float air, State weather)
+    {
+        float chill = RainChill * weather.Rain + WindChill * Math.Max(0f, weather.Wind - ChillFromWind);
+        return Math.Max(air - chill, Math.Min(air, ZeroCelsius + FloorCelsius));
+    }
+
+    /// <summary>
+    /// Tomorrow, midnight to midnight by TimeOfDay, from the schedule: the wettest it gets (or the
+    /// daytime cloud), the strongest wind and the warmest air, sampled every half hour.
+    /// </summary>
+    public static Forecast Tomorrow(int seed, int year, double timeOfYear, double timeOfDay)
+    {
+        const int samples = 48;
+        double midnight = ScheduleDays(year, timeOfYear) + (1.0 - timeOfDay);
+        float high = float.MinValue, maxRain = 0f, maxWind = 0f, cloud = 0f;
+        int daylight = 0;
+        for (int i = 0; i < samples; i++)
+        {
+            double tod = (i + 0.5) / samples;
+            double days = midnight + tod;
+            double toy = YearFraction(days / DateAndTime.DaysPerYear);
+            State s = Scheduled(seed, days);
+            float elevation = SunElevation(toy, tod);
+            high = Math.Max(high, Cooled(AirTemperature(toy, elevation, s.Cloud), s));
+            maxRain = Math.Max(maxRain, s.Rain);
+            maxWind = Math.Max(maxWind, s.Wind);
+            if (elevation > 0f)
+            {
+                cloud += s.Cloud;
+                daylight++;
+            }
+        }
+        string sky = maxRain >= RainThreshold ? RainTerm(maxRain) : CloudTerm(cloud / Math.Max(1, daylight));
+        return new Forecast(sky, WindTerm(maxWind), high, maxRain, maxWind);
+    }
+
+    /// <summary>"Light rain" below 0.35, "Rain" below 0.7, "Rainstorm" from there.</summary>
+    public static string RainTerm(float rainAmount) =>
+        rainAmount < 0.35f ? UWGame.Locale.Text("Light rain")
+        : rainAmount < 0.7f ? UWGame.Locale.Text("Rain")
+        : UWGame.Locale.Text("Rainstorm");
+
+    // The studio's terms and edges (WeatherManager.InitConstants) for the forecast, read the way
+    // UpdateWeatherDisplay reads them: Common.GetStairStepIndex, the first edge above the value.
+    // English, as on the WEATHER NOW line.
+    private static readonly float[] cloudEdges = { 0.1f, 0.4f, 0.96f, 1f };
+    private static readonly string[] cloudTerms = { "Clear", "Partly cloudy", "Cloudy", "Overcast" };
+    private static readonly float[] windEdges = { 0.5f, 3f, 5f, 11f, 14f, 17f, 20f, 24f, 28f, 100f };
+    private static readonly string[] windTerms = { "Calm", "Light breeze", "Gentle breeze", "Fresh breeze", "Strong breeze", "High wind", "Gale", "Strong gale", "Storm", "Hurricane" };
+
+    /// <summary>The studio's cloud term for a cloud cover.</summary>
+    public static string CloudTerm(float cloud) => cloudTerms[Common.GetStairStepIndex(cloud, cloudEdges)];
+
+    /// <summary>The studio's wind term (its Beaufort list) for a wind speed in m/s.</summary>
+    public static string WindTerm(float wind) => windTerms[Common.GetStairStepIndex(wind, windEdges)];
 }

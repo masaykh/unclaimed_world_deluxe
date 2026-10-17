@@ -23,8 +23,17 @@ public static class WeatherMod
     /// <summary>The studio's: Constants.MeanAmbientTemperature.</summary>
     public static float ShelfLifeTemperature(float stock) => stock;
 
-    /// <summary>The studio's: the panel keeps the temperature it was built with.</summary>
+    /// <summary>The studio's: the panel keeps the temperatures and the forecast it was built with.</summary>
     public static void ShowTemperature(HUDDateAndWeather panel)
     {
     }
+
+    /// <summary>The studio's: the cloud cover drifts to its own random targets.</summary>
+    public static float? SteerCloudCover() => null;
+
+    /// <summary>The studio's: the wind speed never changes.</summary>
+    public static float SteerWindSpeed(float stock) => stock;
+
+    /// <summary>The studio's cloud term; there is no rain.</summary>
+    public static string SkyTerm(string stock) => stock;
 }

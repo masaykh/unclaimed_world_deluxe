@@ -39,7 +39,7 @@
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #  41. the woodpile keeps the firewood it dried
-#  42. weather: seasons follow their names, a subtropical year, spoilage follows the air
+#  42. weather: seasons follow their names, a subtropical year, spoilage follows the air; rain and wind
 #  43. emergency eating: raw food when starving, its comfort cost and a bad stomach
 #  44. interface: a resize edge left onto a higher sibling gives the cursor back; SELECT MODS' switch
 #      sits left of its bar, and MOD OPTIONS is built by OPTIONS' own rows
@@ -1049,8 +1049,10 @@ fi
 # seasons, "Not freezing temperatures, but still cold enough for sickness. Then high solar heat during
 # usually hot summer"). The real DateAndTime stepped through a year: the studio's sun peaks on "Mid
 # winter" (a sawtooth) and the mod's on "Mid summer"; the air's range per season; spoilage through
-# the real NonLivingEntity.ComputeDegradeDamage on a one-tile map; the shelf-life tooltips.
-say "==> 42. weather: the sun follows the season names, a subtropical year, spoilage and tooltips follow the air"
+# the real NonLivingEntity.ComputeDegradeDamage on a one-tile map; the shelf-life tooltips. Step 2,
+# RAIN AND WIND: the seeded schedule, the climate over ten seeds of thirty years, the real
+# WeatherManager.Update steered through a winter storm, the air it cools, the forecast.
+say "==> 42. weather: the sun follows the season names, a subtropical year, spoilage and tooltips follow the air, rain and wind"
 out=$( cd "$(new_install case42)" && "$EXPORT" . --weather-selftest 2>&1 ) || true
 if echo "$out" | grep -q "weather self-test OK" && echo "$out" | grep -q "^  ok    "; then
   pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"

@@ -660,6 +660,42 @@ elevation and the cloud cover, which a save already holds. `dataexport --weather
 steps the real `DateAndTime` through a year and spoils a food through the real
 `ComputeDegradeDamage`.
 
+### Rain and wind — `weather.rain`
+
+Step 2, a second switch in the WEATHER category that works with SEASONS AND TEMPERATURE on; off by
+default. It is separate because it replaces the studio's random cloud cover, and with it the
+sunshine that dries and spoils things. The studio's `WeatherManager` rolls a new cloud target (1 in
+80 every 2 s, any value equally likely) and a new wind direction (1 in 50); its wind speed is a
+fixed 1.5 m/s; there is no rain anywhere in the game.
+
+The weather is a schedule, a function of the game's random seed (the gameplay `RandomGenerator`'s
+`RandomSeed`, saved with every game and reused by replays) and of the clock, `(Year + TimeOfYear) * 12`
+days. Nothing is drawn from the random stream, so the rest of the game's random numbers are what
+they were, and the weather can be looked ahead at. Each calendar day rolls one rain spell with a
+chance that follows the season (`WeatherMod.RainChance`): about 83% of winter days, 28% at the
+equinoxes, 4% in summer (ten seeds of thirty years). A winter spell is a rainstorm of up to 12
+hours, a summer one a shower of 2–4. The wind follows the season — 1–4.6 m/s in summer, about
+8 m/s ("Fresh breeze") in winter between the storms — and a storm adds up to 10 m/s, to "Gale" or
+"Strong gale", never the studio's "Storm".
+
+| hook | what changes with the switch on |
+|---|---|
+| `WeatherManager.Update` → `WeatherMod.SteerCloudCover`, `SteerWindSpeed` | the cloud cover (and its target) and the wind speed are the schedule's; the studio's random rolls still happen. Off, the wind is the studio's 1.5 m/s |
+| `WeatherManager.UpdateWeatherDisplay` → `WeatherMod.SkyTerm` | WEATHER NOW says "Light rain", "Rain" or "Rainstorm" instead of the cloud term while it rains |
+| `WeatherMod.CurrentAirTemperature` (step 1's hooks) | rain cools the air up to 3 C and wind 0.12 C a m/s above 3 m/s — a winter storm 3–5 C colder — never below 2 C |
+| `InGameInterface.SetTimeAndDate` → `WeatherMod.ShowTemperature` → `HUDDateAndWeather.SetWeatherAhead`, `SetTempAhead` | WEATHER AHEAD (the studio's `SetWeatherAhead`, which nothing called) shows tomorrow, midnight to midnight: the wettest it gets or the daytime cloud, the strongest wind and the high |
+
+Cloud cuts the studio's `SunIntensity`, so a rainy day is cooler and things dry and spoil less in
+the sun; the cloud shadows follow it, and the wind blows the cloud shadows and the smoke the studio
+lets the wind push. **Saves:** nothing new. `WeatherManager`'s own saved cloud cover, target and
+wind speed hold the schedule's values, in the fields and format they always had, and on load the
+schedule is worked out again from the seed and the date. **Not here:** no rain is drawn or heard —
+the game has no rain particle, texture or sound, its particles are puffs drawn with the map tile
+their emitter stands on, and rain would need a streak texture (a new binary asset) or a particle
+drawn stretched along its velocity, plus an emitter that follows the camera. What the cold does
+to people is step 3. `--weather-selftest` checks the schedule, the climate over ten seeds, the
+real `WeatherManager.Update` through a winter storm and the forecast against the day that comes.
+
 ## Mod settings: `user/ModSettings.xml`
 
 Mods get a configuration file and a **MODS** section in the in-game options menu. Both come from
