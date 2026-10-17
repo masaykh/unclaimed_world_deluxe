@@ -313,6 +313,12 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			}
 			return 1f;
 		}
+		// MOD: loose ground inside a stockpile zone that refuses the item is not storage for it (StockpilePriorityMod.GroundRefuses).
+		if (combo.StorageLocation.Zone == null && !combo.StorageLocation.GetStorageTarget.HasValue
+			&& UWGame.Mods.StockpilePriorityMod.GroundRefuses(combo.StorageLocation.GroundLocation, itemData))
+		{
+			return -1f;
+		}
 		return 0.1f;
 	}
 

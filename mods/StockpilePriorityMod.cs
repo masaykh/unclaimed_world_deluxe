@@ -56,10 +56,13 @@ namespace UWGame.Mods;
 ///    an item, which can be hours, no item of the type moves anywhere. An item stored where its
 ///    stockpile does not allow it is exempt from that, and so is the haul taking it out (MustLeave).
 ///
-/// NOT DONE. Point 3 of the request, a stockpile whose items are not used, is a separate step. An
-/// item lying on a stockpile ZONE that does not allow it may still stay: the planner's loose
-/// ground storage near camp covers zone tiles too, and an item scores best on the tile it is
-/// already on (IsCurrentlyInThisStorage).
+/// ZONES TOO (2026-10-17). The planner's loose ground storage near camp covers zone tiles, and an
+/// item scores best on the tile it is already on (IsCurrentlyInThisStorage), so an item a zone no
+/// longer allowed stayed when no stockpile allowed it. A zone tile that refuses a type is no longer
+/// ground storage for it (GroundRefuses, from ScoreStockpileSettings), and an item lying on one
+/// must leave like one stored in a refusing hut (LiesOnARefusingZone, in MustLeave).
+///
+/// NOT DONE. Point 3 of the request, a stockpile whose items are not used, is a separate step.
 ///
 /// Off by default. While off, a stockpile's priority is kept but means nothing.
 /// </summary>
@@ -177,7 +180,51 @@ public static class StockpilePriorityMod
     /// stored, and the studio's rule would cancel the haul mid-way).
     /// </summary>
     public static bool MustLeave(EntityGroup owner, IKnownEntityData item, HaulingJob haul = null) =>
-        Enabled && (IsStoredAgainstItsStockpile(owner, item) || (haul != null && Evictions().Contains(haul.ID)));
+        Enabled && (IsStoredAgainstItsStockpile(owner, item) || LiesOnARefusingZone(item)
+                    || (haul != null && Evictions().Contains(haul.ID)));
+
+    /// <summary>
+    /// Lies loose on a stockpile ZONE whose settings do not allow its type (Kastuk, 2026-10-12,
+    /// unchecked items must leave - the zone half of it). A zone is not a structure, so
+    /// <see cref="IsStoredAgainstItsStockpile"/> never sees it.
+    /// </summary>
+    public static bool LiesOnARefusingZone(IKnownEntityData item) =>
+        item?.EntityType != null && !item.ContainedBy.HasValue && item.MapPosition.HasValue
+        && ZoneRefuses(item.MapPosition.Value, item.EntityType);
+
+    /// <summary>
+    /// Called by HaulingJobManager.ScoreStockpileSettings for loose ground near camp: a tile inside a
+    /// stockpile zone that refuses the item is not ground storage for it. Without this, an item a zone
+    /// no longer allows scored best right where it lay - the studio counts any ground near camp as
+    /// storage, and the tile an item is on as the best of it (IsCurrentlyInThisStorage) - so it never
+    /// left when no stockpile allowed it, and new items of that kind could be dropped onto the zone.
+    /// </summary>
+    public static bool GroundRefuses(Microsoft.Xna.Framework.Vector3 groundLocation, IKnownEntityData item) =>
+        Enabled && item?.EntityType != null && ZoneRefuses(MapManager.WorldPosToTile(groundLocation), item.EntityType);
+
+    /// <summary>Whether a stockpile zone on the map tile does not allow the type.</summary>
+    public static bool ZoneRefuses(Microsoft.Xna.Framework.Point tilePosition, EntityType type) =>
+        ZoneRefuses(The.Map?.GetTile(tilePosition), type);
+
+    /// <summary>Whether a stockpile zone on <paramref name="tile"/> does not allow the type.</summary>
+    public static bool ZoneRefuses(TerrainTile tile, EntityType type)
+    {
+        if (tile?.Zones == null || type == null)
+        {
+            return false;
+        }
+        foreach (List<Zone> zones in tile.Zones.Values)
+        {
+            foreach (Zone zone in zones)
+            {
+                if (zone?.Stockpile != null && !zone.Stockpile.MayStockpile(type, out _))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /// <summary>Stored in a structure whose stockpile, in the owner's settings, does not allow its type.</summary>
     public static bool IsStoredAgainstItsStockpile(EntityGroup owner, IKnownEntityData item)

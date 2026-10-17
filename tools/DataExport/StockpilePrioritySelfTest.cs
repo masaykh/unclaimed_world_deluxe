@@ -167,6 +167,21 @@ internal static partial class Program
         group.HaulingJobsAnyItemOfType.Clear();
         Check(!Held(onGround), "  with no job waiting, nothing is held (the studio's rule unchanged)");
 
+        // The zone half (2026-10-17): loose ground inside a stockpile zone that refuses a type is not
+        // storage for it, and an item of that type lying there must leave. The tile test both use:
+        Zone ZoneWith(Stockpile s)
+        {
+            var zone = new Zone();
+            typeof(Zone).GetField("stockpile", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(zone, s);
+            return zone;
+        }
+        var someone = (UWGame.SimSide.Allegiances.Allegiance)RuntimeHelpers.GetUninitializedObject(typeof(UWGame.SimSide.Allegiances.Allegiance));
+        var refusingTile = new TerrainTile { Zones = new Dictionary<UWGame.SimSide.Allegiances.Allegiance, List<Zone>> { [someone] = new List<Zone> { new Zone(), ZoneWith(group.StructureStockpiles[(EntityID)600]) } } };
+        var allowingTile = new TerrainTile { Zones = new Dictionary<UWGame.SimSide.Allegiances.Allegiance, List<Zone>> { [someone] = new List<Zone> { ZoneWith(group.StructureStockpiles[(EntityID)700]) } } };
+        Check(UWGame.Mods.StockpilePriorityMod.ZoneRefuses(refusingTile, organic) && !UWGame.Mods.StockpilePriorityMod.ZoneRefuses(allowingTile, organic)
+              && !UWGame.Mods.StockpilePriorityMod.ZoneRefuses(new TerrainTile(), organic),
+              "a tile in a stockpile zone that refuses organic matter refuses it; an allowing zone, a plain zone or no zone does not");
+
         enabled.Value = enabled.DefaultValue;
 
         // The save: written and read by the game's own Snapshotter.

@@ -31,6 +31,9 @@ public static class StockpilePriorityMod
     /// <summary>The studio's rule: a type a process may want is not hauled to storage.</summary>
     public static bool MustLeave(EntityGroup owner, IKnownEntityData item, HaulingJob haul = null) => false;
 
+    /// <summary>The studio's: any loose ground near camp is storage, zone or not.</summary>
+    public static bool GroundRefuses(Microsoft.Xna.Framework.Vector3 groundLocation, IKnownEntityData item) => false;
+
     public static void OnStockpileChanged(EntityGroup owner, Stockpile stockpile)
     {
     }
