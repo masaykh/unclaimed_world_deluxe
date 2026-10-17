@@ -9,8 +9,10 @@ This build includes a set of mods, **on by default**, each individually switchab
 
 The main menu's **MODDING → SELECT MODS** lists them all, and any in `user/Mods`: what each does, who
 made it, and a switch for the whole mod. A mod switched off there acts as the studio's game until
-it is switched on again, and keeps your settings meanwhile; its individual switches are in OPTIONS →
-MODS.
+it is switched on again, and keeps your settings meanwhile. A mod that is on unfolds to **MOD
+OPTIONS**, its individual settings - a change there is applied and saved at once. The same settings
+are in OPTIONS → MODS, which is also where they are changed during a game; key bindings are only
+there.
 
 | mod | what it changes |
 |---|---|

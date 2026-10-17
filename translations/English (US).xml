@@ -2453,6 +2453,31 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Key>GuiWeAreNotInCommunicationWithTheMissionEstimatedF_1e835b7f45f1</Key>
     <Value>We are not in communication with the mission. Estimated from its route and speed: arrival at {0}{1}.</Value>
   </String>
+  <!-- ClientSide/Interface/ModSettingRows.cs -->
+  <String>
+    <Key>GuiSTABLEConfirmedInPlay_2f64ad44d75a</Key>
+    <Value>STABLE - confirmed in play.</Value>
+  </String>
+  <String>
+    <Key>GuiTESTINGNotYetConfirmedInPlay_c2c6792e250c</Key>
+    <Value>TESTING - not yet confirmed in play.</Value>
+  </String>
+  <String>
+    <Key>GuiChangesWhatASaveContainsSavesMadeWithItOnAreMar_eaf9995d1f44</Key>
+    <Value>Changes what a save contains: saves made with it on are marked MODDED.</Value>
+  </String>
+  <String>
+    <Key>GuiSTABLE</Key>
+    <Value>STABLE</Value>
+  </String>
+  <String>
+    <Key>GuiTESTING</Key>
+    <Value>TESTING</Value>
+  </String>
+  <String>
+    <Key>GuiContentChangesApplyAtTheNextGameStart_ba7003a1a42d</Key>
+    <Value>Content changes apply at the next game start!</Value>
+  </String>
   <!-- ClientSide/Interface/ModdingDialog.cs -->
   <String>
     <Key>GuiSwitchedOffOPTIONSMODSMAINMENUMAPEDITORBUTTONS_0503ba322338</Key>
@@ -2580,24 +2605,12 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>MODS</Value>
   </String>
   <String>
-    <Key>GuiContentChangesApplyAtTheNextGameStart_ba7003a1a42d</Key>
-    <Value>Content changes apply at the next game start!</Value>
-  </String>
-  <String>
     <Key>GuiOTHER</Key>
     <Value>OTHER</Value>
   </String>
   <String>
     <Key>GuiUntickEverythingIn0BackToTheStudioSGameTickEver_423f01ad06a2</Key>
     <Value>Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK.</Value>
-  </String>
-  <String>
-    <Key>GuiSTABLE</Key>
-    <Value>STABLE</Value>
-  </String>
-  <String>
-    <Key>GuiTESTING</Key>
-    <Value>TESTING</Value>
   </String>
   <String>
     <Key>GuiKEYS</Key>
@@ -2622,18 +2635,6 @@ Structures can often have their lifespan extended with regular maintenance. Item
   <String>
     <Key>GuiPRESSAKEY_43f845f39a9c</Key>
     <Value>PRESS A KEY...</Value>
-  </String>
-  <String>
-    <Key>GuiSTABLEConfirmedInPlay_2f64ad44d75a</Key>
-    <Value>STABLE - confirmed in play.</Value>
-  </String>
-  <String>
-    <Key>GuiTESTINGNotYetConfirmedInPlay_c2c6792e250c</Key>
-    <Value>TESTING - not yet confirmed in play.</Value>
-  </String>
-  <String>
-    <Key>GuiChangesWhatASaveContainsSavesMadeWithItOnAreMar_eaf9995d1f44</Key>
-    <Value>Changes what a save contains: saves made with it on are marked MODDED.</Value>
   </String>
   <String>
     <Key>GuiWidth0Height1_e07f5d1b7f17</Key>
@@ -3753,15 +3754,7 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Key>GuiEntityEntityTypeDescriptionToUpperEntityEntityT_87b3bffbad43</Key>
     <Value>entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper() entity.EntityType.Description.ToUpper()</Value>
   </String>
-  <!-- ClientSide/MainMenu/Mods/SelectModsPanel.cs -->
-  <String>
-    <Key>GuiStartedWithNomodsEveryModIsOffForThisSessionWha_7e7bf1cdd5f2</Key>
-    <Value>Started with -nomods: every mod is off for this session. What you switch here is kept for the next start.</Value>
-  </String>
-  <String>
-    <Key>GuiSwitchAModOnOrOffWithTheBoxOnItsLeftChangeItsSe_8b02441ba76d</Key>
-    <Value>Switch a mod on or off with the box on its left; change its settings in OPTIONS -&gt; MODS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
-  </String>
+  <!-- ClientSide/MainMenu/Mods/SelectModsEntry.cs -->
   <String>
     <Key>GuiTick0OnUntickOffItsSettingsActAsTheStudioSGameA_07de7e1335da</Key>
     <Value>Tick: {0} on. Untick: off - its settings act as the studio's game, and come back as you left them when it is switched on again.</Value>
@@ -3769,6 +3762,14 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>GuiNotNowTheGameWasStartedWithNomodsOrWithoutTheMo_ad5776ae1ca2</Key>
     <Value>Not now: the game was started with -nomods, or without the mod loader.</Value>
+  </String>
+  <String>
+    <Key>GuiMODOPTIONS</Key>
+    <Value>MOD OPTIONS</Value>
+  </String>
+  <String>
+    <Key>GuiThisModSSettingsAsOPTIONSMODSHasThemAChangeIsAp_c061ffa80408</Key>
+    <Value>This mod's settings, as OPTIONS -&gt; MODS has them. A change is applied and saved at once.</Value>
   </String>
   <String>
     <Key>GuiBy0_97b5389b29fb</Key>
@@ -3811,6 +3812,14 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Settings: {0}, {1} changed from the studio's game - in OPTIONS -&gt; MODS.</Value>
   </String>
   <String>
+    <Key>GuiSettings01ChangedFromTheStudioSGameUnderMODOPTI_990812e1a261</Key>
+    <Value>Settings: {0}, {1} changed from the studio's game - under MOD OPTIONS below.</Value>
+  </String>
+  <String>
+    <Key>GuiSettings01ChangedFromTheStudioSGameSwitchTheMod_c7b489e688fa</Key>
+    <Value>Settings: {0}, {1} changed from the studio's game - switch the mod on to change them.</Value>
+  </String>
+  <String>
     <Key>GuiFileUserMods0_1511760aa789</Key>
     <Value>File: user/Mods/{0}</Value>
   </String>
@@ -3821,6 +3830,15 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>GuiProblem0_90c5acc277da</Key>
     <Value>Problem: {0}</Value>
+  </String>
+  <!-- ClientSide/MainMenu/Mods/SelectModsPanel.cs -->
+  <String>
+    <Key>GuiStartedWithNomodsEveryModIsOffForThisSessionWha_7e7bf1cdd5f2</Key>
+    <Value>Started with -nomods: every mod is off for this session. What you switch here is kept for the next start.</Value>
+  </String>
+  <String>
+    <Key>GuiSwitchAModOnOrOffWithTheBoxOnItsLeftUnfoldAModT_8e962e50b6f1</Key>
+    <Value>Switch a mod on or off with the box on its left. Unfold a mod that is on, then MOD OPTIONS, to change its settings - they apply and are saved at once; keys are set in OPTIONS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
   </String>
   <String>
     <Key>GuiReturnToTheMainMenu</Key>

@@ -425,7 +425,8 @@ user/Mods/MyMod.png    its picture, about 100 x 100
 Both are optional. Switching a DLL off there lists it in `user/ModSettings.xml` as
 `<DisabledMod id="dll:MyMod"/>`, and the loader skips it from the next start. If your mod
 registers settings with its file name as the mod id (`ModSettings.Toggle("MyMod", ...)`), they
-appear in the same entry. The mods that ship with the game describe themselves with
+appear in the same entry, under its MOD OPTIONS - the same rows OPTIONS → MODS shows
+(`ModSettingRows`), less key settings, which stay in OPTIONS. The mods that ship with the game describe themselves with
 `ModSettings.Describe(modId, author, description, thumbnail)`, where the thumbnail is a sprite of
 the game's own (`HUD_thumbnail_cookhouse`) or a PNG's path. A built-in mod switched off has every
 setting read as the studio's game until it is switched on again, and gets its own values back then.

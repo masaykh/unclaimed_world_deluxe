@@ -50,15 +50,8 @@ public class OptionsDialog : Panel
 
 	private ErrorsAndMessages errorsAndMessages;
 
-	/// <summary>
-	/// The controls built for the MODS section, paired with the setting each one edits.
-	///
-	/// A list rather than named fields because there is no list of mod settings to name: what is
-	/// here depends on which mods are installed, which is only known at run time. Everything else
-	/// in this dialog is a field because everything else is fixed at compile time.
-	/// </summary>
-	private readonly List<KeyValuePair<ModSetting, UIComponent>> modControls =
-		new List<KeyValuePair<ModSetting, UIComponent>>();
+	/// <summary>PORT: the MODS section's rows (ModSettingRows), shared with SELECT MODS' MOD OPTIONS.</summary>
+	private readonly ModSettingRows modRows;
 
 	public event EventHandler CancelClick;
 
@@ -68,6 +61,7 @@ public class OptionsDialog : Panel
 		: base(intf, UWGame.Locale.Text("OPTIONS"), new Point(420, 120), new Vector2(400f, 600f), Level.Menu, PanelType.RegularEdges)
 	{
 		GUIManager gui = Interface.gui;
+		modRows = new ModSettingRows(gui);
 		int x = 124;
 		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(intf, Window, 52, Panel.RosterMargin, out display, out lcdSurface, ref lcdScreen);
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: false, 0, 40);
@@ -78,7 +72,7 @@ public class OptionsDialog : Panel
 		};
 		surfaceGrid.AddEntry("surfaceKey", uIComponent);
 		Label label = AddSectionHeader(6, uIComponent, UWGame.Locale.Text("GRAPHICS"));
-		int warningBottom = AddWarning(uIComponent, UWGame.Locale.Text("Restart the game to apply Graphics changes!"), label.Bottom + 6);
+		int warningBottom = ModSettingRows.AddWarning(Interface.gui, uIComponent, UWGame.Locale.Text("Restart the game to apply Graphics changes!"), label.Bottom + 6);
 		cbFullscreen = new CheckBox(Interface.gui);
 		uIComponent.Add(cbFullscreen);
 		cbFullscreen.Init(CheckBoxType.LCD, CheckBoxFlavor.Blue);
@@ -342,44 +336,9 @@ public class OptionsDialog : Panel
 	/// The surface grows and shrinks with the categories; it is inside a scrolling grid, which
 	/// re-lays itself out when an entry changes height (Grid.item_Resize), so a long list scrolls.
 	/// </summary>
-	/// <summary>
-	/// PORT: a red warning in as many lines as the surface needs; returns its bottom. A Label is
-	/// one line and is clipped at the panel edge, and a translation is often longer than the
-	/// English (Kastuk, Russian: both restart warnings were cut off).
-	/// </summary>
-	private int AddWarning(UIComponent parent, string text, int y)
-	{
-		int width = parent.Width - 12;
-		Label line = AddWarningLine(parent, y);
-		foreach (string word in text.Split(' '))
-		{
-			string longer = string.IsNullOrEmpty(line.Text) ? word : line.Text + " " + word;
-			if (!string.IsNullOrEmpty(line.Text) && line.GetTextWidth(longer) > width)
-			{
-				line.FitToText();
-				line = AddWarningLine(parent, line.Bottom);
-				longer = word;
-			}
-			line.Text = longer;
-		}
-		line.FitToText();
-		return line.Bottom;
-	}
-
-	private Label AddWarningLine(UIComponent parent, int y)
-	{
-		Label line = new Label(Interface.gui);
-		parent.Add(line);
-		line.Init(Label.LabelType.LCDNormal);
-		line.NormalColor = UIComponent.errorColor;
-		line.X = 6;
-		line.Y = y;
-		return line;
-	}
-
 	private void BuildModsSection(UIComponent panel, int y)
 	{
-		modControls.Clear();
+		modRows.Clear();
 		modCategoryPanels.Clear();
 		if (ModSettings.All.Count == 0)
 		{
@@ -391,11 +350,7 @@ public class OptionsDialog : Panel
 		Label header = AddSectionHeader(y, panel, UWGame.Locale.Text("MODS"));
 		int lineY = header.Bottom + 6;
 
-		bool anyNeedsReload = ModSettings.All.Any((ModSetting m) => m.TakesEffectOnNextLoad);
-		if (anyNeedsReload)
-		{
-			lineY = AddWarning(panel, UWGame.Locale.Text("Content changes apply at the next game start!"), lineY) + 6;
-		}
+		lineY = ModSettingRows.AddReloadWarning(Interface.gui, panel, ModSettings.All, lineY);
 
 		// Categories in the order their first setting was registered, so the menu keeps the order
 		// the mods were written down in; OTHER last.
@@ -471,12 +426,7 @@ public class OptionsDialog : Panel
 			Width = cp.ExpandedPanel.Width
 		};
 		cp.AddContent(content);
-		int lineY = 0;
-		categoryChoiceWidth = ChoiceWidthFor(settings, content.Width);
-		foreach (ModSetting setting in settings)
-		{
-			lineY = AddModSettingControl(content, setting, lineY);
-		}
+		int lineY = modRows.AddGroup(content, settings, 0);
 		// Fires Resize, which is what sizes the expanded panel (CollapsablePanel.content_Resize).
 		content.Height = lineY + 4;
 
@@ -491,11 +441,9 @@ public class OptionsDialog : Panel
 
 		void Refresh()
 		{
-			int changed = settings.Count((ModSetting s) => !string.Equals(ReadModControl(s), s.StockValue, StringComparison.Ordinal));
-			categorySwitch.IsChecked = changed > 0;
+			categorySwitch.IsChecked = modRows.ChangedCount(settings) > 0;
 			// The category's state first: STABLE only when every switch in it is confirmed in play.
-			string stability = ModSettings.AllStable(settings) ? UWGame.Locale.Text("STABLE") : UWGame.Locale.Text("TESTING");
-			cp.Summary = changed > 0 ? stability + " - " + UWGame.Locale.Count(changed, "{0} CHANGED", "{0} CHANGED") : stability;
+			cp.Summary = modRows.Summary(settings);
 		}
 
 		categorySwitch.Click += delegate
@@ -516,29 +464,15 @@ public class OptionsDialog : Panel
 				{
 					// A choice has no "on"; the mod's own default is the nearest thing, and where
 					// that is the stock value too (DangerousFaunaMod's x1) it is left as it is.
-					value = string.Equals(s.DefaultValue, s.StockValue, StringComparison.Ordinal) ? ReadModControl(s) : s.DefaultValue;
+					value = string.Equals(s.DefaultValue, s.StockValue, StringComparison.Ordinal) ? modRows.Read(s) : s.DefaultValue;
 				}
-				WriteModControl(s, value);
+				modRows.Write(s, value);
 			}
 			Refresh();
 		};
 		foreach (ModSetting s in settings)
 		{
-			UIComponent control = FindModControl(s);
-			if (control is CheckBox checkBox)
-			{
-				checkBox.Click += delegate
-				{
-					Refresh();
-				};
-			}
-			else if (control is ComboBox comboBox)
-			{
-				comboBox.SelectionChanged += delegate
-				{
-					Refresh();
-				};
-			}
+			modRows.OnChange(s, Refresh);
 		}
 		Refresh();
 
@@ -564,9 +498,6 @@ public class OptionsDialog : Panel
 
 	// ---- KEYS (KeybindMod) ------------------------------------------------------------------
 
-	/// <summary>The key each button currently shows - not yet what Options or the setting holds.</summary>
-	private readonly Dictionary<TextButton, string> keyButtonValues = new Dictionary<TextButton, string>();
-
 	/// <summary>The studio's bindings: the Options field each button edits.</summary>
 	private readonly List<KeyValuePair<System.Reflection.FieldInfo, TextButton>> vanillaKeyButtons =
 		new List<KeyValuePair<System.Reflection.FieldInfo, TextButton>>();
@@ -578,7 +509,6 @@ public class OptionsDialog : Panel
 
 	private void BuildKeysCategory(UIComponent panel)
 	{
-		keyButtonValues.Clear();
 		vanillaKeyButtons.Clear();
 		capturingKeyButton = null;
 		CollapsablePanel cp = new CollapsablePanel(Interface.gui, CollapsablePanel.PanelType.DropDownBig);
@@ -608,7 +538,7 @@ public class OptionsDialog : Panel
 			{
 				string category = ModSettings.CategoryLabel(setting.ModId);
 				TextButton button = AddKeyRow(content, setting.DisplayLabel, setting.Value, (category != null ? category + ": " : "") + setting.DisplayToolTip, ref lineY);
-				modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, button));
+				modRows.AddKeyButton(setting, button, setting.Value);
 			}
 		}
 		// Kastuk: GAME MENU rebound away from Escape could never be put back, since Escape cancels
@@ -679,7 +609,7 @@ public class OptionsDialog : Panel
 		}
 		button.ToolTip = UWGame.Locale.Text("Click, then press the new key. Escape cancels.");
 		keyButtonColor = button.LabelColor;
-		keyButtonValues[button] = keyName;
+		modRows.KeyButtonValues[button] = keyName;
 		button.Text = KeybindMod.DisplayName(keyName);
 		button.Click += delegate
 		{
@@ -693,7 +623,7 @@ public class OptionsDialog : Panel
 	{
 		if (capturingKeyButton != null)
 		{
-			capturingKeyButton.Text = KeybindMod.DisplayName(keyButtonValues[capturingKeyButton]);
+			capturingKeyButton.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[capturingKeyButton]);
 		}
 		capturingKeyButton = button;
 		button.Text = UWGame.Locale.Text("PRESS A KEY...");
@@ -710,7 +640,7 @@ public class OptionsDialog : Panel
 		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
 		{
 			capturingKeyButton = null;
-			button.Text = KeybindMod.DisplayName(keyButtonValues[button]);
+			button.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[button]);
 			return true;
 		}
 		foreach (Microsoft.Xna.Framework.Input.Keys key in KeybindMod.Bindable)
@@ -718,7 +648,7 @@ public class OptionsDialog : Panel
 			if (input.IsKeyTapped(key))
 			{
 				capturingKeyButton = null;
-				keyButtonValues[button] = key.ToString();
+				modRows.KeyButtonValues[button] = key.ToString();
 				button.Text = KeybindMod.DisplayName(key.ToString());
 				MarkDuplicateKeys();
 				break;
@@ -730,8 +660,8 @@ public class OptionsDialog : Panel
 	/// <summary>A key on two buttons turns both red; nothing stops it, since two keys for PAUSE is the studio's own design.</summary>
 	private void MarkDuplicateKeys()
 	{
-		var counts = keyButtonValues.Values.GroupBy((string k) => k).ToDictionary((IGrouping<string, string> g) => g.Key, (IGrouping<string, string> g) => g.Count());
-		foreach (KeyValuePair<TextButton, string> pair in keyButtonValues)
+		var counts = modRows.KeyButtonValues.Values.GroupBy((string k) => k).ToDictionary((IGrouping<string, string> g) => g.Key, (IGrouping<string, string> g) => g.Count());
+		foreach (KeyValuePair<TextButton, string> pair in modRows.KeyButtonValues)
 		{
 			pair.Key.LabelColor = (counts[pair.Value] > 1) ? UIComponent.errorColor : keyButtonColor;
 		}
@@ -744,15 +674,12 @@ public class OptionsDialog : Panel
 		Options fresh = new Options();
 		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
 		{
-			keyButtonValues[pair.Value] = pair.Key.GetValue(fresh).ToString();
-			pair.Value.Text = KeybindMod.DisplayName(keyButtonValues[pair.Value]);
+			modRows.KeyButtonValues[pair.Value] = pair.Key.GetValue(fresh).ToString();
+			pair.Value.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[pair.Value]);
 		}
-		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
+		foreach (ModSetting setting in modRows.Settings.Where((ModSetting s) => s.Kind == ModSettingKind.Key).ToList())
 		{
-			if (pair.Key.Kind == ModSettingKind.Key)
-			{
-				WriteModControl(pair.Key, pair.Key.DefaultValue);
-			}
+			modRows.Write(setting, setting.DefaultValue);
 		}
 		MarkDuplicateKeys();
 	}
@@ -762,7 +689,7 @@ public class OptionsDialog : Panel
 	{
 		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
 		{
-			if (Enum.TryParse(keyButtonValues[pair.Value], out Microsoft.Xna.Framework.Input.Keys key))
+			if (Enum.TryParse(modRows.KeyButtonValues[pair.Value], out Microsoft.Xna.Framework.Input.Keys key))
 			{
 				pair.Key.SetValue(options, key);
 			}
@@ -776,15 +703,12 @@ public class OptionsDialog : Panel
 	private void RefillModControls()
 	{
 		capturingKeyButton = null;
-		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
-		{
-			WriteModControl(pair.Key, pair.Key.Value);
-		}
+		modRows.Refill();
 		Options options = Interface.Game.Controller.Options;
 		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
 		{
-			keyButtonValues[pair.Value] = pair.Key.GetValue(options).ToString();
-			pair.Value.Text = KeybindMod.DisplayName(keyButtonValues[pair.Value]);
+			modRows.KeyButtonValues[pair.Value] = pair.Key.GetValue(options).ToString();
+			pair.Value.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[pair.Value]);
 		}
 		MarkDuplicateKeys();
 	}
@@ -805,233 +729,6 @@ public class OptionsDialog : Panel
 		modsSurface.Height = Math.Max(modsSurfaceMinHeight, y + 12);
 	}
 
-	/// <summary>The width of this category's dropdowns, chosen by <see cref="ChoiceWidthFor"/>.</summary>
-	private int categoryChoiceWidth;
-
-	/// <summary>
-	/// The width of a category's dropdowns: the width the dropdown's own header button asks for to
-	/// show its longest choice. Kastuk: DANGEROUS FAUNA's "x1.5" sat in a box as wide as SAVE DATE
-	/// FORMAT's longest pattern; then PESTS' "Normal" slid under the arrow, twice - first with widths
-	/// guessed from character counts, then with the text measured but the margins guessed (36 px;
-	/// the LCDCombo header keeps 17 left and 25 right, the arrow being part of its skin). So the
-	/// probe is the header itself: a TextButton of the same type, sized by its own
-	/// ScaleWidthToFitText, and whatever the skin needs is counted by the code that draws it.
-	/// </summary>
-	private int ChoiceWidthFor(List<ModSetting> settings, int panelWidth)
-	{
-		int longest = 0;
-		TextButton probe = null;
-		int full = Math.Max(80, panelWidth - 124 - 4);
-		foreach (ModSetting s in settings)
-		{
-			if (s.Kind != ModSettingKind.Choice || s.Choices == null)
-			{
-				continue;
-			}
-			int own = 0;
-			foreach (string choice in s.Choices)
-			{
-				if (probe == null)
-				{
-					probe = new TextButton(Interface.gui);
-					probe.Init(TextButton.TextButtonType.LCDCombo);
-				}
-				probe.Text = s.DisplayChoice(choice) ?? "";
-				probe.ScaleWidthToFitText();
-				// A few pixels of air, so the last letter does not touch the arrow.
-				own = Math.Max(own, probe.Width + 4);
-			}
-			// One that cannot fit beside its caption gets a line of its own (AddModSettingControl)
-			// and does not widen the rest of the category.
-			if (own > full)
-			{
-				ownLineChoices.Add(s);
-			}
-			else
-			{
-				longest = Math.Max(longest, own);
-			}
-		}
-		if (longest == 0)
-		{
-			return full;
-		}
-		return Common.Clamp(longest, 60, full);
-	}
-
-	/// <summary>
-	/// Dropdowns whose longest choice is wider than the value column: drawn under their caption,
-	/// across the whole panel. Kastuk, TOOL CARE: "LOOK AFTER" and "BACK WHERE IT CAME FROM"
-	/// were cut off, and should be "widened to full separated line width there to fit any
-	/// contained text".
-	/// </summary>
-	private readonly HashSet<ModSetting> ownLineChoices = new HashSet<ModSetting>();
-
-	/// <summary>One setting's row inside a category; returns the Y below it.</summary>
-	private int AddModSettingControl(UIComponent panel, ModSetting setting, int lineY)
-	{
-		// STABLE or TESTING first (ModSettings.IsStable), so a player reads it before the rest.
-		string toolTip = (ModSettings.IsStable(setting) ? UWGame.Locale.Text("STABLE - confirmed in play.") + " " : UWGame.Locale.Text("TESTING - not yet confirmed in play.") + " ") + setting.DisplayToolTip;
-		if (setting.AffectsSimulation)
-		{
-			toolTip += " " + UWGame.Locale.Text("Changes what a save contains: saves made with it on are marked MODDED.");
-		}
-		int valueX = 124;
-		int valueWidth = panel.Width - valueX - 4;
-
-		switch (setting.Kind)
-		{
-		case ModSettingKind.Toggle:
-		{
-			CheckBox checkBox = new CheckBox(Interface.gui);
-			panel.Add(checkBox);
-			checkBox.Init(CheckBoxType.LCD, CheckBoxFlavor.Green);
-			checkBox.Text = setting.DisplayLabel;
-			checkBox.FitToText();
-			checkBox.X = 6;
-			checkBox.Y = lineY;
-			checkBox.ToolTip = toolTip;
-			checkBox.TooltipWidth = 320;
-			// Kastuk: the tooltip went away while the cursor was still on the switch.
-			checkBox.TooltipExpires = false;
-			checkBox.IsChecked = setting.On;
-			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, checkBox));
-			return checkBox.Bottom + 8;
-		}
-		case ModSettingKind.Choice:
-		{
-			Label caption = new Label(Interface.gui);
-			panel.Add(caption);
-			caption.Init(Label.LabelType.LCDSmallHeadingBanner);
-			caption.Text = setting.DisplayLabel + ":";
-			caption.FitToText();
-			caption.X = 6;
-			caption.Y = lineY;
-			caption.ToolTip = toolTip;
-			caption.TooltipWidth = 320;
-			caption.TooltipExpires = false;
-			ComboBox comboBox = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
-			panel.Add(comboBox);
-			comboBox.Init(ComboBoxTypes.LCD);
-			// Right-aligned at the category's width; beside the caption when it fits, under it
-			// when it does not ("NORTHERN BUSH DRAGON AGGRO RANGE:" is long).
-			int choiceWidth = ownLineChoices.Contains(setting) ? panel.Width - 6 - 4
-				: (categoryChoiceWidth > 0) ? categoryChoiceWidth : valueWidth;
-			comboBox.Width = choiceWidth;
-			comboBox.X = panel.Width - choiceWidth - 4;
-			if (caption.Right + 6 <= comboBox.X)
-			{
-				comboBox.CenterThisVertically(caption.Y + caption.Height / 2);
-			}
-			else
-			{
-				comboBox.Y = caption.Bottom + 2;
-			}
-			comboBox.ToolTip = toolTip;
-			comboBox.TooltipExpires = false;
-			foreach (string choice in setting.Choices ?? new string[0])
-			{
-				comboBox.AddEntry(choice, setting.DisplayChoice(choice));
-			}
-			if (comboBox.EntriesByKey.ContainsKey(setting.Value))
-			{
-				comboBox.SelectedKey = setting.Value;
-			}
-			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, comboBox));
-			return Math.Max(caption.Bottom, comboBox.Bottom) + 8;
-		}
-		default:
-		{
-			Label caption2 = new Label(Interface.gui);
-			panel.Add(caption2);
-			caption2.Init(Label.LabelType.LCDSmallHeadingBanner);
-			caption2.Text = setting.DisplayLabel + ":";
-			caption2.FitToText();
-			caption2.X = 6;
-			caption2.Y = lineY;
-			caption2.ToolTip = toolTip;
-			caption2.TooltipExpires = false;
-			TextBox textBox = new TextBox(Interface.gui);
-			panel.Add(textBox);
-			textBox.Init(TextBox.TextBoxType.LCD);
-			textBox.X = valueX;
-			textBox.Width = valueWidth;
-			textBox.Height = 20;
-			textBox.VMargin = 1;
-			textBox.IsEditable = true;
-			textBox.Text = setting.Value;
-			if (caption2.Right + 6 <= valueX)
-			{
-				textBox.CenterThisVertically(caption2.Y + caption2.Height / 2);
-			}
-			else
-			{
-				textBox.Y = caption2.Bottom + 2;
-			}
-			textBox.ToolTip = toolTip;
-			modControls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, textBox));
-			return Math.Max(caption2.Bottom, textBox.Bottom) + 8;
-		}
-		}
-	}
-
-	private UIComponent FindModControl(ModSetting setting)
-	{
-		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
-		{
-			if (pair.Key == setting)
-			{
-				return pair.Value;
-			}
-		}
-		return null;
-	}
-
-	/// <summary>What a setting's control currently shows - which is not yet what the setting holds.</summary>
-	private string ReadModControl(ModSetting setting)
-	{
-		UIComponent control = FindModControl(setting);
-		if (control is CheckBox checkBox)
-		{
-			return checkBox.IsChecked ? "true" : "false";
-		}
-		if (control is ComboBox comboBox)
-		{
-			return comboBox.SelectedKey as string ?? setting.Value;
-		}
-		if (control is TextBox textBox)
-		{
-			return textBox.Text;
-		}
-		if (control is TextButton keyButton && keyButtonValues.TryGetValue(keyButton, out string keyName))
-		{
-			return keyName;
-		}
-		return setting.Value;
-	}
-
-	private void WriteModControl(ModSetting setting, string value)
-	{
-		UIComponent control = FindModControl(setting);
-		if (control is CheckBox checkBox)
-		{
-			checkBox.IsChecked = ModSetting.ParseBool(value, false);
-		}
-		else if (control is ComboBox comboBox && value != null && comboBox.EntriesByKey.ContainsKey(value))
-		{
-			comboBox.SelectedKey = value;
-		}
-		else if (control is TextBox textBox)
-		{
-			textBox.Text = value ?? "";
-		}
-		else if (control is TextButton keyButton && keyButtonValues.ContainsKey(keyButton))
-		{
-			keyButtonValues[keyButton] = value;
-			keyButton.Text = KeybindMod.DisplayName(value);
-		}
-	}
-
 	/// <summary>
 	/// Reads the MODS controls back into the settings and writes the file. Called from OK, with
 	/// the rest of the dialog - a setting the player changed and then cancelled must not have
@@ -1040,15 +737,7 @@ public class OptionsDialog : Panel
 	/// </summary>
 	private void ApplyModSettings()
 	{
-		if (modControls.Count == 0)
-		{
-			return;
-		}
-		foreach (KeyValuePair<ModSetting, UIComponent> pair in modControls)
-		{
-			pair.Key.Value = ReadModControl(pair.Key);
-		}
-		ModSettings.Save(GameStateManagement.UnclaimedWorld.LogError);
+		modRows.ApplyAll(GameStateManagement.UnclaimedWorld.LogError);
 	}
 
 	private Label AddSectionHeader(int xYpos, UIComponent panel, string text)
@@ -1188,7 +877,7 @@ public class OptionsDialog : Panel
 		// 0.8 set and the mod switched off, every OK failed until the slider was moved by hand,
 		// and he could not tell why.
 		ModSetting allowBelowOne = ModSettings.Find(UWGame.Mods.MagnificationMod.ModId + ".allowBelowOne");
-		bool pendingAllowBelowOne = allowBelowOne != null && ModSetting.ParseBool(ReadModControl(allowBelowOne), false);
+		bool pendingAllowBelowOne = allowBelowOne != null && ModSetting.ParseBool(modRows.Read(allowBelowOne), false);
 		int minZoomPercent = UWGame.Mods.MagnificationMod.OptionsFloorPercent(pendingAllowBelowOne);
 		if ((float)fbZoom.Value < (float)minZoomPercent)
 		{

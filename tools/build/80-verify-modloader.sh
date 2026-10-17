@@ -41,7 +41,8 @@
 #  41. the woodpile keeps the firewood it dried
 #  42. weather: seasons follow their names, a subtropical year, spoilage follows the air
 #  43. emergency eating: raw food when starving, its comfort cost and a bad stomach
-#  44. interface: a resize edge left onto a higher sibling gives the cursor back
+#  44. interface: a resize edge left onto a higher sibling gives the cursor back; SELECT MODS' switch
+#      sits left of its bar, and MOD OPTIONS is built by OPTIONS' own rows
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -1079,8 +1080,10 @@ fi
 #
 # The stuck double-arrow cursor (Kastuk, "Small interface issue"): test/UnclaimedWorld.Test's
 # HoverTests drive the real GUIManager / UIComponent.CheckMouseStatus with no graphics device - a
-# window's resize edge left straight onto a higher sibling must give the cursor back.
-say "==> 44. interface: a resize edge left onto a higher sibling gives the cursor back"
+# window's resize edge left straight onto a higher sibling must give the cursor back. ModsDialogTests
+# build SELECT MODS entries the same way (a stand-in font and sprite sheet): the switch left of the
+# bar, MOD OPTIONS folding and remembered, its rows the ones OPTIONS -> MODS builds, a change saved.
+say "==> 44. interface: the hover lets go; SELECT MODS' switch and MOD OPTIONS"
 out=$( "$DOTNET" test test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj -nologo 2>&1 ) || true
 if echo "$out" | grep -q "^Passed!"; then
   pass "$(echo "$out" | sed -n 's/^Passed! *- *//p' | cut -d, -f2 | tr -d ' ') in test/UnclaimedWorld.Test"
