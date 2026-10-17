@@ -1120,6 +1120,15 @@ public class UIComponent
 				{
 					if (!control.Visible || !(control.ZOrder >= num))
 					{
+						// PORT FIX: a child under a higher sibling that already has the pointer was
+						// skipped without a word, so one that held the hover kept it - a window's
+						// resize edge (ZOrder 0.3) left straight onto its close button (0.4) or a raised
+						// control kept the double-arrow cursor (Kastuk, 2026-10-12). Covered is the
+						// same as left: it gets its MouseOut. Hidden ones are the Visible setter's.
+						if (control.Visible)
+						{
+							control.MouseOutCoveredTree(args);
+						}
 						continue;
 					}
 					UIComponent uIComponent2 = control.CheckMouseStatus(args, thisScissor);
@@ -1147,6 +1156,22 @@ public class UIComponent
 			}
 		}
 		return uIComponent;
+	}
+
+	/// <summary>
+	/// PORT FIX: MouseOut for this component and every child still holding the hover - it is covered
+	/// by a higher sibling that has the pointer (CheckMouseStatus).
+	/// </summary>
+	private void MouseOutCoveredTree(MouseEventArgs args)
+	{
+		if (isMouseOver)
+		{
+			InvokeMouseOut(args);
+		}
+		foreach (UIComponent control in controls)
+		{
+			control.MouseOutCoveredTree(args);
+		}
 	}
 
 	internal void InvokeMouseOver(MouseEventArgs args)

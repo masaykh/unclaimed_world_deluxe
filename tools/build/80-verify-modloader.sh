@@ -38,6 +38,8 @@
 #  32. a save with a delivered dog loads headlessly (only when UW_DOG_SAVE names one)
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
+#  41. the woodpile keeps the firewood it dried
+#  44. interface: a resize edge left onto a higher sibling gives the cursor back
 #
 # What this pins down: that HarmonyLib patches work at all on .NET 8, that the loader finds and
 # applies mods, that the documented .csproj reference layout still compiles, and that one bad mod
@@ -1038,6 +1040,20 @@ else
   echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
   echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
   fail "the woodpile self-test reported failures"
+fi
+
+# ------------------------------------------------- 44. interface: the hover lets go
+#
+# The stuck double-arrow cursor (Kastuk, "Small interface issue"): test/UnclaimedWorld.Test's
+# HoverTests drive the real GUIManager / UIComponent.CheckMouseStatus with no graphics device - a
+# window's resize edge left straight onto a higher sibling must give the cursor back.
+say "==> 44. interface: a resize edge left onto a higher sibling gives the cursor back"
+out=$( "$DOTNET" test test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj -nologo 2>&1 ) || true
+if echo "$out" | grep -q "^Passed!"; then
+  pass "$(echo "$out" | sed -n 's/^Passed! *- *//p' | cut -d, -f2 | tr -d ' ') in test/UnclaimedWorld.Test"
+else
+  echo "$out" | grep -E "Failed |Error Message|error " | head -8 | sed 's/^/      /'
+  fail "the interface tests failed"
 fi
 
 # ------------------------------------------------- 8. the settings file round-trips
