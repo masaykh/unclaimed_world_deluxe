@@ -968,7 +968,10 @@ fi
 # StockpilePriorityMod (Kastuk, "Stockpile improvements", 2026-10-10): HIGH stockpiles fill and are
 # hauled to first, LOW ones last. The tiers must not overlap the studio's score for a pair, a pair
 # the stockpile refuses must stay out, and the priority a Stockpile now saves must load back.
-say "==> 38. stockpile priority: HIGH fills first, LOW last, hauling takes it, and it saves"
+# Kastuk, 2026-10-12: a HIGH stockpile must not hurry a tool a colonist carries (the store-fetch-store
+# shuffle), and an item its stockpile no longer allows must leave even when a process waits for
+# its type (HaulingJobManager.ItemIsHeldForProcess, checked through the real method).
+say "==> 38. stockpile priority: HIGH fills first, LOW last, hauling takes it, carried tools and evictions, and it saves"
 out=$( cd "$(new_install case38)" && "$EXPORT" . --stockpile-priority-selftest 2>&1 ) || true
 if echo "$out" | grep -q "stockpile priority self-test OK" && echo "$out" | grep -q "^  ok    "; then
   pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"

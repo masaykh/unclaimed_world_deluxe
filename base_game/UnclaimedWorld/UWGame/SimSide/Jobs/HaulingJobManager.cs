@@ -580,7 +580,8 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 					{
 						entityData.AssignedToJob = null;
 					}
-					if (flag)
+					// MOD: an item its stockpile no longer allows leaves, wanted by a process or not (StockpilePriorityMod.MustLeave).
+					if (flag || UWGame.Mods.StockpilePriorityMod.MustLeave(parent, entityData))
 					{
 						allItems.Add(entityData);
 					}
@@ -848,7 +849,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			index--;
 			return false;
 		}
-		if (ItemTypeIsNeededForProcess(entityGroup, itemData.EntityType))
+		if (ItemIsHeldForProcess(entityGroup, itemData))
 		{
 			combos.RemoveAt(index);
 			index--;
@@ -904,6 +905,15 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 		isWaiting = false;
 	}
 
+	/// <summary>
+	/// MOD: ItemTypeIsNeededForProcess for one item - except one its stockpile no longer allows, and
+	/// the haul taking it out (StockpilePriorityMod.MustLeave).
+	/// </summary>
+	private static bool ItemIsHeldForProcess(EntityGroup entityGroup, IKnownEntityData itemData, HaulingJob haul = null)
+	{
+		return ItemTypeIsNeededForProcess(entityGroup, itemData.EntityType) && !UWGame.Mods.StockpilePriorityMod.MustLeave(entityGroup, itemData, haul);
+	}
+
 	private static bool ItemTypeIsNeededForProcess(EntityGroup entityGroup, EntityType entityType)
 	{
 		List<ProcessJob> value2;
@@ -954,7 +964,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			{
 				RecordOutdatedJob(ref outdatedJobs, haulingJob);
 			}
-			else if (job is HaulingJobSpecificItem { IsHaulJobToStorage: not false } haulingJobSpecificItem && (ItemTypeIsNeededForProcess(parent, data.EntityType) || !Entity.StorageHasRoomForItem(allegiance.SharedKnowledge, haulingJobSpecificItem, data)))
+			else if (job is HaulingJobSpecificItem { IsHaulJobToStorage: not false } haulingJobSpecificItem && (ItemIsHeldForProcess(parent, data, haulingJobSpecificItem) || !Entity.StorageHasRoomForItem(allegiance.SharedKnowledge, haulingJobSpecificItem, data)))
 			{
 				RecordOutdatedJob(ref outdatedJobs, haulingJob);
 			}
@@ -1076,7 +1086,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			}
 			HaulingJobSpecificItem haul = new HaulingJobSpecificItem(toLocation, assignedItem2.Value.StorageLocation.GetStorageTarget, parent, data, null, haulToStorage: true, haulToTrade, parent);
 			// MOD: hauling to a HIGH or LOW stockpile takes its priority (StockpilePriorityMod.PrioritiseHaul).
-			UWGame.Mods.StockpilePriorityMod.PrioritiseHaul(haul, assignedItem2.Value.StorageLocation.Stockpile, parent);
+			UWGame.Mods.StockpilePriorityMod.PrioritiseHaul(haul, assignedItem2.Value.StorageLocation.Stockpile, parent, data);
 		}
 	}
 
@@ -1264,7 +1274,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 				Common.AddToList(ref list, assignedItem.Key);
 				DestroyHaulingJobsForItem(assignedItem.Key, owner);
 			}
-			else if (HaulingJobAlreadyExistsForThisCombo(assignedItem.Value, data, owner) || ItemTypeIsNeededForProcess(owner, data.EntityType))
+			else if (HaulingJobAlreadyExistsForThisCombo(assignedItem.Value, data, owner) || ItemIsHeldForProcess(owner, data))
 			{
 				Common.AddToList(ref list, assignedItem.Key);
 			}
@@ -1460,7 +1470,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 			}
 			HaulingJobSpecificItem haul = new HaulingJobSpecificItem(toLocation, item.Value.StorageLocation.GetStorageTarget, ownerOfHaulingJobs, itemData, null, haulToStorage: true, haulToTrade, ownerOfHaulingJobs);
 			// MOD: hauling to a HIGH or LOW stockpile takes its priority (StockpilePriorityMod.PrioritiseHaul).
-			UWGame.Mods.StockpilePriorityMod.PrioritiseHaul(haul, item.Value.StorageLocation.Stockpile, ownerOfHaulingJobs);
+			UWGame.Mods.StockpilePriorityMod.PrioritiseHaul(haul, item.Value.StorageLocation.Stockpile, ownerOfHaulingJobs, itemData);
 		}
 	}
 
