@@ -441,7 +441,7 @@ alongside of all other mods that Unhidden one make just confusion". It is now:
 | core | the scenario picker lists user scenarios from `user/Scenarios` (`SelectScenarioPanel.AllScenarioHeaders`); saves sort newest first; stockpile categories sort ascending; the mouse wheel scrolls data sheets |
 | `PortSettings` | `port.culture` (DISPLAY CULTURE) and `port.shadowsKey` (`O` toggles shadows) |
 | `PeatMod` (PEAT) | `peat.charcoalFromPeat`, `peat.peatBuilding`, and the charcoal / smithy fuel tag |
-| `RawhideStringMod` (RAWHIDE STRING) | `rawhidestring.stringAlternatives` |
+| `RawhideStringMod` (VINE NETS) | `rawhidestring.stringAlternatives` |
 | `RespawnCapMod` (RESOURCE RESPAWN CAP) | `respawncap.capResourceRespawn` |
 | `MainMenuMod` (MAIN MENU) | `mainmenu.mapEditorButtons`, `mainmenu.revealTestMap` |
 
@@ -529,7 +529,7 @@ the mod named by its prefix:
 
 | setting | what it does |
 |---|---|
-| `rawhidestring.stringAlternatives` | `makeFishingNetFromRawhide` — a net from rawhide string. Stock `makeFishingNet` names `item:cottonString` by key and is the **only** recipe in the game that consumes a string, so `item:rawhideString` is craftable and used by nothing at all |
+| `rawhidestring.stringAlternatives` | `makeFishingNetFromVine` — a net from 2 vines, taking twice the stock recipe's time. Stock `makeFishingNet` names `item:cottonString` by key. Until 2026-10-17 the variant took rawhide string, which Kastuk found useless in water |
 | `respawncap.capResourceRespawn` | tops a replenishing resource tile back up to its high-water mark instead of adding that much *again* on top. `ResourceReplenish.ReplenishResourceItems` computes exactly this clamp and drops the result — `Common.Clamp` is a pure function called as a statement — so a tile with `FractionOfMaximumToReplenishEachTime = 1.0` (torux shellfish among others) roughly **doubles** every time it has been harvested, and the maximum is a ratchet that records the larger count |
 | `peat.peatBuilding` | the peat-fuelled build variants, above |
 

@@ -6636,15 +6636,15 @@ An exploration mission that took place before the main landing operation. A sele
   <!-- settings: rawhidestring -->
   <String>
     <Key>SettingGroupRawhidestring</Key>
-    <Value>RAWHIDE STRING</Value>
+    <Value>VINE NETS</Value>
   </String>
   <String>
     <Key>SettingRawhidestringStringAlternatives</Key>
-    <Value>NETS FROM ANY STRING</Value>
+    <Value>NETS FROM VINES</Value>
   </String>
   <String>
     <Key>SettingTipRawhidestringStringAlternatives</Key>
-    <Value>Adds a fishing net recipe that uses rawhide string. Stock only accepts cotton string, which leaves rawhide string with no use at all.</Value>
+    <Value>Adds a fishing net recipe that uses 2 vines and takes twice as long, as well as the stock one from cotton string.</Value>
   </String>
   <!-- settings: regrowth -->
   <String>
@@ -16002,7 +16002,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionRawhidestring</Key>
-    <Value>A fishing net can be made from rawhide string as well as cotton string, so rawhide string has a use.</Value>
+    <Value>A fishing net can be made from vines - two of them, and twice as slowly - as well as from cotton string.</Value>
   </String>
   <String>
     <Key>ModDescriptionRegrowth</Key>
@@ -19301,7 +19301,7 @@ The storehouse also has a space for storage of items that are not intended for s
     <Value>Producing</Value>
   </String>
   <String>
-    <Key>ProcessMakeFishingNetFromRawhide</Key>
+    <Key>ProcessMakeFishingNetFromVine</Key>
     <Value>Producing</Value>
   </String>
   <String>

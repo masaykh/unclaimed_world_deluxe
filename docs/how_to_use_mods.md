@@ -16,7 +16,7 @@ MODS.
 |---|---|
 | **Peat** | a kiln turns dry peat into charcoal, and a campfire or a primitive kitchen can be built with peat instead of firewood |
 | **Firewood from any wood** | wet firewood can be cut from sticks (4), water cane stems (2), shadeleaf bow staves (2) or shadeleaf canes (4), not only from spoak branches |
-| **Rawhide string** | a fishing net can be made from rawhide string as well as cotton string |
+| **Vine nets** | a fishing net can be made from 2 vines, twice as slowly, as well as from cotton string |
 | **Resource respawn cap** | shellfish and other resources that grow back are topped up to the most a tile has held, instead of multiplying every time they are harvested, and firewood that came with the map grows back once gathered, which the studio's game never lets it |
 | **Main menu** | MAP EDITOR and TEST SCENE under the main menu's MODDING, and a test map shown whole |
 | **Healing** | wounds may heal fully rather than stopping halfway, and recovery speed depends on food, sleep and morale rather than muscle energy alone |

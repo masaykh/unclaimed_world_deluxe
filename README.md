@@ -41,7 +41,7 @@ or all off with `-nomods`. Some of them:
 | mod | what it changes |
 |---|---|
 | **Peat** | charcoal from peat, and campfires and kitchens built with peat instead of firewood |
-| **Rawhide string** | fishing nets from rawhide string, which the stock game makes and never uses |
+| **Vine nets** | fishing nets from vines (two, and twice as slow) as well as cotton string |
 | **Resource respawn cap** | shellfish stop doubling every time they are harvested — the studio computed the cap and discarded it |
 | **Main menu** | the map editor and test scenes the studio implemented and never wired to a button |
 | **Healing** | wounds can heal fully rather than stopping halfway, at a rate set by food, sleep and morale rather than muscle energy alone |

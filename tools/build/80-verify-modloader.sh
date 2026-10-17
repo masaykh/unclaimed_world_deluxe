@@ -131,6 +131,16 @@ has_process() {
   grep -q "<KeyName>$2</KeyName>" "$1/data/BaseData/processTypes.xml"
 }
 
+# A recipe's DaysNeeded, read out of the exported table.
+days_needed() {
+  UW_KEY="$2" perl -0777 -ne '
+    my $key = $ENV{UW_KEY};
+    if (m{(<ProcessType>(?:(?!</ProcessType>).)*?<KeyName>\Q$key\E</KeyName>(?:(?!</ProcessType>).)*?</ProcessType>)}s) {
+      my ($d) = $1 =~ m{<DaysNeeded>([0-9.eE+-]+)</DaysNeeded>}s;
+      print $d if defined $d;
+    }' "$1/data/BaseData/processTypes.xml"
+}
+
 # What one recipe consumes of one item, read out of the exported table. Two arguments beyond the
 # install: the recipe key and the item key.
 input_amount() {
@@ -256,7 +266,7 @@ has_process "$d" makeCharcoalFromPeat   && fail "the old id's choice was lost: t
 d=$(new_install case5d); mkdir -p "$d/user"
 printf '<ModSettings>\n  <DisabledMod id="unhidden" />\n</ModSettings>\n' > "$d/user/ModSettings.xml"
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-if has_process "$d" makeCharcoalFromPeat || has_process "$d" makeFishingNetFromRawhide; then
+if has_process "$d" makeCharcoalFromPeat || has_process "$d" makeFishingNetFromVine; then
   fail "an old file's switched-off Unhidden Mod left its recipes in"
 else
   pass "an old file's switched-off Unhidden Mod switches off the peat and rawhide string mods"
@@ -328,22 +338,25 @@ has_process "$d" makeCharcoalFromPeat \
 
 # ------------------------------------------------ 10. the rawhide fishing net
 #
-# item:rawhideString has a recipe and no consumer in the stock tables - makeFishingNet names
-# cotton string by key and is the only recipe in the game that uses a string at all. The variant
-# gives it one.
-say "==> 10. a fishing net can be made from rawhide string"
+# makeFishingNet names cotton string by key. The variant (Kastuk, 2026-10-17: rawhide string is
+# useless in water) takes 2 vines and twice the time.
+say "==> 10. a fishing net can be made from vines: 2 of them, twice as slowly"
 d=$(new_install case10)
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-has_process "$d" makeFishingNetFromRawhide   && pass "makeFishingNetFromRawhide is in the tables" || fail "the rawhide variant is missing"
-rawhide=$(input_amount "$d" makeFishingNetFromRawhide item:rawhideString)
+has_process "$d" makeFishingNetFromVine   && pass "makeFishingNetFromVine is in the tables" || fail "the vine variant is missing"
+has_process "$d" makeFishingNetFromRawhide   && fail "the old rawhide variant is still there" || pass "  and the old rawhide variant is gone"
+vine=$(input_amount "$d" makeFishingNetFromVine item:vine)
 cotton=$(input_amount "$d" makeFishingNet item:cottonString)
-[ -n "$cotton" ] && [ "$rawhide" = "$cotton" ]   && pass "  it wants $rawhide rawhide string where the original wants $cotton cotton string"   || fail "  rawhide '$rawhide' does not match the stock cotton amount '$cotton'"
-input_amount "$d" makeFishingNetFromRawhide item:cottonString | grep -q .   && fail "  the variant still names cotton string" || pass "  and no cotton string is left in it"
+[ "$vine" = "2" ] && [ -n "$cotton" ]   && pass "  it wants 2 vines where the original wants $cotton cotton string"   || fail "  vines '$vine', expected 2 (stock cotton '$cotton')"
+input_amount "$d" makeFishingNetFromVine item:cottonString | grep -q .   && fail "  the variant still names cotton string" || pass "  and no cotton string is left in it"
+vdays=$(days_needed "$d" makeFishingNetFromVine); sdays=$(days_needed "$d" makeFishingNet)
+perl -e 'exit(($ARGV[0] > 0 && abs($ARGV[1] - 2 * $ARGV[0]) < 1e-6) ? 0 : 1)' "${sdays:-0}" "${vdays:-0}" \
+  && pass "  and takes twice as long ($vdays days, stock $sdays)" || fail "  time '$vdays', expected twice the stock '$sdays'"
 has_process "$d" makeFishingNet   && pass "the stock recipe is untouched" || fail "the stock recipe was replaced"
 
 d=$(new_install case10b); write_setting "$d" rawhidestring.stringAlternatives false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-has_process "$d" makeFishingNetFromRawhide   && fail "the variant is still there with the switch off" || pass "switch off: the variant is gone"
+has_process "$d" makeFishingNetFromVine   && fail "the variant is still there with the switch off" || pass "switch off: the variant is gone"
 
 # ------------------------------------------------ 11. the five task mods register
 #
