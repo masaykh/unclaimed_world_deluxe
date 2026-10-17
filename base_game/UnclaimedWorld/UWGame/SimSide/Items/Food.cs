@@ -43,7 +43,8 @@ public class Food : ISnapshot
 
 	/// <param name="satisfactionFactor">
 	/// MOD: how much of the meal's nourishment reaches the eater's needs - 1, the studio's, unless
-	/// BalancedDietMod finds the dish eaten too often lately (see GoalEat.ConsumeStomachContents).
+	/// BalancedDietMod finds the dish eaten too often lately, or EmergencyEatingMod's bad stomach
+	/// halves it (see GoalEat.ConsumeStomachContents).
 	/// The nutrient statistics still record what was eaten.
 	/// </param>
 	public void ConsumeBy(Entity consumer, float satisfactionFactor = 1f)
@@ -52,8 +53,10 @@ public class Food : ISnapshot
 		{
 			if (nutrientBulkAmount.Value > 0f && consumer.BiologicalEntity.Needs.NeedsList.TryGetValue(nutrientBulkAmount.Key.KeyName, out var value))
 			{
-				float num = Math.Min(nutrientBulkAmount.Value, value.FoodNeed.CurrentNeededNutrientBulk);
-				LogConsumeStatistics(consumer, nutrientBulkAmount.Key, nutrientBulkAmount.Value, num);
+				// MOD: EmergencyEatingMod - raw meat and fish give a colonist less energy or protein; 1 otherwise.
+				float bulk = nutrientBulkAmount.Value * UWGame.Mods.EmergencyEatingMod.RawNutrientFactor(consumer, Parent.Parent.EntityType, nutrientBulkAmount.Key);
+				float num = Math.Min(bulk, value.FoodNeed.CurrentNeededNutrientBulk);
+				LogConsumeStatistics(consumer, nutrientBulkAmount.Key, bulk, num);
 				float amount = num / value.FoodNeed.TotalNeededNutrientBulk;
 				value.Satisfy(amount * satisfactionFactor);
 			}

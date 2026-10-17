@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Biological;
+using UWGame.SimSide.Items;
 using UWGame.SimSide.Processes;
 using UWGame.SimSide.SimEffects;
 
@@ -12,7 +13,7 @@ namespace UWGame.Mods;
 /// The emergency eating mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
 /// A colonist eats only what its food tags name, as the studio has it: no raw-food processes, no
-/// "Raw food" or "Bad stomach" effects, and speed, work time and energy as the studio computes them.
+/// "Raw food" or "Bad stomach" effects, and nutrition, speed, work time and energy as the studio computes them.
 /// </summary>
 public static class EmergencyEatingMod
 {
@@ -51,6 +52,10 @@ public static class EmergencyEatingMod
     public static void OnEaten(Entity eater, EntityType food)
     {
     }
+
+    public static float NutritionFactor(Entity eater) => 1f;
+
+    public static float RawNutrientFactor(Entity eater, EntityType food, FoodNutrientType nutrient) => 1f;
 
     public static float SpeedFactor(Entity entity) => 1f;
 

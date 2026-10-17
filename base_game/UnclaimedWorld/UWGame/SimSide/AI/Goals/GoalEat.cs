@@ -498,9 +498,10 @@ internal class GoalEat : CompositeGoal, IIDEventSubscriber, ITopLevelGoal
 		{
 			if (foodItem.EntityType.ItemType != null && foodItem.EntityType.ItemType.FoodType != null)
 			{
-				foodItem.Item.Food.ConsumeBy(entity, UWGame.Mods.BalancedDietMod.MonotonyFactor(entity, foodItem.EntityType));
-				// MOD: EmergencyEatingMod - a raw ingredient costs comfort, and may upset the stomach.
+				// MOD: EmergencyEatingMod - a raw ingredient costs comfort, and may upset the stomach. Rolled
+				// before the meal is credited, so with a bad stomach this meal and any after feed half (1 otherwise).
 				UWGame.Mods.EmergencyEatingMod.OnEaten(entity, foodItem.EntityType);
+				foodItem.Item.Food.ConsumeBy(entity, UWGame.Mods.BalancedDietMod.MonotonyFactor(entity, foodItem.EntityType) * UWGame.Mods.EmergencyEatingMod.NutritionFactor(entity));
 				foodItem.Destroy();
 			}
 		});

@@ -5533,11 +5533,11 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipEmergencyeatingBadStomach</Key>
-    <Value>After raw food a colonist may get a bad stomach for a day: slower walking and work, less comfort, and energy at most 60%. The chance and how bad it is rise from berries to meat.</Value>
+    <Value>After raw food a colonist may get a bad stomach: slower walking and work, less comfort, energy at most 60%, and all food feeds half. Each raw meal adds its chance (5% berries ... 40% meat) to the day's; how bad and how long rise from berries to meat.</Value>
   </String>
   <String>
     <Key>SettingEmergencyeatingChance</Key>
-    <Value>CHANCE OF A BAD STOMACH (% OF 5% BERRIES ... 60% MEAT)</Value>
+    <Value>CHANCE OF A BAD STOMACH (% OF 5% BERRIES ... 40% MEAT)</Value>
   </String>
   <String>
     <Key>SettingEmergencyeatingEnabled</Key>
@@ -5545,7 +5545,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipEmergencyeatingEnabled</Key>
-    <Value>A starving colonist with no food left eats raw ingredients: crystal berries first, then glassy creeper pods, common oil tubers, raw fish and raw meat. Comfort drops for a day, from 5% for berries to 60% for meat.</Value>
+    <Value>A starving colonist with no food left eats raw ingredients: crystal berries first, then glassy creeper pods, common oil tubers, raw fish and raw meat. Comfort drops, from 5% for about 10 hours (berries) to 40% for a day and a half (meat); eating again restarts it at the worse. Raw meat feeds a third of its energy and protein, raw fish 3/4 of its protein.</Value>
   </String>
   <!-- settings: fauna -->
   <String>
@@ -7956,7 +7956,7 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <!-- data: EFFECT -->
   <String>
     <Key>EffectProfileDescriptionBadStomach1</Key>
-    <Value>The crystal berries did not agree with the character: walks 4% slower, work takes 6% longer, and energy is at most 60%.</Value>
+    <Value>The crystal berries did not agree with the character: walks 4% slower, work takes 6% longer, energy is at most 60%, and all food feeds half as much.</Value>
   </String>
   <String>
     <Key>EffectProfileBadStomach1</Key>
@@ -7968,7 +7968,7 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <String>
     <Key>EffectProfileDescriptionBadStomach2</Key>
-    <Value>The glassy creeper pods did not agree with the character: walks 8% slower, work takes 12% longer, and energy is at most 60%.</Value>
+    <Value>The glassy creeper pods did not agree with the character: walks 8% slower, work takes 12% longer, energy is at most 60%, and all food feeds half as much.</Value>
   </String>
   <String>
     <Key>EffectProfileBadStomach2</Key>
@@ -7980,7 +7980,7 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <String>
     <Key>EffectProfileDescriptionBadStomach3</Key>
-    <Value>The common oil tubers did not agree with the character: walks 12% slower, work takes 18% longer, and energy is at most 60%.</Value>
+    <Value>The common oil tubers did not agree with the character: walks 12% slower, work takes 18% longer, energy is at most 60%, and all food feeds half as much.</Value>
   </String>
   <String>
     <Key>EffectProfileBadStomach3</Key>
@@ -7992,7 +7992,7 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <String>
     <Key>EffectProfileDescriptionBadStomach4</Key>
-    <Value>The raw fish did not agree with the character: walks 16% slower, work takes 24% longer, and energy is at most 60%.</Value>
+    <Value>The raw fish did not agree with the character: walks 16% slower, work takes 24% longer, energy is at most 60%, and all food feeds half as much.</Value>
   </String>
   <String>
     <Key>EffectProfileBadStomach4</Key>
@@ -8004,7 +8004,7 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   </String>
   <String>
     <Key>EffectProfileDescriptionBadStomach5</Key>
-    <Value>The raw meat did not agree with the character: walks 20% slower, work takes 30% longer, and energy is at most 60%.</Value>
+    <Value>The raw meat did not agree with the character: walks 20% slower, work takes 30% longer, energy is at most 60%, and all food feeds half as much.</Value>
   </String>
   <String>
     <Key>EffectProfileBadStomach5</Key>

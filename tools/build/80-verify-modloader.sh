@@ -1064,10 +1064,15 @@ fi
 
 # EmergencyEatingMod (Kastuk, "SimEffects and Emergency eating", 2026-10-17): a starving colonist
 # with no food left eats crystal berries, glassy creeper pods, common oil tubers, raw fish, raw meat,
-# in that order, losing 5..60% comfort, with a 5..60% chance of a "Bad stomach". The tiers against
-# the tables, the colonist's raw-food processes kept out of ConsumeProcesses (so nothing else counts
-# raw stock as food), the effects registered with the switch off, the evaluator's ordering, the
-# seeded rolls, and the bad stomach through Locomotor, ProcessJob and BiologicalEntity themselves.
+# in that order. Kastuk's answer the same day: comfort -5% for 0.4 days to -40% for 1.5 days, not
+# stacking but restarting at the worse; a "Bad stomach" chance of 5..40% per meal adding up over a
+# day; half nutrition with a bad stomach, from the meal that brought it; raw land meat a third of its
+# energy and protein, raw fish 3/4 of its protein. The tiers against the tables (the fish from the
+# fishing processes), the colonist's raw-food processes kept out of ConsumeProcesses (so nothing
+# else counts raw stock as food), the effects registered with the switch off, the evaluator's
+# ordering, the timers and the day's chance, the seeded rolls, the nutrition through Food.ConsumeBy,
+# the roll-before-credit order in GoalEat.ConsumeStomachContents (by IL), and the bad stomach
+# through Locomotor, ProcessJob and BiologicalEntity themselves.
 say "==> 43. emergency eating: raw food in Kastuk's order when starving, its comfort cost and a bad stomach"
 out=$( cd "$(new_install case43)" && "$EXPORT" . --emergency-eating-selftest 2>&1 ) || true
 if echo "$out" | grep -q "emergency eating self-test OK" && echo "$out" | grep -q "^  ok    "; then
