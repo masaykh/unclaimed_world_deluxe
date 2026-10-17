@@ -1097,6 +1097,11 @@ internal static partial class Program
               && Step(true, 30800) && Step(false, 30850),
               "a third quick press starts a new pair rather than releasing");
         UWGame.Mods.HudMod.ResetMarkerGesture();
+        // LIGHT UP A ZONE FROM ITS LABEL (Kastuk, 2026-10-12): on by default, interface only, and
+        // nothing to light without an interface. What it lights needs the game on screen.
+        var zoneHighlight = UWGame.Mods.ModSettings.Find("hud.zoneHighlight");
+        Check(zoneHighlight != null && zoneHighlight.On && !zoneHighlight.AffectsSimulation && UWGame.Mods.HudMod.ZoneToLight(null) == null,
+              "LIGHT UP A ZONE FROM ITS LABEL: on by default, not a simulation setting, nothing lit without an interface");
         // ZONES (HudMod.ShowsZone): a row of its own in the overlay panel, off hides every zone but
         // the selected one, and the stock value shows them all.
         int zonesRow = Enumerable.Range(0, UWGame.Mods.HudMod.MarkerRowCount).FirstOrDefault(i => UWGame.Mods.HudMod.MarkerRowLabel(i) == "ZONES", -1);

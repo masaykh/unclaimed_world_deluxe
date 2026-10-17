@@ -174,6 +174,7 @@ public static partial class HudMod
         _ = ItemLayers;
         _ = EffectsOnTopSetting;
         _ = LabelListSetting;
+        _ = ZoneHighlightSetting;
         for (int i = 0; i < MarkerRowCount; i++)
         {
             _ = HideMarker(i);

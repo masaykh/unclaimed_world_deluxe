@@ -39,6 +39,15 @@ public static class HudMod
     /// <summary>Every zone, as the studio shows them.</summary>
     public static bool ShowsZone(bool selected) => true;
 
+    public static void HoverMarker(UWGame.ClientSide.Interface.HUD_Windows.MarkerWindow marker, bool over)
+    {
+    }
+
+    /// <summary>No zone is lit up: only the studio's turquoise grid and yellow selection.</summary>
+    public static void SetupZoneHighlight(InGameInterface ui, VertexOverlayGroundSpriteQuad[] vertices, ref int index)
+    {
+    }
+
     public const string TalkAlways = "always";
     public const string TalkWhenSpoken = "when someone speaks";
 

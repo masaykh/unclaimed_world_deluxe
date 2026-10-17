@@ -201,6 +201,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\FishStockMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HudMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HudModLabelList.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HudModZoneHighlight.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\RegrowthMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\PestMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\BirdHopMod.cs" />

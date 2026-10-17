@@ -6392,6 +6392,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingChoiceHudTalkPanelWhenSomeoneSpeaks</Key>
     <Value>when someone speaks</Value>
   </String>
+  <String>
+    <Key>SettingHudZoneHighlight</Key>
+    <Value>LIGHT UP A ZONE FROM ITS LABEL</Value>
+  </String>
+  <String>
+    <Key>SettingTipHudZoneHighlight</Key>
+    <Value>A placed zone shows in yellow, as a freshly drawn one does, while the cursor is on its label or while its window is open.</Value>
+  </String>
   <!-- settings: hunting -->
   <String>
     <Key>SettingGroupHunting</Key>

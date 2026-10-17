@@ -123,10 +123,13 @@ public class MarkerWindow : HUDWindow
 	private void ViewPort_MouseOut(UIComponent sender, MouseEventArgs args)
 	{
 		The.InGameUI.SetHoverEntity(null);
+		// MOD: HudMod lights up a zone while the cursor is on its label.
+		UWGame.Mods.HudMod.HoverMarker(this, over: false);
 	}
 
 	private void ViewPort_MouseOver(UIComponent sender, MouseEventArgs args)
 	{
+		UWGame.Mods.HudMod.HoverMarker(this, currentType == MarkerType.Zone);
 		if (entityID.HasValue)
 		{
 			The.InGameUI.UIAllegiance.SharedKnowledge.GetKnownData(entityID.Value, out var data);
@@ -142,6 +145,7 @@ public class MarkerWindow : HUDWindow
 		ChangeTypeToNone();
 		showWhileLineIsSpoken = false;
 		EntityID = null;
+		UWGame.Mods.HudMod.HoverMarker(this, over: false);
 		Zone = null;
 		Expedition = null;
 		WorldPosition = null;

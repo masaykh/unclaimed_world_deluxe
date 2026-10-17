@@ -2614,6 +2614,8 @@ namespace UWGame.ClientSide.Map
             The.InGameUI.SelectedTiles.MapAreaRender.SetupQuad(overlayGroundSpriteVertices, ref overlayGroundSpriteQuadIndex);
             The.InGameUI.SelectedTilesPreview.MapAreaRender.SetupQuad(overlayGroundSpriteVertices, ref overlayGroundSpriteQuadIndex);
             The.InGameUI.SelectRectangle.SetupQuad(overlayGroundSpriteVertices, ref overlayGroundSpriteQuadIndex);
+            // MOD: HudMod lights up the zone whose label is under the cursor, or whose window is open.
+            UWGame.Mods.HudMod.SetupZoneHighlight(The.InGameUI, overlayGroundSpriteVertices, ref overlayGroundSpriteQuadIndex);
             if (!The.InGameUI.ShowOverlaysAndMarkerWindows || !The.InGameUI.UIExpedition.HasValue)
             {
                 return;
