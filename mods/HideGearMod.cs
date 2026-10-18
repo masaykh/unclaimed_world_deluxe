@@ -107,17 +107,18 @@ namespace UWGame.Mods;
 ///
 /// THE MACKINTOSH (Kastuk, "Colonist equipment", 2026-10-17: "New clothes need to protect against
 /// weather too. Add new version of cloak with added marshcoat sap to make it water resistant
-/// Mackintosh to withstand the rain seasons."). A hide cloak brushed with marshcot sap
+/// Mackintosh to withstand the rain seasons."). Then, 2026-10-18: "Truly mackintosh been made from
+/// cotton textile." So it is textile, not the hide cloak, proofed with marshcot sap
 /// (item:marshcotSap - "This emulsion has many of the same qualities found in natural rubber from
 /// Earth"; the studio turns it into rubber for gaskets, makeGaskets). <see cref="MackintoshKey"/>,
-/// made by makeMackintosh from 1 hide cloak and 2 sap - by hand, bushcraft, in the cloak's time and
+/// made by makeMackintosh from 2 item:textile and 2 sap - by hand, bushcraft, in the cloak's time and
 /// on the cloak's tool set; the studio's rubber is chemistry at a polymer workshop, but proofing a
 /// cloak is brushing sap on, not making rubber sheets. Worn like the cloak - long trips and at night,
 /// beyond normal range, Normal at night where the cloak is Minor, so a colonist who can reach one
 /// takes it over the cloak - with the cloak's comfort under its own profile, "Waterproof clothing".
 /// What it does against the weather is WeatherMod's (COLD AND WET HURT, <see cref="WeatherMod.GarmentCover"/>):
 /// the cloak keeps off some of the cold and the wind, the Mackintosh the rain as well. Disassembled
-/// (DisassemblyMod), it gives the cloak back: the sap has cured into it.
+/// (DisassemblyMod), it gives the textile back: the sap has cured into it.
 ///
 /// ART. There is none of its own yet: the cloak is drawn with the tanned hide's sprite and the
 /// armour with the grey hide's, both from the GUI sheet, until somebody draws them; the Mackintosh
@@ -134,6 +135,9 @@ public static class HideGearMod
     public const string CloakEffectKey = "hideCloakComfort";
 
     public const string MackintoshKey = "item:mackintosh";
+
+    /// <summary>The studio's woven fabric (item:textile), what a Mackintosh is made of.</summary>
+    public const string TextileKey = "item:textile";
 
     /// <summary>The Mackintosh's profile and its comfort effect, keyed alike as the cloak's are.</summary>
     public const string MackintoshEffectKey = "mackintoshComfort";
@@ -194,7 +198,7 @@ public static class HideGearMod
         enabled ?? (enabled = ModSettings.Toggle(
             ModId, "enabled", "HIDE CLOTHING AND ARMOUR", defaultValue: false,
             toolTip: "Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at " +
-                     "night), a Mackintosh (a hide cloak proofed with marshcot sap: with COLD AND WET HURT it keeps the rain off) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of " +
+                     "night), a Mackintosh (cotton textile proofed with marshcot sap: with COLD AND WET HURT it keeps the rain off) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of " +
                      "cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
@@ -330,7 +334,7 @@ public static class HideGearMod
 
         // The cloak, proofed: the same trips, and preferred to it at night.
         listOfEntityTypes.Add(Gear(MackintoshKey, "Mackintosh",
-            "A hide cloak proofed with marshcot sap.",
+            "A cotton coat proofed with marshcot sap.",
             "Keeps the wearer warm and dry on long trips and at night, which makes them a little more comfortable. " +
             "Slept in on a cold, wet night out, it keeps off most of the rain and some of the cold and the wind.",
             0.12f, MackintoshEffectKey, "tarp", atAnyDistance: false,
@@ -432,7 +436,7 @@ public static class HideGearMod
         // Made like the bellows: hide, by hand, bushcraft, a tool set any camp has.
         listOfProcessTypes.Add(Recipe("makeHideCloak", CloakKey, ("item:megapodTannedHide", 2)));
         // The cloak brushed with sap, in the cloak's time on the cloak's tool set (the class comment).
-        listOfProcessTypes.Add(Recipe("makeMackintosh", MackintoshKey, (CloakKey, 1), ("item:marshcotSap", 2)));
+        listOfProcessTypes.Add(Recipe("makeMackintosh", MackintoshKey, (TextileKey, 2), ("item:marshcotSap", 2)));
         listOfProcessTypes.Add(Recipe("makeHideArmour", ArmourKey, ("item:whipjawTannedHide", 2), ("item:megapodTannedHide", 1)));
         // Thunder chicken leather for the straps, as the bellows use it. Not rawhide string, which
         // this tool set already holds as a TOOL; the validator refuses an item as tool and input both.

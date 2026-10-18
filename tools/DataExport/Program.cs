@@ -2488,17 +2488,17 @@ internal static partial class Program
             Check(armour.ItemType.UseGearAtAnyDistanceFromExpedition && !cloak.ItemType.UseGearAtAnyDistanceFromExpedition,
                   "armour is taken on a patrol near camp; the cloak only beyond normal range");
         }
-        // The Mackintosh (Kastuk, "Colonist equipment", 2026-10-17): the hide cloak proofed with marshcot sap.
+        // The Mackintosh (Kastuk, "Colonist equipment", 2026-10-17/18): cotton textile proofed with marshcot sap.
         if (mackintosh != null && cloak != null && data.AllProcessTypes.TryGetValue("makeMackintosh", out var proofing))
         {
             var journey = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Journey };
             var night = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Night };
             Check(proofing.Inputs.Length == 2
-                  && proofing.Inputs.Any(x => x.Entity == UWGame.Mods.HideGearMod.CloakKey && x.IsConsumed && x.Amount.NoOfItems == 1)
+                  && proofing.Inputs.Any(x => x.Entity == UWGame.Mods.HideGearMod.TextileKey && x.IsConsumed && x.Amount.NoOfItems == 2)
                   && proofing.Inputs.Any(x => x.Entity == "item:marshcotSap" && x.IsConsumed && x.Amount.NoOfItems == 2)
                   && proofing.RequiredSkill == data.AllProcessTypes["makeHideCloak"].RequiredSkill
                   && proofing.ProcessToolSet == data.AllProcessTypes["makeHideCloak"].ProcessToolSet,
-                  "makeMackintosh: a hide cloak and 2 marshcot sap, by the cloak's skill (" + proofing.RequiredSkill + ") on its tool set (" + proofing.ProcessToolSet?.KeyName + ")");
+                  "makeMackintosh: 2 textile and 2 marshcot sap, by the cloak's skill (" + proofing.RequiredSkill + ") on its tool set (" + proofing.ProcessToolSet?.KeyName + ")");
             Check(mackintosh.ItemType.GetTaskAppropriateLevel(journey) == cloak.ItemType.GetTaskAppropriateLevel(journey)
                   && mackintosh.ItemType.GetTaskAppropriateLevel(night) > cloak.ItemType.GetTaskAppropriateLevel(night)
                   && !mackintosh.ItemType.UseGearAtAnyDistanceFromExpedition,
@@ -2510,8 +2510,8 @@ internal static partial class Program
             // DisassemblyMod: the sap has cured into it, and a liquid has no container to come back in.
             if (data.AllProcessTypes.TryGetValue(UWGame.Mods.HideGearMod.MackintoshKey + "_disassemble", out var unproof))
             {
-                Check(unproof.Outputs.Length == 1 && unproof.Outputs[0].FinalEntityTypeToCreate == cloak && unproof.Outputs[0].Amount.NoOfItems == 1,
-                      "  disassembled, it gives back the cloak and no sap");
+                Check(unproof.Outputs.Length >= 1 && unproof.Outputs.All(o => o.FinalEntityTypeToCreate?.KeyName == UWGame.Mods.HideGearMod.TextileKey),
+                      "  disassembled, it gives back textile and no sap");
             }
             else Check(false, "the Mackintosh can be disassembled (DisassemblyMod)");
         }

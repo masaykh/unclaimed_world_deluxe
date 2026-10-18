@@ -192,7 +192,7 @@ namespace UWGame.Mods;
 ///   when the colonist lies down. The studio's GoalDoSleep then drops everything a sleeper carries
 ///   where they lie ("just drop everything where we sleep"), so the cloak is the blanket beside
 ///   them. The hide cloak: cold x0.8, wind x0.7, the rain as it is. The Mackintosh (HideGearMod: a
-///   hide cloak proofed with marshcot sap): cold x0.8, rain x0.3, wind x0.6. Both on, the Mackintosh.
+///   cotton textile proofed with marshcot sap): cold x0.8, rain x0.3, wind x0.6. Both on, the Mackintosh.
 /// The stormiest mid-winter night of the self-test, 0.95 in the open (dry cold 0.50, rain 0.25, wind
 /// 0.20): by a spoak 0.81, under a sanctuary tree's caps 0.62 (bare 0.84), in a hide cloak 0.79, in a
 /// Mackintosh 0.59, a PRECOL explorer 0.42 (0.27 under the caps), an explorer in a Mackintosh by a
@@ -960,7 +960,7 @@ public static class WeatherMod
     /// <summary>HideGearMod's hide cloak: warmer and out of the wind, but it soaks through.</summary>
     public static readonly Cover CloakCover = new Cover(0.8f, 1f, 0.7f);
 
-    /// <summary>HideGearMod's Mackintosh, a hide cloak proofed with marshcot sap: the cloak's warmth, and the rain kept off.</summary>
+    /// <summary>HideGearMod's Mackintosh, cotton textile proofed with marshcot sap: the cloak's warmth, and the rain kept off.</summary>
     public static readonly Cover MackintoshCover = new Cover(0.8f, 0.3f, 0.6f);
 
     /// <summary>The studio's living spoak (TreeLoader).</summary>
