@@ -55,6 +55,10 @@ public class DataTypeButton : TextButton
 			}
 		}
 		button.ToolTip = string.Join("\n\n", parts);
+		// A description is read, not glanced at: it stays while the pointer is on the name, rather
+		// than going after the standard tooltip's 7 s (Kastuk, 2026-10-17: "hope that tooltips will
+		// remain, when cursor is over it").
+		button.TooltipExpires = false;
 	}
 
 	public DataTypeButton(GUIManager gui, DataSheet.InfoToShow infoToShow, EntityType entityType, EntityGroupID? owner, bool useUIOwner, EntityID? entityID = null)
