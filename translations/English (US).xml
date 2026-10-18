@@ -5022,6 +5022,15 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>GuiFeelsLikeImportantScientificExcrementGotABreakt_66b081f7ee4a</Key>
     <Value>Feels like important scientific excrement got a breakthrough!</Value>
   </String>
+  <!-- mods/DiscomfortModStinkOverlay.cs -->
+  <String>
+    <Key>GuiSTINK</Key>
+    <Value>STINK</Value>
+  </String>
+  <String>
+    <Key>GuiShowsWhereFilthyItemsStinkFadingOutOverTheStink_3c81f5bc1224</Key>
+    <Value>Shows where filthy items stink, fading out over the stink's reach. Brown where a bed would lose comfort to it.</Value>
+  </String>
   <!-- mods/HudMod.cs -->
   <String>
     <Key>GuiNAMES</Key>
