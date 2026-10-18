@@ -442,7 +442,7 @@ alongside of all other mods that Unhidden one make just confusion". It is now:
 | core | the scenario picker lists user scenarios from `user/Scenarios` (`SelectScenarioPanel.AllScenarioHeaders`); saves sort newest first; stockpile categories sort ascending; the mouse wheel scrolls data sheets |
 | `PortSettings` | `port.culture` (DISPLAY CULTURE) and `port.shadowsKey` (`O` toggles shadows) |
 | `PeatMod` (PEAT) | `peat.charcoalFromPeat`, `peat.peatBuilding`, and the charcoal / smithy fuel tag |
-| `RawhideStringMod` (VINE NETS) | `rawhidestring.stringAlternatives` |
+| `RawhideStringMod` (VINE NETS) | `rawhidestring.stringAlternatives`, `rawhidestring.plantFibreString` (added 2026-10-18) |
 | `RespawnCapMod` (RESOURCE RESPAWN CAP) | `respawncap.capResourceRespawn` |
 | `MainMenuMod` (MAIN MENU) | `mainmenu.mapEditorButtons`, `mainmenu.revealTestMap` |
 
@@ -525,12 +525,13 @@ recipe for a structure now works.
 
 ### Fixes and alternatives from the task list
 
-Three more switches, all defaulting on, all in `user/ModSettings.xml` and the MODS menu, each in
+Four more switches, all defaulting on, all in `user/ModSettings.xml` and the MODS menu, each in
 the mod named by its prefix:
 
 | setting | what it does |
 |---|---|
 | `rawhidestring.stringAlternatives` | `makeFishingNetFromVine` — a net from 2 vines, taking twice the stock recipe's time. Stock `makeFishingNet` names `item:cottonString` by key. Until 2026-10-17 the variant took rawhide string, which Kastuk found useless in water |
+| `rawhidestring.plantFibreString` | a new item, `item:plantFibreString` ("String (plant fibre)"): the studio's rawhide string as a tool (tags `lightString`, `cordage`, a hand tool) with durability 0.6 where rawhide has 1. Made by `makePlantFibreStringFromVine` (2 vines) and `makePlantFibreStringFromShadeleafCanes` (1 shadeleaf cane), both cloned from `makeRawhideString` - bushcraft, `toolSetButcherFlesh` - at 1.5 times its time. Every list of tool alternatives naming `item:rawhideString` (12 in the studio's tables; none takes a string by tag) takes it beside rawhide at 0.8 of rawhide's productivity (`RawhideStringMod.AddToolAlternatives`). The **item** is registered whatever the switch, so a save holding one loads with it off; the recipes and the tool alternatives follow the switch, and a save is stamped with it. The vine net still takes raw vines, as Kastuk asked |
 | `respawncap.capResourceRespawn` | tops a replenishing resource tile back up to its high-water mark instead of adding that much *again* on top. `ResourceReplenish.ReplenishResourceItems` computes exactly this clamp and drops the result — `Common.Clamp` is a pure function called as a statement — so a tile with `FractionOfMaximumToReplenishEachTime = 1.0` (torux shellfish among others) roughly **doubles** every time it has been harvested, and the maximum is a ratchet that records the larger count |
 | `peat.peatBuilding` | the peat-fuelled build variants, above |
 

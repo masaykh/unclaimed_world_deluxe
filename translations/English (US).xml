@@ -6711,6 +6711,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>VINE NETS</Value>
   </String>
   <String>
+    <Key>SettingRawhidestringPlantFibreString</Key>
+    <Value>PLANT FIBRE STRING</Value>
+  </String>
+  <String>
+    <Key>SettingTipRawhidestringPlantFibreString</Key>
+    <Value>Adds string twisted from bark fibres: 2 vines or 1 shadeleaf cane make one, with a knife. Wherever rawhide string can be used as a tool, this string can too, 20% less productively.</Value>
+  </String>
+  <String>
     <Key>SettingRawhidestringStringAlternatives</Key>
     <Value>NETS FROM VINES</Value>
   </String>
@@ -13243,6 +13251,22 @@ SURVIVAL GUIDE NOTES
     <Value>Planks</Value>
   </String>
   <String>
+    <Key>ItemItemPlantFibreString</Key>
+    <Value>String (plant fibre)</Value>
+  </String>
+  <String>
+    <Key>ItemDescriptionItemPlantFibreString</Key>
+    <Value>Fibres stripped from vines or shadeleaf canes and twisted into a cord. Weaker than rawhide, but adequate for the simplest tasks.</Value>
+  </String>
+  <String>
+    <Key>ItemPluralnameItemPlantFibreString</Key>
+    <Value>String (plant fibre)</Value>
+  </String>
+  <String>
+    <Key>ItemSummarydescriptionItemPlantFibreString</Key>
+    <Value>Crude string twisted from bark fibres</Value>
+  </String>
+  <String>
     <Key>ItemItemPlastCrete</Key>
     <Value>PlastCrete</Value>
   </String>
@@ -16312,7 +16336,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionRawhidestring</Key>
-    <Value>A fishing net can be made from vines - two of them, and twice as slowly - as well as from cotton string.</Value>
+    <Value>A fishing net can be made from vines - two of them, and twice as slowly - as well as from cotton string. String can be twisted from the bark fibres of vines and shadeleaf canes.</Value>
   </String>
   <String>
     <Key>ModDescriptionRegrowth</Key>
@@ -19897,6 +19921,14 @@ The storehouse also has a space for storage of items that are not intended for s
   <String>
     <Key>ProcessMakePickledCarbonTail</Key>
     <Value>Cooking</Value>
+  </String>
+  <String>
+    <Key>ProcessMakePlantFibreStringFromShadeleafCanes</Key>
+    <Value>Producing</Value>
+  </String>
+  <String>
+    <Key>ProcessMakePlantFibreStringFromVine</Key>
+    <Value>Producing</Value>
   </String>
   <String>
     <Key>ProcessMakePlasticTappingBucket</Key>

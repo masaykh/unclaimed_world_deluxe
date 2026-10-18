@@ -27,6 +27,7 @@ internal static partial class Program
         bool faunaSelfTest = args.Contains("--fauna-selftest");
         string fishSelfTest = args.Contains("--fish-selftest") ? "on" : args.Contains("--fish-selftest=off") ? "off" : null;
         string hideGearSelfTest = args.Contains("--hidegear-selftest") ? "on" : args.Contains("--hidegear-selftest=off") ? "off" : null;
+        string fibreStringSelfTest = args.Contains("--fibre-string-selftest") ? "on" : args.Contains("--fibre-string-selftest=off") ? "off" : null;
         // Resolved now, before the working directory becomes the installation.
         string saveSelfTest = args.FirstOrDefault(a => a.StartsWith("--save-selftest=", StringComparison.Ordinal))
             ?.Substring("--save-selftest=".Length);
@@ -91,6 +92,11 @@ internal static partial class Program
             Console.Error.WriteLine("               with HideGearMod on: the hide cloak and armour are gadgets whose");
             Console.Error.WriteLine("               effects resolve, made from real hides, and a patrol asks for armour.");
             Console.Error.WriteLine("               With =off: none of it is in the tables, and a patrol asks as before.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("  --fibre-string-selftest[=off]");
+            Console.Error.WriteLine("               RawhideStringMod's plant fibre string: the item, its two recipes, and");
+            Console.Error.WriteLine("               every tool set taking rawhide string taking it too, less productively.");
+            Console.Error.WriteLine("               With =off: the item stays (for saves), the recipes and tools do not.");
             Console.Error.WriteLine();
             Console.Error.WriteLine("  --fauna-selftest");
             Console.Error.WriteLine("               check that every species DangerousFaunaMod names is a creature in the");
@@ -237,6 +243,11 @@ internal static partial class Program
         if (hideGearSelfTest != null)
         {
             return HideGearSelfTest(hideGearSelfTest == "on");
+        }
+
+        if (fibreStringSelfTest != null)
+        {
+            return FibreStringSelfTest(fibreStringSelfTest == "on");
         }
 
         if (args.Contains("--regrowth-selftest"))

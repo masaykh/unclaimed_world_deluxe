@@ -17,7 +17,8 @@
 #   6. a malformed ModSettings.xml is reported and ignored rather than stopping the game
 #   7. the removed peat charcoal item and its recipe are gone from every configuration
 #   9. the peat-fuelled build variants are cloned from the studio's recipes, and switchable
-#  10. a fishing net can be made from rawhide string, which nothing else in the game consumes
+#  10. a fishing net can be made from vines; plant fibre string is made from vines and canes, and is a tool
+#      wherever rawhide string is, less productively
 #  11. the five per-request mods register their switches, and the diet one changes the tables
 #  12. disassembly recipes are generated from the production recipes, linked, and switchable
 #  13. a seeded random stream resumes where it left off - the save/load assumption
@@ -363,6 +364,30 @@ has_process "$d" makeFishingNet   && pass "the stock recipe is untouched" || fai
 d=$(new_install case10b); write_setting "$d" rawhidestring.stringAlternatives false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
 has_process "$d" makeFishingNetFromVine   && fail "the variant is still there with the switch off" || pass "switch off: the variant is gone"
+has_process "$d" makePlantFibreStringFromVine   && pass "  and the plant fibre string recipes are not tied to it" || fail "switching off the vine net removed the plant fibre string recipes"
+
+# PLANT FIBRE STRING (Kastuk, the same thread: string from bark fibres, "Can be created from vines
+# and also from elastic shadeleaf canes ... lowest tier tool under rawhide strings"). Inside the
+# self-test, after GameData.PostDataCompleteInitialize: item:plantFibreString is rawhide string's
+# tool with lower durability; makePlantFibreStringFromVine (2 vines) and
+# makePlantFibreStringFromShadeleafCanes (1 cane) are makeRawhideString's, 1.5 times as long; every
+# list of tool alternatives taking rawhide string takes it at 0.8 of rawhide's productivity. Off:
+# the recipes and alternatives go, the item stays so a save holding one loads.
+for mode in on off; do
+  flag=--fibre-string-selftest; [ "$mode" = off ] && flag=--fibre-string-selftest=off
+  out=$( cd "$(new_install case10f$mode)" && "$EXPORT" . $flag 2>&1 ) || true
+  if echo "$out" | grep -q "plant fibre string self-test OK" && echo "$out" | grep -q "^  ok    "; then
+    pass "plant fibre string ($mode): $(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception\|FATAL\|validation' | head -8
+    fail "the plant fibre string self-test ($mode) reported failures"
+  fi
+done
+d=$(new_install case10c); write_setting "$d" rawhidestring.plantFibreString false
+out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
+has_process "$d" makePlantFibreStringFromShadeleafCanes   && fail "a plant fibre string recipe is still there with its switch off" || pass "plant fibre string off in ModSettings.xml: its recipes are gone"
+has_process "$d" makeFishingNetFromVine   && pass "  and the vine net is not tied to it" || fail "switching off plant fibre string removed the vine net"
 
 # ------------------------------------------------ 11. the five task mods register
 #

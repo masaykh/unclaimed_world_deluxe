@@ -1562,7 +1562,11 @@ public class BaseDataLoader : DataLoader
 
 	protected override List<ProcessToolSet> InitProcessToolSets()
 	{
-		return ToolsLoader.InitProcessToolSets();
+		List<ProcessToolSet> list = ToolsLoader.InitProcessToolSets();
+		// MOD: RawhideStringMod's plant fibre string beside rawhide string, wherever it is a tool.
+		// Does nothing unless switched on.
+		UWGame.Mods.RawhideStringMod.AddToolAlternatives(list);
+		return list;
 	}
 
 	protected override List<ProcessType> InitProcessTypes()
@@ -8544,6 +8548,8 @@ public class BaseDataLoader : DataLoader
 		UWGame.Mods.PeatMod.AddItems(list);
 		// MOD: HideGearMod's hide cloak and hide armour, as gadgets.
 		UWGame.Mods.HideGearMod.AddItems(list);
+		// MOD: RawhideStringMod's plant fibre string - whatever its switch, so a save holding one loads.
+		UWGame.Mods.RawhideStringMod.AddItems(list);
 		// DISASSEMBLY MOD: it needs the entity table when the PROCESS table is built, several
 		// steps later. See DisassemblyMod.CaptureItems for why it cannot read GameData for it.
 		UWGame.Mods.DisassemblyMod.CaptureItems(list);

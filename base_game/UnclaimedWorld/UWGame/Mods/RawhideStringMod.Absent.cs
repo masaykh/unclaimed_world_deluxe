@@ -18,6 +18,16 @@ public static class RawhideStringMod
     {
     }
 
+    /// <summary>Adds no item: the studio's tables have no plant fibre string.</summary>
+    public static void AddItems(List<EntityType> listOfEntityTypes)
+    {
+    }
+
+    /// <summary>Leaves the studio's tool sets as they are.</summary>
+    public static void AddToolAlternatives(List<ProcessToolSet> toolSets)
+    {
+    }
+
     public static void AddProcesses(List<ProcessType> listOfProcessTypes)
     {
     }
