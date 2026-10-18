@@ -273,7 +273,7 @@ has_process "$d" makeCharcoalFromPeat   && fail "the old id's choice was lost: t
 d=$(new_install case5d); mkdir -p "$d/user"
 printf '<ModSettings>\n  <DisabledMod id="unhidden" />\n</ModSettings>\n' > "$d/user/ModSettings.xml"
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-if has_process "$d" makeCharcoalFromPeat || has_process "$d" makeFishingNetFromVine; then
+if has_process "$d" makeCharcoalFromPeat || has_process "$d" makeFishingNetFromPlantFibreString; then
   fail "an old file's switched-off Unhidden Mod left its recipes in"
 else
   pass "an old file's switched-off Unhidden Mod switches off the peat and rawhide string mods"
@@ -343,28 +343,30 @@ has_process "$d" makeCharcoalFromPeat \
   && pass "switch off: the charcoal recipe is unaffected - the two switches are independent" \
   || fail "switching off peat building also removed the charcoal recipe"
 
-# ------------------------------------------------ 10. the rawhide fishing net
+# ------------------------------------------------ 10. the plant fibre fishing net
 #
 # makeFishingNet names cotton string by key. The variant (Kastuk, 2026-10-17: rawhide string is
-# useless in water) takes 2 vines and twice the time.
-say "==> 10. a fishing net can be made from vines: 2 of them, twice as slowly"
+# useless in water; 2026-10-18: "made with plant fiber string, not vines") takes 2 plant fibre
+# strings and half as long again.
+say "==> 10. a fishing net can be made from plant fibre string: 2 of them, half as long again"
 d=$(new_install case10)
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-has_process "$d" makeFishingNetFromVine   && pass "makeFishingNetFromVine is in the tables" || fail "the vine variant is missing"
+has_process "$d" makeFishingNetFromPlantFibreString   && pass "makeFishingNetFromPlantFibreString is in the tables" || fail "the plant fibre net is missing"
 has_process "$d" makeFishingNetFromRawhide   && fail "the old rawhide variant is still there" || pass "  and the old rawhide variant is gone"
-vine=$(input_amount "$d" makeFishingNetFromVine item:vine)
+has_process "$d" makeFishingNetFromVine   && fail "the old vine variant is still there" || pass "  and the old vine variant is gone"
+fibre=$(input_amount "$d" makeFishingNetFromPlantFibreString item:plantFibreString)
 cotton=$(input_amount "$d" makeFishingNet item:cottonString)
-[ "$vine" = "2" ] && [ -n "$cotton" ]   && pass "  it wants 2 vines where the original wants $cotton cotton string"   || fail "  vines '$vine', expected 2 (stock cotton '$cotton')"
-input_amount "$d" makeFishingNetFromVine item:cottonString | grep -q .   && fail "  the variant still names cotton string" || pass "  and no cotton string is left in it"
-vdays=$(days_needed "$d" makeFishingNetFromVine); sdays=$(days_needed "$d" makeFishingNet)
-perl -e 'exit(($ARGV[0] > 0 && abs($ARGV[1] - 2 * $ARGV[0]) < 1e-6) ? 0 : 1)' "${sdays:-0}" "${vdays:-0}" \
-  && pass "  and takes twice as long ($vdays days, stock $sdays)" || fail "  time '$vdays', expected twice the stock '$sdays'"
+[ "$fibre" = "2" ] && [ -n "$cotton" ]   && pass "  it wants 2 plant fibre strings where the original wants $cotton cotton string"   || fail "  strings '$fibre', expected 2 (stock cotton '$cotton')"
+input_amount "$d" makeFishingNetFromPlantFibreString item:cottonString | grep -q .   && fail "  the variant still names cotton string" || pass "  and no cotton string is left in it"
+vdays=$(days_needed "$d" makeFishingNetFromPlantFibreString); sdays=$(days_needed "$d" makeFishingNet)
+perl -e 'exit(($ARGV[0] > 0 && abs($ARGV[1] - 1.5 * $ARGV[0]) < 1e-6) ? 0 : 1)' "${sdays:-0}" "${vdays:-0}" \
+  && pass "  and takes half as long again ($vdays days, stock $sdays)" || fail "  time '$vdays', expected 1.5 x the stock '$sdays'"
 has_process "$d" makeFishingNet   && pass "the stock recipe is untouched" || fail "the stock recipe was replaced"
 
 d=$(new_install case10b); write_setting "$d" rawhidestring.stringAlternatives false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
-has_process "$d" makeFishingNetFromVine   && fail "the variant is still there with the switch off" || pass "switch off: the variant is gone"
-has_process "$d" makePlantFibreStringFromVine   && pass "  and the plant fibre string recipes are not tied to it" || fail "switching off the vine net removed the plant fibre string recipes"
+has_process "$d" makeFishingNetFromPlantFibreString   && fail "the variant is still there with the switch off" || pass "switch off: the variant is gone"
+has_process "$d" makePlantFibreStringFromVine   && pass "  and the plant fibre string recipes are not tied to it" || fail "switching off the net removed the plant fibre string recipes"
 
 # PLANT FIBRE STRING (Kastuk, the same thread: string from bark fibres, "Can be created from vines
 # and also from elastic shadeleaf canes ... lowest tier tool under rawhide strings"). Inside the
@@ -387,7 +389,7 @@ done
 d=$(new_install case10c); write_setting "$d" rawhidestring.plantFibreString false
 out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
 has_process "$d" makePlantFibreStringFromShadeleafCanes   && fail "a plant fibre string recipe is still there with its switch off" || pass "plant fibre string off in ModSettings.xml: its recipes are gone"
-has_process "$d" makeFishingNetFromVine   && pass "  and the vine net is not tied to it" || fail "switching off plant fibre string removed the vine net"
+has_process "$d" makeFishingNetFromPlantFibreString   && fail "the net from plant fibre string is still there, with nothing to make the string" || pass "  and the net from it goes too: nothing makes the string"
 
 # ------------------------------------------------ 11. the five task mods register
 #

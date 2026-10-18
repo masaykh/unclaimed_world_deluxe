@@ -442,7 +442,7 @@ alongside of all other mods that Unhidden one make just confusion". It is now:
 | core | the scenario picker lists user scenarios from `user/Scenarios` (`SelectScenarioPanel.AllScenarioHeaders`); saves sort newest first; stockpile categories sort ascending; the mouse wheel scrolls data sheets |
 | `PortSettings` | `port.culture` (DISPLAY CULTURE) and `port.shadowsKey` (`O` toggles shadows) |
 | `PeatMod` (PEAT) | `peat.charcoalFromPeat`, `peat.peatBuilding`, and the charcoal / smithy fuel tag |
-| `RawhideStringMod` (VINE NETS) | `rawhidestring.stringAlternatives`, `rawhidestring.plantFibreString` (added 2026-10-18) |
+| `RawhideStringMod` (PLANT FIBRE STRING) | `rawhidestring.stringAlternatives`, `rawhidestring.plantFibreString` (added 2026-10-18) |
 | `RespawnCapMod` (RESOURCE RESPAWN CAP) | `respawncap.capResourceRespawn` |
 | `MainMenuMod` (MAIN MENU) | `mainmenu.mapEditorButtons`, `mainmenu.revealTestMap` |
 
@@ -530,8 +530,8 @@ the mod named by its prefix:
 
 | setting | what it does |
 |---|---|
-| `rawhidestring.stringAlternatives` | `makeFishingNetFromVine` — a net from 2 vines, taking twice the stock recipe's time. Stock `makeFishingNet` names `item:cottonString` by key. Until 2026-10-17 the variant took rawhide string, which Kastuk found useless in water |
-| `rawhidestring.plantFibreString` | a new item, `item:plantFibreString` ("String (plant fibre)"): the studio's rawhide string as a tool (tags `lightString`, `cordage`, a hand tool) with durability 0.6 where rawhide has 1. Made by `makePlantFibreStringFromVine` (2 vines) and `makePlantFibreStringFromShadeleafCanes` (1 shadeleaf cane), both cloned from `makeRawhideString` - bushcraft, `toolSetButcherFlesh` - at 1.5 times its time. Every list of tool alternatives naming `item:rawhideString` (12 in the studio's tables; none takes a string by tag) takes it beside rawhide at 0.8 of rawhide's productivity (`RawhideStringMod.AddToolAlternatives`). The **item** is registered whatever the switch, so a save holding one loads with it off; the recipes and the tool alternatives follow the switch, and a save is stamped with it. The vine net still takes raw vines, as Kastuk asked |
+| `rawhidestring.stringAlternatives` | `makeFishingNetFromPlantFibreString` — a net from 2 plant fibre strings, taking 1.5 times the stock recipe's time; needs `rawhidestring.plantFibreString` too. Stock `makeFishingNet` names `item:cottonString` by key. Until 2026-10-17 the variant took rawhide string (useless in water, Kastuk), until 2026-10-18 2 raw vines |
+| `rawhidestring.plantFibreString` | a new item, `item:plantFibreString` ("String (plant fibre)"): the studio's rawhide string as a tool (tags `lightString`, `cordage`, a hand tool) with durability 0.6 where rawhide has 1. Made by `makePlantFibreStringFromVine` (2 vines) and `makePlantFibreStringFromShadeleafCanes` (1 shadeleaf cane), both cloned from `makeRawhideString` - bushcraft, `toolSetButcherFlesh` - at 1.5 times its time. Every list of tool alternatives naming `item:rawhideString` (12 in the studio's tables; none takes a string by tag) takes it beside rawhide at 0.8 of rawhide's productivity (`RawhideStringMod.AddToolAlternatives`). The **item** is registered whatever the switch, so a save holding one loads with it off; the recipes and the tool alternatives follow the switch, and a save is stamped with it. The fishing net is made from it (above) |
 | `respawncap.capResourceRespawn` | tops a replenishing resource tile back up to its high-water mark instead of adding that much *again* on top. `ResourceReplenish.ReplenishResourceItems` computes exactly this clamp and drops the result — `Common.Clamp` is a pure function called as a statement — so a tile with `FractionOfMaximumToReplenishEachTime = 1.0` (torux shellfish among others) roughly **doubles** every time it has been harvested, and the maximum is a ratchet that records the larger count |
 | `peat.peatBuilding` | the peat-fuelled build variants, above |
 
@@ -762,12 +762,12 @@ scores a spot by its cover too: that night the bare ground 0.32, a spot under th
 `ScoreComfort`, which passes it to `WeatherMod.ShelterScore`.
 
 **The Mackintosh** is HideGearMod's (it owns the cloak and its item keys): `item:mackintosh`, made by
-`makeMackintosh` from 1 `item:hideCloak` and 2 `item:marshcotSap` — bushcraft, 1/15 day, on the
+`makeMackintosh` from 2 `item:textile` and 2 `item:marshcotSap` (Kastuk, 2026-10-18: "Truly mackintosh been made from cotton textile") — bushcraft, 1/15 day, on the
 cloak's `toolSetCombineLightImprovisedObjects` (the studio's rubber, `makeGaskets`, is chemistry at a
 polymer workshop; brushing sap on a cloak is not making rubber sheets). It is worn like the cloak —
 long trips and at night beyond normal range, Normal at night where the cloak is Minor — with the
 cloak's comfort under its own profile, "Waterproof clothing"; drawn with the studio's `tarp`
-sprite. DisassemblyMod gives the cloak back and no sap (`item:marshcotSap` joins its `Destroyed`
+sprite. DisassemblyMod gives the textile back and no sap (`item:marshcotSap` joins its `Destroyed`
 list). **Saves:** as for every HideGearMod item, a save holding one names `item:mackintosh`, so it is
 stamped `hidegear.enabled=true` and loading it switches HIDE CLOTHING AND ARMOUR on; nothing else new
 is saved. `--weather-selftest` checks every row above on a map of real `TerrainTile`s and tree

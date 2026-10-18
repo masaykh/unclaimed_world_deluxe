@@ -6333,7 +6333,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipHidegearEnabled</Key>
-    <Value>Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at night), a Mackintosh (a hide cloak proofed with marshcot sap: with COLD AND WET HURT it keeps the rain off) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+    <Value>Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at night), a Mackintosh (cotton textile proofed with marshcot sap: with COLD AND WET HURT it keeps the rain off) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
   </String>
   <String>
     <Key>SettingHidegearFighterKit</Key>
@@ -6725,7 +6725,7 @@ An exploration mission that took place before the main landing operation. A sele
   <!-- settings: rawhidestring -->
   <String>
     <Key>SettingGroupRawhidestring</Key>
-    <Value>VINE NETS</Value>
+    <Value>PLANT FIBRE STRING</Value>
   </String>
   <String>
     <Key>SettingRawhidestringPlantFibreString</Key>
@@ -6737,11 +6737,11 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingRawhidestringStringAlternatives</Key>
-    <Value>NETS FROM VINES</Value>
+    <Value>NETS FROM PLANT FIBRE</Value>
   </String>
   <String>
     <Key>SettingTipRawhidestringStringAlternatives</Key>
-    <Value>Adds a fishing net recipe that uses 2 vines and takes twice as long, as well as the stock one from cotton string.</Value>
+    <Value>Adds a fishing net recipe from 2 plant fibre strings, taking half as long again, as well as the stock one from cotton string. Needs PLANT FIBRE STRING.</Value>
   </String>
   <!-- settings: regrowth -->
   <String>
@@ -12614,7 +12614,7 @@ SURVIVAL GUIDE NOTES
   </String>
   <String>
     <Key>ItemSummarydescriptionItemMackintosh</Key>
-    <Value>A hide cloak proofed with marshcot sap.</Value>
+    <Value>A cotton coat proofed with marshcot sap.</Value>
   </String>
   <String>
     <Key>ItemItemMarshcotSap</Key>
@@ -16377,7 +16377,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionRawhidestring</Key>
-    <Value>A fishing net can be made from vines - two of them, and twice as slowly - as well as from cotton string. String can be twisted from the bark fibres of vines and shadeleaf canes.</Value>
+    <Value>String twisted from the bark fibres of vines and shadeleaf canes - the lowest string tool - and fishing nets made from it as well as from cotton string.</Value>
   </String>
   <String>
     <Key>ModDescriptionRegrowth</Key>
@@ -19688,7 +19688,7 @@ The storehouse also has a space for storage of items that are not intended for s
     <Value>Producing</Value>
   </String>
   <String>
-    <Key>ProcessMakeFishingNetFromVine</Key>
+    <Key>ProcessMakeFishingNetFromPlantFibreString</Key>
     <Value>Producing</Value>
   </String>
   <String>

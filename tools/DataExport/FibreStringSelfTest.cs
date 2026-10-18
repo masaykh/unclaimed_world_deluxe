@@ -52,8 +52,8 @@ internal static partial class Program
               "on by default, simulation-affecting, from the next load, and stock only when off");
         Check(UWGame.Mods.ModSettings.Signature().Contains("rawhidestring.plantFibreString=true") == on,
               on ? "a save is stamped rawhidestring.plantFibreString=true" : "a save is not stamped");
-        Check(data.AllProcessTypes.ContainsKey(UWGame.Mods.RawhideStringMod.VineNetKey),
-              "the vine net is still there, on its own switch");
+        Check(data.AllProcessTypes.ContainsKey(UWGame.Mods.RawhideStringMod.FibreNetKey) == on,
+              on ? "the net from plant fibre string is there" : "the net from plant fibre string goes with it: nothing makes the string");
 
         // The item, either way: a save holding one must load.
         Check(data.AllEntityTypes.TryGetValue(fibreKey, out EntityType fibre) && fibre.ToolType != null,

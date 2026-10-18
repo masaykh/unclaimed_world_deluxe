@@ -28,6 +28,13 @@ namespace UWGame.Mods;
 /// class, the mod id and the setting id keep their old names, so settings files and save stamps
 /// still match; the old recipe key is gone.
 ///
+/// FROM PLANT FIBRE STRING, NOT VINES. Kastuk, 2026-10-18, once the string existed: "Fishing net then
+/// can be made with plant fiber string, not vines." The variant is now <see cref="FibreNetKey"/>:
+/// <see cref="StringsPerNet"/> plant fibre strings where the stock recipe takes 1 cotton string - a
+/// weaker string, so more of it - in <see cref="NetTimeFactor"/> times the stock time. It needs PLANT
+/// FIBRE STRING too: with that off nothing makes the string, so the net is not offered.
+/// makeFishingNetFromVine is gone.
+///
 /// NOT a tag. The right fix is one recipe matching a "string" TAG, and Input.Tag exists in the
 /// data - but nothing reads it: inputs are matched by key, only fuel by tag. Until tag inputs are
 /// implemented, a variant per string is what works, and there is one other string to vary by.
@@ -44,21 +51,20 @@ namespace UWGame.Mods;
 ///     the studio's: <see cref="VinesPerString"/> vines, or <see cref="CanesPerString"/>
 ///     shadeleaf cane, for one string, in <see cref="FibreTimeFactor"/> times the rawhide time
 ///     (the fibre is stripped, then twisted). Two vines because a vine is a thin stem (bulk 0.07)
-///     and the vine net already counts two of them for one string; one cane because a cane is a
+///     and the old vine net counted two of them for one string; one cane because a cane is a
 ///     whole sapling (bulk 0.2) with bark enough for a string.
 ///   * as a TOOL: every list of tool alternatives that names item:rawhideString takes plant fibre
 ///     string beside it at <see cref="FibreProductivityFactor"/> of rawhide's productivity
 ///     (<see cref="AddToolAlternatives"/>). Every stock list names strings by KEY; none uses the
 ///     "lightString" or "cordage" tag, which is why the new item's tags alone would not do it.
 ///
-/// The vine net is left as Kastuk asked for it: raw vines, not this string. Making the net from
-/// plant fibre string instead would be one more variant here, if he wants it.
+/// The fishing net is made from this string now (FROM PLANT FIBRE STRING, above).
 ///
 /// SAVES. A save holding a plant fibre string names item:plantFibreString, and an unknown item key
 /// stops a save loading (KeyNotFoundException). So the ITEM is registered whatever the switch:
 /// with the switch off nothing makes it and no tool set takes it, and a save that holds some still
 /// loads. Only the recipes and the tool alternatives follow the switch - ProcessType keys, which a
-/// save names only for a job in progress, and stamped like the vine net (ModSettings.Signature:
+/// save names only for a job in progress, and stamped like the net (ModSettings.Signature:
 /// rawhidestring.plantFibreString=true). That is why the switch can be on by default, where
 /// HideGearMod's, whose items follow its switch, is off.
 /// </summary>
@@ -71,9 +77,9 @@ public static class RawhideStringMod
     /// <summary>Whether a fishing net can be made from vines as well as cotton string.</summary>
     public static ModSetting StringAlternatives =>
         stringAlternatives ?? (stringAlternatives = ModSettings.Toggle(
-            ModId, "stringAlternatives", "NETS FROM VINES", defaultValue: true,
-            toolTip: "Adds a fishing net recipe that uses 2 vines and takes twice as long, as well as " +
-                     "the stock one from cotton string.",
+            ModId, "stringAlternatives", "NETS FROM PLANT FIBRE", defaultValue: true,
+            toolTip: "Adds a fishing net recipe from 2 plant fibre strings, taking half as long again, " +
+                     "as well as the stock one from cotton string. Needs PLANT FIBRE STRING.",
             affectsSimulation: true, takesEffectOnNextLoad: true));
 
     private static ModSetting plantFibreString;
@@ -90,24 +96,24 @@ public static class RawhideStringMod
     /// <summary>Registered from Program.Main BEFORE any data table is built: AddProcesses reads the switches.</summary>
     public static void RegisterSettings()
     {
-        ModSettings.SetCategoryLabel(ModId, "VINE NETS");
+        ModSettings.SetCategoryLabel(ModId, "PLANT FIBRE STRING");
         ModSettings.Describe(ModId, "Community (Unhidden Mod)",
-            "A fishing net can be made from vines - two of them, and twice as slowly - as well as from cotton string. " +
-            "String can be twisted from the bark fibres of vines and shadeleaf canes.",
+            "String twisted from the bark fibres of vines and shadeleaf canes - the lowest string tool - " +
+            "and fishing nets made from it as well as from cotton string.",
             "HUD_thumbnail_fishingNet");
         _ = StringAlternatives;
         _ = PlantFibreString;
     }
 
-    public const string VineNetKey = "makeFishingNetFromVine";
+    public const string FibreNetKey = "makeFishingNetFromPlantFibreString";
 
     private const string Vine = "item:vine";
 
-    /// <summary>Vines per net, where the stock recipe takes 1 cotton string.</summary>
-    public const int VinesPerNet = 2;
+    /// <summary>Plant fibre strings per net, where the stock recipe takes 1 cotton string.</summary>
+    public const int StringsPerNet = 2;
 
-    /// <summary>The vine net takes this many times the stock recipe's time.</summary>
-    public const float TimeFactor = 2f;
+    /// <summary>The plant fibre net takes this many times the stock recipe's time.</summary>
+    public const float NetTimeFactor = 1.5f;
 
     public const string FibreStringKey = "item:plantFibreString";
 
@@ -241,9 +247,9 @@ public static class RawhideStringMod
     public static void AddProcesses(List<ProcessType> listOfProcessTypes)
     {
         variants.Clear();
-        if (StringAlternatives.On)
+        if (StringAlternatives.On && PlantFibreString.On)
         {
-            AddVineNet(listOfProcessTypes);
+            AddFibreNet(listOfProcessTypes);
         }
         if (PlantFibreString.On)
         {
@@ -252,7 +258,7 @@ public static class RawhideStringMod
         }
     }
 
-    private static void AddVineNet(List<ProcessType> listOfProcessTypes)
+    private static void AddFibreNet(List<ProcessType> listOfProcessTypes)
     {
         ProcessType stock = listOfProcessTypes.Find(
             (ProcessType p) => p != null && p.KeyName == "makeFishingNet" && !p.DeleteRecord);
@@ -261,29 +267,29 @@ public static class RawhideStringMod
             return;
         }
 
-        Input[] inputs = RecipeVariants.SwapInput(stock.Inputs, "item:cottonString", Vine);
+        Input[] inputs = RecipeVariants.SwapInput(stock.Inputs, "item:cottonString", FibreStringKey);
         if (inputs == null)
         {
             return;
         }
         foreach (Input input in inputs)
         {
-            if (input.Entity == Vine)
+            if (input.Entity == FibreStringKey)
             {
-                input.Amount.NoOfItems = VinesPerNet;
+                input.Amount.NoOfItems = StringsPerNet;
             }
         }
 
-        ProcessType vine = new ProcessType(stock, VineNetKey, null)
+        ProcessType net = new ProcessType(stock, FibreNetKey, null)
         {
             Inputs = inputs,
-            WorkOrTimeNeeded = Scaled(stock.WorkOrTimeNeeded, TimeFactor),
+            WorkOrTimeNeeded = Scaled(stock.WorkOrTimeNeeded, NetTimeFactor),
             // Deep-copied although nothing in them changes: the loader initialises Output objects
             // in place, and one reachable from two ProcessTypes would be initialised twice.
             Outputs = RecipeVariants.SwapOutput(stock.Outputs, null, null, requireMatch: false)
         };
-        listOfProcessTypes.Add(vine);
-        variants.Add(vine);
+        listOfProcessTypes.Add(net);
+        variants.Add(net);
     }
 
     /// <summary>makeRawhideString with its rawhide swapped for <paramref name="count"/> of <paramref name="material"/>.</summary>
