@@ -9437,6 +9437,79 @@ If it's an item, click the number button on the right side of the name. On the a
 DISPLAY INFO ABOUT A SELECTED ENTITY OR ZONE 
 You can have both a zone and an entity selected at the same time. Display information about the selected zone by clicking the ZONE button on the side menu. Display information about the selected entity by clicking the ENTITY button:</Value>
   </String>
+  <!-- data: HINT -->
+  <String>
+    <Key>HintTextAdvancedTradeHint</Key>
+    <Value>In the time where 'Fields of Tau Ceti' takes place, Advanced Tech Tier items are rare but are sometimes offered for sale. They can appear and disappear off the market again.</Value>
+  </String>
+  <String>
+    <Key>HintTextAmmoPolicyHint</Key>
+    <Value>The Policy panel has settings that restrict which ammunition types can be used against vermin.</Value>
+  </String>
+  <String>
+    <Key>HintTextDogHint</Key>
+    <Value>The dog can live off a dead carcass for a long time. It can also consume rotten meat.</Value>
+  </String>
+  <String>
+    <Key>HintTextExamineHint</Key>
+    <Value>The EXAMINE action is needed to find many types of resources, such as mineral deposits, farm plots, fish spots and vegetables which would otherwise remain hidden.</Value>
+  </String>
+  <String>
+    <Key>HintTextFilterHint</Key>
+    <Value>The top part of the Production panel contains filters that can be used for example to find objects that increase the COMFORT rating.</Value>
+  </String>
+  <String>
+    <Key>HintTextMaintenanceHint</Key>
+    <Value>Colonists will automatically do maintenance on structures if the necessary time and tools are available. This will postpone the structure breaking down. However, colonists will not do maintenance on items.</Value>
+  </String>
+  <String>
+    <Key>HintTextMajorityHint</Key>
+    <Value>To get a majority for raising the tech tier, colonists must have sufficiently high principles. Their principles will slowly increase if the colony has a higher rating. Read more tooltips on the Policy panel.</Value>
+  </String>
+  <String>
+    <Key>HintTextNestHint</Key>
+    <Value>Field quadite nests can be attacked with varmint bombs. This will prevent more field quadites from appearing for a long time.</Value>
+  </String>
+  <String>
+    <Key>HintTextSaveHint1</Key>
+    <Value>Remember to save the game once in a while since there is no auto-save. Saving regularly can also benefit the game's performance and frame rate.</Value>
+  </String>
+  <String>
+    <Key>HintTextSaveHint2</Key>
+    <Value>Remember to save the game once in a while since there is no auto-save. Saving regularly can also benefit the game's performance and frame rate.</Value>
+  </String>
+  <String>
+    <Key>HintTextSaveHint3</Key>
+    <Value>Remember to save the game once in a while since there is no auto-save. Saving regularly can also benefit the game's performance and frame rate.</Value>
+  </String>
+  <String>
+    <Key>HintTextSaveHint4</Key>
+    <Value>Remember to save the game once in a while since there is no auto-save. Saving regularly can also benefit the game's performance and frame rate.</Value>
+  </String>
+  <String>
+    <Key>HintTextSaveHint5</Key>
+    <Value>Remember to save the game once in a while since there is no auto-save. Saving regularly can also benefit the game's performance and frame rate.</Value>
+  </String>
+  <String>
+    <Key>HintTextShelterHint</Key>
+    <Value>Survival structures need a lot of maintenance. Buildings of a higher tier do not decay as rapidly but often require tools for maintenance - check the maintenance tasks when they appear in the Task Manager to make sure you have the needed tools.</Value>
+  </String>
+  <String>
+    <Key>HintTextShootingHint</Key>
+    <Value>A character with Expert shooting skill gets an extra bonus at hitting a target.</Value>
+  </String>
+  <String>
+    <Key>HintTextSleepingHint</Key>
+    <Value>Characters that sleep outdoors will never have their sleep need fully satisfied and it will also fill at a slower rate than for people sleeping indoors.</Value>
+  </String>
+  <String>
+    <Key>HintTextToolsHint</Key>
+    <Value>To increase efficiency, make sure you have enough tools and weapons so colonists don't have to share. Use the Task Manager panel to identify bottlenecks.</Value>
+  </String>
+  <String>
+    <Key>HintTextVerminHint</Key>
+    <Value>Some structures can keep out vermin while others can be accessed by animals. The data sheet for each structure type shows the details.</Value>
+  </String>
   <!-- data: ITEM -->
   <String>
     <Key>ItemItemAcetylene</Key>
@@ -22222,6 +22295,18 @@ Access to stimulants improves people's happiness and the colony's comfort condit
 ERA: The Great Descent</Value>
   </String>
   <String>
+    <Key>ScenarioFieldsOfTauCetiAlluvialPlainScenarioDataLo_48c56d1b1816</Key>
+    <Value>WEST ALLUVIAL PLAIN, SUMMER, YEAR 180 
+ 
+Castor took the last bag ashore and put it next to the others. He looked at his companions who stood dispersed on the riverside and tried to guess their thoughts. Their faces showed expressions ranging from thrill to apprehension. 
+ 
+The boatman was ready to set off. 'Good luck, people. I don't agree with all that you did back there, but I don't think you were treated fairly either. I know there are a few people who would like to join you, so give a call when you have that radio set up.' 
+ 
+As the boat sailed away, Castor turned his attention to Linsey who sat hunched, a small display in her hands. She was waking up from a long nap on the boat. Squinting, she studied her PPU which was also coming alive now. It was busily piling up data as her fellow travellers examined the location, revealing its secrets. 
+ 
+She looked up and smiled: 'It looks promising...good fishing, good soil.' Castor turned towards the other companions and spread out his arms, embracing the orange hills, the yellow trees, the horizon.</Value>
+  </String>
+  <String>
     <Key>ScenarioFieldsOfTauCetiAlluvialPlainScenarioDataMa_9852943fb930</Key>
     <Value>On EASY difficulty, you will start with an expedition equipped with: 
 VERSATILE TOOLS and MANY PROVISIONS 
@@ -22354,6 +22439,18 @@ Most of the colony members have low principles, which means that they are conten
     <Value>OPEN-ENDED MAP: A small community sets out to build a settlement in the wilderness. Lacking advanced technology, they rely on ancient methods when working the land. 
 NOTE: This scenario is the Large map version of CUDGEL HILLS. 
 ERA: The Great Descent</Value>
+  </String>
+  <String>
+    <Key>ScenarioFieldsOfTauCetiCudgelHillsLScenarioDataLoa_ee051e83a67f</Key>
+    <Value>CUDGEL HILLS, SUMMER, YEAR 180 
+ 
+Castor took the last bag ashore and put it next to the others. He looked at his companions who stood dispersed on the riverside and tried to guess their thoughts. Their faces showed expressions ranging from thrill to apprehension. 
+ 
+The boatman was ready to set off. 'Good luck, people. I don't agree with all that you did back there, but I don't think you were treated fairly either. I know there are a few people who would like to join you, so give a call when you have that radio set up.' 
+ 
+As the boat sailed away, Castor turned his attention to Linsey who sat hunched, a small display in her hands. She was waking up from a long nap on the boat. Squinting, she studied her PPU which was also coming alive now. It was busily piling up data as her fellow travellers examined the location, revealing its secrets. 
+ 
+She looked up and smiled: 'It looks promising...good fishing, good soil.' Castor turned towards the other companions and spread out his arms, embracing the orange hills, the yellow trees, the horizon.</Value>
   </String>
   <String>
     <Key>ScenarioFieldsOfTauCetiCudgelHillsLScenarioDataMai_79e01c800452</Key>
@@ -22495,6 +22592,18 @@ Most of the colony members have low principles, which means that they are conten
     <Key>ScenarioSummarydescriptionFieldsOfTauCetiCudgelHil_1bdfd9733bd9</Key>
     <Value>OPEN-ENDED MAP: A small community sets out to build a settlement in the wilderness. Lacking advanced technology, they rely on ancient methods when working the land. 
 ERA: The Great Descent</Value>
+  </String>
+  <String>
+    <Key>ScenarioFieldsOfTauCetiCudgelHillsMScenarioDataLoa_4f78926ded29</Key>
+    <Value>CUDGEL HILLS, SUMMER, YEAR 180 
+ 
+Castor took the last bag ashore and put it next to the others. He looked at his companions who stood dispersed on the riverside and tried to guess their thoughts. Their faces showed expressions ranging from thrill to apprehension. 
+ 
+The boatman was ready to set off. 'Good luck, people. I don't agree with all that you did back there, but I don't think you were treated fairly either. I know there are a few people who would like to join you, so give a call when you have that radio set up.' 
+ 
+As the boat sailed away, Castor turned his attention to Linsey who sat hunched, a small display in her hands. She was waking up from a long nap on the boat. Squinting, she studied her PPU which was also coming alive now. It was busily piling up data as her fellow travellers examined the location, revealing its secrets. 
+ 
+She looked up and smiled: 'It looks promising...good fishing, good soil.' Castor turned towards the other companions and spread out his arms, embracing the orange hills, the yellow trees, the horizon.</Value>
   </String>
   <String>
     <Key>ScenarioFieldsOfTauCetiCudgelHillsMScenarioDataMai_2cc19f2ede80</Key>
@@ -22639,6 +22748,15 @@ The two friends nodded at each other as they crossed paths. They looked around t
 ERA: The Great Descent</Value>
   </String>
   <String>
+    <Key>ScenarioMakingHeadwayScenarioDataLoadingDialogText</Key>
+    <Value>Headway - Year 180 
+ 
+The annual town meeting used to be a crowded affair, but these days, there was plenty of space for everyone. The old rules of order felt too formal for such a small group and the moderator tried to loosen up the meeting. 
+-So. We all agree to try something new. We need to change tack if we want to reach the conditions they have up in Eden Plains. Now, we've heard Tereza's idea to set up a distillery and sell crystal brandy. John, you're next. 
+-We should start tapping sap in the swamp...make rubber components. The mining operations down in Zenig Station are booming and they need this stuff for their machines. 
+At the mentioning of the word 'swamp', several people mumbled their disapproval. Though John Millet was ready to counter their arguments, the townspeople were divided when the meeting ended. His plan for rubber production was still up for debate.</Value>
+  </String>
+  <String>
     <Key>ScenarioMakingHeadwayScenarioDataMainDifficultySet_645e61678d5a</Key>
     <Value>Try to reach the objectives presented at the start of the game. 
 Some tutorial windows will appear along the way, but following them is optional since the objective can be reached in many ways.</Value>
@@ -22700,6 +22818,20 @@ However, there's disagreement about the risk of solar eruptions. Therefore, many
     <Key>ScenarioSummarydescriptionMuckrootMiningSite</Key>
     <Value>OPEN-ENDED: A mining expedition extracts metals in a dangerous biome, using advanced equipment. The crew consider settling on the nearby grasslands. 
 ERA: The Great Descent</Value>
+  </String>
+  <String>
+    <Key>ScenarioMuckrootMiningSiteScenarioDataLoadingDialo_5d197a7fdfa9</Key>
+    <Value>MUCKROOT PASS, YEAR 21 
+ 
+'Hey. See those? Behind that grey clump. There's more over there...' 
+Irina looked out the window where Mike was pointing. 
+'Woah, those creatures are fast...' 
+The Skimmer aircraft was approaching their destination. On the way in, they were flying above a 'muckroot' landscape: Grey-blue carpets of moss covered the ground between the hills. This was the territory of the ferocious Swarmer quadites. 
+All the miners in Irina's crew were staring at the animals below. Mike turned to Irina: 
+'The terbium deposit is right in their neighborhood. Don't you think the swarmers are gonna be, well, swarming all over our operation?' 
+Irina nodded. 'Yeah. But we'll land in a safe area to the south. We'll see what we do from there.' 
+ 
+The aircraft landed as the crew got ready to unload their gear.</Value>
   </String>
   <String>
     <Key>ScenarioMuckrootMiningSiteScenarioDataMainDifficul_44df236f3e85</Key>
@@ -22774,6 +22906,12 @@ ERA: The Great Descent</Value>
     <Value>-WORK IN PROGRESS!- A group of scientists set up an outpost in an enigmatic biome. If the area proves habitable, more people may join them. 
  
 ERA: Planetfall</Value>
+  </String>
+  <String>
+    <Key>ScenarioMuckrootResearchStationScenarioDataLoading_62d6290edeed</Key>
+    <Value>MISSION: Assess the value of the muckroot biome as a place for settlement.
+ OBJECTIVES: Explore the muckroot biome and establish a permanent research base in the vicinity.
+ ASSETS: Additional supplies will be provided by air transport. Also, personnel from Duke's Landing have expressed an interest in joining the expedition at a later stage.</Value>
   </String>
   <String>
     <Key>ScenarioMuckrootResearchStationScenarioDataMainDif_dbdc7e754b70</Key>
@@ -22862,6 +23000,10 @@ Now, three castaways must learn to use the PPU to survive on an uncharted island
 ERA: The Great Descent</Value>
   </String>
   <String>
+    <Key>ScenarioTUTORIALCastawaysScenarioDataLoadingDialog_806caceb2028</Key>
+    <Value>Our people are descendants of the pioneers who came to Antheia two centuries ago. They were great minds, highly skilled in every way. Even though we lost their might in the Great Descent, we still practice the customs of the pioneers. We respect our ancestors - they were not to blame for the tragedy that happened. We try to follow their example and make the best use of their technology that remains. But we are a simple people - farmers, hunters and sailors - and have to make our own way of life on planet Antheia.</Value>
+  </String>
+  <String>
     <Key>ScenarioTUTORIALCastawaysScenarioDataMainDifficult_78dd119834a9</Key>
     <Value>Normal</Value>
   </String>
@@ -22884,6 +23026,11 @@ ERA: The Great Descent</Value>
   <String>
     <Key>ScenarioTUTORIALCastawaysScenarioDataOptionSets1Op_f75fb399ab11</Key>
     <Value>3 people</Value>
+  </String>
+  <String>
+    <Key>ScenarioTUTORIALCastawaysScenarioDataOptionSets1Op_de331035afc5</Key>
+    <Value>
+GROUP OF 3 PEOPLE TEXT</Value>
   </String>
   <String>
     <Key>ScenarioTUTORIALCastawaysScenarioDataOptionSets1Op_ce96a5ba61b7</Key>
@@ -22924,6 +23071,12 @@ ERA: The Great Descent</Value>
     <Value>TUTORIAL 2 + OPEN-ENDED: A work crew signs up for making mudbricks in a clay pit. Their temporary camp might turn into a settlement. 
  
 ERA: The Great Descent</Value>
+  </String>
+  <String>
+    <Key>ScenarioTheClayPitScenarioDataLoadingDialogText</Key>
+    <Value> 
+-Hey. I heard there's patricians close to the clay pit? 
+-Yeah, they have their territory at Blue Creek. But we just stay away from them. We'll probably put up a fence also. Don't be scared!</Value>
   </String>
   <String>
     <Key>ScenarioTheClayPitScenarioDataMainDifficultySettin_c42b2a19e5d5</Key>
@@ -23027,6 +23180,10 @@ We've landed in a firegrass biome. Geographical data are incomplete, but we know
 ERA: Planetfall</Value>
   </String>
   <String>
+    <Key>ScenarioTwinklerIslandScenarioDataLoadingDialogHea_dc352f46413e</Key>
+    <Value>JOURNAL</Value>
+  </String>
+  <String>
     <Key>ScenarioTwinklerIslandScenarioDataMainDifficultySe_ffa39524e62f</Key>
     <Value>Very easy</Value>
   </String>
@@ -23069,12 +23226,36 @@ They now prepare to go back, rescue him and if possible reclaim their equipment.
     <Value>Next to wreck</Value>
   </String>
   <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_f4ae4e3ea644</Key>
+    <Value> 
+JOURNAL RECORDED BY: Ward Conlan 
+We have no way of contacting the other mission members as long as our satellite transmitter is defective. Until connection is back we will keep a locally stored journal. This is the first entry. 
+ 
+We have escaped the catastrophic attack by quadites that happened just hours ago. Only minor injuries are reported. Our vehicle however, is non-functional after damage sustained in the attack and a subsequent crash-landing. 
+  
+We've landed in a firegrass biome. Geographical data are incomplete, and this biome has only been partially documented during the previous months of research. Still, we know enough about this environment to expect species of quadites. 
+ 
+We only hope not to see the vicious swarmer quadite that attacked us earlier today.</Value>
+  </String>
+  <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_3dc4531d2ef7</Key>
     <Value>Grassland shore SW</Value>
   </String>
   <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_33268c3f9585</Key>
     <Value>Next to wreck</Value>
+  </String>
+  <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_bf5a1a8a1475</Key>
+    <Value> 
+JOURNAL RECORDED BY: Ward Conlan 
+We have no way of contacting the other mission members as long as our satellite transmitter is defective. Until connection is back we will keep a locally stored journal. This is the first entry. 
+ 
+We have escaped the catastrophic attack by quadites that happened just hours ago. Only minor injuries are reported. Our vehicle however, is non-functional after damage sustained in the attack and a subsequent crash-landing. 
+  
+We've landed in a firegrass biome. Geographical data are incomplete, and this biome has only been partially documented during the previous months of research. Still, we know enough about this environment to expect species of quadites. 
+ 
+We only hope not to see the vicious swarmer quadite that attacked us earlier today.</Value>
   </String>
   <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_6cc73483a2b0</Key>
@@ -23085,6 +23266,18 @@ They now prepare to go back, rescue him and if possible reclaim their equipment.
     <Value>Fled from wreck</Value>
   </String>
   <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_64c76f355e0f</Key>
+    <Value> 
+//PPU AUTO-GENERATED REPORT: 
+ 
+00.00: Aircraft crash-landed - Severe damage prevents flight and communication. 
+One passenger lost during crash and isolated from team in inaccessible terrain - Alive but unconscious. 
+ 
+01.20: Dangerous species (Twinkler quadites) detected in immediate vicinity. 
+02.00: Team members attacked by numerous Twinklers. 
+09.50: Camp relocated 1.7 km south of crash site.</Value>
+  </String>
+  <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_4f08c1f3956c</Key>
     <Value>Wreck at north</Value>
   </String>
@@ -23093,12 +23286,36 @@ They now prepare to go back, rescue him and if possible reclaim their equipment.
     <Value>Fled from wreck</Value>
   </String>
   <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_0fcb4cfb4338</Key>
+    <Value> 
+//PPU AUTO-GENERATED REPORT: 
+ 
+00.00: Aircraft crash-landed - Severe damage prevents flight and communication. 
+One passenger lost during crash and isolated from team in inaccessible terrain - Alive but unconscious. 
+ 
+01.20: Dangerous species (Twinkler quadites) detected in immediate vicinity. 
+02.00: Team members attacked by numerous Twinklers. 
+09.50: Camp relocated 1.8 km southwest of crash site.</Value>
+  </String>
+  <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_dbad217f0e44</Key>
     <Value>Wreck at northeast</Value>
   </String>
   <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_807ae5e34a55</Key>
     <Value>Fled from wreck</Value>
+  </String>
+  <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_fa6b36477636</Key>
+    <Value> 
+//PPU AUTO-GENERATED REPORT: 
+ 
+00.00: Aircraft crash-landed - Severe damage prevents flight and communication. 
+One passenger lost during crash and isolated from team in inaccessible terrain -  Alive but unconscious. 
+ 
+01.20: Dangerous species (Twinkler quadites) detected in immediate vicinity. 
+02.00: Team members attacked by numerous Twinklers. 
+09.50: Camp relocated 1.4 km southeast of crash site.</Value>
   </String>
   <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets0Optio_25031204cd30</Key>
@@ -23113,6 +23330,10 @@ They now prepare to go back, rescue him and if possible reclaim their equipment.
     <Value>4 people</Value>
   </String>
   <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_16b709523aed</Key>
+    <Value>//CAMP MEMBERS: Conlan, Lehner, Yeboah, Khan</Value>
+  </String>
+  <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_c82ece029a89</Key>
     <Value>4 people</Value>
   </String>
@@ -23125,6 +23346,10 @@ They now prepare to go back, rescue him and if possible reclaim their equipment.
     <Value>3 people</Value>
   </String>
   <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_ed44f99e878e</Key>
+    <Value>//CAMP MEMBERS: Conlan, Lehner, Yeboah</Value>
+  </String>
+  <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_d907bc2d3e6c</Key>
     <Value>3 people</Value>
   </String>
@@ -23135,6 +23360,10 @@ They now prepare to go back, rescue him and if possible reclaim their equipment.
   <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_684b9687b706</Key>
     <Value>2 people</Value>
+  </String>
+  <String>
+    <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_20829e0d570e</Key>
+    <Value>//CAMP MEMBERS: Conlan, Lehner</Value>
   </String>
   <String>
     <Key>ScenarioTwinklerIslandScenarioDataOptionSets1Optio_e657002338e1</Key>

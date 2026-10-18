@@ -42,6 +42,8 @@ public class LoadingScreenInterface : CommonInterface
 	private void LoadHints()
 	{
 		GameData.Instance.AllHints = DataLoader.HandleOtherDataList(BaseDataLoader.InitHints, "hints.xml");
+		// PORT: in the chosen language (Locale.TranslateHints).
+		UWGame.Locale.TranslateHints(GameData.Instance.AllHints);
 	}
 
 	private void SelectHint()
@@ -56,6 +58,10 @@ public class LoadingScreenInterface : CommonInterface
 		string imageName = null;
 		if (startGameParams != null && startGameParams.StartScenarioParams != null)
 		{
+			// PORT: the story in the chosen language. The New Game list translated the header before
+			// its ScenarioData was loaded; translating again now reaches the loading dialog's text, and
+			// leaves what is already translated alone (Locale.TranslateScenario).
+			UWGame.Locale.TranslateScenario(startGameParams.StartScenarioParams.Scenario);
 			text = startGameParams.StartScenarioParams.GetLoadingDialogText();
 			heading = startGameParams.StartScenarioParams.Scenario.ScenarioData.LoadingDialogHeading;
 			imageName = startGameParams.StartScenarioParams.Scenario.ScenarioData.LoadingDialogImage;

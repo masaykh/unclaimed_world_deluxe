@@ -45,6 +45,9 @@ public partial class Locale
 		"SpecialActionCaption", "Term", "TermTooltip", "StaticString", "TextWithPlaceholders",
 		// GUIConstants' headings for the tool options of a recipe.
 		"FirstToolOption", "SecondToolOption", "ThirdToolOption",
+		// The story on the loading screen: a scenario's (ScenarioData) and an option's (Option).
+		// Kastuk, "Translation", 2026-10-17: the old Russian exe translated it, ours could not.
+		"LoadingDialogHeading", "LoadingDialogText",
 	};
 
 	/// <summary>
@@ -346,6 +349,44 @@ public partial class Locale
 		string saved = CurrentScenario;
 		CurrentScenario = null;
 		foreach (DataText text in ScenarioTexts(scenario))
+		{
+			Apply(text, TranslatedData(text.Key, text.English));
+		}
+		CurrentScenario = saved;
+	}
+
+	/// <summary>
+	/// PORT: the loading screen's hints (hints.xml, BaseDataLoader.InitHints) - a list, not a table,
+	/// so <see cref="DataTexts"/> never saw them. Keyed "(HINT)" and the hint's KeyName.
+	/// </summary>
+	public static List<DataText> HintTexts(IEnumerable<UWGame.ClientSide.Hints.Hint> hints)
+	{
+		var walk = new TextWalk();
+		if (hints != null)
+		{
+			foreach (UWGame.ClientSide.Hints.Hint hint in hints)
+			{
+				if (hint?.KeyName != null)
+				{
+					walk.Root(hint, "HINT", names: false, key: hint.KeyName);
+				}
+			}
+		}
+		return walk.Texts;
+	}
+
+	/// <summary>PORT: the hints in the chosen language, for LoadingScreenInterface.LoadHints.</summary>
+	public static void TranslateHints(List<UWGame.ClientSide.Hints.Hint> hints)
+	{
+		UseChosenCulture();
+		if (currentCulture == InvariantCulture || hints == null)
+		{
+			return;
+		}
+		EnsureInvariant();
+		string saved = CurrentScenario;
+		CurrentScenario = null;
+		foreach (DataText text in HintTexts(hints))
 		{
 			Apply(text, TranslatedData(text.Key, text.English));
 		}

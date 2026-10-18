@@ -87,6 +87,11 @@ internal static partial class Program
         {
             entries[text.Key] = text.English;
         }
+        // The loading screen's hints, a list outside the tables (Locale.HintTexts).
+        foreach (Locale.DataText text in Locale.HintTexts(UWGame.SimSide.AllGameData.BaseDataLoader.InitHints()))
+        {
+            entries[text.Key] = text.English;
+        }
         var texts = ScenarioEntries(text => entries[text.Key] = text.English);
         if (texts == null)
         {
@@ -354,7 +359,7 @@ internal static partial class Program
         Dictionary<string, string> templateFile = null;
         Locale.Load(ref templateFile, Locale.InvariantCulture);
         var headersFile = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<ArrayOfString>\r\n");
-        foreach (var entry in templateFile.Where(e => e.Key.StartsWith("Scenario", StringComparison.Ordinal)))
+        foreach (var entry in templateFile.Where(e => e.Key.StartsWith("Scenario", StringComparison.Ordinal) || e.Key.StartsWith("Hint", StringComparison.Ordinal)))
         {
             headersFile.Append("<String><Key>").Append(System.Security.SecurityElement.Escape(entry.Key)).Append("</Key><Value>")
                        .Append(System.Security.SecurityElement.Escape("Ψ" + entry.Value)).Append("</Value></String>\r\n");
@@ -373,6 +378,23 @@ internal static partial class Program
         Check(pickerHeaders.Count > 0 && stillEnglish.Count == 0,
               $"the New Game list: every built-in scenario's name and summary translates ({pickerHeaders.Count} scenarios)"
               + (stillEnglish.Count == 0 ? "" : $" - {stillEnglish.Count} stay English: {string.Join(", ", stillEnglish.Take(6))}"));
+
+        // The loading screen (Kastuk, 2026-10-17: the old Russian exe translated its story and hints).
+        // Its story is the scenario's ScenarioData, loaded after the New Game list translated the
+        // header; LoadingScreenInterface translates again then. Its hints come from hints.xml.
+        var stories = BuiltInScenarios().Select(l => { var h = l.GetScenarioHeader(); h.ScenarioData = l.GetScenarioData(); return h; })
+            .Where(h => !string.IsNullOrEmpty(h.ScenarioData?.LoadingDialogText)).ToList();
+        foreach (var story in stories)
+        {
+            Locale.TranslateScenario(story);
+        }
+        Check(stories.Count > 0 && stories.All(h => h.ScenarioData.LoadingDialogText.StartsWith("Ψ", StringComparison.Ordinal)
+                                                   && (string.IsNullOrEmpty(h.ScenarioData.LoadingDialogHeading) || h.ScenarioData.LoadingDialogHeading.StartsWith("Ψ", StringComparison.Ordinal))),
+              $"the loading screen's story translates, heading and text, once its ScenarioData is loaded ({stories.Count} scenarios have one)");
+        var hints = UWGame.SimSide.AllGameData.BaseDataLoader.InitHints();
+        Locale.TranslateHints(hints);
+        Check(hints.Count > 0 && hints.All(h => string.IsNullOrEmpty(h.Text) || h.Text.StartsWith("Ψ", StringComparison.Ordinal)),
+              $"the loading screen's hints translate ({hints.Count} hints)");
 
         language.Value = "Broken";
         Check(Locale.Text("SAVE GAME") == "SAVE GAME", "a file that cannot be read: English, no crash");
