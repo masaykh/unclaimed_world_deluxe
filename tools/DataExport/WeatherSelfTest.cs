@@ -31,7 +31,8 @@ namespace UW.Tools.DataExport;
 /// - shelf-life tooltips: DegradeType.PostDataCompleteInitialize works "Outside" out for the
 ///   mid-summer day's average instead of 15 C.
 ///
-/// Step 3, COLD AND WET HURT: <see cref="ColdAndWetSelfTest"/> (WeatherExposureSelfTest.cs).
+/// Step 3, COLD AND WET HURT: <see cref="ColdAndWetSelfTest"/> (WeatherExposureSelfTest.cs); step 4,
+/// what keeps it off - trees, PRECOL suits, cloaks: <see cref="ShelterSelfTest"/> (WeatherShelterSelfTest.cs).
 ///
 /// Step 2, RAIN AND WIND (<see cref="RainAndWindSelfTest"/>):
 /// - the schedule: the same seed gives the same weather to the bit, another seed other weather;

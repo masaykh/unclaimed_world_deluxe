@@ -721,7 +721,7 @@ wind); "Spring" and "Mid autumn" mostly below 0.25; every summer night 0.
 |---|---|
 | `GoalDoSleep.Activate` → `WeatherMod.OnSleepStart` | measures the night where the colonist lies (the worst of the day is kept in `CustomFields` `weather:exposureDay` / `weather:exposure`); once a day, at exposure 0.25 or more, rolls the game's seeded generator for a cold at `0.3 × exposure` — up to ~28% after a storm night out, ~14% by a fire, none in a hut and no draw then; not while already ill |
 | `Intelligence.Comfort` → `WeatherMod.ExposurePenalty` | the next day's comfort is `0.2 × exposure` lower (up to ~19% after a storm night out, ~9.5% by a fire), until the next day's first sleep, beside DiscomfortMod's |
-| `EvaluateSleep.ScoreComfort` → `WeatherMod.ShelterScore` | a place's comfort score loses `0.5 × its exposure tonight`: on the storm night the ground 0.32 (studio 0.61), a fire 0.50 (0.66), a hut 0.92 as before — at most ~4% of the sleep goal's score, so it reorders the places rather than delaying sleep |
+| `EvaluateSleep.ScoreComfort` → `WeatherMod.ShelterScore` | (the hook passes where the sleeper would lie) a place's comfort score loses `0.5 × its exposure tonight`, under what covers them there (step 4): on the storm night the ground 0.32 (studio 0.61), a fire 0.50 (0.66), a hut 0.92 as before — at most ~4% of the sleep goal's score, so it reorders the places rather than delaying sleep |
 | `BaseDataLoader.InitEffectTypes` / `InitEffectProfileTypes` → `WeatherMod.AddEffects`, `AddEffectProfiles` | the "Cold" effect profile, always registered: comfort −10% for 1.5 days, shown in the colonist's effect panel and saved with them |
 | `Locomotor.CalculateSpeed`, `ProcessJob.CalculateWorkDurationInDays`, `BiologicalEntity.EnergyLevel` → `SicknessEffects` | with a cold, walking ×0.9, work time ×1.2, energy at most 0.75. `mods/SicknessEffects.cs` is shared with EmergencyEatingMod's "Bad stomach": each mod registers its profiles' factors; two at once multiply and the lower cap holds. They follow the effect, not the switch |
 
@@ -732,6 +732,50 @@ real `Intelligence.Comfort`, the real `EvaluateSleep.ScoreComfort`, the cold's r
 nights, and the cold (alone and with a bad stomach) through the real `Locomotor`, `ProcessJob` and
 `BiologicalEntity`. **Not verified in a running colony:** whether colonists walk to a hut instead of
 lying down by the fire is for a game.
+
+#### What keeps it off — trees, PRECOL suits, clothes
+
+Step 4, under the same switch. Kastuk: *"the trees can be a shelter too (living spoak, not cut),
+especially live sanctuary tree with caps"*, *"Explorers with precol suits surely must be more
+protected by default"*, and in "Colonist equipment": *"New clothes need to protect against weather
+too ... Mackintosh to withstand the rain seasons."* Each is a `WeatherMod.Cover`: a factor on each of
+the three shares of an hour's exposure — the dry cold (`0.5`), the rain (`0.3 × rain`), the wind
+(`0.2 × wind`) — so leaves can keep off rain and leave the cold. Covers multiply with each other and
+with a campfire's ×0.5; a residence is still 0 (`WeatherMod.CoverOf`, `Exposed`). With no tree, suit or
+clothes, every number is step 3's to the bit (`WeatherMod.Night.Under`).
+
+| cover | cold | rain | wind | how it is found |
+|---|---|---|---|---|
+| grown, living spoak, within 1.5 tiles | ×1 | ×0.6 | ×0.8 | `WeatherMod.TreeCover` / `CanopyOf`: the trees in `TerrainTile.TreesOnTile` of the 7 × 7 tiles round the sleeper; key `tree:spoak` (dead spoaks are the `tree:spoakdead…` types, a felled tree leaves its tile's list); `Tree.Size` ≥ 0.9 (below it the studio draws the young sprite). Its plates let "strong winds pass through the canopy" (TreeLoader) |
+| grown, living sanctuary tree with its caps, within 2.5 tiles | ×0.9 | ×0.3 | ×0.5 | key `tree:sanctuarytree`; the caps are its summer canopy (`tree_sanctuarytree_1_grown_summer`). The studio blocks 45 units (~1 tile) round the trunk; the caps spread ~2.5× that |
+| the same, bare (`Tree.InSeason` Winter, the studio's winter sprite) | ×1 | ×0.8 | ×0.7 | only the map editor sets a tree's season; several trees give the best of each share |
+| PRECOL survival suit | ×0.4 | ×0.5 | ×0.5 | `WeatherMod.IsPrecolExplorer`: the loaded scenario's `EntityTypeDescription` names the person's type "PRECOL explorer" — Twinkler Island's `personDescription`, whose text issues each explorer a SURVIVAL SUIT against "heat and cold" that "collects and rinses water from the wearer". That table is never translated. The white suits are also among the model textures of the `…HumanAncestor` races, but that is a client-side pick shared with the Muckroot research team, so it is not used |
+| hide cloak (HideGearMod) | ×0.8 | ×1 | ×0.7 | `WeatherMod.GarmentCover` → `HideGearMod.Wears`: in the Equipment storage when the colonist lies down (the studio's `GoalDoSleep` then drops everything beside them — "just drop everything where we sleep") |
+| Mackintosh (HideGearMod) | ×0.8 | ×0.3 | ×0.6 | the same; with both, the Mackintosh |
+
+The stormiest mid-winter night of the self-test, 0.95 in the open (dry cold 0.50, rain 0.25, wind
+0.20): by a spoak 0.81, under a sanctuary tree's caps 0.62 (bare 0.84), in a hide cloak 0.79, in a
+Mackintosh 0.59, a PRECOL explorer 0.42 (a cold 12.7% likely instead of 28.4%; 0.27 under the caps),
+an explorer in a Mackintosh by a lit fire under the caps 0.09 — no cold. `EvaluateSleep.ScoreComfort`
+scores a spot by its cover too: that night the bare ground 0.32, a spot under the caps 0.42 (studio
+0.61). The core change is one argument: `EvaluateSleep.ScoreLocation` passes `worldLocation` to
+`ScoreComfort`, which passes it to `WeatherMod.ShelterScore`.
+
+**The Mackintosh** is HideGearMod's (it owns the cloak and its item keys): `item:mackintosh`, made by
+`makeMackintosh` from 1 `item:hideCloak` and 2 `item:marshcotSap` — bushcraft, 1/15 day, on the
+cloak's `toolSetCombineLightImprovisedObjects` (the studio's rubber, `makeGaskets`, is chemistry at a
+polymer workshop; brushing sap on a cloak is not making rubber sheets). It is worn like the cloak —
+long trips and at night beyond normal range, Normal at night where the cloak is Minor — with the
+cloak's comfort under its own profile, "Waterproof clothing"; drawn with the studio's `tarp`
+sprite. DisassemblyMod gives the cloak back and no sap (`item:marshcotSap` joins its `Destroyed`
+list). **Saves:** as for every HideGearMod item, a save holding one names `item:mackintosh`, so it is
+stamped `hidegear.enabled=true` and loading it switches HIDE CLOTHING AND ARMOUR on; nothing else new
+is saved. `--weather-selftest` checks every row above on a map of real `TerrainTile`s and tree
+entities, through the real `OnSleepStart` and `ScoreComfort`; `--hidegear-selftest` (case 40) the
+item, the recipe and its disassembly after `GameData.PostDataCompleteInitialize`. **Not verified in
+a running colony:** whether colonists sleep under trees, and whether they still have a cloak on when
+they lie down — gear is fetched for long trips and night work (`FindOptionalEquipmentIfNeeded` needs
+a job, so going to bed fetches nothing).
 
 ## Stink and noise — `discomfort.enabled`, `discomfort.wasteMap`, `discomfort.stinkOverlay`
 

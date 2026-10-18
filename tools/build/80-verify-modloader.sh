@@ -1045,8 +1045,10 @@ fi
 
 # Hide gear (Colonist equipment, step 1; jerrybi: "Do in numeric order"): with the switch on, a
 # hide cloak and hide armour are gadgets whose effect profiles resolve, made from tanned hides the
-# game can make, and a patrol asks for PatrolOrAttack gear, which no goal of the studio's did. With
-# it off (the default), none of the new keys is in the tables and a patrol asks as before.
+# game can make, and a patrol asks for PatrolOrAttack gear, which no goal of the studio's did. The
+# Mackintosh (Kastuk, "Colonist equipment"): a cloak and 2 marshcot sap, worn as the cloak, taken
+# over it at night, and disassembled back into the cloak. With it off (the default), none of the
+# new keys is in the tables and a patrol asks as before.
 say "==> 40. hide gear: cloak, armour, backpack, cart; weapons at hand; fighters keep a full kit"
 for mode in on off; do
   flag=--hidegear-selftest; [ "$mode" = off ] && flag=--hidegear-selftest=off
@@ -1085,6 +1087,10 @@ fi
 # AND WET HURT: a night's exposure in the open, by a campfire and in a hut; the comfort through the
 # real Intelligence.Comfort; the real EvaluateSleep.ScoreComfort; the seeded rate of colds; the cold
 # through the real Locomotor, ProcessJob and BiologicalEntity (SicknessEffects, shared with case 43).
+# Step 4, what keeps it off: a living spoak or sanctuary tree on a map of real tiles (not a dead,
+# young or felled one, not beyond its reach, less without the caps), a PRECOL explorer by Twinkler
+# Island's own description table, a hide cloak or a Mackintosh in Equipment; multiplied, and step
+# 3's numbers to the bit with none of them.
 say "==> 42. weather: the sun follows the season names, a subtropical year, spoilage and tooltips follow the air, rain and wind, cold and wet"
 out=$( cd "$(new_install case42)" && "$EXPORT" . --weather-selftest 2>&1 ) || true
 if echo "$out" | grep -q "weather self-test OK" && echo "$out" | grep -q "^  ok    "; then

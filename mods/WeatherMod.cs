@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Interface.DateAndWeatherPanel;
 using UWGame.ClientSide.PropertyPresentation;
 using UWGame.SimSide;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Maps;
 using UWGame.SimSide.SimEffects;
+using UWGame.SimSide.Trees;
 
 namespace UWGame.Mods;
 
@@ -154,6 +157,50 @@ namespace UWGame.Mods;
 /// - Off: no measuring, no roll, no penalty, the studio's sleep scores. A "Cold" already caught runs
 ///   its course.
 ///
+/// WHAT KEEPS IT OFF (step 4, under the same switch). Kastuk, "Weather and temperature": "the trees
+/// can be a shelter too (living spoak, not cut), especially live sanctuary tree with caps" and
+/// "Explorers with precol suits surely must be more protected by default"; "Colonist equipment":
+/// "New clothes need to protect against weather too ... Mackintosh to withstand the rain seasons."
+/// Each of these is a <see cref="Cover"/>: a factor on each of the three shares of an hour's
+/// exposure - the dry cold (the 0.5), the rain (0.3 x rain) and the wind (0.2 x wind) - so a roof
+/// of leaves can keep off the rain and leave the cold. Covers multiply with each other and with
+/// the place (a campfire's x0.5); a residence is still none at all (<see cref="CoverOf"/>):
+/// - TREES (<see cref="TreeCover"/>, <see cref="CanopyOf"/>). The studio's trees are entities in
+///   their tile's TerrainTile.TreesOnTile, with a Tree component. Living and dead are different
+///   types - "tree:spoak" and the "tree:spoakdead..." ones, "tree:sanctuarytree" and
+///   "tree:sanctuarytreedead..."; a felled tree is destroyed and leaves its tile's list. Only the two
+///   living types count, grown (Tree.Size 0.9 or more: below it the studio draws the young sprite),
+///   within <see cref="SpoakReachTiles"/> or <see cref="SanctuaryReachTiles"/> of the trunk. The
+///   sanctuary tree's "caps" are its summer canopy: the studio draws it with them
+///   (tree_sanctuarytree_1_grown_summer) unless the map made it InSeason.Winter, bare branches
+///   (..._grown_winter); nothing in the game changes a tree's season but the map editor. The spoak's
+///   own description says its rigid plates let "strong winds pass through the canopy", so it keeps
+///   off more rain than wind. Several trees: the best of each share. Only the tiles within reach of
+///   the sleeper are looked at (7 x 7).
+///     a grown spoak                  rain x0.6, wind x0.8, cold as it is
+///     a sanctuary tree with its caps rain x0.3, wind x0.5, cold x0.9
+///     a sanctuary tree, bare         rain x0.8, wind x0.7, cold as it is
+/// - THE PRECOL SUIT (<see cref="IsPrecolExplorer"/>). Nothing on a colonist says "suit": the white
+///   suits are some of the model textures the "...HumanAncestor" races pick from, a client-side
+///   choice that also gives the Muckroot research team PRECOL suits. What does say it is the
+///   scenario: Twinkler Island's tables rename "entity:human" to "PRECOL explorer"
+///   (EntityTypeDescription "personDescription", whose description issues every explorer a
+///   SURVIVAL SUIT that shields "heat and cold" and "collects and rinses water from the wearer").
+///   That table is never translated, so a person whose type the loaded scenario calls a "PRECOL
+///   explorer" wears the suit: cold x0.4, rain x0.5, wind x0.5.
+/// - CLOTHES (<see cref="GarmentCover"/>), worn as HideGearMod's gadgets - in the Equipment storage
+///   when the colonist lies down. The studio's GoalDoSleep then drops everything a sleeper carries
+///   where they lie ("just drop everything where we sleep"), so the cloak is the blanket beside
+///   them. The hide cloak: cold x0.8, wind x0.7, the rain as it is. The Mackintosh (HideGearMod: a
+///   hide cloak proofed with marshcot sap): cold x0.8, rain x0.3, wind x0.6. Both on, the Mackintosh.
+/// The stormiest mid-winter night of the self-test, 0.95 in the open (dry cold 0.50, rain 0.25, wind
+/// 0.20): by a spoak 0.81, under a sanctuary tree's caps 0.62 (bare 0.84), in a hide cloak 0.79, in a
+/// Mackintosh 0.59, a PRECOL explorer 0.42 (0.27 under the caps), an explorer in a Mackintosh by a
+/// lit fire under the caps 0.09 - below 0.25, so no cold. Nothing changes the studio's sleep
+/// conditions; with no tree, no suit and no clothes, every number is step 3's to the bit.
+/// EvaluateSleep.ScoreComfort (which now passes where the sleeper would lie) scores a spot by its
+/// cover too: on that night the bare ground 0.32, a spot under the caps 0.42 (the studio's 0.61).
+///
 /// NOTHING NEW IS SAVED. The temperature is worked out each time from what a save already holds:
 /// TimeOfYear and TimeOfDay (DateAndTime) and the cloud cover (WeatherManager). No tile is written,
 /// so there is no per-tile cost and switching off puts the studio's 15 C back at once. No random
@@ -221,7 +268,9 @@ public static class WeatherMod
                      "A colonist who sleeps out in the open on a night below about 12 C loses comfort the next " +
                      "day - up to about 19% after a winter rainstorm - and may catch a cold: slower walking and " +
                      "work, energy at most 75%, for a day and a half. A lit campfire halves it, a hut keeps it off, " +
-                     "and on cold, wet nights colonists look for shelter more.",
+                     "and on cold, wet nights colonists look for shelter more. A living spoak keeps off some of the " +
+                     "rain and wind, a sanctuary tree with its caps most of it; PRECOL explorers' suits keep off half " +
+                     "or more; a hide cloak some of the cold and wind, a Mackintosh the rain as well.",
             affectsSimulation: true));
 
     /// <summary>COLD AND WET HURT, which needs SEASONS AND TEMPERATURE: it is that switch's air that is cold.</summary>
@@ -763,40 +812,89 @@ public static class WeatherMod
     /// at its middle. With <paramref name="rainAndWind"/> the schedule's rain, wind, cloud and cooled
     /// air; without, the air under <paramref name="cloudCover"/>, dry, at the studio's still wind.
     /// </summary>
-    public static float NightExposure(int seed, int year, double timeOfYear, double timeOfDay, bool rainAndWind, float cloudCover)
+    public static float NightExposure(int seed, int year, double timeOfYear, double timeOfDay, bool rainAndWind, float cloudCover) =>
+        NightOf(seed, year, timeOfYear, timeOfDay, rainAndWind, cloudCover).Open;
+
+    /// <summary>
+    /// A night ahead, as <see cref="NightExposure"/> works it out: the exposure in the open, and the
+    /// three shares it is made of, each averaged over the same hours - for a <see cref="Cover"/>.
+    /// </summary>
+    public readonly struct Night
+    {
+        /// <summary>The night in the open, summed hour by hour exactly as step 3 sums it.</summary>
+        public readonly float Open;
+        /// <summary>The dry cold's share: cold x 0.5.</summary>
+        public readonly float Cold;
+        /// <summary>The rain's share: cold x 0.3 x rain.</summary>
+        public readonly float Rain;
+        /// <summary>The wind's share: cold x 0.2 x wind.</summary>
+        public readonly float Wind;
+
+        public Night(float open, float cold, float rain, float wind)
+        {
+            Open = open;
+            Cold = cold;
+            Rain = rain;
+            Wind = wind;
+        }
+
+        /// <summary>
+        /// The night under a cover: each share times its factor. With no cover, <see cref="Open"/> -
+        /// step 3's own number to the bit, not the sum of the shares (which may differ in the last bit).
+        /// </summary>
+        public float Under(Cover cover) =>
+            cover.IsNone ? Open : cover.Cold * Cold + cover.Rain * Rain + cover.Wind * Wind;
+    }
+
+    /// <summary>The night ahead from a moment (<see cref="NightExposure"/>), with its three shares.</summary>
+    public static Night NightOf(int seed, int year, double timeOfYear, double timeOfDay, bool rainAndWind, float cloudCover)
     {
         double now = ScheduleDays(year, timeOfYear);
-        float sum = 0f;
+        float sum = 0f, coldSum = 0f, rainSum = 0f, windSum = 0f;
         for (int h = 0; h < NightHours; h++)
         {
             double offset = (h + 0.5) * Hour;
             double days = now + offset;
             double toy = YearFraction(days / DateAndTime.DaysPerYear);
             float elevation = SunElevation(toy, YearFraction(timeOfDay + offset));
+            float air, rainNow, wind;
             if (rainAndWind)
             {
                 State s = Scheduled(seed, days);
-                sum += ExposureOf(Cooled(AirTemperature(toy, elevation, s.Cloud), s), s.Rain, s.Wind);
+                air = Cooled(AirTemperature(toy, elevation, s.Cloud), s);
+                rainNow = s.Rain;
+                wind = s.Wind;
             }
             else
             {
-                sum += ExposureOf(AirTemperature(toy, elevation, cloudCover), 0f, StudioWindSpeed);
+                air = AirTemperature(toy, elevation, cloudCover);
+                rainNow = 0f;
+                wind = StudioWindSpeed;
             }
+            sum += ExposureOf(air, rainNow, wind);
+            float cold = Common.Clamp((ExposureFromCelsius - (air - ZeroCelsius)) / ExposureColdSpan, 0f, 1f);
+            float windy = Common.Clamp((wind - ChillFromWind) / ExposureWindSpan, 0f, 1f);
+            coldSum += cold * ExposureColdShare;
+            rainSum += cold * ExposureRainShare * rainNow;
+            windSum += cold * ExposureWindShare * windy;
         }
-        return sum / NightHours;
+        return new Night(sum / NightHours, coldSum / NightHours, rainSum / NightHours, windSum / NightHours);
     }
 
     private static double cachedNightDays = double.NaN;
     private static int cachedNightSeed;
     private static bool cachedNightRain;
     private static float cachedNightCloud;
-    private static float cachedNight;
+    private static Night cachedNight;
+
+    /// <summary>The night ahead in the open from now (<see cref="NightExposure"/>), or null with no play site.</summary>
+    public static float? TonightExposure() => Tonight()?.Open;
 
     /// <summary>
-    /// The night ahead in the open from now (<see cref="NightExposure"/>), or null with no play site.
+    /// The night ahead from now, with its shares (<see cref="NightOf"/>), or null with no play site.
     /// Kept for the moment: EvaluateSleep asks it for every place it scores.
     /// </summary>
-    public static float? TonightExposure()
+    public static Night? Tonight()
     {
         WeatherManager weather = The.Sim?.PlaySite?.PlaySite?.Weather;
         DateAndTime date = The.Sim?.DateAndTime;
@@ -810,7 +908,7 @@ public static class WeatherMod
         float cloud = weather.CloudCover;
         if (days != cachedNightDays || seed != cachedNightSeed || rainOn != cachedNightRain || cloud != cachedNightCloud)
         {
-            cachedNight = NightExposure(seed, date.Year, date.TimeOfYear, date.TimeOfDay, rainOn, cloud);
+            cachedNight = NightOf(seed, date.Year, date.TimeOfYear, date.TimeOfDay, rainOn, cloud);
             cachedNightDays = days;
             cachedNightSeed = seed;
             cachedNightRain = rainOn;
@@ -818,6 +916,178 @@ public static class WeatherMod
         }
         return cachedNight;
     }
+
+    // ---------------------------------------------------------------- cold and wet: what keeps it off (step 4)
+
+    /// <summary>
+    /// What keeps part of the night off a sleeper besides the place: a factor on each share of an
+    /// hour's exposure (<see cref="ExposureOf"/>) - the dry cold, the rain, the wind. 1 lets it all
+    /// through. Covers multiply.
+    /// </summary>
+    public readonly struct Cover
+    {
+        public readonly float Cold;
+        public readonly float Rain;
+        public readonly float Wind;
+
+        public Cover(float cold, float rain, float wind)
+        {
+            Cold = cold;
+            Rain = rain;
+            Wind = wind;
+        }
+
+        /// <summary>Nothing: all of it gets through.</summary>
+        public static readonly Cover None = new Cover(1f, 1f, 1f);
+
+        public bool IsNone => Cold == 1f && Rain == 1f && Wind == 1f;
+
+        public static Cover operator *(Cover a, Cover b) => new Cover(a.Cold * b.Cold, a.Rain * b.Rain, a.Wind * b.Wind);
+    }
+
+    /// <summary>A grown, living spoak: its rigid leaf plates keep off rain, and let "strong winds pass through".</summary>
+    public static readonly Cover SpoakCover = new Cover(1f, 0.6f, 0.8f);
+
+    /// <summary>A grown, living sanctuary tree with its caps (its summer canopy): most of the rain, half the wind.</summary>
+    public static readonly Cover SanctuaryCapsCover = new Cover(0.9f, 0.3f, 0.5f);
+
+    /// <summary>A grown, living sanctuary tree without its caps (InSeason.Winter): the trunks still break the wind.</summary>
+    public static readonly Cover SanctuaryBareCover = new Cover(1f, 0.8f, 0.7f);
+
+    /// <summary>The PRECOL survival suit: it shields "heat and cold" and "collects and rinses water from the wearer".</summary>
+    public static readonly Cover PrecolSuitCover = new Cover(0.4f, 0.5f, 0.5f);
+
+    /// <summary>HideGearMod's hide cloak: warmer and out of the wind, but it soaks through.</summary>
+    public static readonly Cover CloakCover = new Cover(0.8f, 1f, 0.7f);
+
+    /// <summary>HideGearMod's Mackintosh, a hide cloak proofed with marshcot sap: the cloak's warmth, and the rain kept off.</summary>
+    public static readonly Cover MackintoshCover = new Cover(0.8f, 0.3f, 0.6f);
+
+    /// <summary>The studio's living spoak (TreeLoader).</summary>
+    public const string SpoakKey = "tree:spoak";
+
+    /// <summary>The studio's living sanctuary tree (TreeLoader); its dead ones are other keys.</summary>
+    public const string SanctuaryTreeKey = "tree:sanctuarytree";
+
+    /// <summary>
+    /// How far from a spoak's trunk its canopy covers a sleeper, in tiles (48 world units): its
+    /// billboard is about three tiles across.
+    /// </summary>
+    public const float SpoakReachTiles = 1.5f;
+
+    /// <summary>
+    /// How far from a sanctuary tree's trunk its caps cover a sleeper, in tiles. The studio blocks a
+    /// circle of 45 units (about a tile) around the trunk (its GeometryLayoutType), and the caps spread
+    /// some two and a half times as wide.
+    /// </summary>
+    public const float SanctuaryReachTiles = 2.5f;
+
+    /// <summary>A tree this size or more is grown: the studio's Tree.GetSize draws the young sprite below it.</summary>
+    public const float GrownTreeSize = 0.9f;
+
+    /// <summary>What Twinkler Island's tables call a person (Scenario 1's EntityTypeDescription "personDescription").</summary>
+    public const string PrecolExplorerName = "PRECOL explorer";
+
+    /// <summary>
+    /// Everything that keeps the night off this sleeper lying at <paramref name="at"/>: the trees over
+    /// the spot, a PRECOL suit, the clothes worn. Multiplied; <see cref="Cover.None"/> with none of them.
+    /// </summary>
+    public static Cover CoverOf(Entity sleeper, Vector3? at)
+    {
+        Cover cover = at.HasValue ? TreeCover(at.Value) : Cover.None;
+        if (IsPrecolExplorer(sleeper))
+        {
+            cover *= PrecolSuitCover;
+        }
+        return cover * GarmentCover(sleeper);
+    }
+
+    /// <summary>
+    /// The trees over a spot: the best of each share among the grown, living spoaks and sanctuary trees
+    /// within reach (<see cref="CanopyOf"/>). Looks only at the tiles within the longer reach.
+    /// </summary>
+    public static Cover TreeCover(Vector3 at)
+    {
+        MapManager map = The.Map;
+        if (map?.TileMap == null)
+        {
+            return Cover.None;
+        }
+        Point centre = MapManager.WorldPosToTile(at);
+        int reach = (int)Math.Ceiling(Math.Max(SpoakReachTiles, SanctuaryReachTiles));
+        float cold = 1f, rainCover = 1f, wind = 1f;
+        for (int x = centre.X - reach; x <= centre.X + reach; x++)
+        {
+            for (int y = centre.Y - reach; y <= centre.Y + reach; y++)
+            {
+                List<Entity> trees = map.TileIsOnMap(x, y) ? map.GetTile(x, y)?.TreesOnTile : null;
+                if (trees == null)
+                {
+                    continue;
+                }
+                foreach (Entity tree in trees)
+                {
+                    Cover? canopy = CanopyOf(tree, at);
+                    if (canopy.HasValue)
+                    {
+                        cold = Math.Min(cold, canopy.Value.Cold);
+                        rainCover = Math.Min(rainCover, canopy.Value.Rain);
+                        wind = Math.Min(wind, canopy.Value.Wind);
+                    }
+                }
+            }
+        }
+        return new Cover(cold, rainCover, wind);
+    }
+
+    /// <summary>
+    /// What one tree keeps off a sleeper at a spot: null unless it is a living spoak or sanctuary tree,
+    /// grown, with the spot within its reach. A sanctuary tree has its caps unless the map made it winter.
+    /// </summary>
+    public static Cover? CanopyOf(Entity tree, Vector3 at)
+    {
+        string key = tree?.EntityType?.KeyName;
+        float reachTiles = key == SpoakKey ? SpoakReachTiles : key == SanctuaryTreeKey ? SanctuaryReachTiles : 0f;
+        if (reachTiles <= 0f || !tree.Find(out Tree living) || living.Size < GrownTreeSize)
+        {
+            return null;
+        }
+        Vector3? trunk = tree.Location;
+        float reach = reachTiles * MapManager.tileSize;
+        if (!trunk.HasValue || Vector2.DistanceSquared(trunk.Value.ToVector2(), at.ToVector2()) > reach * reach)
+        {
+            return null;
+        }
+        return key == SpoakKey ? SpoakCover : living.InSeason == InSeason.Winter ? SanctuaryBareCover : SanctuaryCapsCover;
+    }
+
+    /// <summary>
+    /// Whether this person wears a PRECOL survival suit: the loaded scenario's tables call their type
+    /// a "PRECOL explorer" (Twinkler Island). The description table is never translated.
+    /// </summary>
+    public static bool IsPrecolExplorer(Entity person)
+    {
+        EntityType type = person?.EntityType;
+        GameDataCollection<EntityTypeDescription> descriptions = GameData.Instance?.AllEntityTypeDescriptions;
+        if (type?.Person == null || descriptions == null)
+        {
+            return false;
+        }
+        foreach (EntityTypeDescription description in descriptions.Values)
+        {
+            if (description != null && description.EntityType == type.KeyName && description.EntityName == PrecolExplorerName)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>The clothes a colonist wears (HideGearMod's, in Equipment): a Mackintosh, else a hide cloak, else nothing.</summary>
+    public static Cover GarmentCover(Entity colonist) =>
+        HideGearMod.Wears(colonist, HideGearMod.MackintoshKey) ? MackintoshCover
+        : HideGearMod.Wears(colonist, HideGearMod.CloakKey) ? CloakCover
+        : Cover.None;
 
     /// <summary>The chance of a cold after a night at this exposure: none below <see cref="ColdFromExposure"/>.</summary>
     public static float ColdChance(float exposureTonight) =>
@@ -851,12 +1121,12 @@ public static class WeatherMod
         {
             return;
         }
-        float? night = TonightExposure();
+        Night? night = Tonight();
         if (!night.HasValue)
         {
             return;
         }
-        float exposed = Sheltered(night.Value, ShelterOf(sleepingPlace));
+        float exposed = Exposed(night.Value, sleeper, sleepingPlace, sleeper.Location);
         int today = Today;
         bool measuredToday = Number(sleeper, ExposureDayKey) == today;
         if (!measuredToday || exposed > (Number(sleeper, ExposureKey) ?? 0f))
@@ -896,17 +1166,28 @@ public static class WeatherMod
     }
 
     /// <summary>
-    /// Called from EvaluateSleep.ScoreComfort with the studio's comfort score of a sleeping place: for
-    /// a person, less <see cref="ShelterScoreWeight"/> x the exposure there tonight; the studio's otherwise.
+    /// Called from EvaluateSleep.ScoreComfort with the studio's comfort score of a sleeping place and
+    /// where the sleeper would lie: for a person, less <see cref="ShelterScoreWeight"/> x the exposure
+    /// there tonight, under what covers them there; the studio's otherwise.
     /// </summary>
-    public static double ShelterScore(Entity sleeper, IKnownEntityData place, double stock)
+    public static double ShelterScore(Entity sleeper, IKnownEntityData place, Vector3 at, double stock)
     {
         if (!ExposureOn || sleeper?.EntityType?.Person == null)
         {
             return stock;
         }
-        float? night = TonightExposure();
-        return night.HasValue ? stock * (1.0 - ShelterScoreWeight * Sheltered(night.Value, ShelterOf(place))) : stock;
+        Night? night = Tonight();
+        return night.HasValue ? stock * (1.0 - ShelterScoreWeight * Exposed(night.Value, sleeper, place, at)) : stock;
+    }
+
+    /// <summary>
+    /// The night that reaches a sleeper lying in <paramref name="place"/> (null: the ground) at
+    /// <paramref name="at"/>: none under a roof; otherwise the night under their cover, then the place's share.
+    /// </summary>
+    public static float Exposed(Night night, Entity sleeper, IKnownEntityData place, Vector3? at)
+    {
+        Shelter shelter = ShelterOf(place);
+        return shelter == Shelter.Roof ? 0f : Sheltered(night.Under(CoverOf(sleeper, at)), shelter);
     }
 
     /// <summary>Whether a colonist has a cold now.</summary>

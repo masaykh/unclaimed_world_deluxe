@@ -6333,7 +6333,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipHidegearEnabled</Key>
-    <Value>Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at night) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
+    <Value>Adds a hide backpack (haul up to 5), a hand cart (haul up to 10, no slowdown), a hide cloak (megapod hide, some comfort, worn on long trips and at night), a Mackintosh (a hide cloak proofed with marshcot sap: with COLD AND WET HURT it keeps the rain off) and hide armour (whipjaw and megapod hide, worn by Security and Hunting colonists on patrol: takes 30% of cuts and bites to the body, arms and legs, but harder to sneak in). Changes what a save contains: a save with these items needs this on.</Value>
   </String>
   <String>
     <Key>SettingHidegearFighterKit</Key>
@@ -7064,7 +7064,7 @@ An exploration mission that took place before the main landing operation. A sele
   </String>
   <String>
     <Key>SettingTipWeatherExposure</Key>
-    <Value>Works with SEASONS AND TEMPERATURE on, and with RAIN AND WIND brings in the rain and the wind. A colonist who sleeps out in the open on a night below about 12 C loses comfort the next day - up to about 19% after a winter rainstorm - and may catch a cold: slower walking and work, energy at most 75%, for a day and a half. A lit campfire halves it, a hut keeps it off, and on cold, wet nights colonists look for shelter more.</Value>
+    <Value>Works with SEASONS AND TEMPERATURE on, and with RAIN AND WIND brings in the rain and the wind. A colonist who sleeps out in the open on a night below about 12 C loses comfort the next day - up to about 19% after a winter rainstorm - and may catch a cold: slower walking and work, energy at most 75%, for a day and a half. A lit campfire halves it, a hut keeps it off, and on cold, wet nights colonists look for shelter more. A living spoak keeps off some of the rain and wind, a sanctuary tree with its caps most of it; PRECOL explorers' suits keep off half or more; a hide cloak some of the cold and wind, a Mackintosh the rain as well.</Value>
   </String>
   <String>
     <Key>SettingWeatherRain</Key>
@@ -8154,6 +8154,14 @@ NOTE: Colonists will automatically do maintenance on a structure if they have ti
   <String>
     <Key>EffectLeaderCannotEmigrate</Key>
     <Value>Leader can emigrate</Value>
+  </String>
+  <String>
+    <Key>EffectProfileDescriptionMackintoshComfort</Key>
+    <Value>The character is a little more comfortable, and keeps dry in the rain.</Value>
+  </String>
+  <String>
+    <Key>EffectProfileMackintoshComfort</Key>
+    <Value>Waterproof clothing</Value>
   </String>
   <String>
     <Key>EffectProfileDescriptionMats</Key>
@@ -12029,7 +12037,7 @@ SURVIVAL GUIDE NOTES
   </String>
   <String>
     <Key>ItemDescriptionItemHideCloak</Key>
-    <Value>Keeps the wearer warm and dry on long trips and at night, which makes them a little more comfortable.</Value>
+    <Value>Keeps the wearer warm on long trips and at night, which makes them a little more comfortable. Slept in on a cold night out, it keeps off some of the cold and the wind, but not the rain.</Value>
   </String>
   <String>
     <Key>ItemPluralnameItemHideCloak</Key>
@@ -12591,6 +12599,22 @@ SURVIVAL GUIDE NOTES
   <String>
     <Key>ItemSummarydescriptionItemLoomComponents</Key>
     <Value>Wooden parts for a loom.</Value>
+  </String>
+  <String>
+    <Key>ItemItemMackintosh</Key>
+    <Value>Mackintosh</Value>
+  </String>
+  <String>
+    <Key>ItemDescriptionItemMackintosh</Key>
+    <Value>Keeps the wearer warm and dry on long trips and at night, which makes them a little more comfortable. Slept in on a cold, wet night out, it keeps off most of the rain and some of the cold and the wind.</Value>
+  </String>
+  <String>
+    <Key>ItemPluralnameItemMackintosh</Key>
+    <Value>Mackintosh</Value>
+  </String>
+  <String>
+    <Key>ItemSummarydescriptionItemMackintosh</Key>
+    <Value>A hide cloak proofed with marshcot sap.</Value>
   </String>
   <String>
     <Key>ItemItemMarshcotSap</Key>
@@ -16305,7 +16329,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionHidegear</Key>
-    <Value>Clothing and armour made from tanned hide, picked up as gear: a cloak for comfort on long trips, armour for patrols.</Value>
+    <Value>Clothing and armour made from tanned hide, picked up as gear: a cloak for comfort on long trips, a Mackintosh against the rain, armour for patrols.</Value>
   </String>
   <String>
     <Key>ModDescriptionHomeraid</Key>
@@ -19364,6 +19388,14 @@ The storehouse also has a space for storage of items that are not intended for s
     <Value>This object can be disassembled without losing any parts.</Value>
   </String>
   <String>
+    <Key>ProcessItemMackintoshDisassemble</Key>
+    <Value>Disassemble</Value>
+  </String>
+  <String>
+    <Key>ProcessSummarydescriptionItemMackintoshDisassemble</Key>
+    <Value>When breaking this object apart, some parts will be retrieved and some may be lost.</Value>
+  </String>
+  <String>
     <Key>ProcessItemSandMoldDisassemble</Key>
     <Value>Disassemble</Value>
   </String>
@@ -19873,6 +19905,10 @@ The storehouse also has a space for storage of items that are not intended for s
   </String>
   <String>
     <Key>ProcessMakeLoomComponents</Key>
+    <Value>Producing</Value>
+  </String>
+  <String>
+    <Key>ProcessMakeMackintosh</Key>
     <Value>Producing</Value>
   </String>
   <String>

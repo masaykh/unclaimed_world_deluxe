@@ -214,7 +214,9 @@ internal static partial class Program
             return fact;
         }
         IKnownEntityData hutFact = Fact(hutType, null), fireFact = Fact(fireType, true);
-        double[] Scores() => new[] { (double)scoreComfort.Invoke(evaluator, new object[] { null })!, (double)scoreComfort.Invoke(evaluator, new object[] { fireFact })!, (double)scoreComfort.Invoke(evaluator, new object[] { hutFact })! };
+        // Where the sleeper would lie: the map's one tile, with no tree on it.
+        object[] Lying(IKnownEntityData place) => new object[] { place, Microsoft.Xna.Framework.Vector3.Zero };
+        double[] Scores() => new[] { (double)scoreComfort.Invoke(evaluator, Lying(null))!, (double)scoreComfort.Invoke(evaluator, Lying(fireFact))!, (double)scoreComfort.Invoke(evaluator, Lying(hutFact))! };
         string Show(double[] s) => "ground " + F(s[0]) + ", campfire " + F(s[1]) + ", hut " + F(s[2]);
         exposure.Value = "false";
         double[] stock = Scores();
@@ -284,7 +286,7 @@ internal static partial class Program
               "without RAIN AND WIND, a \"Mid winter\" night out: exposure " + F(stillNight) + ", and colds still come (" + Pct(WM.ColdChance(stillNight)) + ")");
         rain.Value = "true";
         enabled.Value = "false";
-        Check(!WM.ExposureOn && WM.ShelterScore(Sleeper(), null, 0.61) == 0.61, "COLD AND WET HURT needs SEASONS AND TEMPERATURE: with that off, nothing");
+        Check(!WM.ExposureOn && WM.ShelterScore(Sleeper(), null, Microsoft.Xna.Framework.Vector3.Zero, 0.61) == 0.61, "COLD AND WET HURT needs SEASONS AND TEMPERATURE: with that off, nothing");
         enabled.Value = "true";
 
         // ------------------------------------------------------------ the cold through the studio's own code (SicknessEffects)
@@ -324,6 +326,9 @@ internal static partial class Program
         Forget(walker);
         Forget(worker);
         Check(Speed() == speed0 && Work() == work0 && Energy() == energy0, "  and once it is gone, the studio's speed, work time and energy, to the bit");
+
+        // Step 4: trees, PRECOL suits, cloaks (WeatherShelterSelfTest.cs).
+        ShelterSelfTest(Check, stormDay, At, Sleeper);
 
         exposure.Value = exposure.DefaultValue;
         rain.Value = rain.DefaultValue;

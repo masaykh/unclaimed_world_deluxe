@@ -268,7 +268,8 @@ public class EvaluateSleep : GoalEvaluator
 		default:
 		{
 			double score2 = ScoreCrowdedTile(data, expeditionToSleepAt, groundLocation);
-			double score3 = ScoreComfort(data);
+			// MOD: WeatherMod - the comfort score takes where the sleeper would lie (the trees over it).
+			double score3 = ScoreComfort(data, worldLocation.ToVector3());
 			double score4 = ScoreSafety(data, groundSleepArea);
 			WeightedRating weightedRating = default(WeightedRating);
 			weightedRating.AddScore(0.2, travelTimeScore);
@@ -305,12 +306,13 @@ public class EvaluateSleep : GoalEvaluator
 		return result;
 	}
 
-	private double ScoreComfort(IKnownEntityData containerData)
+	private double ScoreComfort(IKnownEntityData containerData, Vector3 at)
 	{
 		GoalDoSleep.ComputeSleepConditions(entity, containerData, out var maximumSleepGainFromThisLocation, out var increaseAmountPerDay);
 		double num = ((!((double)maximumSleepGainFromThisLocation >= 1.0)) ? 0.5 : 1.0);
-		// MOD: WeatherMod - on a cold, wet night a spot in the open (less so by a lit campfire) scores less; the studio's score otherwise.
-		return UWGame.Mods.WeatherMod.ShelterScore(entity, containerData, Common.Clamp(0.5 * num + 0.5 * (double)increaseAmountPerDay / (double)MaxSleepIncreasePerDay, 0.0, 1.0));
+		// MOD: WeatherMod - on a cold, wet night a spot in the open (less so by a lit campfire, under a tree,
+		// in a suit or a cloak) scores less; the studio's score otherwise.
+		return UWGame.Mods.WeatherMod.ShelterScore(entity, containerData, at, Common.Clamp(0.5 * num + 0.5 * (double)increaseAmountPerDay / (double)MaxSleepIncreasePerDay, 0.0, 1.0));
 	}
 
 	private double ScoreCrowdedTile(IKnownEntityData ContainerEntity, ExpeditionID? expeditionID, WorldLocation? GroundLocation)

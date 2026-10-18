@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Interface.DateAndWeatherPanel;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.Entities;
@@ -59,5 +60,5 @@ public static class WeatherMod
     public static float ExposurePenalty(Entity colonist) => 0f;
 
     /// <summary>The studio's comfort score of a sleeping place.</summary>
-    public static double ShelterScore(Entity sleeper, IKnownEntityData place, double stock) => stock;
+    public static double ShelterScore(Entity sleeper, IKnownEntityData place, Vector3 at, double stock) => stock;
 }

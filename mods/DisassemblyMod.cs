@@ -150,11 +150,13 @@ public static class DisassemblyMod
     /// glaze and an unfired jar, which is the generator being clever about a kiln.
     ///
     /// Only consulted for items that got this far, so the list is short on purpose: it names what
-    /// the recipes in scope actually consume rather than every material in the game.
+    /// the recipes in scope actually consume rather than every material in the game. Marshcot sap
+    /// cures into what it proofs (HideGearMod's Mackintosh), and a liquid handed back with no
+    /// container to hold it would be on the ground.
     /// </summary>
     private static readonly string[] Destroyed =
     {
-        "item:clay", "item:salt", "item:acetylene",
+        "item:clay", "item:salt", "item:acetylene", "item:marshcotSap",
         "item:firewood", "item:wetFirewood", "item:dryPeat", "item:wetPeat", "item:charcoal",
         "item:unfiredClayJar", "item:unfiredClayPot", "item:unfiredBulletMold",
         "item:unfinishedFirebricks", "item:wetMudBrick"

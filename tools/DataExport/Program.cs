@@ -2343,11 +2343,11 @@ internal static partial class Program
         }
 
         var data = GameData.Instance;
-        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey, UWGame.Mods.HideGearMod.BackpackKey, UWGame.Mods.HideGearMod.CartKey };
+        string[] items = { UWGame.Mods.HideGearMod.CloakKey, UWGame.Mods.HideGearMod.ArmourKey, UWGame.Mods.HideGearMod.BackpackKey, UWGame.Mods.HideGearMod.CartKey, UWGame.Mods.HideGearMod.MackintoshKey };
         // Each item's profile; the cloak's and the armour's are keyed like the effect they name,
         // the backpack's names none (its work is done in Locomotor and the exertion level).
-        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey, UWGame.Mods.HideGearMod.BackpackProfileKey, UWGame.Mods.HideGearMod.CartProfileKey };
-        string[] recipes = { "makeHideCloak", "makeHideArmour", "makeHideBackpack", "makeHandCart" };
+        string[] effects = { UWGame.Mods.HideGearMod.CloakEffectKey, UWGame.Mods.HideGearMod.ArmourEffectKey, UWGame.Mods.HideGearMod.BackpackProfileKey, UWGame.Mods.HideGearMod.CartProfileKey, UWGame.Mods.HideGearMod.MackintoshEffectKey };
+        string[] recipes = { "makeHideCloak", "makeHideArmour", "makeHideBackpack", "makeHandCart", "makeMackintosh" };
         Check(enabled.IsStock != on && enabled.AffectsSimulation && enabled.DefaultValue == "false",
               "off by default, simulation-affecting, and stock only when off");
         Check(UWGame.Mods.ModSettings.Signature().Contains("hidegear.enabled=true") == on,
@@ -2410,7 +2410,7 @@ internal static partial class Program
         Check(atNight.Count == 2 && atNight.Contains(T.Patrol), "a patrol at night asks for night and patrol gear, once each");
         Check(haul != null && haul.Count == 1 && haul[0] == T.Haul, "a long haul asks for hauling gear");
 
-        UWGame.SimSide.Entities.EntityType cloak = null, armour = null, backpack = null, cart = null;
+        UWGame.SimSide.Entities.EntityType cloak = null, armour = null, backpack = null, cart = null, mackintosh = null;
         for (int i = 0; i < items.Length; i++)
         {
             string key = items[i];
@@ -2419,7 +2419,7 @@ internal static partial class Program
                 Check(false, key + " is an item in the tables");
                 continue;
             }
-            if (i == 0) cloak = type; else if (i == 1) armour = type; else if (i == 2) backpack = type; else cart = type;
+            if (i == 0) cloak = type; else if (i == 1) armour = type; else if (i == 2) backpack = type; else if (i == 3) cart = type; else mackintosh = type;
             var item = type.ItemType;
             // What CompositeGoal.IsGadgetForTask asks of a gadget.
             Check(item.TaskAppropriateLevels != null && item.FinalEffectsWhenEquipped != null && item.FinalEffectsWhenEquipped.Count == 1,
@@ -2488,6 +2488,35 @@ internal static partial class Program
             Check(armour.ItemType.UseGearAtAnyDistanceFromExpedition && !cloak.ItemType.UseGearAtAnyDistanceFromExpedition,
                   "armour is taken on a patrol near camp; the cloak only beyond normal range");
         }
+        // The Mackintosh (Kastuk, "Colonist equipment", 2026-10-17): the hide cloak proofed with marshcot sap.
+        if (mackintosh != null && cloak != null && data.AllProcessTypes.TryGetValue("makeMackintosh", out var proofing))
+        {
+            var journey = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Journey };
+            var night = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Night };
+            Check(proofing.Inputs.Length == 2
+                  && proofing.Inputs.Any(x => x.Entity == UWGame.Mods.HideGearMod.CloakKey && x.IsConsumed && x.Amount.NoOfItems == 1)
+                  && proofing.Inputs.Any(x => x.Entity == "item:marshcotSap" && x.IsConsumed && x.Amount.NoOfItems == 2)
+                  && proofing.RequiredSkill == data.AllProcessTypes["makeHideCloak"].RequiredSkill
+                  && proofing.ProcessToolSet == data.AllProcessTypes["makeHideCloak"].ProcessToolSet,
+                  "makeMackintosh: a hide cloak and 2 marshcot sap, by the cloak's skill (" + proofing.RequiredSkill + ") on its tool set (" + proofing.ProcessToolSet?.KeyName + ")");
+            Check(mackintosh.ItemType.GetTaskAppropriateLevel(journey) == cloak.ItemType.GetTaskAppropriateLevel(journey)
+                  && mackintosh.ItemType.GetTaskAppropriateLevel(night) > cloak.ItemType.GetTaskAppropriateLevel(night)
+                  && !mackintosh.ItemType.UseGearAtAnyDistanceFromExpedition,
+                  "worn as the cloak is (long trips, at night, beyond normal range), and taken over it at night");
+            Check(data.AllEffectTypes.TryGetValue(UWGame.Mods.HideGearMod.MackintoshEffectKey, out var dry)
+                  && dry is UWGame.SimSide.SimEffects.NumberEffectType m && m.Affects == UWGame.SimSide.SimEffects.AffectsNumbers.AgentComfort
+                  && m.Intensity == UWGame.Mods.HideGearMod.CloakComfort,
+                  "  with the cloak's comfort, under its own profile \"" + mackintosh.ItemType.FinalEffectsWhenEquipped?.FirstOrDefault()?.Name + "\"");
+            // DisassemblyMod: the sap has cured into it, and a liquid has no container to come back in.
+            if (data.AllProcessTypes.TryGetValue(UWGame.Mods.HideGearMod.MackintoshKey + "_disassemble", out var unproof))
+            {
+                Check(unproof.Outputs.Length == 1 && unproof.Outputs[0].FinalEntityTypeToCreate == cloak && unproof.Outputs[0].Amount.NoOfItems == 1,
+                      "  disassembled, it gives back the cloak and no sap");
+            }
+            else Check(false, "the Mackintosh can be disassembled (DisassemblyMod)");
+        }
+        else Check(false, "makeMackintosh is in the tables");
+
         if (backpack != null && cart != null && cloak != null && armour != null)
         {
             var haulTask = new List<UWGame.SimSide.Items.ItemType.TaskType> { T.Haul };
