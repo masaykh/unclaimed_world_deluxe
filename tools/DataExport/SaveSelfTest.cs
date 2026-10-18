@@ -71,6 +71,7 @@ internal static partial class Program
         // Snapshotter.LoadHeader ends the same way. Left on, the tables would build as if a save
         // were filling them in: NeedType, for one, only registers itself when one is not.
         typeof(Snapshotter).GetField("snapshotting", AnyStatic).SetValue(null, false);
+        Console.WriteLine("    scenario: " + header.StartGameParams?.StartScenarioParams?.ScenarioName + " (" + header.StartGameParams?.StartScenarioParams?.Source + ", difficulty " + header.StartGameParams?.StartScenarioParams?.MainDifficultyKey + ")");
         Console.WriteLine("    made with: " + (string.IsNullOrEmpty(header.Mods) ? "(no mod switches)" : header.Mods));
         UWGame.Mods.ModSettings.ApplySignature(header.Mods);
         header.LoadPostProcess(sn);
@@ -124,7 +125,7 @@ internal static partial class Program
         SetField(sim, "controller", controller);
         sn.mode = Snapshotter.Mode.Load;
 
-        return saveReport != null ? SaveResourceReport(sim) : CheckDeliveredCreatures(sn, sim);
+        return stuckReport != null ? StuckReport(sn, sim) : saveReport != null ? SaveResourceReport(sim) : CheckDeliveredCreatures(sn, sim);
     }
 
     private static int CheckDeliveredCreatures(Snapshotter sn, Sim sim)

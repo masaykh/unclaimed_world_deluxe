@@ -44,6 +44,10 @@
     <Reference Include="WindowSystem">
       <HintPath>$(UwGameBin)\WindowSystem.dll</HintPath>
     </Reference>
+    <!-- Harmony: the save-stuck check runs a loaded game, and stands in for the client it reaches (StuckSim.cs). -->
+    <Reference Include="0Harmony">
+      <HintPath>$(UwGameBin)\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Xclna.Xna.Animationx86">
       <HintPath>$(UwGameBin)\Xclna.Xna.Animationx86.dll</HintPath>
     </Reference>
