@@ -1384,7 +1384,9 @@ namespace UWGame.SimSide.Jobs
 
         public GoalEvaluator.CalculateResult ScoreThisJobWithoutTools(RegionMap regionMap, ThreatStance threatStance, Entity entity, Intelligence entityIntelligence, int proposedNumberOfWorkers, double? ageContribution, double? timeContribution, ref double rating, ref IKnownEntityData foundInputItem, EntityGroup ownerOfInputItems, float priority, ref bool jobIsValid)
         {
-            ProcessType.KeyName.Contains("alvage");
+            // PORT: a leftover of the studio's salvage breakpoint (see the commented block below), back
+            // with the source snapshot (988e017) - a string search on every job scored, for nothing.
+            //ProcessType.KeyName.Contains("alvage");
             if (entityIntelligence.HasSkill(ProcessType.RequiredSkillType))
             {
                 if (!GetCurrentJobLocation(out var location, out var processData))
