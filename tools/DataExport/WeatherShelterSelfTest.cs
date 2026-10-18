@@ -150,6 +150,27 @@ internal static partial class Program
               "under a spoak and beside a bare sanctuary tree: the best of each - the spoak's rain, the sanctuary tree's wind: " + F(both));
         ClearTrees();
 
+        // Kastuk, 2026-10-18: the clearleaf (tree:rhubarb) and, by day only, the daysheen.
+        Check(types.ContainsKey(WM.ClearleafKey) && types[WM.ClearleafKey].TreeType != null && types.ContainsKey(WM.DaysheenKey) && types[WM.DaysheenKey].TreeType != null,
+              "the clearleaf (" + WM.ClearleafKey + ") and the daysheen are trees in the tables");
+        Plant(WM.ClearleafKey, TX, TY);
+        WM.Cover clearNight = WM.TreeCover(Centre(TX + 1, TY), daylight: false), clearDay = WM.TreeCover(Centre(TX + 1, TY), daylight: true);
+        Check(clearNight.Rain == 0.5f && clearNight.Wind == 0.8f && clearNight.Cold == 1f && clearDay.Rain == 0.5f,
+              "a tile from a grown clearleaf: the rain x0.5, the wind x0.8, day and night");
+        Check(WM.TreeCover(Centre(TX + 2, TY), daylight: true).IsNone, "  two tiles away, beyond its reach (" + F(WM.PlantReachTiles) + " tiles): nothing");
+        ClearTrees();
+        Plant(WM.ClearleafKey, TX, TY, grown: 0.5f);
+        Check(WM.TreeCover(Centre(TX + 1, TY), daylight: true).IsNone, "  a young clearleaf: nothing");
+        ClearTrees();
+        Plant(WM.DaysheenKey, TX, TY);
+        WM.Cover sheenDay = WM.TreeCover(Centre(TX + 1, TY), daylight: true);
+        Check(sheenDay.Rain == 0.5f && sheenDay.Wind == 0.7f && sheenDay.Cold == 1f, "a tile from a grown daysheen by day: the rain x0.5, the wind x0.7");
+        Check(WM.TreeCover(Centre(TX + 1, TY), daylight: false).IsNone, "  at night, its leaves folded: nothing");
+        ClearTrees();
+        Plant("tree:daysheendead", TX, TY);
+        Check(WM.TreeCover(Centre(TX + 1, TY), daylight: true).IsNone, "  a dead daysheen: nothing");
+        ClearTrees();
+
         // ------------------------------------------------------------ the PRECOL suit
         var descriptions = GameData.Instance.AllEntityTypeDescriptions;
         descriptions.TryGetValue("personDescription", out EntityTypeDescription baseDescription);

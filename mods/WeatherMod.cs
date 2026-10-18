@@ -182,6 +182,14 @@ namespace UWGame.Mods;
 ///     a grown spoak                  rain x0.6, wind x0.8, cold as it is
 ///     a sanctuary tree with its caps rain x0.3, wind x0.5, cold x0.9
 ///     a sanctuary tree, bare         rain x0.8, wind x0.7, cold as it is
+///     a grown clearleaf              rain x0.5, wind x0.8, cold as it is
+///     a grown daysheen, by day only  rain x0.5, wind x0.7, cold as it is
+///   Kastuk, 2026-10-18: "Clearleaf (Rhubarb) and Daysheen (only during day, as it must fold the leaf
+///   spiral during night) can give protection at mature states too." The clearleaf is the studio's
+///   tree:rhubarb ("leaves are shaped as transparent disks"); the daysheen's "stiff, glossy leaves"
+///   are, its own survival notes say, "substantial factors when considering shelter construction".
+///   The daysheen covers only while the sun is up (<see cref="IsDaylight"/>), so a colonist lying down
+///   at night gets nothing from it; a drying rack under one does, by day.
 /// - THE PRECOL SUIT (<see cref="IsPrecolExplorer"/>). Nothing on a colonist says "suit": the white
 ///   suits are some of the model textures the "...HumanAncestor" races pick from, a client-side
 ///   choice that also gives the Muckroot research team PRECOL suits. What does say it is the
@@ -1012,6 +1020,12 @@ public static class WeatherMod
     /// <summary>A grown, living sanctuary tree without its caps (InSeason.Winter): the trunks still break the wind.</summary>
     public static readonly Cover SanctuaryBareCover = new Cover(1f, 0.8f, 0.7f);
 
+    /// <summary>A grown clearleaf (tree:rhubarb): its disc leaves keep off half the rain, a little wind.</summary>
+    public static readonly Cover ClearleafCover = new Cover(1f, 0.5f, 0.8f);
+
+    /// <summary>A grown daysheen by day: its stiff cone of leaves keeps off half the rain and some wind. Folded at night.</summary>
+    public static readonly Cover DaysheenCover = new Cover(1f, 0.5f, 0.7f);
+
     /// <summary>The PRECOL survival suit: it shields "heat and cold" and "collects and rinses water from the wearer".</summary>
     public static readonly Cover PrecolSuitCover = new Cover(0.4f, 0.5f, 0.5f);
 
@@ -1026,6 +1040,15 @@ public static class WeatherMod
 
     /// <summary>The studio's living sanctuary tree (TreeLoader); its dead ones are other keys.</summary>
     public const string SanctuaryTreeKey = "tree:sanctuarytree";
+
+    /// <summary>The studio's clearleaf tree (TreeLoader: "Clearleaf tree", once rhubarb).</summary>
+    public const string ClearleafKey = "tree:rhubarb";
+
+    /// <summary>The studio's living daysheen (TreeLoader); "tree:daysheendead" is the dead one.</summary>
+    public const string DaysheenKey = "tree:daysheen";
+
+    /// <summary>How far from its stem a clearleaf or a daysheen covers, in tiles: about a spoak's.</summary>
+    public const float PlantReachTiles = 1.5f;
 
     /// <summary>
     /// How far from a spoak's trunk its canopy covers a sleeper, in tiles (48 world units): its
@@ -1064,7 +1087,13 @@ public static class WeatherMod
     /// The trees over a spot: the best of each share among the grown, living spoaks and sanctuary trees
     /// within reach (<see cref="CanopyOf"/>). Looks only at the tiles within the longer reach.
     /// </summary>
-    public static Cover TreeCover(Vector3 at)
+    public static Cover TreeCover(Vector3 at) => TreeCover(at, IsDaylight());
+
+    /// <summary>Whether the sun is up now (DateAndTime.SunElevation, not SunIsUp, which the shadows option turns off).</summary>
+    public static bool IsDaylight() => The.Sim?.DateAndTime != null && The.Sim.DateAndTime.SunElevation > 0f;
+
+    /// <summary><see cref="TreeCover(Vector3)"/> with the daylight given: a daysheen covers only by day.</summary>
+    public static Cover TreeCover(Vector3 at, bool daylight)
     {
         MapManager map = The.Map;
         if (map?.TileMap == null)
@@ -1085,7 +1114,7 @@ public static class WeatherMod
                 }
                 foreach (Entity tree in trees)
                 {
-                    Cover? canopy = CanopyOf(tree, at);
+                    Cover? canopy = CanopyOf(tree, at, daylight);
                     if (canopy.HasValue)
                     {
                         cold = Math.Min(cold, canopy.Value.Cold);
@@ -1102,10 +1131,13 @@ public static class WeatherMod
     /// What one tree keeps off a sleeper at a spot: null unless it is a living spoak or sanctuary tree,
     /// grown, with the spot within its reach. A sanctuary tree has its caps unless the map made it winter.
     /// </summary>
-    public static Cover? CanopyOf(Entity tree, Vector3 at)
+    public static Cover? CanopyOf(Entity tree, Vector3 at, bool daylight)
     {
         string key = tree?.EntityType?.KeyName;
-        float reachTiles = key == SpoakKey ? SpoakReachTiles : key == SanctuaryTreeKey ? SanctuaryReachTiles : 0f;
+        float reachTiles = key == SpoakKey ? SpoakReachTiles
+            : key == SanctuaryTreeKey ? SanctuaryReachTiles
+            : key == ClearleafKey || (key == DaysheenKey && daylight) ? PlantReachTiles
+            : 0f;
         if (reachTiles <= 0f || !tree.Find(out Tree living) || living.Size < GrownTreeSize)
         {
             return null;
@@ -1116,7 +1148,10 @@ public static class WeatherMod
         {
             return null;
         }
-        return key == SpoakKey ? SpoakCover : living.InSeason == InSeason.Winter ? SanctuaryBareCover : SanctuaryCapsCover;
+        return key == SpoakKey ? SpoakCover
+            : key == ClearleafKey ? ClearleafCover
+            : key == DaysheenKey ? DaysheenCover
+            : living.InSeason == InSeason.Winter ? SanctuaryBareCover : SanctuaryCapsCover;
     }
 
     /// <summary>
