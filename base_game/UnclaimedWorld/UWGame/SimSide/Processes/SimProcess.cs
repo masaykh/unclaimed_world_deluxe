@@ -1369,10 +1369,13 @@ namespace UWGame.SimSide.Processes
         {
             //  IsStarted = true; set started after everything checks out...
 
-            if (startingAgent.EntityID == (EntityID)4941)
-            {
-
-            }
+            // PORT: the studio's breakpoint anchor, which came back with the source snapshot (6a2e128)
+            // and was not in the shipped game. startingAgent "can be null" - a scripted event with no
+            // Worker starts its process that way (ProcessAction.OnEnter) - and this threw on it.
+            //if (startingAgent.EntityID == (EntityID)4941)
+            //{
+            //
+            //}
 
             this.ownerOfOutput = ownerOfOutput;
             this.StationaryTools = stationaryTools;

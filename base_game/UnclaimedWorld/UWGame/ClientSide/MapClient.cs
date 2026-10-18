@@ -1732,6 +1732,14 @@ namespace UWGame.ClientSide
         private void ChangeMapWindowWorldPosition(float deltaX, float deltaY)
         {
             Vector2 mapWindowWorldPosition = MapWindowWorldPosition + new Vector2(deltaX, deltaY);
+            // MOD: hold the view inside the map instead of allowing half a screen of overscroll at
+            // every edge, which is where the empty grid behind the world shows.
+            if (UWGame.Mods.MapEdgeMod.Enabled)
+            {
+                MapWindowWorldPosition = UWGame.Mods.MapEdgeMod.Clamp(mapWindowWorldPosition, The.Sim.Controller.DrawArea,
+                    The.Map.MapWorldWidth, The.Map.MapWorldHeight);
+                return;
+            }
             int halfWidth = The.Sim.Controller.DrawArea.Width / 2; //Game.GraphicsDeviceManager.PreferredBackBufferWidth / 2;
             int halfHeight = The.Sim.Controller.DrawArea.Height / 2; //Game.GraphicsDeviceManager.PreferredBackBufferHeight / 2;
             MapWindowWorldPosition = new Vector2(Common.Clamp(mapWindowWorldPosition.X, 0 - halfWidth, The.Map.MapWorldWidth - halfWidth),
