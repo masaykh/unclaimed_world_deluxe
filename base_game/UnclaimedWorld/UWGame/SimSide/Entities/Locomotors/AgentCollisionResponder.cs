@@ -39,71 +39,30 @@ namespace UWGame.SimSide.Entities.Locomotors
             System.Diagnostics.Debug.Assert(Snapshotter.IsSnapshotting, "Never call the empty ctor.");     
         }
 
-        // PORT: a walker stalled against agents of its own allegiance stops being pushed by them.
-        //
-        // ApplyPushVector moves a pushed agent CollisionResistanceFromMovers (0.3 px) every update,
-        // whatever the update's length, while a walker advances speed * elapsed. On rough ground
-        // a colonist walks at MinimumSpeedForTerrainToHaveEffect, 16 px/s - 0.27 px an update at
-        // 60 frames a second, less than the push. Where a walker can sidestep (CASE 4) that does
-        // not matter; in a passage one subtile wide it cannot, and colonists crossing through the
-        // same waypoint from both sides hold each other still for good. The SandboxNomads creek on
-        // Cudgel Hills (save 11, 2026-10-18): four colonists stood at one shallow-water subtile,
-        // each pushed back as far as it walked, for as long as the headless sim ran. At 30 frames a
-        // second the same save clears in seconds - which is why it depends on the machine.
-        //
-        // The studio's own unjamming, ShouldSomeoneWait, only handles agents bound for the same
-        // destination. This is the other case: a walker that has spent StallSeconds walking without
-        // getting a subtile from where it was slips past agents of its own allegiance until it has.
-        // A subtile, not less: three or four colonists in one jam shove each other about by up to
-        // 12 px without any of them getting anywhere, and a free walker on the slowest ground
-        // clears 16 px in a second. Other allegiances never pushed anyone (see the top of
-        // HandleSingleCollision). Time
-        // spent standing does not count - MoveSpeed drops to 0 between waypoints and while turning,
-        // so "moving now" alone would reset the clock every few updates. Not snapshotted: after a
-        // load a stall is detected again within StallSeconds.
-        private const float StallRadius = UWGame.SimSide.Maps.MapManager.subTileSize;
+        // PORT: the dislodge counters count updates at Locomotor.PushReferenceUpdatesPerSecond, not
+        // updates. The studio's 50 was 50 updates, whatever their length - a colonist at a worksite
+        // gave way to a walker after 0.8 s at 60 updates a second and 0.35 s at 144, and was then
+        // pushed for as long as the walker kept coming. With the push itself now a rate (see
+        // Locomotor.ApplyPushVector) the counters follow, so the standing colonist yields as it
+        // did at the reference rate. dislodgeReferenceUpdates carries the fraction over; it is not
+        // snapshotted, and is at most one reference update.
+        private double dislodgeReferenceUpdates;
 
-        private const double StallSeconds = 3.0;
-
-        private Vector3? stallAnchor;
-
-        private double stallUpdatedAt;
-
-        private double stalledWalkingSeconds;
-
-        private bool slipPastOwnAllegiance;
-
-        private void UpdateStall()
-        {
-            Vector3 here = parentEntity.PlaySiteLocation;
-            double now = The.Sim.TotalUnPausedGameTimeInSeconds;
-            double elapsed = now - stallUpdatedAt;
-            stallUpdatedAt = now;
-            if (!stallAnchor.HasValue || Vector3.DistanceSquared(here, stallAnchor.Value) > StallRadius * StallRadius
-                || elapsed > StallSeconds) // not updated for a while: whatever this was, it was not one stall
-            {
-                stallAnchor = here;
-                stalledWalkingSeconds = 0;
-                slipPastOwnAllegiance = false;
-                return;
-            }
-            if (Parent.Parent.IsMoving())
-            {
-                stalledWalkingSeconds += elapsed;
-            }
-            slipPastOwnAllegiance = stalledWalkingSeconds > StallSeconds;
-        }
+        private int dislodgeStepsThisUpdate;
 
         public void BeginCollisionHandling()
         {
             pushDirection = Vector2.Zero;
+
+            dislodgeReferenceUpdates += The.Sim.GameTime.ElapsedGameTime.TotalSeconds * Locomotor.PushReferenceUpdatesPerSecond;
+            dislodgeStepsThisUpdate = (int)dislodgeReferenceUpdates;
+            dislodgeReferenceUpdates -= dislodgeStepsThisUpdate;
 
             
             LatestResolvedMovingCollisions.Clear();
 
             otherEntity = null;
 
-            UpdateStall();
         }
 
         public void HandleSingleCollision(Collidable<Entity> collidee)
@@ -116,12 +75,6 @@ namespace UWGame.SimSide.Entities.Locomotors
             {
                 // don't make room for critters/ other allegiances
                 return; // skips all reaction behaviours below...        
-            }
-
-            // PORT: a stalled walker slips past the agents it is stuck against (see UpdateStall).
-            if (slipPastOwnAllegiance && otherEntity.Locomotor != null)
-            {
-                return;
             }
 
             // RESOLVE LOCKS/TRAFFIC JAMS:
@@ -241,7 +194,7 @@ namespace UWGame.SimSide.Entities.Locomotors
 
             if ((!Parent.Parent.IsMoving() && collidee.Locomotor != null && collidee.Locomotor.IsMoving()))
             {
-                --dislodgeCounter;
+                dislodgeCounter -= dislodgeStepsThisUpdate;
 
                 dislodgeCounter = Common.ClampBottom(dislodgeCounter, 0);
 
@@ -255,7 +208,7 @@ namespace UWGame.SimSide.Entities.Locomotors
             }
             else if (dislodgeCounter < dislodgeResetvalue)
             {
-                dislodgeCounter++; // recover after being pushed
+                dislodgeCounter = Math.Min(dislodgeCounter + dislodgeStepsThisUpdate, dislodgeResetvalue); // recover after being pushed
 
                 dislodgeCounters[collidee.ID] = dislodgeCounter;
             }
@@ -432,10 +385,8 @@ namespace UWGame.SimSide.Entities.Locomotors
 
             sn.Ignore(Parent); // is pushed from Col Responder
             sn.Ignore(parentEntity);
-            sn.Ignore(stallAnchor); // PORT: see UpdateStall
-            sn.Ignore(stallUpdatedAt);
-            sn.Ignore(stalledWalkingSeconds);
-            sn.Ignore(slipPastOwnAllegiance);
+            sn.Ignore(dislodgeReferenceUpdates); // PORT: see BeginCollisionHandling
+            sn.Ignore(dislodgeStepsThisUpdate);
 
             return this;
         }

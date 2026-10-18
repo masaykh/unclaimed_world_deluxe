@@ -113,7 +113,7 @@ internal static partial class Program
     }
 
     /// <summary>Sim.Update's game-mode body, in its order, less the client's performance marks.</summary>
-    private static void StepSim(Sim sim, double seconds, double elapsedPerUpdate, Action<double> everyTenSeconds)
+    private static void StepSim(Sim sim, double seconds, double elapsedPerUpdate, Action<double> everyTenSeconds, Action afterEachUpdate = null)
     {
         object entities = FindField(typeof(Sim), "entities").GetValue(sim);
         MethodInfo updateEntities = entities.GetType().GetMethod("Update", new[] { typeof(GameTime) });
@@ -137,6 +137,7 @@ internal static partial class Program
             Guard("EntityGroups", () => LookUp<EntityGroup, EntityGroupID>.IterateMembers(g => g.Update(gameTime)));
             Guard("CycleManager", () => sim.CycleManager.Update());
             Guard("Map", () => The.Map.Update(gameTime));
+            afterEachUpdate?.Invoke();
         }
         everyTenSeconds(seconds);
     }

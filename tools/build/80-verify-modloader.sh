@@ -37,8 +37,9 @@
 #  30. a dog drops vermin for a real threat only with the self-preservation switch on
 #  31. a trade run's sale is paid on loading, for what is aboard, with the trade mod's switch on
 #  32. a save with a delivered dog loads headlessly (only when UW_DOG_SAVE names one)
-#  32b. a save with colonists jammed at a creek runs a minute headlessly and they walk on (only when
-#      UW_STUCK_SAVE names one)
+#  32b. a save with colonists jammed at a creek runs a minute headlessly and they walk on, and
+#      collisions still keep colonists apart at 30 to 144 updates a second (only when UW_STUCK_SAVE
+#      names a save)
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #  41. the woodpile keeps the firewood it dried
@@ -946,10 +947,13 @@ fi
 
 # Four colonists stood at one shallow-water subtile of a creek for good (save 11, 2026-10-18): each
 # walked the 16 px/s rough-ground floor into the same waypoint and was pushed back 0.3 px an update
-# by the others - more than it walked, at 60 updates a second. AgentCollisionResponder now lets a
-# walker that has been stalled for 3 s slip past its own allegiance. The save is a player's file,
-# so point UW_STUCK_SAVE at it; --save-stuck runs it for a minute of game time with no window and
-# fails any colonist still walking to the waypoint it was walking to when the game was saved.
+# by the others - more than it walked, at 60 updates a second. Locomotor.ApplyPushVector now pushes
+# by the update's length (0.3 px an update at 30 a second), and AgentCollisionResponder's dislodge
+# counters count time the same way. The save is a player's file, so point UW_STUCK_SAVE at it:
+# --save-stuck runs it for a minute with no window and fails any colonist still walking to the
+# waypoint it was walking to when saved; --save-collisions then checks, at 30 to 144 updates a
+# second on the save's open ground, that walkers still get past each other and past a colleague at
+# a worksite without shoving him away, and that two standing colonists are eased apart.
 say "==> 32b. a save with colonists jammed at a creek runs a minute headlessly, and every walker gets past its waypoint"
 if [ -n "$UW_STUCK_SAVE" ] && [ -f "$UW_STUCK_SAVE" ]; then
   out=$( cd "$(new_install case32b)" && "$EXPORT" . "--save-stuck=$UW_STUCK_SAVE" 2>&1 ) || true
@@ -959,6 +963,14 @@ if [ -n "$UW_STUCK_SAVE" ] && [ -f "$UW_STUCK_SAVE" ]; then
     echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
     echo "$out" | grep -A3 'Unhandled exception' | head -4
     fail "the save stuck-test reported colonists still stuck"
+  fi
+  out=$( cd "$(new_install case32c)" && "$EXPORT" . "--save-collisions=$UW_STUCK_SAVE" 2>&1 ) || true
+  if echo "$out" | grep -q "save collision-test OK"; then
+    pass "$(echo "$out" | grep -c "^  ok    ") collision check(s) at 30 to 144 updates a second"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception' | head -4
+    fail "the save collision-test reported failures"
   fi
 else
   say "  SKIP  UW_STUCK_SAVE is not set to a save file - this case did not run"

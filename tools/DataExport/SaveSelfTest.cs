@@ -125,7 +125,7 @@ internal static partial class Program
         SetField(sim, "controller", controller);
         sn.mode = Snapshotter.Mode.Load;
 
-        return stuckReport != null ? StuckReport(sn, sim) : saveReport != null ? SaveResourceReport(sim) : CheckDeliveredCreatures(sn, sim);
+        return collisionReport != null ? CollisionScenarios(sn, sim) : stuckReport != null ? StuckReport(sn, sim) : saveReport != null ? SaveResourceReport(sim) : CheckDeliveredCreatures(sn, sim);
     }
 
     private static int CheckDeliveredCreatures(Snapshotter sn, Sim sim)

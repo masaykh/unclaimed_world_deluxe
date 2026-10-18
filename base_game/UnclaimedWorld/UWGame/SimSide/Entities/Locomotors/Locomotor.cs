@@ -776,6 +776,9 @@ namespace UWGame.SimSide.Entities.Locomotors
 
 
 
+        /// <summary>PORT: the update rate the collision resistances, and AgentCollisionResponder's dislodge counters, are per-update amounts at (see ApplyPushVector).</summary>
+        public const double PushReferenceUpdatesPerSecond = 30.0;
+
         public void ApplyPushVector(Entity other, Vector2 pushVector)
         {
             //normalize and add the pushVector to our Location
@@ -793,6 +796,16 @@ namespace UWGame.SimSide.Entities.Locomotors
             }
 
             pushVector *= resistanceToUse;
+
+            // PORT: the push is a rate, not a step. The studio applied the resistance once per update,
+            // whatever the update's length, while a walker advances speed * elapsed - so the
+            // outcome depended on the frame rate (IsFixedTimeStep is false; with vsync an update is
+            // one monitor refresh). On rough ground a colonist walks 16 px/s, 0.27 px an update at
+            // 60 a second, less than the 0.3 px push: colonists crossing through a one-subtile
+            // creek passage from both sides held each other still for good (save 11, 2026-10-18).
+            // The resistances now mean "per update at PushReferenceUpdatesPerSecond". Nothing in
+            // the studio's source names an intended rate; at 30 the same save clears in seconds.
+            pushVector *= (float)(The.Sim.GameTime.ElapsedGameTime.TotalSeconds * PushReferenceUpdatesPerSecond);
 
             // move the entity... and clamp if we cross into blocked areas!
             Vector3 newLocation = Parent.PlaySiteLocation + pushVector.ToVector3();
