@@ -1,7 +1,6 @@
 using GameStateManagement;
 using InputEventSystem;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using UWGame.Control;
 
 namespace UWGame.ClientSide.MainMenu.Mods;
@@ -35,9 +34,12 @@ public class SelectModsScreen : GameScreen
 
 	public override void HandleInput()
 	{
-		if (frameInput.IsKeyDown(Keys.Escape))
+		// A key button in MOD OPTIONS waiting for its key takes every key first, Escape included
+		// (it cancels); otherwise Escape is MAIN (SelectModsPanel.HandleKeys). Tapped, not held: an
+		// Escape that cancelled a rebinding must not leave the screen on the next frame.
+		if (!UWGame.ClientSide.Interface.ModSettingRows.CaptureKey(frameInput))
 		{
-			ExitToMainMenu();
+			SelectModsPanel.HandleKeys(frameInput);
 		}
 	}
 

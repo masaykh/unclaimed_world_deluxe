@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace UWGame.Mods;
 
-/// <summary>What kind of value a setting holds, which is also what control the options menu draws.</summary>
+/// <summary>What kind of value a setting holds, which is also what control SELECT MODS draws.</summary>
 public enum ModSettingKind
 {
     /// <summary>On or off. Drawn as a checkbox.</summary>
@@ -22,8 +22,8 @@ public enum ModSettingKind
     Text,
 
     /// <summary>
-    /// A keyboard key, stored by its Keys name ("LeftAlt"). Drawn as a key button in the KEYS
-    /// section when KeybindMod is built in, as a text box otherwise.
+    /// A keyboard key, stored by its Keys name ("LeftAlt"). Drawn under its mod's MOD OPTIONS in
+    /// SELECT MODS - as a key button when KeybindMod is built in, as a text box otherwise.
     /// </summary>
     Key
 }
@@ -48,7 +48,7 @@ public enum ModContentState
 /// <summary>
 /// One switch belonging to one mod. Created through <see cref="ModSettings.Toggle"/>,
 /// <see cref="ModSettings.Choice"/> or <see cref="ModSettings.Text"/> - never with `new`, because
-/// registration is what binds the stored value and what puts it in the options menu.
+/// registration is what binds the stored value and what puts it under its mod in SELECT MODS.
 /// </summary>
 public sealed class ModSetting
 {
@@ -88,7 +88,7 @@ public sealed class ModSetting
     /// </summary>
     public string StockValue { get; internal set; }
 
-    /// <summary>Shown in the options menu. Upper case, because the LCD panels are.</summary>
+    /// <summary>Shown in SELECT MODS. Upper case, because the LCD panels are.</summary>
     public string Label { get; internal set; }
 
     /// <summary>Shown as the control's tooltip, and written as a comment above the entry in the file.</summary>
@@ -260,7 +260,7 @@ public static class ModSettings
     /// anyone having to untick thirty switches and tick them again afterwards (Kastuk, 2026-10-05:
     /// "Need this mode to quickly test game in clean state without cleaning all mod settings").
     ///
-    /// The file is left as it was. A save from the options menu writes the file's own values back
+    /// The file is left as it was. A save from SELECT MODS writes the file's own values back
     /// for these settings (<see cref="Save"/>), so a change made during a -nomods session lasts
     /// for that session only. The port's own settings (<see cref="PortSettings"/>) are not a mod
     /// and keep the file's values.
@@ -298,7 +298,7 @@ public static class ModSettings
     /// Switches a whole mod on or off and saves. Off: its settings read stock from now on, their
     /// values kept in the file. On: they read the file's values again (their defaults where the
     /// file has none). A setting that changes the data tables takes effect at the next game start,
-    /// as it does from the options menu; a third-party mod at the next start of the game.
+    /// as a setting changed in MOD OPTIONS does; a third-party mod at the next start of the game.
     /// </summary>
     public static void SetModEnabled(string modId, bool on, Action<string, string> log = null)
     {
@@ -382,7 +382,7 @@ public static class ModSettings
 
     /// <summary>
     /// Reads the file. Missing is normal and silent - it means every setting is at its default,
-    /// and the file appears the first time something is changed in the options menu.
+    /// and the file appears the first time something is changed in SELECT MODS.
     ///
     /// A malformed file is reported and then ignored, rather than thrown: a config file is the
     /// one thing in an installation a player edits by hand, and a stray character in it must cost
@@ -580,7 +580,7 @@ public static class ModSettings
             XElement root = new XElement("ModSettings");
             root.Add(new XComment(
                 " Settings for the mods this installation runs. Hand-editable; the game rewrites it" +
-                " when you press OK in the options menu, keeping your entries and your order." +
+                " as you change a setting in SELECT MODS (or LANGUAGE in OPTIONS), keeping your entries and your order." +
                 " Delete an entry to go back to its default, or delete the file for all of them. "));
 
             HashSet<string> written = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

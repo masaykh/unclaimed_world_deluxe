@@ -264,7 +264,7 @@ public static class DebugMod
         {
             var sb = new StringBuilder();
             sb.AppendLine("# Debug scenarios, for debug.testScenario in user/ModSettings.xml or");
-            sb.AppendLine("# the TEST BUTTON SCENARIO box in OPTIONS -> MODS.");
+            sb.AppendLine("# the TEST BUTTON SCENARIO box in SELECT MODS -> DEBUG -> MOD OPTIONS.");
             sb.AppendLine("#");
             sb.AppendLine("# Started by the TEST button on the DEV PANEL - not the TEST button on");
             sb.AppendLine("# the main panel, which is a map picker and a different feature.");

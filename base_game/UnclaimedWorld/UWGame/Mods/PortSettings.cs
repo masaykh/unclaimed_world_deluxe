@@ -7,13 +7,20 @@ namespace UWGame.Mods;
 ///
 /// They live in the mod settings file rather than in <c>Options.xml</c> because they are about
 /// mods: how modded saves are treated, and a date format that only the save list uses. Keeping
-/// them here also means the MODS section of the options menu is never empty, so the machinery
-/// that renders it is exercised in every build rather than only when a mod is installed.
+/// them here also means SELECT MODS always has an entry with settings - PORT, listed first
+/// (ModCatalog.Entries) - so the machinery that renders MOD OPTIONS is exercised in every build
+/// rather than only when a mod is installed. LANGUAGE alone is in OPTIONS (ModCatalog.InOptions).
 /// </summary>
 public static class PortSettings
 {
     /// <summary>The prefix these carry in the file. Not a mod id: nothing can claim it.</summary>
     public const string ModId = "port";
+
+    /// <summary>The id of <see cref="Language"/>, the one setting OPTIONS shows.</summary>
+    public const string LanguageId = ModId + ".language";
+
+    /// <summary>PORT's picture in SELECT MODS.</summary>
+    public const string Thumbnail = "HUD_thumbnail_helipad";
 
     private static ModSetting saveDateFormat;
 
@@ -158,7 +165,7 @@ public static class PortSettings
 
     /// <summary>
     /// Lists the files in Strings again - for a translation dropped in while the game runs. Called
-    /// when the options menu builds its MODS section.
+    /// when OPTIONS builds its LANGUAGE row.
     /// </summary>
     public static void RefreshLanguageChoices()
     {

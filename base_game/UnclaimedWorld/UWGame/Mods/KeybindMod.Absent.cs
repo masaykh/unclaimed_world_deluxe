@@ -7,8 +7,8 @@ namespace UWGame.Mods;
 /// <summary>
 /// The key bindings mod, compiled OUT. See PeatMod.Absent.cs for the pattern.
 ///
-/// The options menu has no KEYS section: the studio's keys are edited in Options.xml, and a mod's
-/// key, if one is built in, shows in its own category as a text box holding the key's name.
+/// OPTIONS has no KEYS section: the studio's keys are edited in Options.xml, and a mod's key shows
+/// under its mod's MOD OPTIONS in SELECT MODS as a text box holding the key's name.
 /// </summary>
 public static class KeybindMod
 {

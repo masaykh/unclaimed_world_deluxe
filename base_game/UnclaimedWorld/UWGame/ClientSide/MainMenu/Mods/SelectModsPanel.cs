@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using UWGame.ClientSide.Interface;
@@ -20,12 +21,45 @@ namespace UWGame.ClientSide.MainMenu.Mods;
 /// One folding entry per mod (ModCatalog; <see cref="SelectModsEntry"/>): its switch left of the
 /// bar; its name; and a summary - whether it runs, who made it, how many of its settings differ
 /// from the studio's game. Unfolded, the scenario picker's row: the picture, then what it does and
-/// the facts; and, for a mod that is on and has settings, MOD OPTIONS - the settings, built by the
-/// code OPTIONS -> MODS uses (ModSettingRows). Switching and every setting apply at once and are
-/// saved. Keys stay in OPTIONS.
+/// the facts; and, for a mod that is on and has settings, MOD OPTIONS - the settings, keys included,
+/// built by the code OPTIONS builds its rows with (ModSettingRows). Switching and every setting
+/// apply at once and are saved. First comes PORT: the port's own settings, always on.
+///
+/// THE ONE PLACE FOR MODS. The user, 2026-10-18: "all mods should be explicitly under modding".
+/// Every registered setting is under an entry here, except LANGUAGE, which is OPTIONS'
+/// (ModCatalog.InOptions); the studio's own keys stay in OPTIONS too. OPTIONS opens this panel with
+/// its MOD OPTIONS... button (<see cref="Mode"/>): from the main menu as it is here, and in game
+/// titled MOD OPTIONS, without the switches - a mod is not switched on or off mid-game.
 /// </summary>
 public class SelectModsPanel : Panel
 {
+	/// <summary>Where the panel is shown, which decides its title, its switches and its button.</summary>
+	public enum Mode
+	{
+		/// <summary>Main menu -> MODDING -> SELECT MODS (SelectModsScreen): MAIN returns to the main menu.</summary>
+		SelectMods,
+
+		/// <summary>OPTIONS -> MOD OPTIONS... in the main menu: the same, over OPTIONS, which BACK returns to.</summary>
+		FromOptions,
+
+		/// <summary>OPTIONS -> MOD OPTIONS... in game: titled MOD OPTIONS, no switches; BACK returns to OPTIONS.</summary>
+		InGame,
+	}
+
+	private readonly Mode mode;
+
+	/// <summary>The panel's title: MOD OPTIONS in game, where it only changes settings; MODS elsewhere.</summary>
+	public static string TitleFor(Mode mode) => (mode == Mode.InGame) ? UWGame.Locale.Text("MOD OPTIONS") : UWGame.Locale.Text("MODS");
+
+	/// <summary>Whether the panel shows the entries' on/off switches: not in game.</summary>
+	public static bool ShowsSwitches(Mode mode) => mode != Mode.InGame;
+
+	/// <summary>The panel most recently shown; open while its window is visible (<see cref="HandleKeys"/>).</summary>
+	private static SelectModsPanel shown;
+
+	/// <summary>The rows of every entry's MOD OPTIONS.</summary>
+	private ModSettingRows rows;
+
 	private LCDScreen lcdScreen;
 
 	private UIComponent lcdSurface;
@@ -48,9 +82,12 @@ public class SelectModsPanel : Panel
 
 	public event EventHandler CancelClick;
 
-	public SelectModsPanel(SelectModsInterface intf, Point position)
-		: base(intf, UWGame.Locale.Text("MODS"), position, new Vector2(800f, 620f), Level.Middle)
+	public SelectModsPanel(CommonInterface intf, Mode mode = Mode.SelectMods)
+		: base(intf, TitleFor(mode), Point.Zero, new Vector2(800f, 620f),
+			// Over OPTIONS, which is Level.Menu; on its own screen, as the scenario picker.
+			(mode == Mode.SelectMods) ? Level.Middle : Level.Menu)
 	{
+		this.mode = mode;
 		RosterPanel.CreateRosterStyleLCDPanel(intf, Window, out _, out lcdSurface, ref lcdScreen, 55);
 		CreateSurfaceWithScrollbar(out surfaceGrid, lcdSurface, canHaveFocus: false);
 		surface = new UIComponent(Interface.gui)
@@ -67,23 +104,34 @@ public class SelectModsPanel : Panel
 		foreach (SelectModsEntry e in entries)
 		{
 			surface.Remove(e.Bar);
-			surface.Remove(e.Switch);
+			if (e.Switch.Parent != null)
+			{
+				surface.Remove(e.Switch);
+			}
 		}
 		entries.Clear();
 		surface.Controls.Clear();
-		// One set of rows for every entry's MOD OPTIONS: the code OPTIONS -> MODS builds its categories with.
-		var rows = new ModSettingRows(Interface.gui);
+		rows?.Clear();
+		// One set of rows for every entry's MOD OPTIONS: the code OPTIONS builds its rows with.
+		rows = new ModSettingRows(Interface.gui);
+		// A mod's key that one of the studio's keys (OPTIONS -> KEYS) also uses turns red.
+		Options options = Interface.Game.Controller.Options;
+		rows.KeysElsewhere = () => KeybindMod.VanillaFields().Select(f => f.Field.GetValue(options).ToString());
+		bool switches = ShowsSwitches(mode);
 		int y = 6;
 		if (ModSettings.StockOnly)
 		{
 			y = AddNote(UWGame.Locale.Text("Started with -nomods: every mod is off for this session. What you switch here is kept for the next start."), y);
 		}
-		y = AddNote(UWGame.Locale.Text("Switch a mod on or off with the box on its left. Unfold a mod that is on, then MOD OPTIONS, to change its settings - they apply and are saved at once; keys are set in OPTIONS. A mod that changes items, recipes or the map takes effect at the next game you start or load."), y);
+		y = AddNote(switches
+			? UWGame.Locale.Text("Switch a mod on or off with the box on its left. Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. The language and the studio's own keys are set in OPTIONS. A mod that changes items, recipes or the map takes effect at the next game you start or load.")
+			: UWGame.Locale.Text("Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. Mods are switched on and off in the main menu, under MODDING -> SELECT MODS. A mod that changes items, recipes or the map takes effect at the next game you start or load."), y);
 		entriesTop = y + 4;
 		foreach (ModCatalog.Entry entry in ModCatalog.Entries())
 		{
-			entries.Add(new SelectModsEntry(Interface.gui, surface, entry, Thumbnail(entry), rows, expanded, LayOut, GameStateManagement.UnclaimedWorld.LogError));
+			entries.Add(new SelectModsEntry(Interface.gui, surface, entry, Thumbnail(entry), rows, expanded, LayOut, GameStateManagement.UnclaimedWorld.LogError, switches));
 		}
+		rows.MarkDuplicateKeys();
 		LayOut();
 	}
 
@@ -166,9 +214,9 @@ public class SelectModsPanel : Panel
 		Window.Add(textButton);
 		textButton.Init(TextButton.TextButtonType.White);
 		PlaceLeftButtonUnderLCD(textButton);
-		textButton.Text = UWGame.Locale.Text("MAIN");
+		textButton.Text = (mode == Mode.SelectMods) ? UWGame.Locale.Text("MAIN") : UWGame.Locale.Text("BACK");
 		textButton.ScaleWidthToFitText();
-		textButton.ToolTip = UWGame.Locale.Text("Return to the main menu");
+		textButton.ToolTip = (mode == Mode.SelectMods) ? UWGame.Locale.Text("Return to the main menu") : UWGame.Locale.Text("Return to OPTIONS");
 		textButton.Click += btCancel_Click;
 		Rectangle sourceRectangle = Interface.gui.GUISpriteSheet.GetSourceRectangle("main_panel_dirt_center");
 		Panel.AddImage(Interface.gui, Window, sourceRectangle, new Point(40, 30));
@@ -178,10 +226,32 @@ public class SelectModsPanel : Panel
 	{
 		base.ShowDialog(modal);
 		Populate();
+		shown = this;
+	}
+
+	/// <summary>
+	/// Escape is MAIN or BACK while the panel is open. Called from SelectModsScreen.HandleInput, and
+	/// - for the panel shown over OPTIONS - from OptionsDialog.HandleKeys, after a key button
+	/// waiting for its key (ModSettingRows.CaptureKey) has had the key. Returns whether it took it.
+	/// </summary>
+	public static bool HandleKeys(InputEventSystem.InputData input)
+	{
+		SelectModsPanel panel = shown;
+		if (panel == null || input == null || panel.Window == null || !panel.Window.IsVisibleAndActive)
+		{
+			return false;
+		}
+		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
+		{
+			panel.btCancel_Click(null, null);
+			return true;
+		}
+		return false;
 	}
 
 	private void btCancel_Click(UIComponent sender, EventArgs e)
 	{
+		rows?.CancelKeyCapture();
 		// A text box is read when it loses focus; whatever is still in one is kept too.
 		foreach (SelectModsEntry entry in entries)
 		{

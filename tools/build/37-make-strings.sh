@@ -22,8 +22,8 @@
 # WHERE THE ENTRIES COME FROM.
 #   (GUI)...              every string literal passed to Locale.Text(...) in base_game/ and mods/,
 #                         collected here. The key is "(GUI)" and the English, as in the studio's file.
-#   (SETTING...)          every registered mod setting's label and tooltip, and each heading in the
-#                         MODS section, from the registry - tools/DataExport --strings-literals.
+#   (SETTING...)          every registered mod setting's label and tooltip, and each heading in
+#                         SELECT MODS, from the registry - tools/DataExport --strings-literals.
 #   (ITEM...)             every item's name and description, from the tables the game builds.
 #
 # A Locale.Text whose argument is built - "a" + b, or $"..." - has no fixed English to put in the

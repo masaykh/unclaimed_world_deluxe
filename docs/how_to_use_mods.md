@@ -10,9 +10,14 @@ This build includes a set of mods, **on by default**, each individually switchab
 The main menu's **MODDING → SELECT MODS** lists them all, and any in `user/Mods`: what each does, who
 made it, and a switch for the whole mod. A mod switched off there acts as the studio's game until
 it is switched on again, and keeps your settings meanwhile. A mod that is on unfolds to **MOD
-OPTIONS**, its individual settings - a change there is applied and saved at once. The same settings
-are in OPTIONS → MODS, which is also where they are changed during a game; key bindings are only
-there.
+OPTIONS**, its individual settings and keys - a change there is applied and saved at once. First in
+the list is **PORT**, the port's own settings (save date format, display culture, the shadows key,
+...): always on, with no switch.
+
+Every mod's settings are there and only there. **OPTIONS** keeps the studio's own settings, the
+**LANGUAGE**, the studio's own **KEYS**, and a **MOD OPTIONS...** button: in the main menu it opens
+the same list over OPTIONS; during a game it opens it titled **MOD OPTIONS**, without the switches -
+a mod is switched on or off in the main menu, its settings can be changed at any time.
 
 | mod | what it changes |
 |---|---|
@@ -39,11 +44,12 @@ report that prompted it.
 
 ## Turning them on and off
 
-**In the game:** options menu → **MODS**. Every setting is there, with a description.
+**In the game:** main menu → **MODDING → SELECT MODS**, or **OPTIONS → MOD OPTIONS...** (also during
+a game). Every setting is under its mod's **MOD OPTIONS**, with a description.
 
-Each category says **STABLE** or **TESTING** on its header, and each setting's description starts
+Each mod says **STABLE** or **TESTING** on its header, and each setting's description starts
 with the same word. STABLE means the setting has been confirmed working in a real game; TESTING
-means it has not been yet - most new settings start there. A category is STABLE only when every
+means it has not been yet - most new settings start there. A mod is STABLE only when every
 setting in it is. The list of confirmed settings is kept in `ModSettings.cs`.
 
 **In a file:** `user/ModSettings.xml`, next to the game. One line per setting:

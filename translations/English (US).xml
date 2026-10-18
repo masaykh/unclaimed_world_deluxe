@@ -2467,6 +2467,14 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Changes what a save contains: saves made with it on are marked MODDED.</Value>
   </String>
   <String>
+    <Key>GuiClickThenPressTheNewKeyEscapeCancels_34425aa3bd28</Key>
+    <Value>Click, then press the new key. Escape cancels.</Value>
+  </String>
+  <String>
+    <Key>GuiPRESSAKEY_43f845f39a9c</Key>
+    <Value>PRESS A KEY...</Value>
+  </String>
+  <String>
     <Key>GuiSTABLE</Key>
     <Value>STABLE</Value>
   </String>
@@ -2480,8 +2488,8 @@ Structures can often have their lifespan extended with regular maintenance. Item
   </String>
   <!-- ClientSide/Interface/ModdingDialog.cs -->
   <String>
-    <Key>GuiSwitchedOffOPTIONSMODSMAINMENUMAPEDITORBUTTONS_0503ba322338</Key>
-    <Value>Switched off: OPTIONS -&gt; MODS -&gt; MAIN MENU -&gt; MAP EDITOR BUTTONS.</Value>
+    <Key>GuiSwitchedOffSELECTMODSMAINMENUMODOPTIONSMAPEDITO_ff44c1af80ac</Key>
+    <Value>Switched off: SELECT MODS -&gt; MAIN MENU -&gt; MOD OPTIONS -&gt; MAP EDITOR BUTTONS.</Value>
   </String>
   <String>
     <Key>GuiComesWithTheMAINMENUModWhichIsSwitchedOffSELECT_eb5b47220e46</Key>
@@ -2601,20 +2609,28 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Closes the dialog without applying the changes.</Value>
   </String>
   <String>
-    <Key>GuiMODS</Key>
-    <Value>MODS</Value>
-  </String>
-  <String>
-    <Key>GuiOTHER</Key>
-    <Value>OTHER</Value>
-  </String>
-  <String>
-    <Key>GuiUntickEverythingIn0BackToTheStudioSGameTickEver_423f01ad06a2</Key>
-    <Value>Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK.</Value>
+    <Key>GuiLANGUAGE</Key>
+    <Value>LANGUAGE</Value>
   </String>
   <String>
     <Key>GuiKEYS</Key>
     <Value>KEYS</Value>
+  </String>
+  <String>
+    <Key>GuiMODS</Key>
+    <Value>MODS</Value>
+  </String>
+  <String>
+    <Key>GuiMODOPTIONS_424186327544</Key>
+    <Value>MOD OPTIONS...</Value>
+  </String>
+  <String>
+    <Key>GuiEveryModSSettingsAndKeysAndThePortSOwnChangedAn_5da8098acc0c</Key>
+    <Value>Every mod's settings and keys, and the port's own: changed and saved at once. Mods are switched on and off in the main menu, under MODDING -&gt; SELECT MODS.</Value>
+  </String>
+  <String>
+    <Key>GuiSELECTMODSSwitchModsOnAndOffAndChangeTheirSetti_009c733c9db7</Key>
+    <Value>SELECT MODS: switch mods on and off, and change their settings and keys, and the port's own. Changes are saved at once.</Value>
   </String>
   <String>
     <Key>GuiTheStudioSBindingSavedInOptionsXml_c81173890c09</Key>
@@ -2625,16 +2641,8 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>DEFAULT KEYS</Value>
   </String>
   <String>
-    <Key>GuiEveryKeyBackToItsDefaultNothingIsAppliedUntilOK_5d08b7b6ef11</Key>
-    <Value>Every key back to its default. Nothing is applied until OK.</Value>
-  </String>
-  <String>
-    <Key>GuiClickThenPressTheNewKeyEscapeCancels_34425aa3bd28</Key>
-    <Value>Click, then press the new key. Escape cancels.</Value>
-  </String>
-  <String>
-    <Key>GuiPRESSAKEY_43f845f39a9c</Key>
-    <Value>PRESS A KEY...</Value>
+    <Key>GuiEveryKeyHereBackToTheStudioSDefaultNothingIsApp_2ab571f66d63</Key>
+    <Value>Every key here back to the studio's default. Nothing is applied until OK.</Value>
   </String>
   <String>
     <Key>GuiWidth0Height1_e07f5d1b7f17</Key>
@@ -3768,8 +3776,8 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>MOD OPTIONS</Value>
   </String>
   <String>
-    <Key>GuiThisModSSettingsAsOPTIONSMODSHasThemAChangeIsAp_c061ffa80408</Key>
-    <Value>This mod's settings, as OPTIONS -&gt; MODS has them. A change is applied and saved at once.</Value>
+    <Key>GuiThisModSSettingsAndKeysAChangeIsAppliedAndSaved_2459b75b2873</Key>
+    <Value>This mod's settings and keys. A change is applied and saved at once.</Value>
   </String>
   <String>
     <Key>GuiBy0_97b5389b29fb</Key>
@@ -3808,16 +3816,16 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Made by: {0}</Value>
   </String>
   <String>
-    <Key>GuiSettings01ChangedFromTheStudioSGameInOPTIONSMOD_b84cde3511ee</Key>
-    <Value>Settings: {0}, {1} changed from the studio's game - in OPTIONS -&gt; MODS.</Value>
-  </String>
-  <String>
     <Key>GuiSettings01ChangedFromTheStudioSGameUnderMODOPTI_990812e1a261</Key>
     <Value>Settings: {0}, {1} changed from the studio's game - under MOD OPTIONS below.</Value>
   </String>
   <String>
     <Key>GuiSettings01ChangedFromTheStudioSGameSwitchTheMod_c7b489e688fa</Key>
     <Value>Settings: {0}, {1} changed from the studio's game - switch the mod on to change them.</Value>
+  </String>
+  <String>
+    <Key>GuiSettings01ChangedFromTheStudioSGameSwitchTheMod_70fc1d3fcab1</Key>
+    <Value>Settings: {0}, {1} changed from the studio's game - switch the mod on in the main menu, under MODDING -&gt; SELECT MODS, to change them.</Value>
   </String>
   <String>
     <Key>GuiFileUserMods0_1511760aa789</Key>
@@ -3837,8 +3845,20 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Started with -nomods: every mod is off for this session. What you switch here is kept for the next start.</Value>
   </String>
   <String>
-    <Key>GuiSwitchAModOnOrOffWithTheBoxOnItsLeftUnfoldAModT_8e962e50b6f1</Key>
-    <Value>Switch a mod on or off with the box on its left. Unfold a mod that is on, then MOD OPTIONS, to change its settings - they apply and are saved at once; keys are set in OPTIONS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
+    <Key>GuiSwitchAModOnOrOffWithTheBoxOnItsLeftUnfoldAModT_10e2f1bbc5e0</Key>
+    <Value>Switch a mod on or off with the box on its left. Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. The language and the studio's own keys are set in OPTIONS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
+  </String>
+  <String>
+    <Key>GuiUnfoldAModThatIsOnThenMODOPTIONSToChangeItsSett_4b7ebdcb22fa</Key>
+    <Value>Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. Mods are switched on and off in the main menu, under MODDING -&gt; SELECT MODS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
+  </String>
+  <String>
+    <Key>GuiBACK</Key>
+    <Value>BACK</Value>
+  </String>
+  <String>
+    <Key>GuiReturnToOPTIONS</Key>
+    <Value>Return to OPTIONS</Value>
   </String>
   <String>
     <Key>GuiReturnToTheMainMenu</Key>
@@ -3926,6 +3946,11 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>GuiFalse</Key>
     <Value>False</Value>
+  </String>
+  <!-- Mods/ModCatalog.cs -->
+  <String>
+    <Key>GuiThePortSOwnSettingsNotAModHowSavesAreDatedAndTr_4a7326de12b2</Key>
+    <Value>The port's own settings, not a mod: how saves are dated and treated, the display culture, the shadows key and a render diagnostic. Always on. The language is chosen in OPTIONS.</Value>
   </String>
   <!-- Mods/TradeMod.Absent.cs -->
   <String>
@@ -16353,7 +16378,7 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   </String>
   <String>
     <Key>ModDescriptionKeys</Key>
-    <Value>A KEYS section in the options menu: the studio's key bindings and the mods' keys, rebound by clicking a key and pressing the new one.</Value>
+    <Value>Key bindings, rebound by clicking a key and pressing the new one: the studio's in OPTIONS -&gt; KEYS, and each mod's under its own MOD OPTIONS here.</Value>
   </String>
   <String>
     <Key>ModDescriptionMagnification</Key>

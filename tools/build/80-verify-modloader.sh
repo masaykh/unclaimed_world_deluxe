@@ -1133,7 +1133,8 @@ fi
 # HoverTests drive the real GUIManager / UIComponent.CheckMouseStatus with no graphics device - a
 # window's resize edge left straight onto a higher sibling must give the cursor back. ModsDialogTests
 # build SELECT MODS entries the same way (a stand-in font and sprite sheet): the switch left of the
-# bar, MOD OPTIONS folding and remembered, its rows the ones OPTIONS -> MODS builds, a change saved.
+# bar (none in game, none for PORT), MOD OPTIONS folding and remembered, built by the shared
+# ModSettingRows, a change and a key saved; every setting in exactly one place, OPTIONS only LANGUAGE.
 say "==> 44. interface: the hover lets go; SELECT MODS' switch and MOD OPTIONS"
 out=$( "$DOTNET" test test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj -nologo 2>&1 ) || true
 if echo "$out" | grep -q "^Passed!"; then

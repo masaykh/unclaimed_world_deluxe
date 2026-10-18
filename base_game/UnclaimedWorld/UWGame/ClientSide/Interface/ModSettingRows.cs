@@ -8,15 +8,21 @@ namespace UWGame.ClientSide.Interface;
 
 /// <summary>
 /// PORT: the controls that edit <see cref="ModSetting"/>s - one row per setting, a checkbox, a
-/// dropdown or a text box - and the reading back of what they show. One implementation for the two
-/// places a player changes mod settings: OPTIONS -> MODS (<see cref="OptionsDialog"/>, in game and
-/// in the main menu) and the MOD OPTIONS section under each mod in SELECT MODS
-/// (MainMenu.Mods.SelectModsPanel). tripleacoder, "Main menu", 2026-10-11: "show the options for
-/// enabled mods on the new Select mods dialog too, but without copying logic."
+/// dropdown, a text box or a key button - and the reading back of what they show. One
+/// implementation for the two places a player changes them: OPTIONS (<see cref="OptionsDialog"/>,
+/// in game and in the main menu: LANGUAGE, and the studio's own keys) and the MOD OPTIONS section
+/// under each mod in SELECT MODS (MainMenu.Mods.SelectModsPanel: everything else). tripleacoder,
+/// "Main menu", 2026-10-11: "show the options for enabled mods on the new Select mods dialog too,
+/// but without copying logic."
 ///
 /// The rows only show values; when they become the settings' values is the caller's: OPTIONS on
 /// OK (<see cref="ApplyAll"/>), SELECT MODS as each control changes (<see cref="ApplyChanged"/>).
 /// Both end in the same <see cref="ModSetting.Value"/> assignment and <see cref="ModSettings.Save"/>.
+///
+/// KEY BUTTONS (KeybindMod): click one, press the new key; Escape cancels. One button waits at a
+/// time, whichever dialog it is in (<see cref="CaptureKey"/>, called first by the dialogs' key
+/// handling). A key used twice turns red - counted across these rows and
+/// <see cref="KeysElsewhere"/>, the keys the other dialog holds.
 /// </summary>
 public sealed class ModSettingRows
 {
@@ -33,9 +39,9 @@ public sealed class ModSettingRows
 	private readonly List<KeyValuePair<ModSetting, UIComponent>> controls = new List<KeyValuePair<ModSetting, UIComponent>>();
 
 	/// <summary>
-	/// The key each key button currently shows - not yet what the setting holds. Key buttons are
-	/// OPTIONS' (KeybindMod's KEYS category); they are registered here with <see cref="AddKeyButton"/>
-	/// so that reading, writing and applying treat them as any other row.
+	/// The key each key button currently shows - not yet what the setting (or, for the studio's
+	/// keys in OPTIONS, the Options field) holds. Built by <see cref="AddKeyRow"/>, so that reading,
+	/// writing and applying treat a mod's key as any other row.
 	/// </summary>
 	public readonly Dictionary<TextButton, string> KeyButtonValues = new Dictionary<TextButton, string>();
 
@@ -50,6 +56,22 @@ public sealed class ModSettingRows
 	/// <summary>The width of the current group's dropdowns, chosen by <see cref="ChoiceWidthFor"/>.</summary>
 	private int groupChoiceWidth;
 
+	/// <summary>
+	/// The keys bound outside these rows, for <see cref="MarkDuplicateKeys"/>: OPTIONS' rows are
+	/// told the mods' keys, SELECT MODS' the studio's. Null: none.
+	/// </summary>
+	public Func<IEnumerable<string>> KeysElsewhere;
+
+	/// <summary>Raised when a key button takes a new key (a capture, not <see cref="Write"/>).</summary>
+	public event Action<TextButton> KeyCaptured;
+
+	/// <summary>The rows and button waiting for a key press, or null. One at a time, in any dialog.</summary>
+	private static ModSettingRows capturingRows;
+
+	private static TextButton capturingButton;
+
+	private Microsoft.Xna.Framework.Color keyButtonColor;
+
 	public ModSettingRows(GUIManager gui)
 	{
 		this.gui = gui;
@@ -60,6 +82,7 @@ public sealed class ModSettingRows
 
 	public void Clear()
 	{
+		CancelKeyCapture();
 		controls.Clear();
 		KeyButtonValues.Clear();
 		ownLineChoices.Clear();
@@ -210,6 +233,11 @@ public sealed class ModSettingRows
 			controls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, comboBox));
 			return Math.Max(caption.Bottom, comboBox.Bottom) + 8;
 		}
+		case ModSettingKind.Key when KeybindMod.Enabled:
+		{
+			AddKeyRow(panel, setting, setting.DisplayLabel, setting.Value, toolTip, ref lineY);
+			return lineY;
+		}
 		default:
 		{
 			Label caption2 = new Label(gui);
@@ -245,13 +273,125 @@ public sealed class ModSettingRows
 		}
 	}
 
-	/// <summary>A key button OPTIONS built for a key setting (KEYS category), showing <paramref name="keyName"/>.</summary>
-	public void AddKeyButton(ModSetting setting, TextButton button, string keyName)
+	/// <summary>
+	/// A key row: the caption, and a button showing <paramref name="keyName"/> that rebinds on a
+	/// click and a key press. <paramref name="setting"/> is the mod setting it edits, or null for
+	/// one of the studio's keys (OPTIONS keeps those itself, as Options.xml fields). Returns the
+	/// button; <paramref name="lineY"/> moves below the row.
+	/// </summary>
+	public TextButton AddKeyRow(UIComponent panel, ModSetting setting, string label, string keyName, string toolTip, ref int lineY)
 	{
+		Label caption = new Label(gui);
+		panel.Add(caption);
+		caption.Init(Label.LabelType.LCDSmallHeadingBanner);
+		caption.Text = label + ":";
+		caption.FitToText();
+		caption.X = 6;
+		caption.Y = lineY;
+		caption.ToolTip = toolTip;
+		caption.TooltipWidth = 320;
+		caption.TooltipExpires = false;
+		TextButton button = new TextButton(gui);
+		panel.Add(button);
+		button.Init(TextButton.TextButtonType.LCDToolTipBlack);
+		button.CheckedMode = CheckedModes.CannotBeChecked;
+		// A fixed key column, wide enough for LEFT SHIFT; a caption too long for the space beside
+		// it puts the key on the next line instead of pushing it off the panel (Kastuk, screenshot).
+		button.Width = 104;
+		button.X = panel.Width - button.Width - 4;
+		if (caption.Right + 6 <= button.X)
+		{
+			button.CenterThisVertically(caption.Y + caption.Height / 2);
+		}
+		else
+		{
+			button.Y = caption.Bottom + 2;
+		}
+		button.ToolTip = UWGame.Locale.Text("Click, then press the new key. Escape cancels.");
+		keyButtonColor = button.LabelColor;
 		KeyButtonValues[button] = keyName;
 		if (setting != null)
 		{
 			controls.Add(new KeyValuePair<ModSetting, UIComponent>(setting, button));
+		}
+		button.Text = KeybindMod.DisplayName(keyName);
+		button.Click += delegate
+		{
+			StartKeyCapture(button);
+		};
+		lineY = Math.Max(caption.Bottom, button.Bottom) + 6;
+		return button;
+	}
+
+	private void StartKeyCapture(TextButton button)
+	{
+		CancelKeyCapture();
+		capturingRows = this;
+		capturingButton = button;
+		button.Text = UWGame.Locale.Text("PRESS A KEY...");
+	}
+
+	/// <summary>Whichever key button waits for a key goes back to showing its key.</summary>
+	public void CancelKeyCapture()
+	{
+		if (capturingRows != null && capturingButton != null && capturingRows.KeyButtonValues.TryGetValue(capturingButton, out string keyName))
+		{
+			capturingButton.Text = KeybindMod.DisplayName(keyName);
+		}
+		capturingRows = null;
+		capturingButton = null;
+	}
+
+	/// <summary>
+	/// While a key button waits: the first key pressed is its new key, Escape cancels. Returns
+	/// whether one waited - the key was then taken. Called first by each dialog's key handling.
+	/// </summary>
+	public static bool CaptureKey(InputEventSystem.InputData input)
+	{
+		ModSettingRows rows = capturingRows;
+		TextButton button = capturingButton;
+		if (rows == null || button == null || input == null)
+		{
+			return false;
+		}
+		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
+		{
+			rows.CancelKeyCapture();
+			return true;
+		}
+		foreach (Microsoft.Xna.Framework.Input.Keys key in KeybindMod.Bindable)
+		{
+			if (input.IsKeyTapped(key))
+			{
+				rows.TakeKey(button, key.ToString());
+				break;
+			}
+		}
+		return true;
+	}
+
+	/// <summary>A waiting <paramref name="button"/> takes <paramref name="keyName"/>, as a key press gives it.</summary>
+	public void TakeKey(TextButton button, string keyName)
+	{
+		capturingRows = null;
+		capturingButton = null;
+		KeyButtonValues[button] = keyName;
+		button.Text = KeybindMod.DisplayName(keyName);
+		MarkDuplicateKeys();
+		KeyCaptured?.Invoke(button);
+	}
+
+	/// <summary>
+	/// A key on two buttons, or on a button and in <see cref="KeysElsewhere"/>, turns the button
+	/// red; nothing stops it, since two keys for PAUSE is the studio's own design.
+	/// </summary>
+	public void MarkDuplicateKeys()
+	{
+		IEnumerable<string> all = KeyButtonValues.Values.Concat(KeysElsewhere?.Invoke() ?? Enumerable.Empty<string>());
+		var counts = all.GroupBy((string k) => k).ToDictionary((IGrouping<string, string> g) => g.Key, (IGrouping<string, string> g) => g.Count());
+		foreach (KeyValuePair<TextButton, string> pair in KeyButtonValues)
+		{
+			pair.Key.LabelColor = (counts[pair.Value] > 1) ? UIComponent.errorColor : keyButtonColor;
 		}
 	}
 
@@ -278,6 +418,16 @@ public sealed class ModSettingRows
 			textBox.LoseFocus += delegate
 			{
 				handler();
+			};
+		}
+		else if (control is TextButton keyButton)
+		{
+			KeyCaptured += delegate (TextButton captured)
+			{
+				if (captured == keyButton)
+				{
+					handler();
+				}
 			};
 		}
 	}

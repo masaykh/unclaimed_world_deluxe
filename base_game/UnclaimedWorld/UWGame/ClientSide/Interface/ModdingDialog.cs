@@ -42,7 +42,7 @@ public class ModdingDialog : Panel
 		// MOD: MainMenuMod's MAP EDITOR BUTTONS (once the Unhidden Mod's).
 		bool editorButtons = UWGame.Mods.MainMenuMod.EditorButtons;
 		string editorOff = UWGame.Mods.ModSettings.IsModEnabled(UWGame.Mods.MainMenuMod.ModId)
-			? UWGame.Locale.Text("Switched off: OPTIONS -> MODS -> MAIN MENU -> MAP EDITOR BUTTONS.")
+			? UWGame.Locale.Text("Switched off: SELECT MODS -> MAIN MENU -> MOD OPTIONS -> MAP EDITOR BUTTONS.")
 			: UWGame.Locale.Text("Comes with the MAIN MENU mod, which is switched off: SELECT MODS.");
 		int y = 12;
 		y = AddButton(UWGame.Locale.Text("SELECT MODS"), UWGame.Locale.Text("Every mod: what it does, who made it, and a switch for each."), true, null, y, delegate

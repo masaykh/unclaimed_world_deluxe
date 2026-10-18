@@ -41,7 +41,7 @@ chmod +x UnclaimedWorld
 ## Mods
 
 Seven gameplay mods ship with this build, **on by default** and individually switchable:
-options menu → **MODS**, or `user/ModSettings.xml`. `-nomods` turns all of them off.
+main menu → **MODDING → SELECT MODS**, or `user/ModSettings.xml`. `-nomods` turns all of them off.
 
 ```
 UnclaimedWorld.exe -nomods
@@ -134,7 +134,7 @@ chmod +x UnclaimedWorld
 ## Mods
 
 Seven gameplay mods ship with this build, **on by default** and individually switchable:
-options menu → **MODS**, or `user/ModSettings.xml`. `-nomods` turns all of them off.
+main menu → **MODDING → SELECT MODS**, or `user/ModSettings.xml`. `-nomods` turns all of them off.
 
 ```
 UnclaimedWorld.exe -nomods

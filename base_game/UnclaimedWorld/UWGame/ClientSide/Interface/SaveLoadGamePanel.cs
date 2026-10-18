@@ -382,7 +382,7 @@ public class SaveLoadGamePanel : Panel
 				break;
 			default:
 				// Grey rather than red, because nothing here can switch this on. Red would send a
-				// player through the options menu looking for something that is not in it.
+				// player through SELECT MODS looking for something that is not in it.
 				text.Append(Label.ToLabel(part.Key + " - " + UWGame.Locale.Text("not installed"), UIComponent.lcdDisabledColor));
 				break;
 			}
@@ -423,7 +423,7 @@ public class SaveLoadGamePanel : Panel
 			modMessageBox.OKClick += delegate
 			{
 				// In memory only. The file is not rewritten: this is "open that save", not "change
-				// my settings permanently", and the options menu is where the second one belongs.
+				// my settings permanently", and SELECT MODS is where the second one belongs.
 				ModSettings.ApplySignature(pendingSaveMods);
 				StartLoad();
 			};

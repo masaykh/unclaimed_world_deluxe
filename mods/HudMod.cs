@@ -144,7 +144,7 @@ public static partial class HudMod
 
     private static ModSetting revealKey;
 
-    /// <summary>The key held to show them. LeftAlt, as asked; rebindable in the KEYS section.</summary>
+    /// <summary>The key held to show them. LeftAlt, as asked; rebindable under HUD's MOD OPTIONS in SELECT MODS.</summary>
     public static ModSetting RevealKey =>
         revealKey ?? (revealKey = ModSettings.Key(
             ModId, "revealKey", "NAMES AND MARKERS (HOLD)", Keys.LeftAlt,

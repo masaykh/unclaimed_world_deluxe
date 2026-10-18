@@ -8,8 +8,8 @@ using UWGame.ClientSide;
 namespace UWGame.Mods;
 
 /// <summary>
-/// A KEYS section in the options menu: the studio's key bindings and the mods' keys, rebound by
-/// clicking a key and pressing the new one.
+/// Key bindings rebound by clicking a key and pressing the new one: the studio's in OPTIONS -> KEYS,
+/// each mod's under that mod's MOD OPTIONS in SELECT MODS.
 ///
 /// THE REQUEST. Kastuk, "Magnification setting": "it's time to bring Keybinding menu into
 /// Settings, with adding current vanilla keys, part of which is hidden in Options.xml, and also add
@@ -24,25 +24,30 @@ namespace UWGame.Mods;
 /// fields and writes them back on OK, and a hand-edited file still works.
 ///
 /// THE MODS' KEYS are ModSettings of kind Key (ModSettings.Key), kept in ModSettings.xml like any
-/// other setting: HUD's reveal key (LeftAlt) and UNHIDDEN's shadow toggle (O). A mod that adds a
-/// key registers it and it shows up here.
+/// other setting: HUD's reveal key (LeftAlt) and the port's shadow toggle (O). A mod that adds a
+/// key registers it, and it shows as a key button under that mod's MOD OPTIONS in SELECT MODS
+/// (ModSettingRows.AddRow) - the port's under PORT. The user, 2026-10-18: "all mods should be
+/// explicitly under modding ... key binding that not mod related" belongs to options. So the rule
+/// is the owner: an Options field is the studio's and is in OPTIONS; a registered setting is its
+/// mod's and is in SELECT MODS.
 ///
-/// IN THE DIALOG (OptionsDialog.BuildKeysCategory). Click a key and press the new one; Escape
-/// cancels, so Escape itself cannot be bound. A key used twice turns red. Nothing is applied until
-/// OK, like every other control there. Interface only; nothing the simulation reads.
+/// THE BUTTONS (ModSettingRows.AddKeyRow). Click a key and press the new one; Escape cancels, so
+/// Escape itself cannot be bound. A key used twice turns red, counted across both places. In
+/// OPTIONS nothing is applied until OK, like every other control there; in SELECT MODS a key is
+/// saved as it is taken. Interface only; nothing the simulation reads.
 /// </summary>
 public static class KeybindMod
 {
     public const string ModId = "keys";
 
-    /// <summary>The section is shown whenever the mod is built in.</summary>
+    /// <summary>OPTIONS' KEYS section and the mods' key buttons are there whenever the mod is built in.</summary>
     public static bool Enabled => true;
 
     public static void RegisterSettings()
     {
         // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
         ModSettings.Describe(ModId, "Jerrybi",
-            "A KEYS section in the options menu: the studio's key bindings and the mods' keys, rebound by clicking a key and pressing the new one.",
+            "Key bindings, rebound by clicking a key and pressing the new one: the studio's in OPTIONS -> KEYS, and each mod's under its own MOD OPTIONS here.",
             "HUD_thumbnail_radioHut");
     }
 

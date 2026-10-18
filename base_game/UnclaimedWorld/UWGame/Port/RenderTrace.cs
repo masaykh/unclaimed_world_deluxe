@@ -26,8 +26,8 @@ namespace UWGame.Port;
 /// straight to the back buffer afterwards, which is consistent with UI surviving while the world
 /// does not.
 ///
-/// HOW TO USE IT. Set <c>port.renderTrace</c> in user/ModSettings.xml (or the MODS section of the
-/// options menu), start a game, and look for RenderTrace.txt and RenderTrace\*.png beside the
+/// HOW TO USE IT. Set <c>port.renderTrace</c> in user/ModSettings.xml (or PORT's MOD OPTIONS in
+/// SELECT MODS), start a game, and look for RenderTrace.txt and RenderTrace\*.png beside the
 /// executable. It captures ONE frame - by default the 120th after the world renderer starts
 /// drawing, which is late enough for a map to be loaded and lit - then switches itself off, so it
 /// costs one comparison per draw for the rest of the session.

@@ -12,7 +12,8 @@ using WindowSystem;
 namespace UnclaimedWorld.Test
 {
     /// <summary>
-    /// SELECT MODS' MOD OPTIONS and its switch (tripleacoder and Kastuk, "Main menu", 2026-10-11/12).
+    /// SELECT MODS' MOD OPTIONS and its switch (tripleacoder and Kastuk, "Main menu", 2026-10-11/12),
+    /// and what is where since the user's "all mods should be explicitly under modding" (2026-10-18).
     ///
     /// The real WindowSystem controls, built with no graphics device: a GUIManager without its
     /// constructor, a monospaced stand-in font (7 x 12 per glyph) and a sprite sheet that answers
@@ -111,7 +112,10 @@ namespace UnclaimedWorld.Test
             public int Relayouts;
         }
 
-        private static Built NewEntry(string modId, IEnumerable<string>? expanded = null)
+        private static Built NewEntry(string modId, IEnumerable<string>? expanded = null, bool switchesShown = true) =>
+            NewEntry(EntryFor(modId, "UI TEST"), expanded, switchesShown);
+
+        private static Built NewEntry(ModCatalog.Entry entry, IEnumerable<string>? expanded = null, bool switchesShown = true)
         {
             return Build(() =>
             {
@@ -121,7 +125,7 @@ namespace UnclaimedWorld.Test
                     Rows = new ModSettingRows(gui),
                     Expanded = new HashSet<string>(expanded ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase),
                 };
-                b.Entry = new SelectModsEntry(gui, b.Surface, EntryFor(modId, "UI TEST"), null, b.Rows, b.Expanded, () => b.Relayouts++, null);
+                b.Entry = new SelectModsEntry(gui, b.Surface, entry, null, b.Rows, b.Expanded, () => b.Relayouts++, null, switchesShown);
                 return b;
             });
         }
@@ -133,17 +137,17 @@ namespace UnclaimedWorld.Test
         private static UIComponent OptionsRowsPanel(SelectModsEntry entry) => entry.Options!.ExpandedPanel.Controls.Single();
 
         [TestMethod]
-        public void ModOptions_HasTheRowsOptionsBuilds_LessTheKeys()
+        public void ModOptions_HasEverySettingOfTheMod_KeysIncluded()
         {
             Built b = NewEntry(ModId);
             List<ModSetting> all = SettingsOf(ModId);
             Assert.AreEqual(4, all.Count);
             Assert.IsNotNull(b.Entry.Options, "a mod with settings gets MOD OPTIONS");
-            CollectionAssert.AreEqual(all.Where(s => s.Kind != ModSettingKind.Key).ToList(), b.Entry.OptionSettings, "every setting but the key, in registration order");
-            Assert.IsNull(b.Rows.Find(all.Single(s => s.Kind == ModSettingKind.Key)), "the key stays in OPTIONS");
+            CollectionAssert.AreEqual(all, b.Entry.OptionSettings, "every setting, its key too, in registration order");
+            Assert.IsInstanceOfType(b.Rows.Find(all.Single(s => s.Kind == ModSettingKind.Key)), typeof(TextButton), "the key is a key button here, not in OPTIONS");
 
-            // OPTIONS -> MODS builds a category as BuildModCategory does: the warning is the
-            // section's there, so only the rows are compared.
+            // The same builder as any other group of rows (OPTIONS' LANGUAGE is one): the warning
+            // is MOD OPTIONS' own, so only the rows are compared.
             (ModSettingRows rows, UIComponent panel) options = Build(() =>
             {
                 var rows = new ModSettingRows(gui);
@@ -153,7 +157,7 @@ namespace UnclaimedWorld.Test
             });
             foreach (ModSetting s in b.Entry.OptionSettings)
             {
-                Assert.AreEqual(options.rows.Find(s)!.GetType(), b.Rows.Find(s)!.GetType(), s.Id + ": the same control in both places");
+                Assert.AreEqual(options.rows.Find(s)!.GetType(), b.Rows.Find(s)!.GetType(), s.Id + ": the same control from the same builder");
             }
             List<string> selectMods = Shape(OptionsRowsPanel(b.Entry));
             // MOD OPTIONS opens with the reload warning when one of its settings needs it.
@@ -169,17 +173,76 @@ namespace UnclaimedWorld.Test
         public void BothDialogs_BuildTheirRowsWithTheSharedBuilder()
         {
             MethodInfo addGroup = typeof(ModSettingRows).GetMethod(nameof(ModSettingRows.AddGroup))!;
-            Assert.IsTrue(Calls(typeof(OptionsDialog), "BuildModCategory", addGroup), "OPTIONS -> MODS builds a category with ModSettingRows.AddGroup");
+            MethodInfo addKeyRow = typeof(ModSettingRows).GetMethod(nameof(ModSettingRows.AddKeyRow))!;
+            Assert.IsTrue(Calls(typeof(OptionsDialog), "BuildPortSections", addGroup), "OPTIONS builds LANGUAGE with ModSettingRows.AddGroup");
+            Assert.IsTrue(Calls(typeof(OptionsDialog), "BuildKeys", addKeyRow), "OPTIONS builds the studio's keys with ModSettingRows.AddKeyRow");
+            Assert.IsTrue(Calls(typeof(ModSettingRows), "AddRow", addKeyRow), "and a mod's key in MOD OPTIONS is built by the same AddKeyRow");
             Assert.IsTrue(Calls(typeof(SelectModsEntry), "BuildOptions", addGroup), "SELECT MODS builds MOD OPTIONS with ModSettingRows.AddGroup");
             MethodInfo applyAll = typeof(ModSettingRows).GetMethod(nameof(ModSettingRows.ApplyAll))!;
             MethodInfo applyChanged = typeof(ModSettingRows).GetMethod(nameof(ModSettingRows.ApplyChanged))!;
             Assert.IsTrue(Calls(typeof(OptionsDialog), "ApplyModSettings", applyAll), "OPTIONS applies through ModSettingRows");
             Assert.IsTrue(Calls(typeof(SelectModsEntry), "ApplyPending", applyChanged), "SELECT MODS applies through ModSettingRows");
-            // Neither keeps a row builder of its own any more.
+            // Neither keeps a row builder or a key capture of its own any more.
             foreach (Type t in new[] { typeof(OptionsDialog), typeof(SelectModsEntry), typeof(SelectModsPanel) })
             {
-                Assert.IsNull(t.GetMethod("AddModSettingControl", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public), t.Name + " has no row builder of its own");
+                foreach (string own in new[] { "AddModSettingControl", "BuildModsSection", "BuildModCategory", "AddKeyRow", "CaptureKey", "MarkDuplicateKeys" })
+                {
+                    Assert.IsNull(t.GetMethod(own, BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public), t.Name + " has no " + own + " of its own");
+                }
             }
+        }
+
+        /// <summary>
+        /// The user, 2026-10-18: "all mods should be explicitly under modding ... language selection
+        /// belong to options; key binding that not mod related too". Every registered setting is in
+        /// exactly one place: OPTIONS (LANGUAGE alone) or one entry of SELECT MODS. The game's whole
+        /// registry is checked the same way by DataExport's settings self-test (gate 80, case 8).
+        /// </summary>
+        [TestMethod]
+        public void EverySetting_IsInExactlyOnePlace_AndOptionsHasOnlyTheLanguage()
+        {
+            PortSettings.RegisterSettings();
+            List<ModCatalog.Entry> entries = ModCatalog.Entries();
+            foreach (ModSetting s in ModSettings.All)
+            {
+                int places = (OptionsDialog.OptionsSettings().Contains(s) ? 1 : 0) + entries.Count(e => e.Settings.Contains(s));
+                Assert.AreEqual(1, places, s.Id + " is in " + places + " places");
+            }
+            CollectionAssert.AreEqual(new[] { PortSettings.LanguageId }, OptionsDialog.OptionsSettings().Select(s => s.Id).ToList(), "OPTIONS shows LANGUAGE and no other setting");
+
+            ModCatalog.Entry port = entries.First();
+            Assert.AreEqual(PortSettings.ModId, port.Id, "PORT is listed first");
+            Assert.IsTrue(port.AlwaysOn, "and is always on");
+            CollectionAssert.Contains(port.Settings, PortSettings.ShadowsKey, "the port's key is under PORT");
+            CollectionAssert.Contains(port.Settings, PortSettings.Culture, "and its display culture");
+            CollectionAssert.DoesNotContain(port.Settings, PortSettings.Language, "not the language, which is OPTIONS'");
+            CollectionAssert.Contains(entries.Single(e => e.Id == KeyOnlyModId).Settings, ModSettings.Find(KeyOnlyModId + ".key"), "a mod's key is under its own mod");
+        }
+
+        [TestMethod]
+        public void InGame_TheTitleIsModOptions_AndNoEntryHasASwitch()
+        {
+            Assert.AreEqual("MOD OPTIONS", SelectModsPanel.TitleFor(SelectModsPanel.Mode.InGame));
+            Assert.AreEqual("MODS", SelectModsPanel.TitleFor(SelectModsPanel.Mode.FromOptions));
+            Assert.IsFalse(SelectModsPanel.ShowsSwitches(SelectModsPanel.Mode.InGame), "no switches in game");
+            Assert.IsTrue(SelectModsPanel.ShowsSwitches(SelectModsPanel.Mode.FromOptions), "switches from OPTIONS in the main menu");
+            Assert.IsTrue(SelectModsPanel.ShowsSwitches(SelectModsPanel.Mode.SelectMods), "and in SELECT MODS");
+
+            Built b = NewEntry(ModId, switchesShown: false);
+            Assert.IsNull(b.Entry.Switch.Parent, "the switch is not on the surface");
+            Assert.AreEqual(SelectModsEntry.SwitchX, b.Entry.Bar.X, "the bar starts where the switch would have");
+            Assert.IsNotNull(b.Entry.Options, "MOD OPTIONS is still there: settings change in game");
+        }
+
+        [TestMethod]
+        public void ThePortEntry_HasNoSwitch_AndAlwaysShowsItsOptions()
+        {
+            PortSettings.RegisterSettings();
+            ModCatalog.Entry port = ModCatalog.Entries().Single(e => e.Id == PortSettings.ModId);
+            Built b = NewEntry(port);
+            Assert.IsNull(b.Entry.Switch.Parent, "PORT cannot be switched off, so it has no switch");
+            Assert.IsTrue(SelectModsEntry.ShowsOptions(port), "its MOD OPTIONS always shows");
+            Assert.IsInstanceOfType(b.Rows.Find(PortSettings.ShadowsKey), typeof(TextButton), "the shadows key is a key button under PORT");
         }
 
         /// <summary>Whether <paramref name="type"/>.<paramref name="method"/>'s IL calls <paramref name="target"/>.</summary>
@@ -262,10 +325,39 @@ namespace UnclaimedWorld.Test
         }
 
         [TestMethod]
-        public void ModWithNoSettings_OrOnlyKeys_HasNoModOptions()
+        public void ModWithNoSettings_HasNoModOptions_OnlyAKey_Has()
         {
             Assert.IsNull(NewEntry("uitestnone").Entry.Options, "no settings, no MOD OPTIONS");
-            Assert.IsNull(NewEntry(KeyOnlyModId).Entry.Options, "only a key, no MOD OPTIONS: keys stay in OPTIONS");
+            Built keys = NewEntry(KeyOnlyModId);
+            Assert.IsNotNull(keys.Entry.Options, "only a key: MOD OPTIONS with its key button");
+            Assert.IsInstanceOfType(keys.Rows.Find(ModSettings.Find(KeyOnlyModId + ".key")!), typeof(TextButton));
+        }
+
+        [TestMethod]
+        public void AKeyTakenInModOptions_IsAppliedAndSaved()
+        {
+            string old = Environment.CurrentDirectory;
+            string dir = Path.Combine(Path.GetTempPath(), "uw-modsui-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            ModSetting key = ModSettings.Find(KeyOnlyModId + ".key")!;
+            try
+            {
+                Environment.CurrentDirectory = dir;
+                Built b = NewEntry(KeyOnlyModId);
+                var button = (TextButton)b.Rows.Find(key)!;
+                Assert.AreEqual("F8", key.Value);
+                // What ModSettingRows.CaptureKey does with the key pressed after a click.
+                b.Rows.TakeKey(button, "F9");
+                Assert.AreEqual("F9", key.Value, "the setting holds the new key");
+                Assert.AreEqual("F9", button.Text, "and the button shows it");
+                StringAssert.Contains(File.ReadAllText(ModSettings.FilePath), KeyOnlyModId + ".key", "the file is written");
+            }
+            finally
+            {
+                key.Value = "F8";
+                Environment.CurrentDirectory = old;
+                Directory.Delete(dir, recursive: true);
+            }
         }
 
         [TestMethod]

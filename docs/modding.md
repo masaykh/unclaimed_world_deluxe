@@ -122,7 +122,7 @@ At runtime, in the game folder:
 
 ```
 user/Mods/*.dll              your mods go here; loaded at startup in filename order
-user/ModSettings.xml        mod configuration; also editable in the options menu (MODS)
+user/ModSettings.xml        mod configuration; also editable in MODDING -> SELECT MODS (MOD OPTIONS)
 port-content/**.xnb          ASSET OVERRIDES - any .xnb here wins over Content/ (see below)
 data/BaseData/*.xml          written by --export-data, read by --data-from-xml
 MainMenuIntro.uwanim         the menu background animation (see below); delete for a still one
@@ -425,8 +425,10 @@ user/Mods/MyMod.png    its picture, about 100 x 100
 Both are optional. Switching a DLL off there lists it in `user/ModSettings.xml` as
 `<DisabledMod id="dll:MyMod"/>`, and the loader skips it from the next start. If your mod
 registers settings with its file name as the mod id (`ModSettings.Toggle("MyMod", ...)`), they
-appear in the same entry, under its MOD OPTIONS - the same rows OPTIONS → MODS shows
-(`ModSettingRows`), less key settings, which stay in OPTIONS. The mods that ship with the game describe themselves with
+appear in the same entry, under its MOD OPTIONS (`ModSettingRows`), key settings included, as a key
+button. That is the only place a mod's settings are shown: OPTIONS keeps the studio's own
+settings, the port's LANGUAGE (`ModCatalog.InOptions`), the studio's own keys and a MOD OPTIONS...
+button that opens this list over it - in game titled MOD OPTIONS, without the switches. The mods that ship with the game describe themselves with
 `ModSettings.Describe(modId, author, description, thumbnail)`, where the thumbnail is a sprite of
 the game's own (`HUD_thumbnail_cookhouse`) or a PNG's path. A built-in mod switched off has every
 setting read as the studio's game until it is switched on again, and gets its own values back then.
@@ -467,7 +469,7 @@ without an explicit provider — a deliberate decision, and one to offer rather 
 `item:charcoal` is redefined to carry a `fuelForForge` *tag* instead of being matched by item key,
 both smithies are redefined to require the tag rather than the literal item, and
 `makeCharcoalFromPeat` is added — all with `peat.charcoalFromPeat` on, in `user/ModSettings.xml`
-or the MODS section of the options menu.
+or under PEAT's MOD OPTIONS in SELECT MODS.
 
 ### Charcoal from peat
 
@@ -525,7 +527,7 @@ recipe for a structure now works.
 
 ### Fixes and alternatives from the task list
 
-Four more switches, all defaulting on, all in `user/ModSettings.xml` and the MODS menu, each in
+Four more switches, all defaulting on, all in `user/ModSettings.xml` and SELECT MODS, each in
 the mod named by its prefix:
 
 | setting | what it does |
@@ -902,9 +904,9 @@ and the cost in a large colony.
 
 ## Mod settings: `user/ModSettings.xml`
 
-Mods get a configuration file and a **MODS** section in the in-game options menu. Both come from
-one registry, so a mod declares a setting once and gets the file entry, the menu control and the
-save stamp together.
+Mods get a configuration file and a **MOD OPTIONS** section under their entry in **SELECT MODS**
+(main menu → MODDING, or OPTIONS → MOD OPTIONS..., also in game). Both come from one registry, so a
+mod declares a setting once and gets the file entry, the menu control and the save stamp together.
 
 ```xml
 <ModSettings>
@@ -917,7 +919,7 @@ save stamp together.
 It is in the **game folder**, beside `user/Mods`, not in `Documents\Unclaimed World` where
 `Options.xml` lives: mod settings describe which code is running, so they belong with the DLLs they
 configure and not with the player's resolution and volume. Edit it by hand or use the menu — the
-menu rewrites it on OK, keeping your comments' subjects, your order, and any entry belonging to a
+menu rewrites it as each setting is changed (LANGUAGE, in OPTIONS, on OK), keeping your comments' subjects, your order, and any entry belonging to a
 mod you do not currently have installed. A malformed file is reported and ignored, never fatal.
 
 Declaring one from a mod:
@@ -931,7 +933,8 @@ private static readonly ModSetting Fast = ModSettings.Toggle(
 if (Fast.On) { ... }
 ```
 
-`Toggle` gives a checkbox, `Choice(..., string[] choices, ...)` a combo box, `Text` a text box.
+`Toggle` gives a checkbox, `Choice(..., string[] choices, ...)` a combo box, `Text` a text box,
+`Key` a key button (click, press the new key) under the mod's own MOD OPTIONS.
 Register before the first data load — from the same place your Harmony patches are applied, which
 the loader runs before the game object exists.
 

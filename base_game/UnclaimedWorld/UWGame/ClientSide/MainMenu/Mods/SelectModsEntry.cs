@@ -22,12 +22,14 @@ namespace UWGame.ClientSide.MainMenu.Mods;
 /// but without copying logic ... Maybe there should be an extra expander button MOD OPTIONS inside
 /// each mod panel so the dialog stays fairly clean." Kastuk: "Settings of a mod may come under mod
 /// header. Keys binding can stay in game settings as part of vanilla settings." / "Expand under
-/// expand is my favorite." The rows are <see cref="ModSettingRows"/>' - the code OPTIONS -> MODS
-/// builds its categories with - and a change is applied and saved as it is made (there is no OK
-/// here), through the same <see cref="ModSettingRows.ApplyChanged"/> and ModSettings.Save. Key
-/// settings are left to OPTIONS. Shown only while the mod is on: a switched-off mod's settings
+/// expand is my favorite." The rows are <see cref="ModSettingRows"/>' - the code OPTIONS builds
+/// its rows with - and a change is applied and saved as it is made (there is no OK here), through
+/// <see cref="ModSettingRows.ApplyChanged"/> and ModSettings.Save. Every setting of the mod is
+/// here, its keys too (a key button, as OPTIONS -> KEYS has; the user, 2026-10-18: "all mods should
+/// be explicitly under modding"). Shown only while the mod is on: a switched-off mod's settings
 /// read stock and the file keeps the player's values (ModSettings.SetModEnabled), so a change made
-/// to them here would not be kept.
+/// to them here would not be kept. PORT's (<see cref="ModCatalog.Entry.AlwaysOn"/>) always shows,
+/// and has no switch.
 /// </summary>
 public sealed class SelectModsEntry
 {
@@ -71,24 +73,33 @@ public sealed class SelectModsEntry
 	/// <summary>MOD OPTIONS, or null for a mod with no settings to show here.</summary>
 	public CollapsablePanel Options { get; }
 
-	/// <summary>The settings MOD OPTIONS shows: the mod's, less its keys.</summary>
+	/// <summary>The settings MOD OPTIONS shows: all of the mod's (<see cref="ModCatalog.Entry.Settings"/>).</summary>
 	public List<ModSetting> OptionSettings { get; }
+
+	/// <summary>Whether the switches are shown: not in game (SelectModsPanel.Mode.InGame).</summary>
+	private readonly bool switchesShown;
 
 	/// <summary>
 	/// Builds the entry onto <paramref name="surface"/>. <paramref name="expanded"/> is the set of
 	/// what is unfolded, kept while the game runs; <paramref name="relayout"/> is called whenever
-	/// the entry's height changes.
+	/// the entry's height changes. Without <paramref name="switchesShown"/> (in game) the switch is
+	/// built but not put on the surface, and the bar starts where it would have; PORT never has one.
 	/// </summary>
-	public SelectModsEntry(GUIManager gui, UIComponent surface, ModCatalog.Entry entry, Image picture, ModSettingRows rows, ISet<string> expanded, Action relayout, Action<string, string> log)
+	public SelectModsEntry(GUIManager gui, UIComponent surface, ModCatalog.Entry entry, Image picture, ModSettingRows rows, ISet<string> expanded, Action relayout, Action<string, string> log, bool switchesShown = true)
 	{
 		this.gui = gui;
 		this.entry = entry;
 		this.rows = rows;
 		this.log = log;
 		this.picture = picture;
+		this.switchesShown = switchesShown;
 
 		Switch = new ImageButton(gui);
-		surface.Add(Switch);
+		bool hasSwitch = switchesShown && !entry.AlwaysOn;
+		if (hasSwitch)
+		{
+			surface.Add(Switch);
+		}
 		Switch.Init(ImageButtonType.LCDCheckbox);
 		Switch.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
 		Switch.X = SwitchX;
@@ -97,7 +108,7 @@ public sealed class SelectModsEntry
 		surface.Add(Bar);
 		Bar.Init();
 		Bar.Title = entry.Name;
-		Bar.X = BarX(Switch.Width);
+		Bar.X = hasSwitch ? BarX(Switch.Width) : SwitchX;
 		Bar.Width = surface.Width - Bar.X - RightMargin;
 		Bar.CollapsedHeight = Bar.ExpandedPanelYPos + 5;
 		Bar.Height = Bar.CollapsedHeight;
@@ -130,7 +141,7 @@ public sealed class SelectModsEntry
 		text.Y = 6;
 		text.Width = content.Width - textX - 8;
 
-		OptionSettings = OptionsOf(entry);
+		OptionSettings = entry.Settings.ToList();
 		if (OptionSettings.Count > 0)
 		{
 			Options = BuildOptions(expanded);
@@ -166,15 +177,12 @@ public sealed class SelectModsEntry
 	/// <summary>Where the bar starts: right of the switch, with <see cref="SwitchGap"/> between.</summary>
 	public static int BarX(int switchWidth) => SwitchX + switchWidth + SwitchGap;
 
-	/// <summary>The settings a mod's MOD OPTIONS shows: all of them but its keys, which stay in OPTIONS.</summary>
-	public static List<ModSetting> OptionsOf(ModCatalog.Entry entry) =>
-		entry.Settings.Where((ModSetting s) => s.Kind != ModSettingKind.Key).ToList();
-
 	/// <summary>
 	/// Whether MOD OPTIONS is shown: the mod is on, and the game was not started with -nomods. Its
-	/// settings read stock otherwise, and a change would not be kept.
+	/// settings read stock otherwise, and a change would not be kept. PORT's always is: -nomods
+	/// leaves the port's settings as the file has them.
 	/// </summary>
-	public static bool ShowsOptions(ModCatalog.Entry entry) => !ModSettings.StockOnly && ModSettings.IsModEnabled(entry.Id);
+	public static bool ShowsOptions(ModCatalog.Entry entry) => entry.AlwaysOn || (!ModSettings.StockOnly && ModSettings.IsModEnabled(entry.Id));
 
 	private CollapsablePanel BuildOptions(ISet<string> expanded)
 	{
@@ -185,7 +193,7 @@ public sealed class SelectModsEntry
 		options.Width = content.Width - 2 * OptionsInset;
 		options.CollapsedHeight = options.ExpandedPanelYPos + 5;
 		options.Height = options.CollapsedHeight;
-		options.ToolTip = UWGame.Locale.Text("This mod's settings, as OPTIONS -> MODS has them. A change is applied and saved at once.");
+		options.ToolTip = UWGame.Locale.Text("This mod's settings and keys. A change is applied and saved at once.");
 
 		UIComponent rowsPanel = new UIComponent(gui)
 		{
@@ -248,7 +256,7 @@ public sealed class SelectModsEntry
 	{
 		ModCatalog.Entry now = ModCatalog.Entries().FirstOrDefault((ModCatalog.Entry e) => string.Equals(e.Id, entry.Id, StringComparison.OrdinalIgnoreCase)) ?? entry;
 		Bar.Summary = Summary(now);
-		text.Text = Details(now, Options != null);
+		text.Text = Details(now, switchesShown);
 		if (Options != null)
 		{
 			Options.Summary = rows.Summary(OptionSettings);
@@ -317,7 +325,7 @@ public sealed class SelectModsEntry
 	}
 
 	/// <summary>The unfolded words: what it does, then the facts.</summary>
-	private static string Details(ModCatalog.Entry entry, bool hasOptions)
+	private static string Details(ModCatalog.Entry entry, bool switchesShown)
 	{
 		var lines = new List<string>();
 		lines.Add(string.IsNullOrEmpty(entry.Description) ? UWGame.Locale.Text("No description.") : entry.Description);
@@ -328,9 +336,9 @@ public sealed class SelectModsEntry
 		}
 		if (entry.Settings.Count > 0)
 		{
-			string where = !hasOptions ? UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - in OPTIONS -> MODS.")
-				: ShowsOptions(entry) ? UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - under MOD OPTIONS below.")
-				: UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - switch the mod on to change them.");
+			string where = ShowsOptions(entry) ? UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - under MOD OPTIONS below.")
+				: switchesShown ? UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - switch the mod on to change them.")
+				: UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - switch the mod on in the main menu, under MODDING -> SELECT MODS, to change them.");
 			lines.Add(string.Format(where, entry.Settings.Count, entry.Changed));
 		}
 		if (entry.FileName != null)

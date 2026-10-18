@@ -23,7 +23,7 @@ public class SelectModsInterface : CommonInterface
 	public override void LoadContent()
 	{
 		base.LoadContent();
-		panel = new SelectModsPanel(this, new Point(0, 0));
+		panel = new SelectModsPanel(this);
 		panel.Window.CenterWindow();
 		panel.CancelClick += loadPanel_CancelClick;
 		panel.ShowDialog(modal: true);

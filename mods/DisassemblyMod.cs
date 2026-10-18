@@ -63,8 +63,8 @@ namespace UWGame.Mods;
 /// <see cref="UnhiddenMod"/>). This mod adds ProcessType keys only.
 ///
 /// SWITCHABLE AND SEPARATE, as asked: everything here hangs off <see cref="Generate"/>
-/// (<c>disassembly.generate</c> in user/ModSettings.xml and in the MODS section of the options
-/// menu). Off is the stock game exactly - no recipe is built, no item is touched.
+/// (<c>disassembly.generate</c> in user/ModSettings.xml and in its MOD OPTIONS in SELECT MODS).
+/// Off is the stock game exactly - no recipe is built, no item is touched.
 /// </summary>
 public static class DisassemblyMod
 {

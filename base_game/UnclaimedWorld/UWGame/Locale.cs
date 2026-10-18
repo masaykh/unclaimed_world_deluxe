@@ -346,9 +346,9 @@ public partial class Locale
 	/// <summary>A mod setting's tooltip.</summary>
 	public static string SettingTipKey(string id) => "(SETTING TIP)" + id;
 
-	/// <summary>A heading in the MODS section, keyed by its mod id.</summary>
+	/// <summary>A mod's name in SELECT MODS, keyed by its mod id.</summary>
 	public static string SettingGroupKey(string modId) => "(SETTING GROUP)" + modId;
 
-	/// <summary>A dropdown choice in the MODS section: "(SETTING CHOICE)hud.example=VALUE".</summary>
+	/// <summary>A dropdown choice in MOD OPTIONS (or OPTIONS' LANGUAGE): "(SETTING CHOICE)hud.example=VALUE".</summary>
 	public static string SettingChoiceKey(string id, string value) => "(SETTING CHOICE)" + id + "=" + value;
 }

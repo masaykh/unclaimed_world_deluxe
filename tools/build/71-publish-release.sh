@@ -99,7 +99,7 @@ gh release create "$TAG" "$@" \
   --generate-notes \
   --notes "
 ${HIGHLIGHTS}*Unclaimed World* on .NET 8 and DesktopGL — Windows, Linux and macOS, with gameplay mods you
-switch on and off in the options menu (MODS).
+switch on and off in the main menu (MODDING -> SELECT MODS).
 
 **Download, extract, run.** Nothing to install, nothing to copy.
 

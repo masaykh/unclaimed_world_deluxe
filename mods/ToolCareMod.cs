@@ -28,7 +28,7 @@ namespace UWGame.Mods;
 /// - a fight is waiting, or the colonist is hurt or hungry: drop it where you stand;
 /// - otherwise: take it back to where it came from (the storage or stockpile it was picked up
 ///   from), or to camp when that place is gone, full or out in the field.
-/// Every condition is a setting under MODS -> TOOL CARE.
+/// Every condition is a setting under SELECT MODS -> TOOL CARE -> MOD OPTIONS.
 ///
 /// WHICH DROPS. The "this job needs my hands" drops only: CompositeGoal.DropUnneededItems (reached
 /// from DropUnneededItemsToMakeCapacity - GoalHarvest, GoalProduce, GoalEat, GoalReplenish and

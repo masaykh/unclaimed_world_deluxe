@@ -61,7 +61,7 @@ public static class ModCatalog
         /// <summary>A third-party DLL's file name, or null for the game's own.</summary>
         public string FileName;
 
-        /// <summary>Its settings, in menu order; changed in OPTIONS -> MODS.</summary>
+        /// <summary>Its settings, in menu order; changed under its MOD OPTIONS in SELECT MODS.</summary>
         public List<ModSetting> Settings = new List<ModSetting>();
 
         public ModState State;
@@ -72,12 +72,28 @@ public static class ModCatalog
         /// <summary>Whether its switch can be used now. Not under -nomods, and not for a build without the loader.</summary>
         public bool CanSwitch;
 
+        /// <summary>
+        /// The port's own entry (<see cref="PortSettings"/>): not a mod, so it has no switch, is never
+        /// off and -nomods leaves its settings as the file has them.
+        /// </summary>
+        public bool AlwaysOn;
+
         /// <summary>Whether it is switched on, as SELECT MODS shows it - which may differ from <see cref="State"/> until the next start.</summary>
         public bool SwitchedOn => ModSettings.IsModEnabled(Id);
 
         /// <summary>How many of its settings differ from the studio's game.</summary>
         public int Changed => Settings.Count((ModSetting s) => !s.IsStock);
     }
+
+    /// <summary>
+    /// Whether a setting is changed in OPTIONS rather than in SELECT MODS. The user, 2026-10-18:
+    /// "all mods should be explicitly under modding ... language selection belong to options". So
+    /// the one registered setting OPTIONS shows is the port's LANGUAGE; every other one - each
+    /// mod's, its keys included, and the rest of the port's - is under an entry here. (The studio's
+    /// own key bindings are in OPTIONS too, but they are Options.xml fields, not settings.)
+    /// </summary>
+    public static bool InOptions(ModSetting setting) =>
+        setting != null && string.Equals(setting.Id, PortSettings.LanguageId, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>The key of a mod's description in a language file.</summary>
     public static string DescriptionKey(string modId) => "(MOD DESCRIPTION)" + modId;
@@ -88,10 +104,27 @@ public static class ModCatalog
     /// </summary>
     private static readonly HashSet<string> switchedThisSession = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Every mod, the game's own first in their registration order, then user/Mods in load order.</summary>
+    /// <summary>
+    /// Every mod, the game's own first in their registration order, then user/Mods in load order -
+    /// after the port's own entry, which holds its settings other than LANGUAGE (<see cref="InOptions"/>).
+    /// </summary>
     public static List<Entry> Entries()
     {
         var entries = new List<Entry>();
+        var port = ModSettings.All.Where((ModSetting s) => s.ModId == PortSettings.ModId && !InOptions(s)).ToList();
+        if (port.Count > 0)
+        {
+            entries.Add(new Entry
+            {
+                Id = PortSettings.ModId,
+                Name = Locale.Text(Locale.SettingGroupKey(PortSettings.ModId), ModSettings.CategoryLabel(PortSettings.ModId)),
+                Description = Locale.Text("The port's own settings, not a mod: how saves are dated and treated, the display culture, the shadows key and a render diagnostic. Always on. The language is chosen in OPTIONS."),
+                Thumbnail = PortSettings.Thumbnail,
+                Settings = port,
+                State = ModState.On,
+                AlwaysOn = true,
+            });
+        }
         var byModId = ModSettings.All
             .Where((ModSetting s) => s.ModId != PortSettings.ModId)
             .GroupBy((ModSetting s) => s.ModId, StringComparer.OrdinalIgnoreCase)

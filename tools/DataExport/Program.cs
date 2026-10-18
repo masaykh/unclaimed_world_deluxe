@@ -570,7 +570,7 @@ internal static partial class Program
         // Explain() is what the MODDED tooltip colours by. Three states, and the middle one is the
         // reason there are three: "you switched it off" is a checkbox away, "you do not have it"
         // is not, and telling a player the second when you mean the first sends them looking
-        // through the options menu for something that is not in it.
+        // through SELECT MODS for something that is not in it.
         var explained = UWGame.Mods.ModSettings.Explain(
             "selftest.content=true; selftest.other=true; mod:NotInstalledMod");
         Check(explained.Count == 3, "a signature explains one line per thing it names");
@@ -704,6 +704,24 @@ internal static partial class Program
                                                      && !string.IsNullOrEmpty(d.Description) && !string.IsNullOrEmpty(d.Thumbnail))).ToList();
         Check(shipped.Count > 0 && undescribed.Count == 0, $"every mod that ships describes itself for SELECT MODS ({shipped.Count} mods)"
               + (undescribed.Count == 0 ? "" : " - not: " + string.Join(", ", undescribed)));
+
+        // The user, 2026-10-18: "all mods should be explicitly under modding ... language selection
+        // belong to options". Every setting the game registers is in exactly one place: OPTIONS -
+        // LANGUAGE, and nothing else - or one entry of SELECT MODS (MODDING, or MOD OPTIONS in game).
+        var catalog = UWGame.Mods.ModCatalog.Entries();
+        var misplaced = UWGame.Mods.ModSettings.All
+            .Where(s => (UWGame.Mods.ModCatalog.InOptions(s) ? 1 : 0) + catalog.Count(e => e.Settings.Contains(s)) != 1)
+            .Select(s => s.Id).ToList();
+        Check(misplaced.Count == 0, $"every registered setting is in exactly one place, OPTIONS or SELECT MODS ({UWGame.Mods.ModSettings.All.Count} settings)"
+              + (misplaced.Count == 0 ? "" : " - not: " + string.Join(", ", misplaced)));
+        var inOptions = UWGame.Mods.ModSettings.All.Where(UWGame.Mods.ModCatalog.InOptions).Select(s => s.Id).ToList();
+        // PortSettings keeps the instances it made before the Reset (see below), so LANGUAGE itself
+        // may not be in this registry; it is asked about directly.
+        Check(inOptions.All(id => id == UWGame.Mods.PortSettings.LanguageId) && UWGame.Mods.ModCatalog.InOptions(UWGame.Mods.PortSettings.Language),
+              "  OPTIONS holds LANGUAGE and no other setting (got " + string.Join(", ", inOptions) + ")");
+        var modKeys = UWGame.Mods.ModSettings.All.Where(s => s.Kind == UWGame.Mods.ModSettingKind.Key).ToList();
+        Check(modKeys.Count > 0 && modKeys.All(k => catalog.Any(e => e.Settings.Contains(k) && string.Equals(e.Id, k.ModId, StringComparison.OrdinalIgnoreCase))),
+              "  each mod's key is under its own mod's entry (" + string.Join(", ", modKeys.Select(k => k.Id)) + ")");
 
         // The Unhidden Mod was split (Kastuk, 2026-10-11). A save stamped before names its
         // settings by the old ids, and must read as a save with the same mods as today's.

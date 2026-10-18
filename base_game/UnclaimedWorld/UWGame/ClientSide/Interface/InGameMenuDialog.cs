@@ -73,7 +73,7 @@ public class InGameMenuDialog : Panel
 		textButton6.Width = num;
 		AddDefaultDirt();
 		Window.Height = textButton6.Bottom + 6 + MarginBottom;
-		optionsDialog = new OptionsDialog(The.InGameUI);
+		optionsDialog = new OptionsDialog(The.InGameUI, inGame: true);
 		optionsDialog.CancelClick += optionsDialog_CancelClick;
 		optionsDialog.OKClick += optionsDialog_OKClick;
 		saveDialog = new SaveLoadGamePanel(SaveLoadGamePanel.SaveOrLoad.Save, Interface, new Point(300, 0));

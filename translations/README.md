@@ -1,7 +1,7 @@
 # Translations
 
 The files here are installed as `data/BaseData/Strings/` (the release script and gate 80 copy
-them). Each one is a language: its file name is what OPTIONS → MODS → PORT → **LANGUAGE** offers.
+them). Each one is a language: its file name is what OPTIONS → **LANGUAGE** offers.
 
 `English (US).xml` is the **template**: every string the game asks for, generated from the code.
 Don't edit it by hand; `tools/build/37-make-strings.sh` rewrites it, and gate 80 fails when it is
@@ -15,8 +15,8 @@ in-game menu, options. Then to names and descriptions of items." So, today:
 | key | what | where it comes from |
 |---|---|---|
 | `(GUI)<English>` | the main menu, the in-game menu, the save/load window, OPTIONS | every `Locale.Text("...")` in the code |
-| `(SETTING)<id>`, `(SETTING TIP)<id>` | each mod setting's label and tooltip in OPTIONS → MODS | the setting registry |
-| `(SETTING GROUP)<mod id>` | the headings in OPTIONS → MODS | the setting registry |
+| `(SETTING)<id>`, `(SETTING TIP)<id>` | each mod setting's label and tooltip in SELECT MODS → MOD OPTIONS | the setting registry |
+| `(SETTING GROUP)<mod id>` | the mods' names in SELECT MODS | the setting registry |
 | `(SETTING CHOICE)<id>=<value>` | a dropdown's choices (`WEAPONS AND GOOD TOOLS`) - not numbers like `1/3`, date patterns or language names | the setting registry |
 | `(COUNT)<plural English>` | a number with its noun - see "Numbers" below | every `Locale.Count(n, "...", "...")` |
 | `(AREA)<key>`, `(AREA DESCRIPTION)<key>`, `(AREA PLURALNAME)<key>`, ... | the name, plural, descriptions and other text of everything in the data tables: `ITEM`, `STRUCTURE`, `TREE`, `CREATURE`, `ENTITY` (vehicles, robots), `PROCESS` (recipes and jobs), `RESOURCE`, `SKILL`, `PROFESSION`, `CATEGORY`, `DEGRADE`, `UPGRADE`, `STORAGE`, `TIER`, `ORDER`, `EFFECT`, `SUBSTANCE`, `SOIL`, `VEGETATION`, `SITE`, `EXPEDITION` and more | `Locale.DataTexts` |
@@ -73,7 +73,7 @@ translate it as the rest of a sentence that starts with the name.
 
 1. Copy `English (US).xml` to `<Language>.xml` here (for a player: into `data/BaseData/Strings/`).
 2. Translate the `<Value>`s. Leave every `<Key>` exactly as it is.
-3. Choose it in OPTIONS → MODS → PORT → LANGUAGE and restart the game.
+3. Choose it in OPTIONS → LANGUAGE and restart the game.
 
 Anything you leave out, or leave empty, shows in English - a partial translation works. A key you
 write twice uses the last one. A file that cannot be read is reported and the game stays in English.

@@ -35,7 +35,7 @@ are unsigned — signing needs a paid Apple Developer account — so Gatekeeper 
 
 The port itself is meant to be invisible: same game, running on a current runtime, on three
 platforms instead of one. What you will actually notice is the mods — **most of them on by
-default, each individually switchable** in the options menu under **MODS** and in **SELECT MODS**,
+default, each individually switchable** in **MODDING → SELECT MODS**, where their settings are too,
 or all off with `-nomods`. Some of them:
 
 | mod | what it changes |

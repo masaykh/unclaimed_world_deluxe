@@ -50,17 +50,24 @@ public class OptionsDialog : Panel
 
 	private ErrorsAndMessages errorsAndMessages;
 
-	/// <summary>PORT: the MODS section's rows (ModSettingRows), shared with SELECT MODS' MOD OPTIONS.</summary>
+	/// <summary>PORT: the LANGUAGE row and the studio's key buttons (ModSettingRows, as SELECT MODS' MOD OPTIONS uses).</summary>
 	private readonly ModSettingRows modRows;
+
+	/// <summary>PORT: opened from the in-game menu - MOD OPTIONS then cannot switch mods on or off.</summary>
+	private readonly bool inGame;
+
+	/// <summary>PORT: SELECT MODS, shown over this dialog by MOD OPTIONS...; made on first use.</summary>
+	private UWGame.ClientSide.MainMenu.Mods.SelectModsPanel modsPanel;
 
 	public event EventHandler CancelClick;
 
 	public event EventHandler OKClick;
 
-	public OptionsDialog(CommonInterface intf)
+	public OptionsDialog(CommonInterface intf, bool inGame = false)
 		: base(intf, UWGame.Locale.Text("OPTIONS"), new Point(420, 120), new Vector2(400f, 600f), Level.Menu, PanelType.RegularEdges)
 	{
 		GUIManager gui = Interface.gui;
+		this.inGame = inGame;
 		modRows = new ModSettingRows(gui);
 		int x = 124;
 		FullLCDPanel.AddLCDPanelFitWindowWithBottomMargin(intf, Window, 52, Panel.RosterMargin, out display, out lcdSurface, ref lcdScreen);
@@ -240,7 +247,7 @@ public class OptionsDialog : Panel
 		fbSoundVolume.ShowMaxValueLabelAtEnd = false;
 		fbSoundVolume.ShowValueLabel = FillableBarSlider.ShowValueLabelModes.Never;
 		fbSoundVolume.KnobWidth = 16;
-		BuildModsSection(uIComponent, fbSoundVolume.Bottom + 24);
+		BuildPortSections(uIComponent, fbSoundVolume.Bottom + 24);
 		errorsAndMessages = new ErrorsAndMessages(lcdSurface, Window.guiManager, 6, lcdSurface.Height - 24);
 		AddLowerButton(UWGame.Locale.Text("OK"), UWGame.Locale.Text("Accepts the changes and closes the dialog."), Align.Left).Click += btOK_Click;
 		AddLowerButton(UWGame.Locale.Text("CANCEL"), UWGame.Locale.Text("Closes the dialog without applying the changes."), Align.Right).Click += btCancel_Click;
@@ -314,374 +321,139 @@ public class OptionsDialog : Panel
 	}
 
 	/// <summary>
-	/// The MODS section: the registered <see cref="ModSetting"/>s, grouped into folding categories.
+	/// PORT: what OPTIONS has beyond the studio's GRAPHICS and SOUND (original_src's OptionsDialog
+	/// has those two and nothing else). The user, 2026-10-18: "all mods should be explicitly under
+	/// modding", then "language selection belong to options; key binding that not mod related
+	/// too". So three sections, and no mod's setting:
 	///
-	/// It is built from the registry rather than from a list of fields because a third-party mod
-	/// cannot add a field to this class - which is the whole reason mod settings do not live in
-	/// Options.xml. A build with no mods still gets the section, because the port registers
-	/// entries of its own (see PortSettings), so this code is exercised everywhere rather than
-	/// only where someone has installed something.
+	/// LANGUAGE - the port's LANGUAGE (<see cref="ModCatalog.InOptions"/>; Kastuk, "Translation").
 	///
-	/// CATEGORIES. Kastuk: "Currently all mods going into same list of Settings. But its too big
-	/// and chaotic list." One category per mod, named by the first part of the setting id
-	/// (debug.testScenario -> DEBUG, or the label the mod registered with
-	/// ModSettings.SetCategoryLabel); a mod with a single setting goes under OTHER. Each is the
-	/// game's own folding header - CollapsablePanel.DropDownBig, as the trade window's categories
-	/// use - and folded by default; the fold state is remembered while the game runs. The header
-	/// carries a checkbox, like the stockpile window's category headers: unticking puts the whole
-	/// category back to the studio's game, ticking switches every switch in it on. And a count of
-	/// what differs from the stock game, so a folded category still says whether it is doing
-	/// anything.
+	/// KEYS (KeybindMod) - the studio's own bindings: the public Keys fields of Options, which
+	/// Options.xml keeps (KeybindMod.VanillaFields). A key a mod registers (ModSettings.Key) is the
+	/// mod's, and is rebound under that mod's MOD OPTIONS in SELECT MODS - the port's shadows key
+	/// under PORT's.
 	///
-	/// The surface grows and shrinks with the categories; it is inside a scrolling grid, which
-	/// re-lays itself out when an entry changes height (Grid.item_Resize), so a long list scrolls.
+	/// MODS - one button, MOD OPTIONS..., which shows SELECT MODS over this dialog (tripleacoder:
+	/// "replace the long mod options section with a button 'Mod options' that opens the Select
+	/// mods dialog, and ... show / hide the Enable mod checkbox and change the dialog title to
+	/// 'Mod options'"). Everything there applies and is saved as it is changed; OK and CANCEL here
+	/// are about this dialog's own controls.
 	/// </summary>
-	private void BuildModsSection(UIComponent panel, int y)
+	private void BuildPortSections(UIComponent panel, int y)
 	{
 		modRows.Clear();
-		modCategoryPanels.Clear();
-		if (ModSettings.All.Count == 0)
-		{
-			return;
-		}
-
+		vanillaKeyButtons.Clear();
 		// PORT: a translation dropped into data/BaseData/Strings while the game runs is offered too.
 		PortSettings.RefreshLanguageChoices();
-		Label header = AddSectionHeader(y, panel, UWGame.Locale.Text("MODS"));
-		int lineY = header.Bottom + 6;
-
-		lineY = ModSettingRows.AddReloadWarning(Interface.gui, panel, ModSettings.All, lineY);
-
-		// Categories in the order their first setting was registered, so the menu keeps the order
-		// the mods were written down in; OTHER last.
-		// KeybindMod: every key - the studio's and the mods' - in one KEYS category, first.
+		List<ModSetting> here = OptionsSettings();
+		if (here.Count > 0)
+		{
+			y = AddSectionHeader(y, panel, UWGame.Locale.Text("LANGUAGE")).Bottom + 6;
+			y = ModSettingRows.AddReloadWarning(Interface.gui, panel, here, y);
+			y = modRows.AddGroup(panel, here, y) + 6;
+		}
 		if (KeybindMod.Enabled)
 		{
-			BuildKeysCategory(panel);
+			y = AddSectionHeader(y, panel, UWGame.Locale.Text("KEYS")).Bottom + 6;
+			y = BuildKeys(panel, y) + 6;
 		}
-		var byMod = new List<KeyValuePair<string, List<ModSetting>>>();
-		foreach (ModSetting setting in ModSettings.All)
-		{
-			if (KeybindMod.Enabled && setting.Kind == ModSettingKind.Key)
-			{
-				continue;
-			}
-			int index = byMod.FindIndex((KeyValuePair<string, List<ModSetting>> g) => g.Key == setting.ModId);
-			if (index < 0)
-			{
-				byMod.Add(new KeyValuePair<string, List<ModSetting>>(setting.ModId, new List<ModSetting> { setting }));
-			}
-			else
-			{
-				byMod[index].Value.Add(setting);
-			}
-		}
-		var other = new List<ModSetting>();
-		modsSurface = panel;
-		modsTop = lineY;
-		modsSurfaceMinHeight = panel.Height;
-		foreach (KeyValuePair<string, List<ModSetting>> group in byMod)
-		{
-			if (group.Value.Count == 1)
-			{
-				other.AddRange(group.Value);
-			}
-			else
-			{
-				BuildModCategory(panel, group.Key, UWGame.Locale.Text(UWGame.Locale.SettingGroupKey(group.Key), ModSettings.CategoryLabel(group.Key)), group.Value);
-			}
-		}
-		if (other.Count > 0)
-		{
-			BuildModCategory(panel, "\u0001other", UWGame.Locale.Text("OTHER"), other);
-		}
-		LayOutModCategories();
+		y = AddSectionHeader(y, panel, UWGame.Locale.Text("MODS")).Bottom + 6;
+		TextButton modOptions = new TextButton(Interface.gui);
+		panel.Add(modOptions);
+		modOptions.Init(TextButton.TextButtonType.LCDToolTipBlack);
+		modOptions.CheckedMode = CheckedModes.CannotBeChecked;
+		modOptions.Text = UWGame.Locale.Text("MOD OPTIONS...");
+		modOptions.Width = 160;
+		modOptions.X = 6;
+		modOptions.Y = y;
+		modOptions.ToolTip = inGame
+			? UWGame.Locale.Text("Every mod's settings and keys, and the port's own: changed and saved at once. Mods are switched on and off in the main menu, under MODDING -> SELECT MODS.")
+			: UWGame.Locale.Text("SELECT MODS: switch mods on and off, and change their settings and keys, and the port's own. Changes are saved at once.");
+		modOptions.TooltipWidth = 320;
+		modOptions.Click += btModOptions_Click;
+		panel.Height = Math.Max(panel.Height, modOptions.Bottom + 12);
 	}
 
-	/// <summary>Categories folded open while the game runs, by key. Folded is the default.</summary>
-	private static readonly HashSet<string> expandedModCategories = new HashSet<string>();
+	/// <summary>
+	/// The registered settings OPTIONS shows - LANGUAGE (<see cref="ModCatalog.InOptions"/>). Every
+	/// other one is under an entry of SELECT MODS.
+	/// </summary>
+	public static List<ModSetting> OptionsSettings() => ModSettings.All.Where(ModCatalog.InOptions).ToList();
 
-	private readonly List<CollapsablePanel> modCategoryPanels = new List<CollapsablePanel>();
-
-	private UIComponent modsSurface;
-
-	private int modsTop;
-
-	private int modsSurfaceMinHeight;
-
-	private void BuildModCategory(UIComponent panel, string key, string label, List<ModSetting> settings)
+	/// <summary>MOD OPTIONS...: SELECT MODS over this dialog, which comes back as it was left when that closes.</summary>
+	private void btModOptions_Click(UIComponent sender, EventArgs e)
 	{
-		CollapsablePanel cp = new CollapsablePanel(Interface.gui, CollapsablePanel.PanelType.DropDownBig);
-		panel.Add(cp);
-		cp.Init();
-		cp.Title = label;
-		cp.X = 6;
-		cp.Width = surfaceGrid.SurfaceWidth - cp.X;
-		cp.CollapsedHeight = cp.ExpandedPanelYPos + 5;
-		cp.Height = cp.CollapsedHeight;
-		modCategoryPanels.Add(cp);
-
-		UIComponent content = new UIComponent(Interface.gui)
+		modRows.CancelKeyCapture();
+		if (modsPanel == null)
 		{
-			Width = cp.ExpandedPanel.Width
-		};
-		cp.AddContent(content);
-		int lineY = modRows.AddGroup(content, settings, 0);
-		// Fires Resize, which is what sizes the expanded panel (CollapsablePanel.content_Resize).
-		content.Height = lineY + 4;
-
-		// The category switch, on the header's left where DropDownBig leaves room before the title.
-		ImageButton categorySwitch = new ImageButton(Interface.gui);
-		cp.Add(categorySwitch);
-		categorySwitch.Init(ImageButtonType.LCDCheckbox);
-		categorySwitch.CheckedMode = CheckedModes.SwitchCheckedStateOnClick;
-		categorySwitch.X = 8;
-		cp.CenterOnHeader(categorySwitch);
-		categorySwitch.ToolTip = string.Format(UWGame.Locale.Text("Untick: everything in {0} back to the studio's game. Tick: every switch in it on. Nothing is applied until OK."), label);
-
-		void Refresh()
-		{
-			categorySwitch.IsChecked = modRows.ChangedCount(settings) > 0;
-			// The category's state first: STABLE only when every switch in it is confirmed in play.
-			cp.Summary = modRows.Summary(settings);
+			modsPanel = new UWGame.ClientSide.MainMenu.Mods.SelectModsPanel(Interface, inGame
+				? UWGame.ClientSide.MainMenu.Mods.SelectModsPanel.Mode.InGame
+				: UWGame.ClientSide.MainMenu.Mods.SelectModsPanel.Mode.FromOptions);
+			modsPanel.CancelClick += modsPanel_CancelClick;
 		}
-
-		categorySwitch.Click += delegate
-		{
-			bool on = categorySwitch.IsChecked;
-			foreach (ModSetting s in settings)
-			{
-				string value;
-				if (!on)
-				{
-					value = s.StockValue;
-				}
-				else if (s.Kind == ModSettingKind.Toggle)
-				{
-					value = "true";
-				}
-				else
-				{
-					// A choice has no "on"; the mod's own default is the nearest thing, and where
-					// that is the stock value too (DangerousFaunaMod's x1) it is left as it is.
-					value = string.Equals(s.DefaultValue, s.StockValue, StringComparison.Ordinal) ? modRows.Read(s) : s.DefaultValue;
-				}
-				modRows.Write(s, value);
-			}
-			Refresh();
-		};
-		foreach (ModSetting s in settings)
-		{
-			modRows.OnChange(s, Refresh);
-		}
-		Refresh();
-
-		if (expandedModCategories.Contains(key))
-		{
-			cp.IsExpanded = true;
-		}
-		cp.HeightResize += delegate
-		{
-			// By height, not IsExpanded: CollapsablePanel.IsExpanded calls Expand() - which is
-			// what changes the height and raises this - before it updates its own flag.
-			if (cp.Height > cp.CollapsedHeight)
-			{
-				expandedModCategories.Add(key);
-			}
-			else
-			{
-				expandedModCategories.Remove(key);
-			}
-			LayOutModCategories();
-		};
+		Window.Hide();
+		modsPanel.ShowDialog(modal: true);
 	}
 
-	// ---- KEYS (KeybindMod) ------------------------------------------------------------------
+	private void modsPanel_CancelClick(object sender, EventArgs e)
+	{
+		// Panel's, not this class's ShowDialog: that would put back every control from what is
+		// stored, and lose what was changed here before MOD OPTIONS was opened.
+		base.ShowDialog(modal: true);
+	}
+
+	// ---- KEYS (KeybindMod): the studio's own ------------------------------------------------
 
 	/// <summary>The studio's bindings: the Options field each button edits.</summary>
 	private readonly List<KeyValuePair<System.Reflection.FieldInfo, TextButton>> vanillaKeyButtons =
 		new List<KeyValuePair<System.Reflection.FieldInfo, TextButton>>();
 
-	/// <summary>The button waiting for a key press, or null.</summary>
-	private TextButton capturingKeyButton;
-
-	private Color keyButtonColor;
-
-	private void BuildKeysCategory(UIComponent panel)
+	/// <summary>The studio's key rows and DEFAULT KEYS, from <paramref name="lineY"/>; returns the Y below them.</summary>
+	private int BuildKeys(UIComponent panel, int lineY)
 	{
-		vanillaKeyButtons.Clear();
-		capturingKeyButton = null;
-		CollapsablePanel cp = new CollapsablePanel(Interface.gui, CollapsablePanel.PanelType.DropDownBig);
-		panel.Add(cp);
-		cp.Init();
-		cp.Title = UWGame.Locale.Text("KEYS");
-		cp.X = 6;
-		cp.Width = surfaceGrid.SurfaceWidth - cp.X;
-		cp.CollapsedHeight = cp.ExpandedPanelYPos + 5;
-		cp.Height = cp.CollapsedHeight;
-		modCategoryPanels.Add(cp);
-		UIComponent content = new UIComponent(Interface.gui)
-		{
-			Width = cp.ExpandedPanel.Width
-		};
-		cp.AddContent(content);
-		int lineY = 0;
 		Options options = Interface.Game.Controller.Options;
 		foreach ((System.Reflection.FieldInfo field, string label) in KeybindMod.VanillaFields())
 		{
-			TextButton button = AddKeyRow(content, label, field.GetValue(options).ToString(), UWGame.Locale.Text("The studio's binding, saved in Options.xml."), ref lineY);
+			TextButton button = modRows.AddKeyRow(panel, null, label, field.GetValue(options).ToString(), UWGame.Locale.Text("The studio's binding, saved in Options.xml."), ref lineY);
 			vanillaKeyButtons.Add(new KeyValuePair<System.Reflection.FieldInfo, TextButton>(field, button));
 		}
-		foreach (ModSetting setting in ModSettings.All)
-		{
-			if (setting.Kind == ModSettingKind.Key)
-			{
-				string category = ModSettings.CategoryLabel(setting.ModId);
-				TextButton button = AddKeyRow(content, setting.DisplayLabel, setting.Value, (category != null ? category + ": " : "") + setting.DisplayToolTip, ref lineY);
-				modRows.AddKeyButton(setting, button, setting.Value);
-			}
-		}
+		// A studio key that a mod's key also uses turns red, as two studio keys do.
+		modRows.KeysElsewhere = ModKeys;
 		// Kastuk: GAME MENU rebound away from Escape could never be put back, since Escape cancels
-		// a rebinding. This puts every key back to the studio's and the mods' defaults - pending,
-		// like everything else here, until OK.
+		// a rebinding. This puts every key here back to the studio's default - pending, like
+		// everything else here, until OK.
 		TextButton defaults = new TextButton(Interface.gui);
-		content.Add(defaults);
+		panel.Add(defaults);
 		defaults.Init(TextButton.TextButtonType.LCDToolTipBlack);
 		defaults.CheckedMode = CheckedModes.CannotBeChecked;
 		defaults.Text = UWGame.Locale.Text("DEFAULT KEYS");
 		defaults.Width = 120;
-		defaults.X = content.Width - defaults.Width - 4;
+		defaults.X = panel.Width - defaults.Width - 4;
 		defaults.Y = lineY;
-		defaults.ToolTip = UWGame.Locale.Text("Every key back to its default. Nothing is applied until OK.");
+		defaults.ToolTip = UWGame.Locale.Text("Every key here back to the studio's default. Nothing is applied until OK.");
 		defaults.Click += delegate
 		{
 			RestoreDefaultKeys();
 		};
-		lineY = defaults.Bottom + 6;
-		content.Height = lineY + 4;
-		MarkDuplicateKeys();
-		const string key = "\u0002keys";
-		if (expandedModCategories.Contains(key))
-		{
-			cp.IsExpanded = true;
-		}
-		cp.HeightResize += delegate
-		{
-			if (cp.Height > cp.CollapsedHeight)
-			{
-				expandedModCategories.Add(key);
-			}
-			else
-			{
-				expandedModCategories.Remove(key);
-			}
-			LayOutModCategories();
-		};
+		modRows.MarkDuplicateKeys();
+		return defaults.Bottom;
 	}
 
-	private TextButton AddKeyRow(UIComponent panel, string label, string keyName, string toolTip, ref int lineY)
-	{
-		Label caption = new Label(Interface.gui);
-		panel.Add(caption);
-		caption.Init(Label.LabelType.LCDSmallHeadingBanner);
-		caption.Text = label + ":";
-		caption.FitToText();
-		caption.X = 6;
-		caption.Y = lineY;
-		caption.ToolTip = toolTip;
-		caption.TooltipWidth = 320;
-		caption.TooltipExpires = false;
-		TextButton button = new TextButton(Interface.gui);
-		panel.Add(button);
-		button.Init(TextButton.TextButtonType.LCDToolTipBlack);
-		button.CheckedMode = CheckedModes.CannotBeChecked;
-		// A fixed key column, wide enough for LEFT SHIFT; a caption too long for the space beside
-		// it puts the key on the next line instead of pushing it off the panel (Kastuk, screenshot).
-		button.Width = 104;
-		button.X = panel.Width - button.Width - 4;
-		if (caption.Right + 6 <= button.X)
-		{
-			button.CenterThisVertically(caption.Y + caption.Height / 2);
-		}
-		else
-		{
-			button.Y = caption.Bottom + 2;
-		}
-		button.ToolTip = UWGame.Locale.Text("Click, then press the new key. Escape cancels.");
-		keyButtonColor = button.LabelColor;
-		modRows.KeyButtonValues[button] = keyName;
-		button.Text = KeybindMod.DisplayName(keyName);
-		button.Click += delegate
-		{
-			StartKeyCapture(button);
-		};
-		lineY = Math.Max(caption.Bottom, button.Bottom) + 6;
-		return button;
-	}
+	/// <summary>The mods' keys, as their settings hold them (rebound in SELECT MODS).</summary>
+	private static IEnumerable<string> ModKeys() =>
+		ModSettings.All.Where((ModSetting s) => s.Kind == ModSettingKind.Key).Select((ModSetting s) => s.Value);
 
-	private void StartKeyCapture(TextButton button)
-	{
-		if (capturingKeyButton != null)
-		{
-			capturingKeyButton.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[capturingKeyButton]);
-		}
-		capturingKeyButton = button;
-		button.Text = UWGame.Locale.Text("PRESS A KEY...");
-	}
-
-	/// <summary>While a key button waits: the first key pressed is its new key, Escape cancels. Returns whether it waited.</summary>
-	private bool CaptureKey(InputEventSystem.InputData input)
-	{
-		TextButton button = capturingKeyButton;
-		if (button == null)
-		{
-			return false;
-		}
-		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
-		{
-			capturingKeyButton = null;
-			button.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[button]);
-			return true;
-		}
-		foreach (Microsoft.Xna.Framework.Input.Keys key in KeybindMod.Bindable)
-		{
-			if (input.IsKeyTapped(key))
-			{
-				capturingKeyButton = null;
-				modRows.KeyButtonValues[button] = key.ToString();
-				button.Text = KeybindMod.DisplayName(key.ToString());
-				MarkDuplicateKeys();
-				break;
-			}
-		}
-		return true;
-	}
-
-	/// <summary>A key on two buttons turns both red; nothing stops it, since two keys for PAUSE is the studio's own design.</summary>
-	private void MarkDuplicateKeys()
-	{
-		var counts = modRows.KeyButtonValues.Values.GroupBy((string k) => k).ToDictionary((IGrouping<string, string> g) => g.Key, (IGrouping<string, string> g) => g.Count());
-		foreach (KeyValuePair<TextButton, string> pair in modRows.KeyButtonValues)
-		{
-			pair.Key.LabelColor = (counts[pair.Value] > 1) ? UIComponent.errorColor : keyButtonColor;
-		}
-	}
-
-	/// <summary>DEFAULT KEYS: the studio's defaults from a fresh Options, the mods' from each setting's default.</summary>
+	/// <summary>DEFAULT KEYS: the studio's defaults, from a fresh Options.</summary>
 	private void RestoreDefaultKeys()
 	{
-		capturingKeyButton = null;
+		modRows.CancelKeyCapture();
 		Options fresh = new Options();
 		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
 		{
 			modRows.KeyButtonValues[pair.Value] = pair.Key.GetValue(fresh).ToString();
 			pair.Value.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[pair.Value]);
 		}
-		foreach (ModSetting setting in modRows.Settings.Where((ModSetting s) => s.Kind == ModSettingKind.Key).ToList())
-		{
-			modRows.Write(setting, setting.DefaultValue);
-		}
-		MarkDuplicateKeys();
+		modRows.MarkDuplicateKeys();
 	}
 
 	/// <summary>On OK: the studio's bindings back into Options, which OK then writes to Options.xml.</summary>
@@ -702,7 +474,7 @@ public class OptionsDialog : Panel
 	/// </summary>
 	private void RefillModControls()
 	{
-		capturingKeyButton = null;
+		modRows.CancelKeyCapture();
 		modRows.Refill();
 		Options options = Interface.Game.Controller.Options;
 		foreach (KeyValuePair<System.Reflection.FieldInfo, TextButton> pair in vanillaKeyButtons)
@@ -710,33 +482,18 @@ public class OptionsDialog : Panel
 			modRows.KeyButtonValues[pair.Value] = pair.Key.GetValue(options).ToString();
 			pair.Value.Text = KeybindMod.DisplayName(modRows.KeyButtonValues[pair.Value]);
 		}
-		MarkDuplicateKeys();
-	}
-
-	/// <summary>Stacks the categories under the MODS header and sizes the surface to fit them.</summary>
-	private void LayOutModCategories()
-	{
-		if (modsSurface == null)
-		{
-			return;
-		}
-		int y = modsTop;
-		foreach (CollapsablePanel cp in modCategoryPanels)
-		{
-			cp.Y = y;
-			y = cp.Bottom + 4;
-		}
-		modsSurface.Height = Math.Max(modsSurfaceMinHeight, y + 12);
+		modRows.MarkDuplicateKeys();
 	}
 
 	/// <summary>
-	/// Reads the MODS controls back into the settings and writes the file. Called from OK, with
-	/// the rest of the dialog - a setting the player changed and then cancelled must not have
-	/// taken effect, which is why nothing here happens as the controls are clicked. That includes
-	/// the category switches: they only move the controls.
+	/// Reads LANGUAGE back into its setting and writes the file. Called from OK, with the rest of
+	/// the dialog - a setting the player changed and then cancelled must not have taken effect,
+	/// which is why nothing here happens as the controls are clicked. (The studio's keys go back
+	/// through ApplyKeyBindings; the mods' settings are SELECT MODS', which saves them at once.)
 	/// </summary>
 	private void ApplyModSettings()
 	{
+		modRows.CancelKeyCapture();
 		modRows.ApplyAll(GameStateManagement.UnclaimedWorld.LogError);
 	}
 
@@ -810,6 +567,7 @@ public class OptionsDialog : Panel
 
 	private void btCancel_Click(UIComponent sender, EventArgs e)
 	{
+		modRows.CancelKeyCapture();
 		ApplySettings();
 		Hide();
 		if (this.CancelClick != null)
@@ -872,12 +630,12 @@ public class OptionsDialog : Panel
 		// what the rest of the game allowed - so the slider could not reach what Options.xml could.
 		// With the mod off this is 100 and the message is the studio's, character for character.
 		//
-		// The floor is taken for the switch as its checkbox SHOWS - the state OK is about to save -
+		// The floor is taken for the switch as it is set - in SELECT MODS, which saves it at once -
 		// and a slider below it is lifted to it rather than refused. Refusing trapped Kastuk: with
 		// 0.8 set and the mod switched off, every OK failed until the slider was moved by hand,
 		// and he could not tell why.
 		ModSetting allowBelowOne = ModSettings.Find(UWGame.Mods.MagnificationMod.ModId + ".allowBelowOne");
-		bool pendingAllowBelowOne = allowBelowOne != null && ModSetting.ParseBool(modRows.Read(allowBelowOne), false);
+		bool pendingAllowBelowOne = allowBelowOne != null && allowBelowOne.On;
 		int minZoomPercent = UWGame.Mods.MagnificationMod.OptionsFloorPercent(pendingAllowBelowOne);
 		if ((float)fbZoom.Value < (float)minZoomPercent)
 		{
@@ -972,15 +730,16 @@ public class OptionsDialog : Panel
 	/// </summary>
 	public static bool HandleKeys(InputEventSystem.InputData input)
 	{
+		// A key button waiting for its key - here or in MOD OPTIONS - takes every key first, Enter
+		// included; then MOD OPTIONS, shown over this dialog, takes Escape.
+		if (ModSettingRows.CaptureKey(input) || UWGame.ClientSide.MainMenu.Mods.SelectModsPanel.HandleKeys(input))
+		{
+			return true;
+		}
 		OptionsDialog dialog = shown;
 		if (dialog == null || input == null || dialog.Window == null || !dialog.Window.IsVisibleAndActive)
 		{
 			return false;
-		}
-		// A key button waiting for its key takes every key first - Enter included.
-		if (dialog.CaptureKey(input))
-		{
-			return true;
 		}
 		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Enter))
 		{
