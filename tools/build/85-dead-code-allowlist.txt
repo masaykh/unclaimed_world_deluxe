@@ -26,6 +26,13 @@ IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSp
 IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.ProtectionLevel
 IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.VehicleType
 
+# --- SimProcess, the substance simulation that we are planning.
+IDE0051 base_game/UnclaimedWorld/UWGame/SimSide/Processes/SimProcess.cs SimProcess.HandleNoSubstances
+IDE0051 base_game/UnclaimedWorld/UWGame/SimSide/Processes/SimProcess.cs SimProcess.RequestSubstance
+
+# --- SimProcess cleanup method that should be implemented and tested.
+IDE0051 base_game/UnclaimedWorld/UWGame/SimSide/Processes/SimProcess.cs SimProcess.HandleDestroyedActingOn
+
 # --- Saves. The assignment is a read or write on the save stream (sn.SnapshotID): the value is
 # --- unused, the stream position is not.
 IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Entities/RepairTypes/RepairPackageAction.cs  RepairPackageAction.snapshotPart
