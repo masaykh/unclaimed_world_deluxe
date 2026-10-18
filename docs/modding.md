@@ -644,8 +644,8 @@ numbers written in the test.
 Kastuk, "Weather and temperature" (2026-10-17): *"rainstorms during winter time with cold winds
 between them. Not freezing temperatures, but still cold enough for sickness. Then high solar heat
 during usually hot summer. Can take references from subtropic seasons."* This is step 1, the
-seasons and the air; rain and wind (step 2) and what the cold does to people (step 3) are the two
-switches below. Off by default.
+seasons and the air; rain and wind (step 2), what the cold does to people (steps 3 and 4) and what
+rain and wind do to things drying (step 5) are the three switches below. Off by default.
 
 | hook | what changes with the switch on |
 |---|---|
@@ -776,6 +776,40 @@ item, the recipe and its disassembly after `GameData.PostDataCompleteInitialize`
 a running colony:** whether colonists sleep under trees, and whether they still have a cloak on when
 they lie down — gear is fetched for long trips and night work (`FindOptionalEquipmentIfNeeded` needs
 a job, so going to bed fetches nothing).
+
+### Rain and wind dry or wet — `weather.drying`
+
+Step 5, a fourth switch in the WEATHER category: it works with RAIN AND WIND on. Off by default.
+Kastuk, "Weather and temperature" (2026-10-18): *"Wonder how rain can affect processes at drying food
+and hides ... No, just revert slowly. Then wind without rain will speed up the drying process. Way to
+put drying structures under trees protection."* tripleacoder: *"SimProcess is the class that should
+handle physical processes like that."*
+
+**What the studio has.** A drying batch is a `SimProcess` that runs on its own once started
+(`WorkerOnlyNeededToStart`: *"dries on its own"*, *"the hide is drying on the hide rack on its own"*)
+on a stationary tool; every update (2 s) `EstimateProgressDelta` adds `interval / (DaysNeeded /
+tool productivity)`, whatever the weather. The drying processes, read from the tables by
+`WeatherMod.IsDryingProcess` (not `WorkerNeeded`, and a drying structure among the tools):
+
+| process | on | a batch takes |
+|---|---|---|
+| `makeDriedThunderChicken`, `makeDriedStreakFin`, `makeTurnipSalami` | meat drying rack ×0.5 / drying shed ×0.8 / the cookhouse's drying shed addition ×0.9 | 4.8 / 3 / 2.7 hours |
+| `makeDryPeat`, `makeFirewood` | peat stack, woodpile ×0.6 | 4 hours |
+| `makeThunderChickenRawhide`, `makeWhipjawRawhide`, `makeMegapodRawhide` | hide rack (with the knife and brain of `toolSetCleanHide`) | by those tools |
+
+| hook | what changes with the switch on |
+|---|---|
+| `SimProcess.EstimateProgressDelta` → `WeatherMod.DryingProgress` | after the studio's progress factors, before its cap. On an open rack or stack (meat drying rack, hide rack, peat stack, woodpile) not inside anything: while it rains, the batch goes **back** at `0.3 × rain × the normal rate`, never below 1% (at 0 the studio takes an output as not started) — an hour of rain 0.7 takes a rack's batch from 0.50 to 0.45 instead of on to 0.71, a 12-hour winter storm undoes about half a batch; dry, `× (1 + 0.05 per m/s above 3)`, at most ×1.5 (13 m/s) — a winter wind of 9 m/s ×1.3; still, dry air the studio's to the bit. A drying shed or the addition (*"will protect the meat from rain while letting the wind blow through"*) keeps the rain off — the studio's rate while it rains — and takes the wind. Under a living tree (`WeatherMod.TreeCover` at the structure, step 4) the rain is the cover's share of it (a sanctuary tree's caps ×0.3, a spoak ×0.6) and so is the wind's speed-up (×0.5, ×0.8) |
+| `SimProcess.ComputeEstimatedCompletionTime` (`&& ProgressSpeed > 0f`) | a batch going back has no completion estimate instead of "now"; the studio's speed is never negative |
+| `NonLivingEntity.Degrade` → `WeatherMod.SunDryingDamage` | the items whose degrade type is "sun drying" (`item:wetFirewood`, `item:wetMudBrick`, `item:cleanedUrsinix`), lying in no working storage: the same rate, but never below 0 — rain stops them drying rather than wetting them again (a negative damage would raise their condition and `MaxCondition`). The haulers' estimates (`HaulingJobManager`) and the tooltips are left alone |
+
+**Saves:** nothing new — a batch's progress is its outputs' `Progress`, as it always was, and the
+weather is the deterministic schedule. `--weather-selftest` steps a real `SimProcess` of
+`makeDriedThunderChicken` through hours of the schedule with the real clock — on a rack in the open,
+on a shed, on a rack indoors, under a sanctuary tree's caps and a spoak — and the sun-drying hook, and
+finds both hooks in the IL. **Not verified in a running colony:** colonists' "Checking progress" visit
+is timed by the completion estimate made at a batch's first update, so after rain it may come before
+the batch is done; whether that costs much walking is for a game.
 
 ## Stink and noise — `discomfort.enabled`, `discomfort.wasteMap`, `discomfort.stinkOverlay`
 

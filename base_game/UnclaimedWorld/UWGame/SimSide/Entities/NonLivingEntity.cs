@@ -247,6 +247,9 @@ namespace UWGame.SimSide.Entities
                     else
                     {
                         damage = ComputeDegradeDamage(Parent, null, null, Parent.PlaySiteMapPosition, daysElapsed);
+                        // MOD: with RAIN AND WIND DRY OR WET on, a thing sun drying out here stops in
+                        // the rain and dries faster in the wind; the studio's otherwise. See mods/WeatherMod.cs.
+                        damage = UWGame.Mods.WeatherMod.SunDryingDamage(Parent, damage);
                     }
 
 

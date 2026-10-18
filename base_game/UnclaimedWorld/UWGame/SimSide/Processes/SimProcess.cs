@@ -388,6 +388,10 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 			progressDelta = progressDelta2;
 		}
 		EstimateProgressFromProperties(ref progressDelta);
+		// MOD: with RAIN AND WIND DRY OR WET on, a batch drying on a rack or a stack out in the open
+		// goes slowly back in the rain and dries faster in a dry wind; the studio's delta otherwise.
+		// See mods/WeatherMod.cs.
+		progressDelta = UWGame.Mods.WeatherMod.DryingProgress(this, progress, progressDelta.Value);
 		if (!ignoreProgressCap)
 		{
 			CapProgress(ref progressDelta);
@@ -1016,7 +1020,9 @@ public class SimProcess : ILookUp<SimProcess, SimProcessID>, ISnapshot, ISleepin
 	{
 		if (IsStarted)
 		{
-			if (!Common.IsZero(ProgressSpeed))
+			// MOD: "&& ProgressSpeed > 0f" - a batch going back in the rain (mods/WeatherMod.cs) has
+			// no completion time, rather than one now. The studio's speed is never negative.
+			if (!Common.IsZero(ProgressSpeed) && ProgressSpeed > 0f)
 			{
 				if (!GetRealProgress(out var progress))
 				{

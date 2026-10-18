@@ -41,7 +41,7 @@
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #  41. the woodpile keeps the firewood it dried
 #  42. weather: seasons follow their names, a subtropical year, spoilage follows the air; rain and wind;
-#      a cold, wet night out costs comfort and may bring a cold
+#      a cold, wet night out costs comfort and may bring a cold; rain sets drying back, wind speeds it
 #  43. emergency eating: raw food when starving, its comfort cost and a bad stomach
 #  44. interface: a resize edge left onto a higher sibling gives the cursor back; SELECT MODS' switch
 #      sits left of its bar, and MOD OPTIONS is built by OPTIONS' own rows
@@ -1092,7 +1092,10 @@ fi
 # Step 4, what keeps it off: a living spoak or sanctuary tree on a map of real tiles (not a dead,
 # young or felled one, not beyond its reach, less without the caps), a PRECOL explorer by Twinkler
 # Island's own description table, a hide cloak or a Mackintosh in Equipment; multiplied, and step
-# 3's numbers to the bit with none of them.
+# 3's numbers to the bit with none of them. Step 5, RAIN AND WIND DRY OR WET: which processes dry, read
+# from the tables; a real SimProcess of dried thunder chicken stepped through hours of rain, wind and
+# still air with the real clock - on an open rack, a drying shed, a rack indoors, under a sanctuary
+# tree's caps and a spoak; things left out to sun dry; both hooks found by IL.
 say "==> 42. weather: the sun follows the season names, a subtropical year, spoilage and tooltips follow the air, rain and wind, cold and wet"
 out=$( cd "$(new_install case42)" && "$EXPORT" . --weather-selftest 2>&1 ) || true
 if echo "$out" | grep -q "weather self-test OK" && echo "$out" | grep -q "^  ok    "; then

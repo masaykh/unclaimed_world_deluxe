@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Interface.DateAndWeatherPanel;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Processes;
 using UWGame.SimSide.SimEffects;
 
 namespace UWGame.Mods;
@@ -10,7 +11,7 @@ namespace UWGame.Mods;
 /// <summary>
 /// Seasons and temperature, compiled OUT. See PeatMod.Absent.cs for the pattern: the studio's
 /// sawtooth sun, 15 C everywhere, and the date panel's fixed temperature. No "Cold" effect; nobody
-/// minds where they sleep beyond what the studio scores.
+/// minds where they sleep beyond what the studio scores; drying is the same in any weather.
 /// </summary>
 public static class WeatherMod
 {
@@ -61,4 +62,10 @@ public static class WeatherMod
 
     /// <summary>The studio's comfort score of a sleeping place.</summary>
     public static double ShelterScore(Entity sleeper, IKnownEntityData place, Vector3 at, double stock) => stock;
+
+    /// <summary>The studio's: a drying process makes its progress whatever the weather.</summary>
+    public static float DryingProgress(SimProcess process, float progress, float stock) => stock;
+
+    /// <summary>The studio's: a thing sun drying where it lies dries whatever the weather.</summary>
+    public static float SunDryingDamage(Entity item, float stock) => stock;
 }

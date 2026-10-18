@@ -7,6 +7,7 @@ using UWGame.SimSide;
 using UWGame.SimSide.AI;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Maps;
+using UWGame.SimSide.Processes;
 using UWGame.SimSide.SimEffects;
 using UWGame.SimSide.Trees;
 
@@ -15,8 +16,9 @@ namespace UWGame.Mods;
 /// <summary>
 /// Seasons and temperature: the sun follows the season names, and the air is warm in summer, cool
 /// in winter and warmer by day than by night (step 1 of "Weather and temperature"); behind a
-/// second switch, rain and wind (step 2); and behind a third, what a cold, wet night slept out in
-/// the open does to people (step 3).
+/// second switch, rain and wind (step 2); behind a third, what a cold, wet night slept out in
+/// the open does to people (steps 3 and 4); and behind a fourth, what rain and wind do to things
+/// drying (step 5).
 ///
 /// THE REQUEST. Kastuk, "Weather and temperature" (2026-10-17): "rainstorms during winter time with
 /// cold winds between them. Not freezing temperatures, but still cold enough for sickness. Then
@@ -201,6 +203,45 @@ namespace UWGame.Mods;
 /// EvaluateSleep.ScoreComfort (which now passes where the sleeper would lie) scores a spot by its
 /// cover too: on that night the bare ground 0.32, a spot under the caps 0.42 (the studio's 0.61).
 ///
+/// RAIN AND WIND DRY OR WET (step 5), a fourth switch that works with RAIN AND WIND on (off by
+/// default). Kastuk, "Weather and temperature" (2026-10-18): "Wonder how rain can affect processes at
+/// drying food and hides ... No, just revert slowly. Then wind without rain will speed up the drying
+/// process. Way to put drying structures under trees protection." tripleacoder: "SimProcess is the
+/// class that should handle physical processes like that." Separate from RAIN AND WIND so a game
+/// played with the weather keeps the studio's drying until this is asked for.
+/// - WHAT THE STUDIO HAS. A drying batch is a SimProcess that runs on its own once a colonist has
+///   started it (WorkNeeded WorkerOnlyNeededToStart: "dries on its own", "the hide is drying on the
+///   hide rack on its own") on a stationary tool, its outputs in the tool's container. Each update
+///   (2 s: it creates outputs) EstimateProgressDelta adds update interval / (DaysNeeded / the tool's
+///   productivity), whatever the weather. The drying ones, read from the tables (<see cref="IsDryingProcess"/>):
+///   makeDriedThunderChicken, makeDriedStreakFin and makeTurnipSalami on a meat drying rack (x0.5: a
+///   batch in 4.8 hours), a drying shed (x0.8, 3 h) or the cookhouse's drying shed addition (x0.9);
+///   makeDryPeat on a peat stack and makeFirewood on a woodpile (x0.6, 4 h); the three
+///   make...Rawhide on a hide rack. Separately, three items "can be dried in the open" by their degrade
+///   type "sun drying" (wet firewood, wet mudbricks, cleaned ursinix): NonLivingEntity.Degrade wears
+///   them down by temperature and sunshine, and its moisture is fixed at 0 ("disabled, for lack of UI
+///   feedback").
+/// - A BATCH (<see cref="DryingProgress"/>, from SimProcess.EstimateProgressDelta, after the studio's
+///   progress factors and before its cap). On an open rack or stack out of doors - not one inside
+///   anything - the progress is scaled by <see cref="DryingRate"/>: while it rains, BACKWARDS at
+///   0.3 x the rain (0-1) x the normal rate, never below 1% (an hour of rain 0.7 takes a rack's
+///   batch from 0.50 back to 0.45 instead of on to 0.71; a 12-hour rainstorm undoes about half a
+///   batch); dry, faster in the wind, x(1 + 0.05 a m/s above 3), at most x1.5 (13 m/s) - a winter
+///   wind of 9 m/s x1.3, the summer's 1-4 m/s hardly at all; still, dry air the studio's to the bit.
+///   The drying shed and the addition (StructureLoader: "This shed will protect the meat from rain
+///   while letting the wind blow through") keep the rain off - the studio's rate while it rains - and
+///   take the wind. Under a living tree (step 4's <see cref="TreeCover"/>, at the structure) the rain
+///   is the cover's share of it (a sanctuary tree's caps x0.3, a spoak x0.6) and the wind's speed-up
+///   the cover's (x0.5, x0.8). A batch going back has no completion estimate
+///   (SimProcess.ComputeEstimatedCompletionTime, which would otherwise say "now").
+/// - LEFT OUT TO DRY (<see cref="SunDryingDamage"/>, from NonLivingEntity.Degrade, only for a thing in
+///   no working storage): the same rate, but never below 0 - rain stops it and does not wet it
+///   again, since a negative damage would raise its condition and MaxCondition, which the studio's
+///   code does not expect. The estimates the haulers make (HaulingJobManager) and the tooltips are
+///   left as they are.
+/// - Off, or without RAIN AND WIND: the studio's, to the bit. Nothing new is saved: a batch's progress
+///   is its outputs' Progress, as it always was.
+///
 /// NOTHING NEW IS SAVED. The temperature is worked out each time from what a save already holds:
 /// TimeOfYear and TimeOfDay (DateAndTime) and the cloud cover (WeatherManager). No tile is written,
 /// so there is no per-tile cost and switching off puts the studio's 15 C back at once. No random
@@ -251,6 +292,7 @@ public static class WeatherMod
         ModSettings.SetCategoryLabel(ModId, "WEATHER");
         _ = EnabledSetting;
         _ = RainSetting;
+        _ = DryingSetting;
         _ = ExposureSetting;
     }
 
@@ -258,6 +300,22 @@ public static class WeatherMod
 
     /// <summary>RAIN AND WIND, which needs SEASONS AND TEMPERATURE: the rain cools the air that switch makes.</summary>
     public static bool RainOn => On && RainSetting.On;
+
+    private static ModSetting drying;
+
+    public static ModSetting DryingSetting =>
+        drying ?? (drying = ModSettings.Toggle(
+            ModId, "drying", "RAIN AND WIND DRY OR WET", defaultValue: false,
+            toolTip: "Works with RAIN AND WIND on. Meat, fish, salami, hides, peat and firewood drying on a rack " +
+                     "or a stack out in the open slowly lose their drying while it rains, and dry up to half as " +
+                     "fast again in a dry wind. A drying shed keeps the rain off and lets the wind through; a " +
+                     "living spoak keeps off some of the rain, a sanctuary tree with its caps most of it. Wet " +
+                     "firewood, mudbricks and the like left out to sun dry stop drying in the rain and dry faster " +
+                     "in the wind.",
+            affectsSimulation: true));
+
+    /// <summary>RAIN AND WIND DRY OR WET, which needs RAIN AND WIND: it is that switch's rain and wind.</summary>
+    public static bool DryingOn => RainOn && DryingSetting.On;
 
     private static ModSetting exposure;
 
@@ -1237,6 +1295,194 @@ public static class WeatherMod
             SortOrder = 170
         });
         SicknessEffects.Register(ColdProfile, ColdSpeedFactor, ColdWorkTimeFactor, ColdEnergyCap);
+    }
+
+    // ---------------------------------------------------------------- rain and wind dry or wet: tunable here
+
+    /// <summary>
+    /// The share of a drying process's normal rate that full rain (1) takes back: in a rain of r that
+    /// gets through to it, a batch goes backwards at r times this.
+    /// </summary>
+    public const float RainUndoesDrying = 0.3f;
+
+    /// <summary>Wind (m/s) above which a dry wind speeds drying.</summary>
+    public const float DryingWindFrom = 3f;
+
+    /// <summary>How much faster each m/s of wind above <see cref="DryingWindFrom"/> dries (a share of the normal rate).</summary>
+    public const float DryingPerWind = 0.05f;
+
+    /// <summary>The fastest a dry wind dries (x the normal rate): reached at 13 m/s.</summary>
+    public const float MaxWindDrying = 1.5f;
+
+    /// <summary>
+    /// Rain never takes a batch's progress below this. At 0 the studio takes an output as not started
+    /// (NonLivingEntity.IsStarted), which is for a batch nobody has begun.
+    /// </summary>
+    public const float DryingFloor = 0.01f;
+
+    /// <summary>The studio's degrade type for things that dry where they lie (wet firewood, wet mudbricks, cleaned ursinix).</summary>
+    public const string SunDryingKey = "sun drying";
+
+    /// <summary>How a drying structure meets the weather.</summary>
+    public enum DryingPlace
+    {
+        /// <summary>Not a drying structure, or one indoors: the studio's rate.</summary>
+        None,
+        /// <summary>A frame or a stack in the open: the rain and the wind reach it.</summary>
+        Open,
+        /// <summary>A drying shed: "will protect the meat from rain while letting the wind blow through".</summary>
+        Shed
+    }
+
+    /// <summary>
+    /// The studio's drying structures: the meat drying rack ("a simple frame"), the hide rack, the peat
+    /// stack and the woodpile are open; the drying shed and the cookhouse's drying shed addition have a
+    /// roof that keeps the rain off and let the wind through (StructureLoader: "This shed will protect
+    /// the meat from rain while letting the wind blow through").
+    /// </summary>
+    public static DryingPlace DryingPlaceOf(EntityType type) => type?.KeyName switch
+    {
+        "structure:meatDryingRack" or "structure:hideRack" or "structure:peatStack" or "structure:firewoodStack" => DryingPlace.Open,
+        "structure:dryingShed" or "item:dryingShedUpgrade" => DryingPlace.Shed,
+        _ => DryingPlace.None
+    };
+
+    // ---------------------------------------------------------------- rain and wind dry or wet: the model
+
+    /// <summary>
+    /// Whether a process type dries on a drying structure: it runs on its own once started (not
+    /// WorkerNeeded - the studio's "dries on its own", "the hide is drying on the hide rack on its own")
+    /// and one of its tools is a drying structure (<see cref="DryingPlaceOf"/>).
+    /// </summary>
+    public static bool IsDryingProcess(ProcessType type)
+    {
+        if (type == null || type.WorkNeeded == WorkerNeededOptions.WorkerNeeded || type.ProcessToolSet?.Tools == null)
+        {
+            return false;
+        }
+        foreach (ToolAlternatives alternatives in type.ProcessToolSet.Tools)
+        {
+            foreach (UWGame.SimSide.Processes.Tool tool in alternatives?.Tools ?? Array.Empty<UWGame.SimSide.Processes.Tool>())
+            {
+                foreach (EntityType toolType in tool.ToolEntityTypes)
+                {
+                    if (DryingPlaceOf(toolType) != DryingPlace.None)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// The share of its normal rate something drying makes in this weather, under this cover, in the
+    /// open or under a shed's roof. While it rains (<see cref="RainThreshold"/>) on it: backwards,
+    /// -<see cref="RainUndoesDrying"/> x the rain that gets through. While it rains but too little gets
+    /// through (a shed, or a canopy that keeps a shower off): the normal rate - the air is wet, so no
+    /// wind bonus. Dry: 1 + <see cref="DryingPerWind"/> a m/s of wind above <see cref="DryingWindFrom"/>,
+    /// at most <see cref="MaxWindDrying"/>, the bonus times the cover's wind factor.
+    /// </summary>
+    public static float DryingRate(State weather, Cover cover, DryingPlace place)
+    {
+        if (place == DryingPlace.None)
+        {
+            return 1f;
+        }
+        if (weather.Rain >= RainThreshold)
+        {
+            float wet = place == DryingPlace.Shed ? 0f : weather.Rain * cover.Rain;
+            return wet >= RainThreshold ? -RainUndoesDrying * wet : 1f;
+        }
+        float bonus = Math.Min(MaxWindDrying - 1f, DryingPerWind * Math.Max(0f, weather.Wind - DryingWindFrom));
+        return 1f + bonus * cover.Wind;
+    }
+
+    /// <summary>
+    /// The drying structure a process runs on, if any: the first of its stationary tools that is one,
+    /// and how the weather reaches it. An open rack or stack inside something (a building's storage) is
+    /// out of the weather: null, <see cref="DryingPlace.None"/>.
+    /// </summary>
+    public static Entity DryingStructureOf(SimProcess process, out DryingPlace place)
+    {
+        place = DryingPlace.None;
+        if (process?.StationaryTools == null)
+        {
+            return null;
+        }
+        foreach (EntityID id in process.StationaryTools)
+        {
+            Entity tool = Entity.FindByID(id);
+            DryingPlace found = DryingPlaceOf(tool?.EntityType);
+            if (found == DryingPlace.None)
+            {
+                continue;
+            }
+            if (found == DryingPlace.Open && tool.ContainedBy.HasValue)
+            {
+                return null;
+            }
+            place = found;
+            return tool;
+        }
+        return null;
+    }
+
+    /// <summary>The trees over a spot, looked for only when the weather makes them matter: rain, or a wind that dries.</summary>
+    private static Cover DryingCover(State weather, Vector3? at) =>
+        at.HasValue && (weather.Rain >= RainThreshold || weather.Wind > DryingWindFrom) ? TreeCover(at.Value) : Cover.None;
+
+    // ---------------------------------------------------------------- rain and wind dry or wet: hooks
+
+    /// <summary>
+    /// Called by SimProcess.EstimateProgressDelta with the process's progress and the studio's progress
+    /// for this update (after its progress factors, before its cap): for a drying process
+    /// (<see cref="IsDryingProcess"/>) on a drying structure out in the weather, that times
+    /// <see cref="DryingRate"/> - negative in the rain, but never taking the batch below
+    /// <see cref="DryingFloor"/>. The studio's otherwise, to the bit.
+    /// </summary>
+    public static float DryingProgress(SimProcess process, float progress, float stock)
+    {
+        if (!DryingOn || stock <= 0f || !IsDryingProcess(process?.ProcessType))
+        {
+            return stock;
+        }
+        Entity structure = DryingStructureOf(process, out DryingPlace place);
+        State? now = Now();
+        if (structure == null || !now.HasValue)
+        {
+            return stock;
+        }
+        float rate = DryingRate(now.Value, DryingCover(now.Value, structure.Location), place);
+        if (rate == 1f)
+        {
+            return stock;
+        }
+        float delta = stock * rate;
+        return delta >= 0f ? delta : Math.Max(delta, Math.Min(0f, DryingFloor - progress));
+    }
+
+    /// <summary>
+    /// Called by NonLivingEntity.Degrade with the damage the studio worked out for an item exposed to the
+    /// elements (in no working storage): for an item that sun dries (<see cref="SunDryingKey"/>) and is
+    /// not weather proof, that times <see cref="DryingRate"/> where it lies - but not below 0: rain stops
+    /// it drying and does not wet it again (a negative damage would raise its condition and its
+    /// MaxCondition, which the studio's code does not expect). The studio's otherwise, to the bit.
+    /// </summary>
+    public static float SunDryingDamage(Entity item, float stock)
+    {
+        if (!DryingOn || stock <= 0f || item?.EntityType?.NonLivingType?.FinalDegradeType?.KeyName != SunDryingKey || item.IsWeatherProof())
+        {
+            return stock;
+        }
+        State? now = Now();
+        if (!now.HasValue)
+        {
+            return stock;
+        }
+        float rate = DryingRate(now.Value, DryingCover(now.Value, item.Location), DryingPlace.Open);
+        return rate == 1f ? stock : stock * Math.Max(0f, rate);
     }
 
     private static string Percent(float fraction) =>

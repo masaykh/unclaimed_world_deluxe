@@ -7051,6 +7051,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>WEATHER</Value>
   </String>
   <String>
+    <Key>SettingWeatherDrying</Key>
+    <Value>RAIN AND WIND DRY OR WET</Value>
+  </String>
+  <String>
+    <Key>SettingTipWeatherDrying</Key>
+    <Value>Works with RAIN AND WIND on. Meat, fish, salami, hides, peat and firewood drying on a rack or a stack out in the open slowly lose their drying while it rains, and dry up to half as fast again in a dry wind. A drying shed keeps the rain off and lets the wind through; a living spoak keeps off some of the rain, a sanctuary tree with its caps most of it. Wet firewood, mudbricks and the like left out to sun dry stop drying in the rain and dry faster in the wind.</Value>
+  </String>
+  <String>
     <Key>SettingWeatherEnabled</Key>
     <Value>SEASONS AND TEMPERATURE</Value>
   </String>

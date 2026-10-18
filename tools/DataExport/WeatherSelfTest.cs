@@ -33,6 +33,7 @@ namespace UW.Tools.DataExport;
 ///
 /// Step 3, COLD AND WET HURT: <see cref="ColdAndWetSelfTest"/> (WeatherExposureSelfTest.cs); step 4,
 /// what keeps it off - trees, PRECOL suits, cloaks: <see cref="ShelterSelfTest"/> (WeatherShelterSelfTest.cs).
+/// Step 5, RAIN AND WIND DRY OR WET: <see cref="DryingSelfTest"/> (WeatherDryingSelfTest.cs).
 ///
 /// Step 2, RAIN AND WIND (<see cref="RainAndWindSelfTest"/>):
 /// - the schedule: the same seed gives the same weather to the bit, another seed other weather;
@@ -254,6 +255,7 @@ internal static partial class Program
 
         RainAndWindSelfTest(Check, date, weather, enabled);
         ColdAndWetSelfTest(Check, date, weather, enabled);
+        DryingSelfTest(Check, date);
 
         enabled.Value = enabled.DefaultValue;
         Console.WriteLine(failures == 0 ? "weather self-test OK" : $"weather self-test FAILED - {failures} check(s)");
