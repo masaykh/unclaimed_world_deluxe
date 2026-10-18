@@ -961,9 +961,11 @@ fi
 # then the 3%-per-5, 40%-cap arithmetic and the once-a-day measurement. And WASTE ON THE DISCOMFORT
 # MAP (2026-10-17): the studio's DiscomfortMap.DoCycle run through the mod's three hooks on a small
 # map - stink drawn and capped, read back for the sleeper, cleared, and nothing at all while off.
+# The STINK overlay (2026-10-18): the waste map shown, the same values drawn on demand without it,
+# nothing looked for while off, and its colours.
 say "==> 34. what the discomfort mod finds filthy or loud is in the tables, and its comfort cost adds up"
 out=$( cd "$(new_install case34)" && "$EXPORT" . --discomfort-selftest 2>&1 ) || true
-if echo "$out" | grep -q "discomfort self-test OK" && echo "$out" | grep -q "^  ok    "    && echo "$out" | grep -q "^  ok    on: the threat gone, only the stink stays"; then
+if echo "$out" | grep -q "discomfort self-test OK" && echo "$out" | grep -q "^  ok    "    && echo "$out" | grep -q "^  ok    on: the threat gone, only the stink stays"    && echo "$out" | grep -q "^  ok    stink overlay, waste map off: the on-demand values match"; then
   pass "$(echo "$out" | grep -c "^  ok    ") check(s) passed inside the self-test"
 else
   echo "$out" | sed -n 's/^  FAIL/      FAIL/p'

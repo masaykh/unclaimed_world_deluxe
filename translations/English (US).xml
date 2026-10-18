@@ -5515,6 +5515,14 @@ An exploration mission that took place before the main landing operation. A sele
     <Value>Each worker at a noisy workplace counts as 5 filthy items.</Value>
   </String>
   <String>
+    <Key>SettingDiscomfortStinkOverlay</Key>
+    <Value>SHOW THE STINK OVERLAY</Value>
+  </String>
+  <String>
+    <Key>SettingTipDiscomfortStinkOverlay</Key>
+    <Value>Colours the ground where filthy items stink, brown where a bed would lose comfort to it. Also the STINK row in the overlay panel above the minimap, beside THREATS.</Value>
+  </String>
+  <String>
     <Key>SettingDiscomfortTalk</Key>
     <Value>COLONISTS COMPLAIN ABOUT IT</Value>
   </String>

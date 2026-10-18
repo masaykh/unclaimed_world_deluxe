@@ -70,6 +70,9 @@ namespace UWGame.Mods;
 /// place's exit: units = value / (reach + 1), so a filthy item at the exit is a unit and one at the
 /// edge of the reach a sixth of one (at 5 tiles). Noise is still counted as above.
 ///
+/// THE STINK OVERLAY (interface only, off by default): a STINK row beside THREATS in the overlay
+/// panel above the minimap colours where the filth stinks - see DiscomfortModStinkOverlay.cs.
+///
 /// TALK. A colonist who loses comfort may say so, through the studio's own talk path (a
 /// Conversation of one line, as TalkAction.Execute does): a stink line or a noise line,
 /// whichever cost more. At most two colonists a day across the colony, and never one already in
@@ -84,7 +87,7 @@ namespace UWGame.Mods;
 ///
 /// Off by default.
 /// </summary>
-public static class DiscomfortMod
+public static partial class DiscomfortMod
 {
     public const string ModId = "discomfort";
 
@@ -94,6 +97,7 @@ public static class DiscomfortMod
     private static ModSetting cap;
     private static ModSetting talk;
     private static ModSetting wasteMap;
+    private static ModSetting stinkOverlay;
 
     public static ModSetting EnabledSetting =>
         enabled ?? (enabled = ModSettings.Toggle(
@@ -134,6 +138,14 @@ public static class DiscomfortMod
                      "when they path, and may be slower to haul waste. Stink alone never makes them flee or stop work.",
             affectsSimulation: true));
 
+    /// <summary>The STINK row in the overlay panel above the minimap - see DiscomfortModStinkOverlay.cs.</summary>
+    public static ModSetting StinkOverlaySetting =>
+        stinkOverlay ?? (stinkOverlay = ModSettings.Toggle(
+            ModId, "stinkOverlay", "SHOW THE STINK OVERLAY", defaultValue: false,
+            toolTip: "Colours the ground where filthy items stink, brown where a bed would lose comfort to it. " +
+                     "Also the STINK row in the overlay panel above the minimap, beside THREATS.",
+            affectsSimulation: false));
+
     public static void RegisterSettings()
     {
         // SELECT MODS (main menu -> MODDING): who wrote it, what it does, and a picture.
@@ -147,12 +159,16 @@ public static class DiscomfortMod
         _ = CapSetting;
         _ = TalkSetting;
         _ = WasteMapSetting;
+        _ = StinkOverlaySetting;
     }
 
     public static bool Enabled => EnabledSetting.On;
 
     /// <summary>Whether filth is drawn on the colonists' discomfort maps.</summary>
     public static bool WasteMapOn => Enabled && WasteMapSetting.On;
+
+    /// <summary>Whether the STINK overlay is drawn: DISCOMFORT on and its row ticked (DiscomfortModStinkOverlay.cs).</summary>
+    public static bool StinkOverlayShown => Enabled && StinkOverlaySetting.On;
 
     /// <summary>Waste of every kind is filthy by its category.</summary>
     private const string WasteCategory = "waste";
@@ -625,6 +641,19 @@ public static class DiscomfortMod
     /// </summary>
     public static int? WasteUnitsAt(EntityType personType, Vector3 at)
     {
+        WasteMap waste = DrawnWasteMap(personType);
+        if (waste == null)
+        {
+            return null;
+        }
+        int x = Math.Clamp((int)(at.X / TileSize), 0, waste.Map.Width - 1);
+        int y = Math.Clamp((int)(at.Y / TileSize), 0, waste.Map.Height - 1);
+        return waste.Map.GetValue(x, y) / (waste.Reach + 1);
+    }
+
+    /// <summary>The drawn waste map of the player's <paramref name="personType"/> colonists (Normal stance, else Cautious), or null.</summary>
+    private static WasteMap DrawnWasteMap(EntityType personType)
+    {
         var maps = The.Sim?.PlaySite?.PlayerAllegiance?.SharedKnowledge?.PlaySiteKnowledge?.DiscomfortMaps;
         if (personType == null || maps == null || !maps.TryGetValue(ProtectionLevel.Exposed, out var byType)
             || !byType.TryGetValue(personType, out var byStance))
@@ -636,9 +665,7 @@ public static class DiscomfortMod
             if (byStance.TryGetValue(stance, out DiscomfortMap map) && map != null && wasteMaps.TryGetValue(map, out WasteMap waste)
                 && waste.Applies && waste.Map != null)
             {
-                int x = Math.Clamp((int)(at.X / TileSize), 0, waste.Map.Width - 1);
-                int y = Math.Clamp((int)(at.Y / TileSize), 0, waste.Map.Height - 1);
-                return waste.Map.GetValue(x, y) / (waste.Reach + 1);
+                return waste;
             }
         }
         return null;
@@ -678,9 +705,9 @@ public static class DiscomfortMod
     /// Every tile with filth, and how many filthy items: on the ground, and inside whatever stands
     /// there (a compost pile, a hide rack, a storage hut). What a colonist or an animal carries is
     /// left out - it would move the map with every haul. In tile order, so the same filth always
-    /// gives the same list.
+    /// gives the same list. Within <paramref name="area"/> (tiles) if given, else the whole map.
     /// </summary>
-    private static List<(Point Tile, int Count)> FindWaste()
+    private static List<(Point Tile, int Count)> FindWaste(Rectangle? area = null)
     {
         var found = new List<(Point Tile, int Count)>();
         MapManager map = The.Map;
@@ -688,9 +715,10 @@ public static class DiscomfortMod
         {
             return found;
         }
-        for (int x = 0; x < map.mapTileWidth; x++)
+        Rectangle within = area ?? new Rectangle(0, 0, map.mapTileWidth, map.mapTileHeight);
+        for (int x = Math.Max(0, within.Left); x < Math.Min(map.mapTileWidth, within.Right); x++)
         {
-            for (int y = 0; y < map.mapTileHeight; y++)
+            for (int y = Math.Max(0, within.Top); y < Math.Min(map.mapTileHeight, within.Bottom); y++)
             {
                 var onTile = map.TileMap[x][y]?.EntitiesOnTile;
                 if (onTile == null || onTile.Count == 0)

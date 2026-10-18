@@ -214,6 +214,7 @@
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\SafeSleepMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\GatherOnDemandMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DiscomfortMod.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\DiscomfortModStinkOverlay.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\HuntingMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\KeybindMod.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)..\..\mods\PreyFearMod.cs" />

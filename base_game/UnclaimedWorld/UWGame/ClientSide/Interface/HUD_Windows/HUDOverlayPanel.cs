@@ -147,9 +147,40 @@ public class HUDOverlayPanel : HUDWindow
 			}
 			UpdateSingleItemRow(value);
 		}
+		AddStinkOverlayRow();
 		AddHudMarkerRows();
 		AddDeveloperOverlayRows();
 		grdSingleItems.EndAddingEntries();
+	}
+
+	/// <summary>
+	/// DISCOMFORT MOD: the STINK overlay, a row beside THREATS (DiscomfortModStinkOverlay.cs). Only
+	/// while DISCOMFORT is on; switched off, the row is taken out at the next Populate. With the mod
+	/// absent StinkOverlayAvailable is false and this adds nothing.
+	/// </summary>
+	private void AddStinkOverlayRow()
+	{
+		if (!UWGame.Mods.DiscomfortMod.StinkOverlayAvailable)
+		{
+			grdSingleItems.TryRemoveEntry(StinkOverlayRowKey);
+			return;
+		}
+		if (!grdSingleItems.EntriesByKey.TryGetValue(StinkOverlayRowKey, out var row))
+		{
+			row = AddSingleItemRow(StinkOverlayRowKey, UWGame.Mods.DiscomfortMod.StinkOverlayLabel, null, UWGame.Mods.DiscomfortMod.StinkOverlayToolTip, null, UWGame.Mods.DiscomfortMod.StrongStinkColor, cbSelectStinkOverlay_Click);
+		}
+		row.FindChildById<CheckBox>(UIComponent.DataControlID.Selector, out var check, firstLevelOnly: false);
+		if (check != null)
+		{
+			check.IsChecked = UWGame.Mods.DiscomfortMod.StinkOverlayShown;
+		}
+	}
+
+	private const string StinkOverlayRowKey = "uwstink";
+
+	private void cbSelectStinkOverlay_Click(UIComponent sender, EventArgs e)
+	{
+		UWGame.Mods.DiscomfortMod.SetStinkOverlay(((CheckBox)sender).IsChecked);
 	}
 
 	/// <summary>HUD MOD: NAMES, LABELS and STATUS ICONS on the map, each its own row, beside the overlays.</summary>

@@ -2739,6 +2739,9 @@ namespace UWGame.ClientSide.Map
                 The.InGameUI.ThreatRender.SetupQuad(influenceMapVertices, ref influenceMapQuadIndex);
             }
 
+            // MOD: the STINK overlay (DiscomfortMod), drawn as the threats are; returns at once while it is off.
+            UWGame.Mods.DiscomfortMod.SetupStinkOverlay(influenceMapVertices, ref influenceMapQuadIndex);
+
             // discomfort and user overlays:
             /*  if (map.Overlays.Count > 0)
               {

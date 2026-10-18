@@ -37,4 +37,24 @@ public static class DiscomfortMod
     }
 
     public static bool WasteKeepsSector(DiscomfortMap map, int sectorX, int sectorY) => false;
+
+    /// <summary>No STINK row in the overlay panel.</summary>
+    public static bool StinkOverlayAvailable => false;
+
+    public static bool StinkOverlayShown => false;
+
+    public static string StinkOverlayLabel => null;
+
+    public static string StinkOverlayToolTip => null;
+
+    public static readonly Color StrongStinkColor = Color.Transparent;
+
+    public static void SetStinkOverlay(bool shown)
+    {
+    }
+
+    /// <summary>Nothing drawn beside the studio's overlays.</summary>
+    public static void SetupStinkOverlay(UWGame.ClientSide.Interface.VertexOverlayGroundSpriteQuad[] vertices, ref int index)
+    {
+    }
 }

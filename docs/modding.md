@@ -733,7 +733,7 @@ nights, and the cold (alone and with a bad stomach) through the real `Locomotor`
 `BiologicalEntity`. **Not verified in a running colony:** whether colonists walk to a hut instead of
 lying down by the fire is for a game.
 
-## Stink and noise — `discomfort.enabled`, `discomfort.wasteMap`
+## Stink and noise — `discomfort.enabled`, `discomfort.wasteMap`, `discomfort.stinkOverlay`
 
 Kastuk, "Discomfort" (2026-10-05): filthy items (all waste, fertilisers, sulphur, carcasses, fresh
 hides) and busy workbenches, smithies, workshops, refineries and mines near where a colonist sleeps
@@ -790,6 +790,35 @@ threat. Reading it at bedtime is one lookup. `--discomfort-selftest` runs the st
 `DiscomfortMap.DoCycle` through the three hooks on a 48 × 48 map: values and falloff, the cap, the
 sleeper's units, a threat leaving dirty ground, removal, Bold, switching off and on, and the map left
 untouched with the switch off.
+
+### The STINK overlay — `discomfort.stinkOverlay`
+
+Kastuk (2026-10-17): *"I sure the visible layer of discomfort map will help players to see the sources
+of stink at least."* A **STINK** row in the overlay panel above the minimap, beside the studio's
+THREATS, while DISCOMFORT is on (`HUDOverlayPanel.AddStinkOverlayRow`; also a switch under DISCOMFORT
+in MOD OPTIONS, kept in `ModSettings.xml` like HudMod's rows, not in the save). It is drawn the way
+THREATS is: `GameWorldRenderer.SetupInfluenceQuads` → `DiscomfortMod.SetupStinkOverlay`, after
+`ThreatRender`, puts one tile quad per tile with stink on screen into the same influence-map buffer
+through `ÏnfluenceRender.DrawTile` (`DiscomfortMod.StinkRender`).
+
+What it shows (`DiscomfortMod.StinkOverlayLayer`): with WASTE ON THE DISCOMFORT MAP on, the waste map
+itself — what colonists route by and bedtime comfort is read from. Without it, the same drawing done
+on demand for the filth on screen and within the reach of it, into a layer of its own that nothing
+in the simulation reads — so the overlay works whenever DISCOMFORT is on, without the waste map's
+effect on pathing. The tile values are the same either way. Colour (`DiscomfortMod.StinkColorFor`):
+olive under 5 units of stink (`value / (reach + 1)`), brown from 5 — a bed whose door is there loses
+comfort to it — faded in by `units / 10`, never below 0.2 so the edge of the reach shows. With the
+waste map off the comfort cost counts every item within the reach fully, so there the fade is a
+guide to where the stink is, not the exact cost.
+
+**Cost:** off, or with DISCOMFORT off, one settings check a frame; nothing is scanned and the
+on-demand layer is let go. On with the waste map, a lookup per tile on screen. On without it, a scan
+of the tiles on screen plus the reach each frame (a few thousand lookups), redrawn only when the
+filth there or the view changes. **Verified offline** in `--discomfort-selftest`: the on-demand
+values equal the waste map's over whole-map, on-pile, just-outside and out-of-reach windows; the
+waste map shown tile for tile as the sleeper reads it; nothing scanned while off or with DISCOMFORT
+off; the colour mapping. **Not verified on screen:** the quads' look, the row's place in the panel,
+and the cost in a large colony.
 
 ## Mod settings: `user/ModSettings.xml`
 

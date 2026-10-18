@@ -66,11 +66,13 @@ internal static partial class Program
         check(person != null, $"a colonist type to draw for ({person?.KeyName})");
         if (person == null) return 1;
 
-        var settings = new[] { "discomfort.enabled", "discomfort.wasteMap", "discomfort.distance" };
+        var settings = new[] { "discomfort.enabled", "discomfort.wasteMap", "discomfort.distance", "discomfort.stinkOverlay" };
         var before = new Dictionary<string, string>();
         foreach (string id in settings) before[id] = UWGame.Mods.ModSettings.Find(id).Value;
         void Set(string id, string value) => UWGame.Mods.ModSettings.Find(id).Value = value;
         check(UWGame.Mods.ModSettings.Find("discomfort.wasteMap")?.DefaultValue == "false", "WASTE ON THE DISCOMFORT MAP is off by default");
+        check(UWGame.Mods.ModSettings.Find("discomfort.stinkOverlay") is { DefaultValue: "false", AffectsSimulation: false },
+              "the STINK overlay is off by default and interface only (not a simulation setting)");
 
         // The map: tiles with nothing on them, as MapManager has them.
         var map = (MapManager)RuntimeHelpers.GetUninitializedObject(typeof(MapManager));
@@ -164,6 +166,28 @@ internal static partial class Program
             Cycle(offMap);
             Check(offMap.Map.GetAllSectors().Count == 0, "off: the threat gone, its sectors go, as the studio has it");
             Check(Units(w) == null, "off: there is no waste map to read");
+
+            // THE STINK OVERLAY, switched off: nothing is looked for, nothing is drawn.
+            var everything = new Rectangle(0, 0, WasteTestSize, WasteTestSize);
+            int scans = UWGame.Mods.DiscomfortMod.StinkOverlayScans;
+            Check(!UWGame.Mods.DiscomfortMod.StinkOverlayShown && UWGame.Mods.DiscomfortMod.StinkOverlayLayer(person, everything, out _) == null
+                  && UWGame.Mods.DiscomfortMod.StinkOverlayScans == scans,
+                  "stink overlay off: no layer, and no filth looked for");
+            Set("discomfort.stinkOverlay", "true");
+            Set("discomfort.enabled", "false");
+            Check(!UWGame.Mods.DiscomfortMod.StinkOverlayAvailable && !UWGame.Mods.DiscomfortMod.StinkOverlayShown
+                  && UWGame.Mods.DiscomfortMod.StinkOverlayLayer(person, everything, out _) == null && UWGame.Mods.DiscomfortMod.StinkOverlayScans == scans,
+                  "stink overlay ticked but DISCOMFORT off: no row in the panel, no layer, nothing looked for");
+            Set("discomfort.enabled", "true");
+            Check(UWGame.Mods.DiscomfortMod.StinkOverlayAvailable && UWGame.Mods.DiscomfortMod.StinkOverlayShown, "stink overlay ticked with DISCOMFORT on: shown");
+            TileLayer onDemand = UWGame.Mods.DiscomfortMod.StinkOverlayLayer(person, everything, out int onDemandReach);
+            Check(onDemand != null && onDemandReach == 5 && UWGame.Mods.DiscomfortMod.StinkOverlayScans == scans + 1
+                  && onDemand.GetValue(22, 20) == 6 && onDemand.GetValue(27, 20) == 1 && onDemand.GetValue(28, 20) == 0 && onDemand.GetValue(22, 26) == 0,
+                  "stink overlay, waste map off: the filth drawn on demand - 6 at the item, 1 at the reach, 0 past it");
+            Check(offMap.Map.GetAllSectors().Count == 0, "  and the colonists' discomfort map is untouched by it");
+            Set("discomfort.stinkOverlay", "false");
+            Check(UWGame.Mods.DiscomfortMod.StinkOverlayLayer(person, everything, out _) == null && UWGame.Mods.DiscomfortMod.StinkOverlayScans == scans + 1,
+                  "stink overlay unticked: no layer, nothing looked for");
             byStance.Clear();
 
             // ON.
@@ -188,6 +212,54 @@ internal static partial class Program
             UWGame.Mods.DiscomfortMod.Measure(Centre(new Point(25, 20)), out int distanceStink, out _, out _);
             Check(onStink == 15 && distanceStink == 30, $"on: sleeping 3 tiles from the pile smells 15 units off the map (counted: {distanceStink})");
             Check(Math.Abs(UWGame.Mods.DiscomfortMod.PenaltyFor(onStink, 0, 3, 40) - 0.09f) < 1e-6f, "  so -9% comfort, where counting gave -18%");
+
+            // THE STINK OVERLAY shows the waste map; without it, the same values drawn on demand.
+            var waste30 = new int[WasteTestSize, WasteTestSize];
+            Set("discomfort.stinkOverlay", "true");
+            TileLayer shown = UWGame.Mods.DiscomfortMod.StinkOverlayLayer(person, everything, out int shownReach);
+            int scansOn = UWGame.Mods.DiscomfortMod.StinkOverlayScans;
+            bool unitsAgree = shown != null && shownReach == 5;
+            for (int x = 0; x < WasteTestSize && shown != null; x++)
+            {
+                for (int y = 0; y < WasteTestSize; y++)
+                {
+                    waste30[x, y] = shown.GetValue(x, y);
+                    unitsAgree &= waste30[x, y] / 6 == Units(new Point(x, y));
+                }
+            }
+            Check(unitsAgree && waste30[22, 20] == 180 && waste30[25, 20] == 90 && waste30[28, 20] == 0,
+                  "stink overlay, waste map on: shows the waste map itself, tile for tile what the sleeper reads (180 at the pile, 90 at 3 tiles)");
+            Set("discomfort.wasteMap", "false");
+            bool Same(Rectangle window)
+            {
+                TileLayer layer = UWGame.Mods.DiscomfortMod.StinkOverlayLayer(person, window, out int r);
+                if (layer == null || r != 5) return false;
+                for (int x = window.Left; x < window.Right; x++)
+                {
+                    for (int y = window.Top; y < window.Bottom; y++)
+                    {
+                        if (layer.GetValue(x, y) != waste30[x, y]) return false;
+                    }
+                }
+                return true;
+            }
+            Check(Same(everything) && Same(new Rectangle(18, 16, 12, 10)) && Same(new Rectangle(25, 18, 4, 4)) && Same(new Rectangle(0, 0, 6, 6)),
+                  "stink overlay, waste map off: the on-demand values match the waste map's - the whole map, a window on the pile, " +
+                  "a window the pile is just outside, and one out of its reach");
+            Check(UWGame.Mods.DiscomfortMod.StinkOverlayScans == scansOn + 4, "  one look for filth per frame drawn, within the window and the reach of it");
+            Set("discomfort.wasteMap", "true");
+            Set("discomfort.stinkOverlay", "false");
+
+            // Its colours (StinkColorFor), at 5 tiles: olive under 5 units, brown from 5, fading in with the stink.
+            Color Of(int value) => UWGame.Mods.DiscomfortMod.StinkColorFor(value, 5);
+            Color olive = UWGame.Mods.DiscomfortMod.FaintStinkColor, brown = UWGame.Mods.DiscomfortMod.StrongStinkColor;
+            Check(Of(0) == Color.Transparent, "stink colour: nothing at 0");
+            Check(Of(1) == olive * 0.2f && Of(6) == olive * 0.2f && Of(24) == olive * 0.4f,
+                  "stink colour: olive under 5 units, never fainter than 0.2 so the reach shows");
+            Check(Of(30) == brown * 0.5f && Of(60) == brown && Of(255) == brown,
+                  "stink colour: brown from 5 units - a bed there loses comfort - full at 10");
+            Check(olive != brown && Array.TrueForAll(new[] { Color.Blue, Color.Violet, Color.Orange, Color.Yellow }, c => c != olive && c != brown),
+                  "stink colours are not the THREATS overlay's (blue, violet, orange, yellow)");
 
             // Threat and stink together, and a threat leaving ground that still stinks.
             threat.Threats.Add(new Point(20, 20));
