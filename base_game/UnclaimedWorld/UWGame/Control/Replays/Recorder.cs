@@ -196,8 +196,11 @@ public class Recorder
 		{
 			trace = new ReplayTrace();
 			trace.BeginRecording(replayFolderPath);
+			// PORT DEVIATION 22: the recording steps from nothing owed, and says at what rate.
+			The.Sim.FixedStep.Reset();
+			UWGame.SimSide.Sim.PinnedStepsPerSecond = The.Sim.FixedStep.StepsPerSecond;
 			cycleSchedule = new CycleSchedule();
-			cycleSchedule.BeginRecording(replayFolderPath);
+			cycleSchedule.BeginRecording(replayFolderPath, The.Sim.FixedStep.StepsPerSecond);
 		}
 		replayWriter.Write(backBufferHeight);
 		replayWriter.Write(backBufferWidth);
@@ -259,6 +262,10 @@ public class Recorder
 
 	public void StopRecording()
 	{
+		if (isRecording)
+		{
+			UWGame.SimSide.Sim.PinnedStepsPerSecond = null;
+		}
 		isRecording = false;
 		trace?.Dispose();
 		trace = null;
@@ -302,7 +309,7 @@ public class Recorder
 		ReplayVerificationData verificationData = controller.RetrieveVerificationData();
 		verificationData.Write(replayWriter);
 		replayWriter.Flush();
-		cycleSchedule?.Record(currentFrameIndex, The.Sim?.CycleManager == null ? 0 : The.Sim.CycleManager.CyclesLastUpdate);
+		cycleSchedule?.Record(currentFrameIndex, The.Sim?.CycleManager == null ? System.Array.Empty<int>() : The.Sim.CycleManager.CyclesThisFrame);
 		trace?.EndFrame(currentFrameIndex, verificationData);
 	}
 }

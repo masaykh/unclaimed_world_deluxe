@@ -40,6 +40,9 @@ internal static partial class Program
         collisionReport = args.FirstOrDefault(a => a.StartsWith("--save-collisions=", StringComparison.Ordinal))
             ?.Substring("--save-collisions=".Length);
         if (collisionReport != null) saveSelfTest = collisionReport;
+        stepRateReport = args.FirstOrDefault(a => a.StartsWith("--save-steprate=", StringComparison.Ordinal))
+            ?.Substring("--save-steprate=".Length);
+        if (stepRateReport != null) saveSelfTest = stepRateReport;
         if (saveSelfTest != null) saveSelfTest = Path.GetFullPath(saveSelfTest);
         printTraces = args.Contains("--traces");
 
@@ -116,6 +119,7 @@ internal static partial class Program
             Console.Error.WriteLine("  --save-resources=<file.sav>   what is left on the ground, and what burns fuel");
             Console.Error.WriteLine("  --save-stuck=<file.sav>       run the save a minute; every colonist walking in it gets past its waypoint");
             Console.Error.WriteLine("  --save-collisions=<file.sav>  on the save's open ground: colonists still keep apart, at 30 to 144 updates a second");
+            Console.Error.WriteLine("  --save-steprate=<file.sav>    run the save and print a digest of its state; with the fixed step on, the same at any frame rate");
             Console.Error.WriteLine("               read a saved game with no window - its mod switches, its scenario's");
             Console.Error.WriteLine("               tables, then the whole simulation - and check the creatures a Port");
             Console.Error.WriteLine("               delivered: none waits as a passenger with nothing to ride, each");

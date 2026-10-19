@@ -84,6 +84,9 @@ internal static partial class Program
         float radius = a.Collidable.Bounds.BoundsWidth / 2f;
         Console.WriteLine($"==> open ground: subtiles from {lane.Value} on, a lane at y {y.ToString("0", inv)} from x {x0.ToString("0", inv)} to {x1.ToString("0", inv)}; a colonist's collision radius {radius.ToString("0.#", inv)}");
 
+        // These hold the studio's variable step to the push scaling of ea479e6: with the fixed step
+        // on, every frame rate would run the same 60 updates a second and test nothing.
+        UWGame.Mods.PortSettings.SimulationRate.Value = "OFF";
         int failures = 0;
         void Check(bool ok, string what)
         {
@@ -153,7 +156,7 @@ internal static partial class Program
                 : null;
         }
         float closest = float.MaxValue, shoved = 0f;
-        StepSim(sim, seconds, 1.0 / rate, _ => { }, () =>
+        StepSim(sim, seconds, rate, _ => { }, () =>
         {
             for (int i = 0; i < cast.Length; i++)
             {

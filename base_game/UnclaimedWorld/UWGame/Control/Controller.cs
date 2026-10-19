@@ -548,6 +548,10 @@ public class Controller : DrawableGameComponent
 	{
 		if (The.Sim != null && The.Sim.Mode == Sim.EngineMode.Game)
 		{
+			// PORT DEVIATION 22: the first frame of a game owes the simulation nothing, and the
+			// setting decides the rate unless the replay or recording started below holds one.
+			Sim.PinnedStepsPerSecond = null;
+			The.Sim.FixedStep.Reset();
 			if (replayer.IsActive)
 			{
 				replayer.StartReplay();

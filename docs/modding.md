@@ -309,6 +309,48 @@ Both are moot here, because the effects are not converted at all: they are **com
 studio's HLSL in `assets/effects/` by `tools/build/34-build-gl-effects-shadowdusk.sh`, which
 emits a v10 OpenGL-profile container directly. Your own `Content/` is never touched.
 
+## The simulation runs in fixed steps — `port.simulationRate`
+
+The studio switched XNA's fixed time step off ("LARS: I get atrocious framerates without these
+settings!") and kept vsync, so `Sim.Update` ran once per monitor refresh. Most of the simulation
+multiplies by the elapsed time and does not care. Some of it counts *updates* instead, and that ran
+2.4 times as fast on a 144 Hz screen as on a 60 Hz one: four colonists jammed in a creek for good
+because `Locomotor.ApplyPushVector` pushed 0.3 px an update. An audit found the rest — a dead update
+at every waypoint and every subgoal change (`GoalTraverseEdgeBetweenWaypointsAtomic`,
+`CompositeGoal`), the weather's cloud and wind lerp (`WeatherManager`), the head-turn ease
+(`Intelligence`), a thrown projectile's hit test once per update (`BallisticLocomotor`), regulators
+rounding up to whole updates (`Regulator`, `SleepyUpdater`), and the time-sliced AI's nine
+milliseconds of CPU per update (`CycleManager`).
+
+Rather than rescale each, the simulation now advances in **fixed steps of game time**
+(`UWGame.Port.FixedSimStep`, `Sim.RunFrame`; PORT DEVIATION 22). Drawing, input and the interface
+still run once per frame. PORT's **FIXED SIMULATION RATE** in SELECT MODS sets it:
+
+| value | |
+|---|---|
+| `60` (default) | the studio's own figure — "1 frame, or update, takes 0.016 s" (`AIConstants`), `CalculateProgressDelta(0.0167, ...)` (`ProcessJob`), the 1/60 s taken off every `Component` regulator. A 60 Hz player sees the shipped game step for step |
+| `30` | half the simulation's CPU |
+| `OFF` | one update per drawn frame, as the studio shipped it |
+
+- **Speed and pause.** Twice and four times speed run two and four times the steps; paused, none.
+  The same save at 30, 60, 120 or 144 frames a second, at any speed, with or without pauses,
+  reaches the same state to the bit (`dataexport --save-steprate`, gate 80 case 32d).
+- **The cap.** A frame runs at most 8 steps. A machine that cannot keep up — or the first frame
+  after a long load — runs the game slower instead of owing it time.
+- **The time-sliced AI** (`CycleManager`) keeps the studio's nine milliseconds *per frame*: a frame
+  with several steps splits it between them, so a frame costs what it did.
+- **Drawing.** Movers are drawn between their last two simulated positions
+  (`RenderAsModel.LocationBetweenSteps`), one step behind the simulation, so they move smoothly on
+  a 144 Hz screen and the walk animation, which reads speed from drawn movement, does not flicker.
+- **Replays** record the rate and play back at it whatever the setting (`CycleSchedule`'s first
+  line); a replay recorded before this is played at `OFF`, as it was made.
+- **Saves** are unaffected: nothing about the step is saved, and a game loads with nothing owed.
+
+For a mod: code called from `Sim` (entities, goals, systems) runs once per step, and
+`The.Sim.GameTime.ElapsedGameTime` there is the step's length. Code in the client runs once per
+drawn frame, and sees the frame's time. A constant you add per update is now per 1/60 s — but
+multiply by the elapsed time anyway, so it also holds with the setting `OFF`.
+
 ## Where the mod hooks are
 
 The game looks for ~80 base-data XML files under `data/BaseData`, `data/Scenarios`,

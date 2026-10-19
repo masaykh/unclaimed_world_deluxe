@@ -70,6 +70,9 @@ public class Replayer
 	{
 		inputManager.SetToReplayMode();
 		CurrentReplay.currentFrameIndex = 0;
+		// PORT DEVIATION 22: step as the recording did - at its rate, from nothing owed.
+		UWGame.SimSide.Sim.PinnedStepsPerSecond = cycleSchedule?.StepsPerSecond ?? 0;
+		The.Sim?.FixedStep.Reset();
 		IsPlaying = true;
 	}
 
@@ -83,6 +86,7 @@ public class Replayer
 		cycleSchedule?.Dispose();
 		cycleSchedule = null;
 		trace = null;
+		UWGame.SimSide.Sim.PinnedStepsPerSecond = null;
 		The.InGameUI.MenuDialog.QuitToMainMenu();
 		inputManager.SetToDefaultMode();
 		IsPlaying = false;
@@ -149,7 +153,7 @@ public class Replayer
 		{
 			return;
 		}
-		The.Sim.CycleManager.CycleBudget = cycleSchedule?.For(frameIndex);
+		The.Sim.CycleManager.CycleSchedule = cycleSchedule?.For(frameIndex);
 	}
 
 

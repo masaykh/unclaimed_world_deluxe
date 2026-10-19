@@ -81,6 +81,18 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 	public static float LerpRotationFactor = 0.85f;
 
 	public static float DistanceToStopLerping = 24f;
+
+	/// <summary>PORT DEVIATION 22. The mover's last two simulated locations, and the steps they were seen after.</summary>
+	private Vector3 locationAtStepBefore;
+
+	private Vector3 locationAtLastStep;
+
+	private long stepBefore;
+
+	private long lastStep = -1;
+
+	/// <summary>A jump further than this between two steps is a teleport, and is drawn as one.</summary>
+	private const float LongestStepDrawnBetween = 48f;
 	private List<Pair<Entity, Vector2>> nearByEntitiesOfSameType = new List<Pair<Entity, Vector2>>();
 	private int noOfFramesWeHaveBeenDirty;
 
@@ -391,6 +403,7 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 					{
 						location = base.Parent.PlaySiteLocation;
 						facingNormal = base.Parent.FacingNormal;
+						lastStep = -1;
 					}
 					Renderable.LerpableWasRenderedLastFrame = true;
 				}
@@ -425,7 +438,9 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 		}
 		else
 		{
-			location = base.Parent.Location.Value;
+			// PORT: drawn between the last two simulation steps while the simulation runs in fixed
+			// steps (LocationBetweenSteps, PORT DEVIATION 22); the simulated location otherwise.
+			location = LocationBetweenSteps(base.Parent.Location.Value);
 		}
 		if (flag && !Common.IsZero(num))
 		{
@@ -437,6 +452,48 @@ public class RenderAsModel : RenderAsBase, IAttachable, IUpdatable
 		{
 			facingNormal = base.Parent.FacingNormal;
 		}
+	}
+
+	/// <summary>
+	/// PORT DEVIATION 22. Where a mover is drawn when the simulation runs in fixed steps: between
+	/// its locations after the last two steps, as far along as the game clock is past the step
+	/// before last - so it is drawn one step behind the simulation, and moves on every drawn frame
+	/// instead of only on frames that ran a step. Without it a 60-a-second simulation drawn at 144
+	/// would move in jerks, and UpdateGaitAnimation, which reads speed from how far the model moved
+	/// between two draws, would see nothing on most frames and a spike on the rest.
+	///
+	/// The studio's own location lerp (above) was switched off - "NEW: don't lerp location!" - so
+	/// nothing else smooths movement. Interpolating between two real positions is not that lerp:
+	/// it never draws a mover anywhere it has not been.
+	/// </summary>
+	private Vector3 LocationBetweenSteps(Vector3 simulated)
+	{
+		if (!The.Sim.DrawBetweenSteps)
+		{
+			lastStep = -1;
+			return simulated;
+		}
+		long step = The.Sim.StepsSimulated;
+		if (lastStep < 0 || step < lastStep)
+		{
+			locationAtStepBefore = locationAtLastStep = simulated;
+			stepBefore = step - 1;
+			lastStep = step;
+			return simulated;
+		}
+		if (step != lastStep)
+		{
+			locationAtStepBefore = locationAtLastStep;
+			stepBefore = lastStep;
+			lastStep = step;
+		}
+		locationAtLastStep = simulated;
+		if (Vector3.DistanceSquared(locationAtStepBefore, locationAtLastStep) > LongestStepDrawnBetween * LongestStepDrawnBetween)
+		{
+			return simulated;
+		}
+		double along = (lastStep - 1 + The.Sim.StepFraction - stepBefore) / (lastStep - stepBefore);
+		return Vector3.Lerp(locationAtStepBefore, locationAtLastStep, (float)Math.Clamp(along, 0.0, 1.0));
 	}
 
 	private void SetMoveAnimationStates()

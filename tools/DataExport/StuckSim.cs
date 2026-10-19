@@ -43,6 +43,15 @@ internal static partial class Program
     {
         "UWGame.SimSide.AI.MemoryFact.LoadPostProcess",
         "UWGame.SimSide.Entities.Entity.Update",
+        // Each system Sim.Simulate runs in turn: a throw in one (a resource tile redrawing its
+        // sprites, a production log reaching the interface) ends that system's update and not the
+        // rest of the step - what the per-system guards of the copy of Sim.Update this replaced did.
+        "UWGame.SimSide.DateAndTime.Update",
+        "UWGame.SimSide.Systems.Triggers.TriggerSystem.Update",
+        "UWGame.SimSide.Overland.World.Update",
+        "UWGame.SimSide.Entities.EntityGroup.Update",
+        "UWGame.SimSide.Systems.TimeSlicing.CycleManager.Update",
+        "UWGame.SimSide.Maps.MapManager.Update",
     };
 
     private static readonly Dictionary<string, int> swallowed = new();
@@ -58,7 +67,7 @@ internal static partial class Program
         {
             harmony.Patch(m, prefix: new HarmonyMethod(typeof(Program).GetMethod(nameof(ProduceInertRenderable), AnyStatic)));
         }
-        foreach (Type t in new[] { typeof(Renderable), typeof(UWGame.ClientSide.Client) })
+        foreach (Type t in new[] { typeof(Renderable), typeof(UWGame.ClientSide.Client), typeof(UWGame.ClientSide.Interface.InGameInterface) })
         {
             foreach (MethodInfo m in t.GetMethods(AnyInstance | AnyStatic | BindingFlags.DeclaredOnly))
             {
@@ -68,6 +77,13 @@ internal static partial class Program
         }
         foreach (string name in HeadlessSkips) PatchByName(harmony, name, prefix: skip);
         foreach (string name in HeadlessSwallows) PatchByName(harmony, name, finalizer: swallow);
+
+        // The job managers count stock through InventoryPanel, which reads the player's knowledge
+        // off The.InGameUI.UIAllegiance - a getter that falls back to the play site's player
+        // allegiance, so an interface with nothing else in it is enough. Without it every job
+        // manager pass threw, and the time-sliced work behind it never ran.
+        The.InGameUI = (UWGame.ClientSide.Interface.InGameInterface)System.Runtime.CompilerServices.RuntimeHelpers
+            .GetUninitializedObject(typeof(UWGame.ClientSide.Interface.InGameInterface));
 
         // The statistics end in CheckAchievements, which reaches Steam; the rest of the update is kept.
         harmony.Patch(typeof(Allegiance).GetMethod(nameof(Allegiance.UpdatePlaySite)),
@@ -112,32 +128,30 @@ internal static partial class Program
         return false;
     }
 
-    /// <summary>Sim.Update's game-mode body, in its order, less the client's performance marks.</summary>
-    private static void StepSim(Sim sim, double seconds, double elapsedPerUpdate, Action<double> everyTenSeconds, Action afterEachUpdate = null)
+    /// <summary>
+    /// Runs the loaded game as the window does: one call a drawn frame, <paramref name="fps"/> frames
+    /// a second, through Sim.ScaleToGameSpeed and Sim.RunFrame - the game's own speed, pause and
+    /// fixed-step code (PORT DEVIATION 22), not a copy of it. Frame lengths are whole ticks chosen
+    /// so they add up exactly, so every frame rate feeds the game the same total time.
+    /// </summary>
+    private static void StepSim(Sim sim, double seconds, double fps, Action<double> everyTenSeconds, Action afterEachFrame = null)
     {
-        object entities = FindField(typeof(Sim), "entities").GetValue(sim);
-        MethodInfo updateEntities = entities.GetType().GetMethod("Update", new[] { typeof(GameTime) });
-        PropertyInfo unpaused = typeof(Sim).GetProperty(nameof(Sim.TotalUnPausedGameTime));
-        TimeSpan elapsed = TimeSpan.FromSeconds(elapsedPerUpdate);
+        long frames = (long)Math.Round(seconds * fps);
+        long previousTicks = 0;
         double nextReport = 0;
-        for (double t = 0; t < seconds; t += elapsedPerUpdate)
+        for (long f = 0; f < frames; f++)
         {
+            double t = f / fps;
             if (t >= nextReport)
             {
                 everyTenSeconds(t);
                 nextReport += 10;
             }
-            var gameTime = new GameTime(sim.GameTime.TotalGameTime + elapsed, elapsed);
-            sim.GameTime = gameTime;
-            unpaused.SetValue(sim, sim.TotalUnPausedGameTime + elapsed);
-            Guard("DateAndTime", () => sim.DateAndTime.Update(gameTime));
-            Guard("TriggerSystem", () => sim.TriggerSystem.Update(gameTime));
-            Guard("World", () => sim.World.Update(gameTime));
-            Guard("entities", () => updateEntities.Invoke(entities, new object[] { gameTime }));
-            Guard("EntityGroups", () => LookUp<EntityGroup, EntityGroupID>.IterateMembers(g => g.Update(gameTime)));
-            Guard("CycleManager", () => sim.CycleManager.Update());
-            Guard("Map", () => The.Map.Update(gameTime));
-            afterEachUpdate?.Invoke();
+            long ticks = (long)Math.Round((f + 1) * TimeSpan.TicksPerSecond / fps);
+            var frame = new GameTime(new TimeSpan(ticks), new TimeSpan(ticks - previousTicks));
+            previousTicks = ticks;
+            Guard("frame", () => sim.RunFrame(sim.ScaleToGameSpeed(frame)));
+            afterEachFrame?.Invoke();
         }
         everyTenSeconds(seconds);
     }

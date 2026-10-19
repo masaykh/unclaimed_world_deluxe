@@ -643,6 +643,7 @@ public class Sim : GameScreen, ISnapshot
 		TriggerSystem = (TriggerSystem)sn.DoISnapshot(TriggerSystem);
 		sn.Ignore(WaitingAgents);
 		sn.Ignore(GameTime);
+		sn.Ignore(fixedStep);
 		sn.Ignore(baseDataLoader);
 		sn.Ignore(queueState);
 		sn.Ignore(scenarioDataLoader);
@@ -1412,6 +1413,22 @@ public class Sim : GameScreen, ISnapshot
 
 	public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
 	{
+		gameTime = ScaleToGameSpeed(gameTime);
+		base.Update(gameTime, otherScreenHasFocus: false, coveredByOtherScreen: false);
+		if (!base.IsActive || !The.LoadScreen.IsLoadFinished)
+		{
+			return;
+		}
+		RunFrame(gameTime);
+	}
+
+	/// <summary>
+	/// The studio's Sim.Update opening: a drawn frame's time, scaled by the game speed and added to
+	/// this game's clock. PORT DEVIATION 22: split out, with <see cref="RunFrame"/>, so that
+	/// tools/DataExport steps a loaded game through the game's own speed, pause and step code.
+	/// </summary>
+	public GameTime ScaleToGameSpeed(GameTime gameTime)
+	{
 		if (GameTime == null)
 		{
 			gameTime = new GameTime(new TimeSpan((long)(GameSpeed * (float)gameTime.TotalGameTime.Ticks)), new TimeSpan((long)(GameSpeed * (float)gameTime.ElapsedGameTime.Ticks)));
@@ -1422,11 +1439,12 @@ public class Sim : GameScreen, ISnapshot
 			TimeSpan totalGameTime = GameTime.TotalGameTime.Add(timeSpan);
 			gameTime = new GameTime(totalGameTime, timeSpan);
 		}
-		base.Update(gameTime, otherScreenHasFocus: false, coveredByOtherScreen: false);
-		if (!base.IsActive || !The.LoadScreen.IsLoadFinished)
-		{
-			return;
-		}
+		return gameTime;
+	}
+
+	/// <summary>The rest of the studio's Sim.Update: one drawn frame of game time, already scaled.</summary>
+	public void RunFrame(GameTime gameTime)
+	{
 		IsInNormalGameLoop = true;
 		GameTime = gameTime;
 		// PORT: the editor's terrain changes reach the region maps (MapManager.FinishTerrainRegionRepairs).
@@ -1438,6 +1456,95 @@ public class Sim : GameScreen, ISnapshot
 		{
 			return;
 		}
+		// PORT: the simulation runs in fixed steps of game time, not one update per drawn frame
+		// (AdvanceSimulation, PORT DEVIATION 22).
+		AdvanceSimulation(gameTime);
+	}
+
+	/// <summary>
+	/// PORT DEVIATION 22 (UWGame.Port.FixedSimStep). Advances the simulation by one frame's game
+	/// time: in the studio's way - one update as long as the frame - when the fixed rate is off or
+	/// the engine is not running a game, and otherwise in whole steps of exactly 1/rate s.
+	///
+	/// During each step <see cref="GameTime"/> is the STEP's clock, because simulation code reads
+	/// The.Sim.GameTime.ElapsedGameTime (Locomotor.ApplyPushVector, GoalTraverseEdgeBetweenWaypointsAtomic's
+	/// sliding, ProcessJob, SimProcess, EventManager). Afterwards it is the frame's clock again, as
+	/// the studio meant it - "use this for interface animations which never pause" - so models,
+	/// particles and fades still advance every frame.
+	/// </summary>
+	private void AdvanceSimulation(GameTime frameTime)
+	{
+		UWGame.Port.FixedSimStep fixedStep = FixedStep;
+		if (Mode != EngineMode.Game || !fixedStep.IsOn)
+		{
+			CycleManager?.BeginFrame(1);
+			Simulate(frameTime);
+			return;
+		}
+		int steps = fixedStep.Advance(frameTime.ElapsedGameTime);
+		CycleManager.BeginFrame(steps);
+		for (int i = 0; i < steps; i++)
+		{
+			// The step's clock is the frame's, less the steps still to run and the time still owed,
+			// so it rises by exactly one step each time and never passes the frame's own clock.
+			TimeSpan stepTotal = frameTime.TotalGameTime - fixedStep.Pending - new TimeSpan(fixedStep.Step.Ticks * (steps - 1 - i));
+			GameTime = new GameTime(stepTotal, fixedStep.Step);
+			Simulate(GameTime);
+			StepsSimulated++;
+			// An event can pause the game, or end it, part way through a frame.
+			if (IsGameOver || IsPaused || The.Sim != this)
+			{
+				break;
+			}
+		}
+		GameTime = frameTime;
+	}
+
+	/// <summary>
+	/// PORT DEVIATION 22. The fixed step, at the rate PORT's FIXED SIMULATION RATE sets - or, during
+	/// a recording or a replay, the rate held for it (<see cref="PinnedStepsPerSecond"/>). Not saved: a loaded
+	/// game starts with nothing owed.
+	/// </summary>
+	public UWGame.Port.FixedSimStep FixedStep
+	{
+		get
+		{
+			int rate = PinnedStepsPerSecond ?? UWGame.Mods.PortSettings.SimulationStepsPerSecond;
+			if (fixedStep == null)
+			{
+				fixedStep = new UWGame.Port.FixedSimStep(rate);
+			}
+			fixedStep.SetRate(rate);
+			return fixedStep;
+		}
+	}
+
+	private UWGame.Port.FixedSimStep fixedStep;
+
+	/// <summary>
+	/// PORT DEVIATION 22. The step rate held for a whole recording or replay: while recording, the
+	/// rate it started at, so changing the setting part way cannot desynchronise it; while a replay
+	/// plays, the rate it was recorded with (0: the studio's variable step, which is how every
+	/// replay made before the fixed step was recorded). Null otherwise, and then the setting decides.
+	/// </summary>
+	public static int? PinnedStepsPerSecond;
+
+	/// <summary>PORT DEVIATION 22. Fixed steps run since the game started or loaded; renderables interpolate by it.</summary>
+	public long StepsSimulated { get; private set; }
+
+	/// <summary>
+	/// PORT DEVIATION 22. Whether drawn movers sit between their last two simulated positions
+	/// (RenderAsModel): only while the simulation runs in fixed steps, which a drawn frame falls
+	/// between.
+	/// </summary>
+	public bool DrawBetweenSteps => Mode == EngineMode.Game && fixedStep != null && fixedStep.IsOn;
+
+	/// <summary>PORT DEVIATION 22. How far the game clock is past the last step, as a fraction of a step.</summary>
+	public double StepFraction => DrawBetweenSteps ? (double)fixedStep.Pending.Ticks / fixedStep.Step.Ticks : 0.0;
+
+	/// <summary>One simulation update of <paramref name="gameTime"/>'s length: the studio's Sim.Update body.</summary>
+	private void Simulate(GameTime gameTime)
+	{
 		TotalUnPausedGameTime = TotalUnPausedGameTime.Add(new TimeSpan(gameTime.ElapsedGameTime.Ticks));
 		Trace.WriteLine("Sim.Update #2 " + TotalUnPausedGameTimeInSeconds);
 		if (Mode == EngineMode.Game)

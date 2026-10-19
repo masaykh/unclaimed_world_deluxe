@@ -51,8 +51,7 @@ public class CycleManager : ISnapshot
 	}
 
 	/// <summary>
-	/// PORT DEVIATION 21. How many CycleOnce calls the last Update made, and - during a replay -
-	/// how many it must make.
+	/// PORT DEVIATION 21. How many CycleOnce calls each update must make during a replay.
 	///
 	/// THIS IS WHY REPLAYS DIVERGE. CycleRequests below runs until a WALL-CLOCK budget is spent:
 	/// TimeAllocatedInSecondsForTimeSlicedSystems is 0.009, nine milliseconds, measured with
@@ -69,35 +68,62 @@ public class CycleManager : ISnapshot
 	/// So the answer to "is the simulation deterministic" is: yes, given the same work schedule.
 	/// The schedule is what is not deterministic, and it is not floating point.
 	///
-	/// A replay sets CycleBudget to the count the recording made on that frame, and the loop then
-	/// runs on the count instead of the clock. Live play is untouched: CycleBudget is null and the
-	/// nine milliseconds decide, exactly as the studio wrote it.
+	/// A replay sets this to the counts the recording made on that frame, and the loop then runs
+	/// on the count instead of the clock. Live play is untouched: it is null and the nine
+	/// milliseconds decide, exactly as the studio wrote it.
+	///
+	/// PORT DEVIATION 22: a frame can hold several simulation steps, so this is one count per
+	/// update of the frame, in order; an update past the end runs the last count. The headless
+	/// tools set a single count, so every step does the same work at any frame rate.
 	/// </summary>
-	public int CyclesLastUpdate { get; private set; }
+	public int[] CycleSchedule { get; set; }
 
-	/// <summary>
-	/// The number of cycles this frame must run, when a replay is driving. Null in normal play,
-	/// and then the wall-clock budget decides.
-	/// </summary>
-	public int? CycleBudget { get; set; }
+	/// <summary>PORT DEVIATION 22. The cycles each update of the current frame ran, in order: what a recording keeps.</summary>
+	public IReadOnlyList<int> CyclesThisFrame => cyclesThisFrame;
+
+	private readonly List<int> cyclesThisFrame = new List<int>();
+
+	private int? cycleBudget;
 
 	private int cyclesThisUpdate;
 
-	/// <summary>Whether the budget for this frame is spent, by whichever measure is in force.</summary>
+	/// <summary>
+	/// PORT DEVIATION 22. How many updates share this frame's wall-clock budget. The studio's nine
+	/// milliseconds were spent once per frame, because an update WAS a frame ("1 frame, or update,
+	/// takes 0.016 s"); with several fixed steps in a frame each gets its share, so a frame costs
+	/// what it always did and four times speed does not quadruple the time-sliced work per frame.
+	/// </summary>
+	private int updatesSharingFrame = 1;
+
+	/// <summary>
+	/// PORT DEVIATION 22. Starts a frame of <paramref name="updates"/> simulation updates: clears
+	/// the per-frame record and divides the frame's budget between them.
+	/// </summary>
+	public void BeginFrame(int updates)
+	{
+		cyclesThisFrame.Clear();
+		updatesSharingFrame = Math.Max(1, updates);
+	}
+
+	/// <summary>Whether the budget for this update is spent, by whichever measure is in force.</summary>
 	private bool BudgetSpent =>
-		CycleBudget.HasValue
-			? cyclesThisUpdate >= CycleBudget.Value
-			: timeTaken >= GameData.Instance.AIConstants.TimeAllocatedInSecondsForTimeSlicedSystems;
+		cycleBudget.HasValue
+			? cyclesThisUpdate >= cycleBudget.Value
+			: timeTaken >= GameData.Instance.AIConstants.TimeAllocatedInSecondsForTimeSlicedSystems / updatesSharingFrame;
 
 	public void Update()
 	{
 		timer.Start();
 		timeTaken = 0.0;
 		cyclesThisUpdate = 0;
+		int[] schedule = CycleSchedule;
+		cycleBudget = schedule == null ? null
+			: schedule.Length == 0 ? 0
+			: schedule[Math.Min(cyclesThisFrame.Count, schedule.Length - 1)];
 		CycleRequests(highPriorityCycleUpdateRequests, ref nextHighPriorityCyclable, timer);
 		CycleRequests(mediumPriorityCycleUpdateRequests, ref nextMediumPriorityCyclable, timer);
 		TotalComputation += timeTaken;
-		CyclesLastUpdate = cyclesThisUpdate;
+		cyclesThisFrame.Add(cyclesThisUpdate);
 	}
 
 	private void CycleRequests(List<ICyclable> requests, ref CyclableID? nextCyclable, HighResolutionTime timer)

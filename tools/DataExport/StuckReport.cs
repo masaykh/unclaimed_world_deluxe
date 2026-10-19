@@ -76,8 +76,9 @@ internal static partial class Program
 
         double seconds = double.Parse(Environment.GetEnvironmentVariable("UW_STUCK_SECONDS") ?? "60", inv);
         double fps = double.Parse(Environment.GetEnvironmentVariable("UW_STUCK_FPS") ?? "60", inv);
-        Console.WriteLine($"==> running the game for {seconds.ToString(inv)} s at {fps.ToString(inv)} updates a second");
-        StepSim(sim, seconds, 1.0 / fps, t =>
+        ApplySimulationRateFromEnvironment();
+        Console.WriteLine($"==> running the game for {seconds.ToString(inv)} s at {fps.ToString(inv)} frames a second, {DescribeSimulationRate()}");
+        StepSim(sim, seconds, fps, t =>
         {
             Console.WriteLine($"    t+{t.ToString("0", inv),-3} " + string.Join("  ", walkers.Select(w => Name(w.Entity) + Show(w.Entity.PlaySiteLocation))));
         });

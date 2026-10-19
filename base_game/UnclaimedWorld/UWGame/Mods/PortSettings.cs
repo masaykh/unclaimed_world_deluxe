@@ -94,11 +94,42 @@ public static class PortSettings
         _ = Language;
         _ = Culture;
         _ = ShadowsKey;
+        _ = SimulationRate;
         // A date pattern, a language's file name and a culture code are shown as they are.
         SaveDateFormat.ChoicesAreText = false;
         Language.ChoicesAreText = false;
         Culture.ChoicesAreText = false;
     }
+
+    private static ModSetting simulationRate;
+
+    /// <summary>
+    /// PORT DEVIATION 22 (<see cref="UWGame.Port.FixedSimStep"/>): how many fixed steps a second of
+    /// game time the simulation runs in, or OFF for the studio's one update per drawn frame.
+    ///
+    /// 60 is the default because it is the studio's own figure ("1 frame, or update, takes 0.016 s",
+    /// AIConstants; CalculateProgressDelta(0.0167, ...), ProcessJob; the 1/60 s taken off every
+    /// Component regulator). At 60 a 60 Hz monitor sees the shipped game step for step, and a 144 Hz
+    /// one sees the same game instead of one where everything counted in updates runs 2.4 times
+    /// as fast. 30 halves the simulation's CPU cost; OFF is the studio's variable step.
+    ///
+    /// Not recorded in saves: a save loads the same at any setting. A replay records the rate it
+    /// was made at and plays back at that rate whatever this says.
+    /// </summary>
+    public static ModSetting SimulationRate =>
+        simulationRate ?? (simulationRate = ModSettings.Choice(
+            ModId, "simulationRate", "FIXED SIMULATION RATE", new string[3] { "OFF", "30", "60" },
+            defaultValue: "60",
+            toolTip: "How many steps a second the simulation runs in, whatever the screen's refresh " +
+                     "rate. 60 is the rate the game was made for, and keeps colonists, combat and " +
+                     "weather the same on a 144 Hz screen as on a 60 Hz one. 30 costs less CPU. OFF " +
+                     "updates once per drawn frame, as the original game did.",
+            stockValue: "OFF"));
+
+    /// <summary>Steps per second for <see cref="SimulationRate"/>: 0 when OFF.</summary>
+    public static int SimulationStepsPerSecond =>
+        int.TryParse(SimulationRate.Value, System.Globalization.NumberStyles.Integer,
+                     System.Globalization.CultureInfo.InvariantCulture, out int rate) ? rate : 0;
 
     // ---- From the Unhidden Mod (Kastuk, 2026-10-11: "dissolve my old Unhidden mod into main code
     // (or just move into Port category)"). Interface only, so not a mod: -nomods leaves them as

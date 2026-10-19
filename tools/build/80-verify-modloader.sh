@@ -40,6 +40,9 @@
 #  32b. a save with colonists jammed at a creek runs a minute headlessly and they walk on, and
 #      collisions still keep colonists apart at 30 to 144 updates a second (only when UW_STUCK_SAVE
 #      names a save)
+#  32d. the same save reaches the same state, to the bit, at 30, 60, 120 and 144 frames a second
+#      with the fixed simulation step on, and at four times speed or with pauses in between; with it
+#      off it does not; a frame never runs more than 8 steps (only when UW_STUCK_SAVE names a save)
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #  41. the woodpile keeps the firewood it dried
@@ -971,6 +974,43 @@ if [ -n "$UW_STUCK_SAVE" ] && [ -f "$UW_STUCK_SAVE" ]; then
     echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
     echo "$out" | grep -A3 'Unhandled exception' | head -4
     fail "the save collision-test reported failures"
+  fi
+else
+  say "  SKIP  UW_STUCK_SAVE is not set to a save file - this case did not run"
+fi
+
+# PORT DEVIATION 22 (UWGame.Port.FixedSimStep). The simulation runs in fixed steps of game time, so
+# what happens in a game cannot depend on the monitor. --save-steprate prints a digest of every
+# entity's position, facing, health, morale and goals after 20 s of game time; with the fixed step
+# on, every frame rate, game speed and pause pattern must give the same one. With it off (the
+# studio's one update a frame) two frame rates must NOT - that is the dependence the step removes,
+# and the proof that the digest can tell runs apart at all.
+say "==> 32d. the same game at any frame rate: fixed simulation step"
+if [ -n "$UW_STUCK_SAVE" ] && [ -f "$UW_STUCK_SAVE" ]; then
+  d=$(new_install case32d)
+  steprate() { ( cd "$d" && env "$@" "$EXPORT" . "--save-steprate=$UW_STUCK_SAVE" 2>&1 ) || true; }
+  digest() { echo "$1" | sed -n 's/^save step-rate state //p'; }
+  ref=""; same=1
+  for fps in 30 60 120 144; do
+    out=$(steprate UW_SIM_RATE=60 UW_STUCK_FPS=$fps)
+    got=$(digest "$out")
+    [ -n "$got" ] || { echo "$out" | grep -A3 'Unhandled exception' | head -4; got="none at $fps"; }
+    [ -z "$ref" ] && ref=$got
+    [ "$got" = "$ref" ] || { same=0; say "      $fps frames a second: $got, 30: $ref"; }
+  done
+  [ $same = 1 ] && pass "fixed step 60: one state ($ref) at 30, 60, 120 and 144 frames a second"                 || fail "fixed step 60: the state depends on the frame rate"
+  four=$(digest "$(steprate UW_SIM_RATE=60 UW_STUCK_FPS=60 UW_SIM_SPEED=4)")
+  paused=$(digest "$(steprate UW_SIM_RATE=60 UW_STUCK_FPS=144 UW_PAUSE_FRAMES=7)")
+  [ "$four" = "$ref" ] && [ "$paused" = "$ref" ]     && pass "four times speed, and pauses every 7 frames, reach the same state"     || fail "game speed or pausing changed the state: x4 $four, paused $paused, reference $ref"
+  off30=$(digest "$(steprate UW_SIM_RATE=OFF UW_STUCK_FPS=30)")
+  off144=$(digest "$(steprate UW_SIM_RATE=OFF UW_STUCK_FPS=144)")
+  [ -n "$off30" ] && [ -n "$off144" ] && [ "$off30" != "$off144" ]     && pass "with the fixed step off, 30 and 144 frames a second differ ($off30, $off144): the check sees the dependence"     || fail "with the fixed step off, 30 and 144 frames a second gave '$off30' and '$off144' - the check cannot tell runs apart"
+  out=$(steprate UW_SIM_RATE=60 UW_STUCK_FPS=5 UW_SIM_SPEED=4)
+  if echo "$out" | grep -q "at most 8 in one"; then
+    pass "at 5 frames a second and four times speed a frame runs 8 steps and the game slows"
+  else
+    echo "$out" | grep "simulation update" | sed 's/^/      /'
+    fail "the step cap did not hold at 5 frames a second"
   fi
 else
   say "  SKIP  UW_STUCK_SAVE is not set to a save file - this case did not run"

@@ -60,6 +60,12 @@ setting in it is. The list of confirmed settings is kept in `ModSettings.cs`.
 <setting id="port.culture" value="invariant" />
 ```
 
+**The PORT entry** in SELECT MODS holds the port's own settings, which `-nomods` leaves as they
+are. One of them changes how the game runs: **FIXED SIMULATION RATE** (`port.simulationRate`, 60 by
+default) runs the simulation in steps of 1/60 s whatever your screen's refresh rate, so colonists,
+combat and weather behave the same on a 144 Hz screen as on a 60 Hz one. `OFF` is the original
+game's one update per drawn frame. It does not change saves.
+
 **All of them at once:** launch with `-nomods`.
 
 ```

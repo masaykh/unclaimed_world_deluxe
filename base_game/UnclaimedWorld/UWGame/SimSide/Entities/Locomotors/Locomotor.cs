@@ -803,8 +803,10 @@ namespace UWGame.SimSide.Entities.Locomotors
             // one monitor refresh). On rough ground a colonist walks 16 px/s, 0.27 px an update at
             // 60 a second, less than the 0.3 px push: colonists crossing through a one-subtile
             // creek passage from both sides held each other still for good (save 11, 2026-10-18).
-            // The resistances now mean "per update at PushReferenceUpdatesPerSecond". Nothing in
-            // the studio's source names an intended rate; at 30 the same save clears in seconds.
+            // The resistances now mean "per update at PushReferenceUpdatesPerSecond": at 30 the same
+            // save clears in seconds. The studio's update was 1/60 s ("1 frame, or update, takes
+            // 0.016 s", AIConstants) and the simulation now steps at 60 by default (PORT DEVIATION
+            // 22), but at 60 this push is what jammed the creek, so it stays at the 30 that clears it.
             pushVector *= (float)(The.Sim.GameTime.ElapsedGameTime.TotalSeconds * PushReferenceUpdatesPerSecond);
 
             // move the entity... and clamp if we cross into blocked areas!

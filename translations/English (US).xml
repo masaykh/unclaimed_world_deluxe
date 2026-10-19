@@ -6726,6 +6726,18 @@ An exploration mission that took place before the main landing operation. A sele
     <Key>SettingTipPortShadowsKey</Key>
     <Value>Switches the sun's shadows off and on, in game.</Value>
   </String>
+  <String>
+    <Key>SettingPortSimulationRate</Key>
+    <Value>FIXED SIMULATION RATE</Value>
+  </String>
+  <String>
+    <Key>SettingTipPortSimulationRate</Key>
+    <Value>How many steps a second the simulation runs in, whatever the screen's refresh rate. 60 is the rate the game was made for, and keeps colonists, combat and weather the same on a 144 Hz screen as on a 60 Hz one. 30 costs less CPU. OFF updates once per drawn frame, as the original game did.</Value>
+  </String>
+  <String>
+    <Key>SettingChoicePortSimulationRateOFF</Key>
+    <Value>OFF</Value>
+  </String>
   <!-- settings: preyfear -->
   <String>
     <Key>SettingGroupPreyfear</Key>
