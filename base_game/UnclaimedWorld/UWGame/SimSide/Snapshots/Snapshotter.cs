@@ -59,7 +59,15 @@ public class Snapshotter
 		/// Stockpile gained its Priority (StockpilePriorityMod: LOW, NORMAL or HIGH, Kastuk 2026-09-12).
 		/// A Stockpile read from an older save is NORMAL, as every stockpile was.
 		/// </summary>
-		StockpilePriority = 4u
+		StockpilePriority = 4u,
+		/// <summary>
+		/// ScoutingJob gained the sweep of its zone: the points still to visit and the number visited
+		/// (PORT: SCOUT and EXAMINE end; see ScoutingJob.SweepPointsLeft), and GoalSearchArea the job
+		/// it sweeps for and whether it holds a point of it. A ScoutingJob read from an older save has
+		/// no sweep yet, and its next one samples the zone afresh; an older GoalSearchArea sweeps its
+		/// own points, as the studio's did, until it ends.
+		/// </summary>
+		ScoutingSweep = 5u
 	}
 
 	public struct TypeInformation

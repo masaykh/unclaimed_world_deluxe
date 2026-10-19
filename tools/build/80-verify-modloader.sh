@@ -43,6 +43,9 @@
 #  32d. the same save reaches the same state, to the bit, at 30, 60, 120 and 144 frames a second
 #      with the fixed simulation step on, and at four times speed or with pauses in between; with it
 #      off it does not; a frame never runs more than 8 steps (only when UW_STUCK_SAVE names a save)
+#  32e. SCOUT and EXAMINE end: each zone is swept once for its order, across interruptions and a second
+#      colonist, an unreachable point is dropped, the order ends, and a save written mid-sweep resumes
+#      it (only when UW_STUCK_SAVE names a save)
 #  33. a Map Editor terrain height edit away from the map's corner completes, and keeps the coast
 #  40. hide gear, backpack and cart capacity, weapons at hand, and the fighter kit - only when switched on
 #  41. the woodpile keeps the firewood it dried
@@ -1011,6 +1014,46 @@ if [ -n "$UW_STUCK_SAVE" ] && [ -f "$UW_STUCK_SAVE" ]; then
   else
     echo "$out" | grep "simulation update" | sed 's/^/      /'
     fail "the step cap did not hold at 5 frames a second"
+  fi
+else
+  say "  SKIP  UW_STUCK_SAVE is not set to a save file - this case did not run"
+fi
+
+# "Currently SCOUT and EXAMINE commands are endless" (2026-10-19). The studio kept a sweep's points on
+# GoalSearchArea, so every interruption - a meal, sleep, nightfall, a better job - threw the sweep away and
+# the next GoalSearchArea sampled the zone again from nothing; a zone bigger than one stretch of work never
+# finished. The sweep is now the order's (ScoutingJob.SweepPointsLeft). --save-scout orders a SCOUT and an
+# EXAMINE zone on the save through the game's own commands, interrupts each sweeper twice, puts a second
+# colonist on each order and adds a point nobody can reach, and fails unless each zone is sampled once,
+# no point is held by two sweeps, the unreachable point is dropped and both orders end. Then the same
+# run is saved mid-sweep (Sim.DoSave, ScoutingJob at Snapshotter.Version.ScoutingSweep) and the save is
+# run again: it must read back exactly the points left and visited, sample nothing, and end. Save 11 also
+# holds a SCOUT order written by the studio's format, which must load with no sweep of its own.
+say "==> 32e. SCOUT and EXAMINE end: one sweep per order, across interruptions, colonists and a save"
+if [ -n "$UW_STUCK_SAVE" ] && [ -f "$UW_STUCK_SAVE" ]; then
+  d=$(new_install case32e)
+  out=$( cd "$d" && "$EXPORT" . "--save-scout=$UW_STUCK_SAVE" 2>&1 ) || true
+  if echo "$out" | grep -q "save scout-test OK"; then
+    pass "$(echo "$out" | grep -c "^  ok    ") check(s); SCOUT and EXAMINE ended after $(echo "$out" | grep -o "the order ended[^,]*, after [0-9]* s" | sed 's/.*after //' | tr '
+' ' ' | sed 's/ s / s and /; s/ $//') of game time"
+  else
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception' | head -4
+    fail "the save scout-test reported failures"
+  fi
+  echo "$out" | grep -q "order on zone [0-9]*: no sweep of its own"     && pass "an order in the studio's save format loads with no sweep of its own"     || fail "the save's own SCOUT order did not read back as one with no sweep"
+  mid="$d/midsweep.sav"
+  saved=$( ( cd "$d" && UW_SCOUT_SAVE_OUT="$mid" "$EXPORT" . "--save-scout=$UW_STUCK_SAVE" 2>&1 ) | sed -n 's/^saved //p' | sort ) || true
+  out=$( cd "$d" && "$EXPORT" . "--save-scout=$mid" 2>&1 ) || true
+  read=$(echo "$out" | sed -n 's/^resumed //p' | sort)
+  if [ -n "$saved" ] && [ "$saved" = "$read" ] && echo "$out" | grep -q "save scout-test OK"; then
+    pass "saved mid-sweep and loaded: $(echo "$read" | tr '
+' ';' | sed 's/;$//'), and both orders end"
+  else
+    say "      saved: $saved"; say "      read:  $read"
+    echo "$out" | sed -n 's/^  FAIL/      FAIL/p'
+    echo "$out" | grep -A3 'Unhandled exception' | head -4
+    fail "a sweep saved mid-way did not load as it was saved, or did not end"
   fi
 else
   say "  SKIP  UW_STUCK_SAVE is not set to a save file - this case did not run"

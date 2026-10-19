@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using UWGame.ClientSide.Renderables;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Entities.Locomotors.Stances;
+using UWGame.SimSide.Jobs;
 using UWGame.SimSide.Maps;
 using UWGame.SimSide.Resources;
 using UWGame.SimSide.Snapshots;
@@ -39,6 +40,25 @@ internal class GoalSearchArea : CompositeGoal
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
+	// PORT: SCOUT and EXAMINE end (see ScoutingJob.SweepPointsLeft). For a ScoutingJob the points
+	// to visit are the job's: locationsStillToVisit IS job.SweepPointsLeft, computed by the first
+	// sweep and continued by every later one. A point is taken out of the job's list when a sweep
+	// sets off for it (holdsPoint), so two colonists on one job never walk to the same point; it is
+	// counted on arrival, dropped if the walk there fails, and handed back to the job if the sweep
+	// stops on the way (Deactivate). Patrols and FindPrey pass no job and sweep as the studio's did.
+	private ScoutingJob job;
+
+	private JobID? snapshotJob;
+
+	private bool holdsPoint;
+
+	/// <summary>PORT: a sweep of <paramref name="job"/>'s zone that continues the job's sweep (ScoutingJob.SweepPointsLeft).</summary>
+	public GoalSearchArea(Entity owner, ScoutingJob job, List<EntityGroupID> ownersOfVehicles, bool isStealthy)
+		: this(owner, job.Zone, ownersOfVehicles, isStealthy, job.Examine)
+	{
+		this.job = job;
+	}
+
 	public GoalSearchArea(Entity owner, Zone mapArea, List<EntityGroupID> ownersOfVehicles, bool isStealthy, bool examine, float sampleDistance = 100f)
 		: base(owner)
 	{
@@ -67,6 +87,11 @@ internal class GoalSearchArea : CompositeGoal
 
 	private bool FindClosestLocation()
 	{
+		if (job != null)
+		{
+			// PORT: the list is shared and may have changed since the last look; the nearest is chosen afresh.
+			lowestDistance = float.MaxValue;
+		}
 		Point fromSubtile = MapManager.WorldPosToSubtile(entity.AccessPoint.Value);
 		RegionMap regionMap = entity.Intelligence.Allegiance.SharedKnowledge.GetMovementMap(entity).Layers[SurfaceType.TransportType.Foot].RegionMap;
 		for (int i = 0; i < locationsStillToVisit.Count; i++)
@@ -96,6 +121,16 @@ internal class GoalSearchArea : CompositeGoal
 
 	private void ComputeLocationsToVisit()
 	{
+		if (job?.SweepPointsLeft != null)
+		{
+			// PORT: the job's sweep is under way - continue it, and when nothing is left it is done.
+			locationsStillToVisit = job.SweepPointsLeft;
+			if (locationsStillToVisit.Count == 0)
+			{
+				base.Status = Status.Completed;
+			}
+			return;
+		}
 		int num = 0;
 		while ((locationsStillToVisit == null || locationsStillToVisit.Count == 0) && num < 3)
 		{
@@ -124,6 +159,12 @@ internal class GoalSearchArea : CompositeGoal
 				}
 			}
 			num++;
+		}
+		if (job != null)
+		{
+			// PORT: computed once, for the job; every later sweep of it continues from here.
+			job.SweepPointsLeft = locationsStillToVisit ?? new List<Vector2>();
+			locationsStillToVisit = job.SweepPointsLeft;
 		}
 		if (locationsStillToVisit == null || locationsStillToVisit.Count == 0)
 		{
@@ -194,7 +235,10 @@ internal class GoalSearchArea : CompositeGoal
 			}
 			if (!LocationsAreLeft())
 			{
-				if (numberOfVisitedLocations > 0)
+				// PORT: for a job, an empty list is a finished sweep - every point visited, or found
+				// unreachable and dropped - and the order ends. The studio failed a sweep that had
+				// visited nothing itself, which left the order to be taken, and fail, for ever.
+				if (numberOfVisitedLocations > 0 || job != null)
 				{
 					base.Status = Status.Completed;
 				}
@@ -206,6 +250,12 @@ internal class GoalSearchArea : CompositeGoal
 			else
 			{
 				CheckToStopAndLookAround();
+				if (job != null)
+				{
+					// PORT: this sweep's point now; nobody else sets off for it.
+					locationsStillToVisit.Remove(closestLocation);
+					holdsPoint = true;
+				}
 				AddSubgoal(new GoalMoveToPosition(entity, closestLocation.ToVector3(), ownersOfVehicles));
 			}
 		}
@@ -214,9 +264,23 @@ internal class GoalSearchArea : CompositeGoal
 			return;
 		}
 		base.Status = ProcessSubgoals(elapsed);
+		if (base.Status == Status.Failed && holdsPoint)
+		{
+			// PORT: the walk to the point failed - it is dropped from the job's sweep, not retried for ever.
+			holdsPoint = false;
+		}
 		if (base.Status == Status.Completed)
 		{
-			if (currentDestinationIndex < locationsStillToVisit.Count)
+			if (job != null)
+			{
+				// PORT: arrived - the point left the job's list when this sweep set off for it.
+				if (holdsPoint)
+				{
+					holdsPoint = false;
+					job.SweepPointsVisited++;
+				}
+			}
+			else if (currentDestinationIndex < locationsStillToVisit.Count)
 			{
 				locationsStillToVisit.RemoveAt(currentDestinationIndex);
 			}
@@ -263,7 +327,7 @@ internal class GoalSearchArea : CompositeGoal
 			num3 = GameData.Instance.AIConstants.TimeToWaitWhenStoppedAndSearchingMean;
 			num4 = GameData.Instance.AIConstants.TimeToWaitWhenStoppedAndSearchingStdDev;
 		}
-		bool flag = numberOfVisitedLocations == 0 && locationsStillToVisit.Count == 1;
+		bool flag = (job?.SweepPointsVisited ?? numberOfVisitedLocations) == 0 && locationsStillToVisit.Count == 1;
 		bool flag2;
 		if (!flag)
 		{
@@ -307,6 +371,18 @@ internal class GoalSearchArea : CompositeGoal
 		}
 	}
 
+	public override void Deactivate()
+	{
+		// PORT: stopped on the way to a point (a meal, sleep, another job, or the job's end): the
+		// point goes back to the job, for whichever sweep comes next.
+		if (holdsPoint)
+		{
+			holdsPoint = false;
+			job?.SweepPointsLeft?.Add(closestLocation);
+		}
+		base.Deactivate();
+	}
+
 	public override bool HandleMessage(Message message)
 	{
 		if (!ForwardMessageToFrontMostSubgoal(message))
@@ -330,7 +406,8 @@ internal class GoalSearchArea : CompositeGoal
 	public override Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		base.DoVersion(sn);
-		version = sn.DoVersion(Snapshotter.Version.Original);
+		// PORT: ScoutingSweep - the job swept for, and the point held (see the job field).
+		version = sn.DoVersion(Snapshotter.Version.ScoutingSweep);
 		return version;
 	}
 
@@ -347,6 +424,12 @@ internal class GoalSearchArea : CompositeGoal
 		examine = sn.DoBool(examine);
 		waitingForDistance = sn.DoBool(waitingForDistance);
 		snapshotZone = sn.SnapshotID<Zone, ZoneID>(zone).Value;
+		if (version >= Snapshotter.Version.ScoutingSweep)
+		{
+			snapshotJob = sn.SnapshotID<Job, JobID>(job);
+			holdsPoint = sn.DoBool(holdsPoint);
+		}
+		sn.Ignore(job);
 		sn.Ignore(setSneakingRegulator);
 		return this;
 	}
@@ -355,5 +438,14 @@ internal class GoalSearchArea : CompositeGoal
 	{
 		base.LoadPostProcess(sn);
 		zone = LookUp<Zone, ZoneID>.FindByID(snapshotZone);
+		if (snapshotJob.HasValue)
+		{
+			// PORT: the saved list was the job's; share the job's again rather than a copy of it.
+			job = LookUp<Job, JobID>.FindByID(snapshotJob) as ScoutingJob;
+			if (job?.SweepPointsLeft != null)
+			{
+				locationsStillToVisit = job.SweepPointsLeft;
+			}
+		}
 	}
 }

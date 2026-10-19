@@ -351,6 +351,46 @@ For a mod: code called from `Sim` (entities, goals, systems) runs once per step,
 drawn frame, and sees the frame's time. A constant you add per update is now per 1/60 s — but
 multiply by the elapsed time anyway, so it also holds with the setting `OFF`.
 
+## SCOUT and EXAMINE end
+
+*"Currently SCOUT and EXAMINE commands are endless, is there reason for them to be endless?"*
+(2026-10-19). No: by the studio's design an order is one sweep of its zone. `GoalScouting` walks to
+the zone's edge and hands over to `GoalSearchArea`, which samples points over the zone
+(`UniformPoissonDiskSampler`, 100 px apart), visits the nearest each time, drops those it cannot
+reach (`RegionMap.Result.NoAccess`), and when none are left `GoalScouting` destroys the job, which
+clears the zone's `ScoutingJob` / `ExamineJob`. But the points lived on the **goal**: anything that
+ended it — a meal, sleep, nightfall, a better job — threw them away, and the next `GoalSearchArea`
+sampled the zone again and started from nothing. A zone larger than one uninterrupted stretch of
+work was never finished. A sweep that visited nothing itself also failed rather than ending, so an
+order whose points were all unreachable was taken, and failed, for ever.
+
+The port keeps the sweep on the order (`ScoutingJob.SweepPointsLeft`, `SweepPointsVisited`; core
+bug fix, marked `PORT:`):
+
+- the first sweep samples the zone **once**, for the job; every later sweep — after an
+  interruption, by another colonist, after loading — continues from what is left
+- a sweep takes a point out of the job's list when it sets off for it (`GoalSearchArea.holdsPoint`),
+  so two colonists on one order never walk to the same point; the point is counted on arrival,
+  **dropped** if the walk there fails, and **handed back** if the sweep stops on the way
+  (`GoalSearchArea.Deactivate`)
+- an unreachable point is dropped from the order, not a reason to start again; when the list is
+  empty the order ends through the studio's own path (`GoalScouting` → `DestroyJobAndRemoveLocks`)
+- **saves**: `ScoutingJob` and `GoalSearchArea` are written at `Snapshotter.Version.ScoutingSweep`
+  with the points left, the count visited, the job a sweep works for and the point it holds. An
+  order from an older save reads with no sweep of its own and its next sweep samples the zone
+  afresh, once; an older sweep already under way goes on with its own points, as before
+
+Unchanged: a single-location `ScoutingJob` (`Location`), EXAMINE still examines and SCOUT still
+only scouts (`GoalSearchArea.GetDetectResourcesFactor`), and patrols and `GoalFindPrey` — which
+pass no job — sweep exactly as the studio's did. One studio quirk is left alone:
+`ComputeLocationsToVisit` removes points outside an irregular zone without stepping back, so it
+keeps a few just outside it, which are visited like the rest.
+
+`dataexport --save-scout=<file.sav>` (gate 80 case 32e) orders a SCOUT and an EXAMINE zone on a
+save through the game's commands, interrupts each sweeper twice, puts a second colonist on each
+order, adds a point nobody can reach, and checks that each zone is sampled once and both orders
+end; then saves mid-sweep and checks the save reads back the same points and ends too.
+
 ## Where the mod hooks are
 
 The game looks for ~80 base-data XML files under `data/BaseData`, `data/Scenarios`,

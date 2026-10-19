@@ -55,7 +55,8 @@ internal class GoalScouting : CompositeGoal, ITopLevelGoal
 		else
 		{
 			AddSubgoal(new GoalMoveToPosition(entity, locationInSearchArea.Value, ownersOfVehicles));
-			AddSubgoal(new GoalSearchArea(entity, job.Zone, ownersOfVehicles, isStealthy: false, job.Examine));
+			// PORT: the job's own sweep, continued from where the last one stopped (ScoutingJob.SweepPointsLeft).
+			AddSubgoal(new GoalSearchArea(entity, job, ownersOfVehicles, isStealthy: false));
 		}
 	}
 
