@@ -1209,6 +1209,8 @@ fi
 # build SELECT MODS entries the same way (a stand-in font and sprite sheet): the switch left of the
 # bar (none in game, none for PORT), MOD OPTIONS folding and remembered, built by the shared
 # ModSettingRows, a change and a key saved; every setting in exactly one place, OPTIONS only LANGUAGE.
+# FixedSimStepTests check UWGame.Port.FixedSimStep's accumulator: the same steps at every frame rate, game
+# speed, the per-frame cap, OFF, and a change of rate forgetting what is owed.
 say "==> 44. interface: the hover lets go; SELECT MODS' switch and MOD OPTIONS"
 out=$( "$DOTNET" test test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj -nologo 2>&1 ) || true
 if echo "$out" | grep -q "^Passed!"; then
