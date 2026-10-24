@@ -147,7 +147,7 @@ public class PlaceGameEntities
 	static PlaceGameEntities()
 	{
 		loadScenarioFunctions = new Dictionary<DebugScenarios, Tuple<StartDebugScenarioParams, LoadDebugScenario>>();
-		AddScenario(DebugScenarios.BushDragon, "d Mezzomap MLo", BushDragon);
+		AddScenario(DebugScenarios.BushDragon, "9 Milestone Build", BushDragon);
 		AddScenario(DebugScenarios.NeedsTest, "d Mezzomap MLo", NeedsTest);
 		AddScenario(DebugScenarios.WeaponsTest, "d Mezzomap MLo", WeaponsTest);
 		AddScenario(DebugScenarios.LightingTest, "d Mezzomap MLo", LightingTest);
