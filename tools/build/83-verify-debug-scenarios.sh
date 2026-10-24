@@ -64,7 +64,7 @@ while IFS='|' read -r key map fn; do
     continue
   fi
 
-  start=$(grep -nE "^	(public|private) static void $fn()" "$SRC" | head -1 | cut -d: -f1)
+  start=$(grep -nE "^[[:space:]]*(public|private) static void $fn[[:space:]]*\(\)" "$SRC" | head -1 | cut -d: -f1)
   if [ -z "$start" ]; then
     printf '  !! %-32s has no method %s\n' "$key" "$fn"
     fails=$((fails + 1))

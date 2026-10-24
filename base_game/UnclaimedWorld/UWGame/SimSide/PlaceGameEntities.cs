@@ -3614,7 +3614,6 @@ public class PlaceGameEntities
         AddFinishedStructure("structure:domeTent", new Point(9, 2), expedition);
     }
 
-
     public static void WeaponsTest()
 	{
 		The.MapUI.ZoomToMapPosition(5, 2);
