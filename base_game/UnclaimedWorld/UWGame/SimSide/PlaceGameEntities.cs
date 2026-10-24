@@ -1642,7 +1642,7 @@ public class PlaceGameEntities
 		new Allegiance(AllegianceType.Other, GameData.Instance.AllEntityTypes["entity:thunderChicken"]);
 	}
 
-	private static bool CheckValidEntity(Entity entity)
+	private static bool CheckValidItem(Entity entity)
 	{
 		if (entity.Bulk == 0f)
 		{
@@ -1656,7 +1656,7 @@ public class PlaceGameEntities
 		Entity entity = new Entity(GameData.Instance.AllEntityTypes[type]);
 		entity.Initialize(The.Sim.PlaySite);
 		entity.InitializeModelAndOnScreenFunctionality();
-		CheckValidEntity(entity);
+		CheckValidItem(entity);
 		entity.PlaceEntityOnPlaySite(null, container, null, new Entity.SetOwnerInfo(The.Sim.PlaySite.GetFirstPlayerExpedition(), giveNewOwnerInfo), null, null, null, isProductionOutput: false, null, assertContainment: true, simulateJoinedExpeditionNow: true, upgradeCategory);
 		return entity;
 	}
@@ -1665,7 +1665,7 @@ public class PlaceGameEntities
 	{
 		item.Initialize(The.Sim.PlaySite);
 		item.InitializeModelAndOnScreenFunctionality();
-		CheckValidEntity(item);
+		CheckValidItem(item);
 		item.PlaceEntityOnPlaySite(pos, null, null, new Entity.SetOwnerInfo(The.Sim.PlaySite.GetFirstPlayerExpedition(), giveNewOwnerInfo));
 		return item;
 	}
@@ -1684,11 +1684,27 @@ public class PlaceGameEntities
 	{
 		item.Initialize(The.Sim.PlaySite);
 		item.InitializeModelAndOnScreenFunctionality();
-		CheckValidEntity(item);
+		CheckValidItem(item);
 		item.PlaceEntityOnPlaySite(MapManager.TileToWorldPos(pos), null, null, null);
 	}
 
-	private static void AddTerrainItem(Entity item, Point pos)
+    private static Entity AddColonyVehicle(Entity item, Point pos, Entity.GiveNewOwnerKnowledge giveNewOwnerInfo = Entity.GiveNewOwnerKnowledge.Yes)
+    {
+        return AddColonyVehicle(item, MapManager.TileToWorldPos(pos), giveNewOwnerInfo);
+    }
+
+    private static Entity AddColonyVehicle(Entity entity, Vector3 pos, Entity.GiveNewOwnerKnowledge giveNewOwnerInfo = Entity.GiveNewOwnerKnowledge.Yes)
+    {
+        entity.Initialize(The.Sim.PlaySite, The.Sim.PlaySite.PlayerAllegiance);
+        entity.InitializeModelAndOnScreenFunctionality();
+        entity.PlaceEntityOnPlaySite(pos, null, null, new Entity.SetOwnerInfo(The.Sim.PlaySite.GetFirstPlayerExpedition(), giveNewOwnerInfo));
+
+        entity.ComeOnline();
+
+        return entity;
+    }
+
+    private static void AddTerrainItem(Entity item, Point pos)
 	{
 		AddTerrainItem(item, MapManager.TileToWorldPos(pos));
 	}
@@ -1704,7 +1720,7 @@ public class PlaceGameEntities
 	{
 		item.Initialize(The.Sim.PlaySite);
 		item.InitializeModelAndOnScreenFunctionality();
-		CheckValidEntity(item);
+		CheckValidItem(item);
 		if (!container.Contains.AddToContain(item, compartment))
 		{
 			throw new Exception();
@@ -3611,7 +3627,9 @@ public class PlaceGameEntities
         The.MapUI.ZoomToMapPosition(5, 2);
         Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(5, 5)));
         PlacePerson("Ward", "Conlan", Reproduction.Male, new Point(5, 2), Color.White, 52f, noSkills: false, "blue1", expedition).SetRotationAndDir(-(float)Math.PI / 2f);
-        AddFinishedStructure("structure:domeTent", new Point(9, 2), expedition);
+        
+        // why does it have Intelligence, and allegiance..?
+        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(9, 2));
     }
 
     public static void WeaponsTest()
