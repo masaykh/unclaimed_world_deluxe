@@ -122,7 +122,8 @@ public class PlaceGameEntities
 		UpgradeTest,
 		NanomapTest,
 		PeatTest,
-		LightingTest
+		LightingTest,
+		VehicleTest
 	}
 
 	private static Dictionary<DebugScenarios, Tuple<StartDebugScenarioParams, LoadDebugScenario>> loadScenarioFunctions;
@@ -150,7 +151,8 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.NeedsTest, "d Mezzomap MLo", NeedsTest);
 		AddScenario(DebugScenarios.WeaponsTest, "d Mezzomap MLo", WeaponsTest);
 		AddScenario(DebugScenarios.LightingTest, "d Mezzomap MLo", LightingTest);
-		AddScenario(DebugScenarios.EmptyMap, "d Mezzomap MLo", EmptyMap);
+        AddScenario(DebugScenarios.VehicleTest, "d Mezzomap MLo", VehicleTest);
+        AddScenario(DebugScenarios.EmptyMap, "d Mezzomap MLo", EmptyMap);
 		// PORT FIX, same fault as MapApril2013 below: hard-coded tiles that do not fit the map the
 		// table gives them, so the scenario ends in IndexOutOfRangeException inside GetTile.
 		//
@@ -3604,7 +3606,16 @@ public class PlaceGameEntities
 		AddFinishedStructure("structure:kiln", new Point(4, 7), expedition);
 	}
 
-	public static void WeaponsTest()
+	public static void VehicleTest()
+	{
+        The.MapUI.ZoomToMapPosition(5, 2);
+        Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(5, 5)));
+        PlacePerson("Ward", "Conlan", Reproduction.Male, new Point(5, 2), Color.White, 52f, noSkills: false, "blue1", expedition).SetRotationAndDir(-(float)Math.PI / 2f);
+        AddFinishedStructure("structure:domeTent", new Point(9, 2), expedition);
+    }
+
+
+    public static void WeaponsTest()
 	{
 		The.MapUI.ZoomToMapPosition(5, 2);
 		Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(5, 5)));
