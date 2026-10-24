@@ -1,102 +1,199 @@
 using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using UWGame.ClientSide;
 using UWGame.ClientSide.Renderables;
 using UWGame.SimSide.Entities;
-using UWGame.SimSide.Snapshots;
+using UWGame.SimSide.Snapshots;//TODO DECOUPLE
+using UWGame.SimSide.Systems;
 using UWGame.SimSide.Vehicles;
 using Xclna.Xna.Animation;
-
-namespace UWGame.SimSide.AI.Goals;
-
-internal class GoalExitVehicle : CompositeGoal
+namespace UWGame.SimSide.AI.Goals
 {
-	private EntityID vehicle;
+    /// <summary>
+    /// exit goal for both driver and passengers.
+    /// </summary>
+    class GoalExitVehicle : CompositeGoal
+    {
+        EntityID vehicle;
+        // Vehicle vehicleComponent;
 
-	private Snapshotter.Version version = Snapshotter.Version.Original;
+        //  DrivingVehicle drivingVehicleTrigger;
+        public GoalExitVehicle(Entity owner, EntityID vehicle) //, DrivingVehicle trigger)
+            : base(owner)
+        {
+            this.vehicle = vehicle;
 
-	public GoalExitVehicle(Entity owner, EntityID vehicle)
-		: base(owner)
-	{
-		this.vehicle = vehicle;
-	}
+            //    this.drivingVehicleTrigger = trigger;
+        }
 
-	public override Snapshotter.Version DoVersion(Snapshotter sn)
-	{
-		base.DoVersion(sn);
-		version = sn.DoVersion(Snapshotter.Version.Original);
-		return version;
-	}
 
-	public override ISnapshot DoSnapshot(Snapshotter sn)
-	{
-		base.DoSnapshot(sn);
-		vehicle = sn.DoEnum(vehicle);
-		return this;
-	}
+        /// <summary>
+        /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
+        /// </summary>
+        Snapshotter.Version version = Snapshotter.Version.Original;
+        public override Snapshotter.Version DoVersion(Snapshotter sn)
+        {
+            base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-	public GoalExitVehicle()
-	{
-	}
+            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            return version;
+        }
 
-	protected override void Activate()
-	{
-		base.Status = Status.Active;
-		if (!entityIntelligence.GetEntitySeenDirectly(vehicle, out var _))
-		{
-			base.Status = Status.Failed;
-		}
-		else if (base.entity.DrivingVehicle == vehicle || base.entity.PassengerInVehicle == vehicle)
-		{
-			AddSubgoal(new GoalWait(base.entity, 3.0, AnimAction.Containing, AnimModifier.Crew));
-		}
-		else
-		{
-			base.Status = Status.Completed;
-		}
-	}
 
-	protected override void ProcessWhileActive(GameTime elapsed)
-	{
-		if (IsDelayed(elapsed))
-		{
-			return;
-		}
-		base.Status = ProcessSubgoals(elapsed);
-		if (base.Status != Status.Completed || (!base.entity.DrivingVehicle.HasValue && !base.entity.PassengerInVehicle.HasValue))
-		{
-			return;
-		}
-		if (!entityIntelligence.GetEntitySeenDirectly(this.vehicle, out var entity))
-		{
-			base.Status = Status.Failed;
-			return;
-		}
-		bool flag = base.entity.DrivingVehicle == this.vehicle;
-		if (flag)
-		{
-			base.entity.DeleteTriggerOfType(GameData.Instance.AllTriggerTypes["drivenVehicle"]);
-		}
-		Vehicle vehicle = entity.Vehicle;
-		PassengerOrCargoSlot entityPlaceInVehicle = vehicle.GetEntityPlaceInVehicle(base.entity);
-		entityPlaceInVehicle.GetEntryPoints(out var transformedEntry, out var _);
-		if (vehicle.ExitVehicle(base.entity))
-		{
-			base.entity.Location = transformedEntry;
-			base.entity.FacingNormal = entity.FacingNormal;
-			base.entity.Rotation = entity.Rotation;
-			AttachPoint attachPoint = ((!flag) ? entity.Renderable.RenderAsModel.ModelData.GetAttachPointFromKeyName(entityPlaceInVehicle.PassengerOrCargoSlotType.AttachPointName) : entity.Renderable.RenderAsModel.ModelData.DriverAttachor);
-			if (attachPoint != null)
-			{
-				entity.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.DeattachObject(base.entity.Renderable.RenderAsModel, attachPoint.BoneName);
-			}
-		}
-		if (flag && vehicle.Passengers.Count > 0)
-		{
-			for (int i = 0; i < vehicle.Passengers.Count; i++)
-			{
-				vehicle.TellPassengerToGetOff(base.entity, vehicle.Passengers[i]);
-			}
-		}
-		entity.Renderable.StartAdditionalAnimation("driver_entry", Playback.Backwards, StartingPoint.Current, BlendMode.Normal);
-		base.Status = Status.Completed;
-	}
+
+        public override ISnapshot DoSnapshot(Snapshotter sn)
+        {
+            base.DoSnapshot(sn);
+
+            this.vehicle = (EntityID)sn.DoEnum(vehicle);
+
+            return this;
+        }
+
+        public GoalExitVehicle()
+        {
+        }
+
+        protected override void Activate()
+        {
+            Status = Status.Active;
+            Entity vehicleEntity;
+
+            if (!entityIntelligence.GetEntitySeenDirectly(vehicle, out vehicleEntity))
+            {
+                // something wrong has happened!
+                Status = Goals.Status.Failed;
+                return;
+            }
+
+            if (entity.DrivingVehicle == vehicle || entity.PassengerInVehicle == vehicle)
+            {
+
+                // TODO: change this:
+                AddSubgoal(new GoalWait(entity, 3, AnimAction.Containing, AnimModifier.Crew)); //, vehicle));
+
+
+                //AddSubgoal(new GoalStartAnimationAndWaitForEnd(entity, vehicleEntity.EntityID, "driver_entry", Playback.Forwards, StartingPoint.Current, //TODO DECOUPLE
+                //     BlendMode.Additive, false));
+
+                /*  AnimationController anim = vehicle.Renderable.RenderAsModel.TryStartAnimation("driver_entry", Playback.Forwards, StartingPoint.Current, RenderAsModel.Mode.Additive, 1f);
+                  timeToWait = anim.Duration - anim.ElapsedTime;
+                  StartDelay(anim.Duration - anim.ElapsedTime);*/
+            }
+            else
+            {
+
+                Status = Status.Completed;
+            }
+
+
+        }
+
+
+
+        protected override void ProcessWhileActive(GameTime elapsed)
+        {
+            //if status is inactive, call Activate()
+            /* ActivateIfInactive();
+
+             if (Status == Goals.Status.Active)
+             {*/
+            if (!IsDelayed(elapsed))
+            {
+                Status = ProcessSubgoals(elapsed);
+
+                if (Status == Status.Completed)
+                {
+                    Entity vehicleEntity;
+
+
+                    // code this defensively, so an additional GoalExitVehicle doesn't throw an error.
+                    if (entity.DrivingVehicle != null || entity.PassengerInVehicle != null)
+                    {
+                        if (!entityIntelligence.GetEntitySeenDirectly(vehicle, out vehicleEntity))
+                        {
+                            // something wrong has happened!
+                            Status = Goals.Status.Failed;
+
+                            // ExitIfFailedOrCompleted();
+
+                            return; // Status;
+                        }
+
+
+                        bool isDriving = entity.DrivingVehicle == vehicle;
+
+                        if (isDriving)
+                        {
+                            entity.DeleteTriggerOfType(GameData.Instance.AllTriggerTypes["drivenVehicle"]);
+                        }
+
+
+                        Vector3 exitLocation, seatLocation;
+                        Vehicle vehicleComponent = vehicleEntity.Vehicle;
+
+                        PassengerOrCargoSlot place = vehicleComponent.GetEntityPlaceInVehicle(entity);
+                        // Place? place = vehicleComponent.GetEntityPlaceInVehicle(entity);
+
+                        place.GetEntryPoints(out exitLocation, out seatLocation);
+                        //vehicleComponent.GetEntryPoint(place, out exitLocation, out seatLocation); 
+
+                        if (vehicleComponent.ExitVehicle(entity))
+                        {
+                            entity.Location = exitLocation;
+
+                            entity.FacingNormal = vehicleEntity.FacingNormal;
+                            entity.Rotation = vehicleEntity.Rotation;
+
+                            AttachPoint attachPoint;
+                            if (isDriving)
+                            {
+                                // attachPoint = vehicle.EntityType.Renderable.RenderAsModelType.ModelData.DriverAttachPoint;
+                                attachPoint = vehicleEntity.Renderable.RenderAsModel.ModelData.DriverAttachor;
+                            }
+                            else
+                            {
+                                // attachPoint = vehicle.EntityType.Renderable.RenderAsModelType.ModelData.GetAttachPointFromKeyName(place.PassengerOrCargoSlotType.AttachPointName); //.Value);
+                                attachPoint = vehicleEntity.Renderable.RenderAsModel.ModelData.GetAttachPointFromKeyName(place.PassengerOrCargoSlotType.AttachPointName); //.Value);
+                            }
+
+                            if (attachPoint != null) // !string.IsNullOrEmpty(vehicle.EntityType.Renderable.RenderAsModelType.ModelData.DriverAttachPoint.AttachBoneName))
+                            {
+                                vehicleEntity.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.DeattachObject(entity.Renderable.RenderAsModel, attachPoint.BoneName);
+                            }
+
+                        }
+
+                        // tell all passengers to Get Off:
+                        if (isDriving && vehicleComponent.Passengers.Count > 0)
+                        {
+                            for (int i = 0; i < vehicleComponent.Passengers.Count; i++)
+                            {
+
+                                vehicleComponent.TellPassengerToGetOff(entity, vehicleComponent.Passengers[i]);
+
+                            }
+                        }
+
+                        // close the door...
+                        vehicleEntity.Renderable.StartAdditionalAnimation("driver_entry", Playback.Backwards, StartingPoint.Current, BlendMode.Normal);
+
+
+                        Status = Status.Completed;
+                        // it is OK if we are already out of the vehicle...
+
+
+                    }
+                }
+            }
+            /* }
+
+             ExitIfFailedOrCompleted();
+
+             return Status;*/
+
+        }
+    }
 }
