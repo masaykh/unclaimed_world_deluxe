@@ -2055,8 +2055,8 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>TEST SCENARIO</Value>
   </String>
   <String>
-    <Key>GuiStartsTheDebugScenarioNamedByTESTBUTTONSCENARIO_a7aeeaeb28d9</Key>
-    <Value>Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.</Value>
+    <Key>GuiListsTheDebugScenariosWithTheMapEachRunsOnToPic_3ce59779089a</Key>
+    <Value>Lists the debug scenarios, with the map each runs on, to pick one and start it.</Value>
   </String>
   <String>
     <Key>GuiLoadReplay</Key>

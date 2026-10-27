@@ -365,9 +365,18 @@ public class PlaceGameEntities
 		}
 	}
 
+	/// <summary>PORT: the scenario the TEST SCENARIO list opens on - the last one picked, else the studio's.</summary>
+	public static DebugScenarios DefaultScenario => GetDefaultScenario();
+
 	public static StartDebugScenarioParams GetNewScenarioParams()
 	{
-		StartDebugScenarioParams item = loadScenarioFunctions[GetDefaultScenario()].Item1;
+		return GetNewScenarioParams(GetDefaultScenario());
+	}
+
+	/// <summary>PORT: a chosen scenario's start, for the dev panel's list (tripleacoder, #general, 2026-10-24).</summary>
+	public static StartDebugScenarioParams GetNewScenarioParams(DebugScenarios scenario)
+	{
+		StartDebugScenarioParams item = loadScenarioFunctions[scenario].Item1;
 		return new StartDebugScenarioParams
 		{
 			MapKey = item.MapKey,

@@ -1256,6 +1256,8 @@ fi
 # speed, the per-frame cap, OFF, and a change of rate forgetting what is owed. TerrainPopInTests check
 # GameWorldRenderer.AnyTileSeenAround: a hill in the shroud is drawn once a tile within twice its
 # collider is seen, and the area is clipped at the map's edge (Kastuk, dev chat, 2026-10-23).
+# TestScenarioListTests: the dev panel's TEST SCENARIO list holds every registered debug scenario, by
+# name, with its map, and a pick starts that one (tripleacoder, #general, 2026-10-24).
 say "==> 44. interface: the hover lets go; SELECT MODS' switch and MOD OPTIONS"
 out=$( "$DOTNET" test test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj -nologo 2>&1 ) || true
 if echo "$out" | grep -q "^Passed!"; then

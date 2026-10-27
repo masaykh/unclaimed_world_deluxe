@@ -142,6 +142,15 @@ public class MainMenuScreen : GameScreen
 		}, loadingIsSlow: true, showInterface: true);
 	}
 
+	/// <summary>PORT: starts the scenario picked in the dev panel's TEST SCENARIO list (TestScenarioPanel).</summary>
+	public void StartTest(PlaceGameEntities.DebugScenarios scenario)
+	{
+		LoadingScreen.StartTransitioningToGame(base.Controller, new StartGameParams
+		{
+			StartDebugScenarioParams = PlaceGameEntities.GetNewScenarioParams(scenario)
+		}, loadingIsSlow: true, showInterface: true);
+	}
+
 	public void DummyEventHandler(object caller, EventArgs e)
 	{
 	}

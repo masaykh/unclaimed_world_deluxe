@@ -415,6 +415,22 @@ public static class DebugMod
     }
 
     /// <summary>
+    /// The scenario picked in the TEST SCENARIO list (tripleacoder, #general, 2026-10-24: "It would
+    /// be better if this button showed a list of test scenarios"), kept in TEST BUTTON SCENARIO so
+    /// the list opens on it next time.
+    /// </summary>
+    public static void RememberTestScenario(string name)
+    {
+        RegisterSettings();
+        if (string.IsNullOrWhiteSpace(name) || string.Equals(TestScenario.Value, name, StringComparison.Ordinal))
+        {
+            return;
+        }
+        TestScenario.Value = name;
+        ModSettings.Save(GameStateManagement.UnclaimedWorld.LogError);
+    }
+
+    /// <summary>
     /// Writes every valid scenario name to Errors.txt, once, when the setting names one that is
     /// not among them. A list of 94 in a tooltip would be unreadable and a mistyped name with no
     /// explanation is how someone concludes the feature does not work.

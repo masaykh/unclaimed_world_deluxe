@@ -28,7 +28,7 @@ public class MainMenuDevPanel : Panel
 		// no way to tell which was which - so the scenario setting looked inert for a day.
 		textButton.Text = UWGame.Locale.Text("TEST SCENARIO");
 		textButton.Click += btContinueGame_Click;
-		textButton.ToolTip = UWGame.Locale.Text("Starts the debug scenario named by TEST BUTTON SCENARIO in the mod settings. DebugScenarios.txt beside the game lists all ninety.");
+		textButton.ToolTip = UWGame.Locale.Text("Lists the debug scenarios, with the map each runs on, to pick one and start it.");
 		textButton.Width = 106;
 		TextButton textButton2 = new TextButton(Interface.gui);
 		Window.Add(textButton2);
@@ -45,9 +45,23 @@ public class MainMenuDevPanel : Panel
 		((MainMenuInterface)Interface).mainMenuScreen.LoadReplay();
 	}
 
+	private TestScenarioPanel scenarioList;
+
 	private void btContinueGame_Click(UIComponent sender, EventArgs e)
 	{
-		((MainMenuInterface)Interface).mainMenuScreen.StartTest();
+		// PORT: a list to pick from (TestScenarioPanel; tripleacoder, #general, 2026-10-24), where this
+		// started whatever name was typed into TEST BUTTON SCENARIO.
+		if (scenarioList == null)
+		{
+			scenarioList = new TestScenarioPanel(Interface, new Point(0, 0));
+			scenarioList.StartClick += delegate
+			{
+				((MainMenuInterface)Interface).mainMenuScreen.StartTest(scenarioList.SelectedScenario.Value);
+			};
+		}
+		scenarioList.Window.X = (Interface.Game.Controller.DrawArea.Width - scenarioList.Window.Width) / 2;
+		scenarioList.Window.Y = (Interface.Game.Controller.DrawArea.Height - scenarioList.Window.Height) / 2;
+		scenarioList.ShowDialog(modal: true);
 	}
 
 	public override void ShowDialog(bool modal)

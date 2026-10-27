@@ -58,6 +58,11 @@ public static class DebugMod
         return fallback;
     }
 
+    /// <summary>Remembers nothing: without the mod the TEST SCENARIO list opens on the studio's scenario.</summary>
+    public static void RememberTestScenario(string name)
+    {
+    }
+
     /// <summary>
     /// The studio's own Options.RecordGame, unchanged. Without the mod there is no control for it
     /// and it stays exactly as reachable - or not - as the studio left it.
