@@ -898,10 +898,12 @@ namespace UWGame.SimSide.AI.Goals
             }
             else
             {
-                if (entity.ToString().Contains("August"))
-                {
-
-                }
+                // PORT: the studio's breakpoint anchor, back with the source snapshot (3f9cee5) - it
+                // built the entity's name on every failed path request, for nothing.
+                //if (entity.ToString().Contains("August"))
+                //{
+                //
+                //}
 
                 // something is wrong...
                 //   Debug.Assert(false, "This should not happen.");
