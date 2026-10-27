@@ -1412,6 +1412,24 @@ namespace UWGame.ClientSide.Map
                         && The.InGameUI.UIAllegiance.AllegianceType == SimSide.Allegiances.AllegianceType.Player
                         && !tileToDraw.HasEverBeenSeenByPlayer)
                     {
+                        // PORT FIX: a billboard is only queued on its own tile, so a hill (terrain:hillgreece is
+                        // ~400 px across) stayed culled until its centre tile was seen, and then appeared out of
+                        // nothing (Kastuk, 2026-10-23). Rocks, hills and trees are drawn once any tile within
+                        // twice their collider has been seen; the shroud (FogMap) still covers what is not.
+                        if (tileToDraw.EntitiesOnTile != null)
+                        {
+                            foreach (Entity entity in tileToDraw.EntitiesOnTile)
+                            {
+                                if (entity.EntityType.GetIsNeverInFogOfWar()
+                                    && entity.GeometryLayout != null
+                                    && entity.Collidable != null
+                                    && AreaAroundWasSeenByPlayer(entity))
+                                {
+                                    AddRenderableToRender(drawModels, drawBillboards, currentRow, entity.Renderable, x, y);
+                                }
+                            }
+                        }
+
                         // cull entities in the shroud when in player mode
                         continue;
                     }
@@ -1881,6 +1899,39 @@ namespace UWGame.ClientSide.Map
         public bool TileEntitiesAreInSight(int tileX, int tileY)
         {
             return tileX >= TileStartX && tileX <= TileEndX && tileY >= TileStartY && tileY <= TileEndY;
+        }
+
+        // PORT FIX: whether the player has seen any tile within twice the entity's collider bounds.
+        private static bool AreaAroundWasSeenByPlayer(Entity entity)
+        {
+            entity.GeometryLayout.GetBoundsWithPadding(out Vector2 from, out Vector2 to);
+            TerrainTile[][] map = The.Map.TileMap;
+            return AnyTileSeenAround(from, to, map.Length, map[0].Length, (int x, int y) => map[x][y].HasEverBeenSeenByPlayer);
+        }
+
+        /// <summary>
+        /// PORT FIX: whether <paramref name="seen"/> holds for any tile under the world rectangle
+        /// <paramref name="from"/>..<paramref name="to"/> grown by half its size on every side - twice
+        /// the rectangle - clipped to a <paramref name="tilesWide"/> x <paramref name="tilesHigh"/> map.
+        /// </summary>
+        public static bool AnyTileSeenAround(Vector2 from, Vector2 to, int tilesWide, int tilesHigh, Func<int, int, bool> seen)
+        {
+            Vector2 half = (to - from) * 0.5f;
+            Point first = MapManager.WorldPosToTile(Vector2.Max(from - half, Vector2.Zero));
+            Point last = MapManager.WorldPosToTile(to + half);
+            int endX = Math.Min(tilesWide - 1, last.X);
+            int endY = Math.Min(tilesHigh - 1, last.Y);
+            for (int x = first.X; x <= endX; x++)
+            {
+                for (int y = first.Y; y <= endY; y++)
+                {
+                    if (seen(x, y))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /*  private void AddEntityToRender(bool drawModels, bool drawBillboards, int currentRow, MemoryFact memoryFact, int tileX, int tileY)
