@@ -34,8 +34,8 @@ trap 'rm -rf "$WORK"' EXIT
 for d in "$MAPS"/*/; do
   [ -f "$d/MapData.xml" ] || continue
   name=$(basename "$d")
-  x=$(grep -o '<X>[0-9]*</X>' "$d/MapData.xml" | head -1 | tr -cd '0-9')
-  y=$(grep -o '<Y>[0-9]*</Y>' "$d/MapData.xml" | head -1 | tr -cd '0-9')
+  x=$(grep -m1 -o '<X>[0-9]*</X>' "$d/MapData.xml" | tr -cd '0-9')
+  y=$(grep -m1 -o '<Y>[0-9]*</Y>' "$d/MapData.xml" | tr -cd '0-9')
   [ -n "$x" ] && [ -n "$y" ] && echo "$name|$x|$y" >> "$WORK/maps.txt"
 done
 [ -s "$WORK/maps.txt" ] || { echo "FATAL: no maps with dimensions under $MAPS/" >&2; exit 2; }

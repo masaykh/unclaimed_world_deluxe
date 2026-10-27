@@ -26,6 +26,12 @@ IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSp
 IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.ProtectionLevel
 IDE0052  base_game/UnclaimedWorld/UWGame/SimSide/Maps/MapManager.cs  NoParkingSpot.VehicleType
 
+# --- Vehicles, which tripleacoder is bringing in from original_src. The studio commented out the
+# --- callers ("we don't even have vehicles yet"); the helpers stay for when the goals are wired up.
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalFollowPath.cs  GoalFollowPath.EdgeIsOnRoadOrPath
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalMoveToPosition.cs  GoalMoveToPosition.GetVehicleForPersonTransport
+IDE0051  base_game/UnclaimedWorld/UWGame/SimSide/AI/Goals/GoalMoveToPosition.cs  GoalMoveToPosition.ScoreSafety
+
 # --- SimProcess, the substance simulation that we are planning.
 IDE0051 base_game/UnclaimedWorld/UWGame/SimSide/Processes/SimProcess.cs SimProcess.HandleNoSubstances
 IDE0051 base_game/UnclaimedWorld/UWGame/SimSide/Processes/SimProcess.cs SimProcess.RequestSubstance
