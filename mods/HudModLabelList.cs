@@ -129,7 +129,8 @@ public static partial class HudMod
             return;
         }
 
-        // Open: top to bottom as they were on the map, the column starting at the hovered label.
+        // Open: the hovered label first, where it was - still under the pointer - and the rest under
+        // it, top to bottom as they were on the map.
         listAnchor = rects[under].Location;
         foreach (int i in GrowIntoList(rects, crowd, listAnchor, ListBottom()))
         {
@@ -170,13 +171,19 @@ public static partial class HudMod
     /// included in the list." Lining the crowd up moves it, and on the first version a label just
     /// above the new column stayed out of it (tripleacoder's screenshot, 2026-10-09: "only some of
     /// the labels are gathered").
+    ///
+    /// The first of <paramref name="crowd"/> - the hovered label - stays first, so the column starts
+    /// with it at <paramref name="anchor"/>, under the pointer. Sorted in with the rest, the label
+    /// at the top of the heap took its place, and with it the hover: a neighbouring zone lit up
+    /// instead of the one pointed at (Kastuk, "Stockpile improvements", 2026-10-23).
     /// </summary>
     public static List<int> GrowIntoList(IList<Rectangle> rects, List<int> crowd, Point anchor, int bottom)
     {
+        int first = crowd[0];
         var members = new HashSet<int>(crowd);
         while (true)
         {
-            List<int> ordered = members.OrderBy(i => rects[i].Y).ThenBy(i => rects[i].X).ToList();
+            List<int> ordered = members.Where(i => i != first).OrderBy(i => rects[i].Y).ThenBy(i => rects[i].X).Prepend(first).ToList();
             List<Rectangle> column = LayOutList(ordered.Select(i => rects[i]).ToList(), anchor, bottom);
             List<int> touched = Enumerable.Range(0, rects.Count)
                 .Where(i => !members.Contains(i) && column.Any(c => Touch(c, rects[i])))

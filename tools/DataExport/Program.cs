@@ -1300,6 +1300,14 @@ internal static partial class Program
         var grown = UWGame.Mods.HudMod.GrowIntoList(gather, UWGame.Mods.HudMod.TouchingClosure(gather, 0), new Microsoft.Xna.Framework.Point(100, 200), 900);
         Check(grown.OrderBy(i => i).SequenceEqual(new[] { 0, 1, 2 }),
               $"a label the laid-out list covers joins it; one apart does not (got {string.Join(",", grown)})");
+        // Kastuk, "Stockpile improvements", 2026-10-23: hovering the lowest of the heap lit another
+        // zone - the topmost label took its place under the pointer.
+        var heap = new[] { R(100, 200, 80, 20), R(140, 210, 80, 20), R(120, 222, 80, 20) };
+        var fromBelow = UWGame.Mods.HudMod.GrowIntoList(heap, UWGame.Mods.HudMod.TouchingClosure(heap, 2), heap[2].Location, 900);
+        var fromBelowAt = UWGame.Mods.HudMod.LayOutList(fromBelow.Select(i => heap[i]).ToList(), heap[2].Location, 900);
+        Check(fromBelow.Count == 3 && fromBelow[0] == 2 && fromBelowAt[0].Location == heap[2].Location
+              && fromBelow.Skip(1).SequenceEqual(new[] { 0, 1 }),
+              $"the hovered label heads the list and stays where it was, under the pointer; the rest follow top to bottom (got {string.Join(",", fromBelow)})");
         var column = UWGame.Mods.HudMod.LayOutList(new[] { R(0, 0, 80, 20), R(0, 0, 120, 20), R(0, 0, 60, 20) }, new Microsoft.Xna.Framework.Point(100, 100), 900);
         Check(column.Select(r => r.X).Distinct().SequenceEqual(new[] { 100 }) && column[1].Y == column[0].Bottom + UWGame.Mods.HudMod.ListGap
               && column[2].Y == column[1].Bottom + UWGame.Mods.HudMod.ListGap && column[0].Y == 100,
