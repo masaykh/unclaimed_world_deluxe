@@ -3764,8 +3764,8 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   </String>
   <!-- ClientSide/MainMenu/Mods/SelectModsEntry.cs -->
   <String>
-    <Key>GuiTick0OnUntickOffItsSettingsActAsTheStudioSGameA_07de7e1335da</Key>
-    <Value>Tick: {0} on. Untick: off - its settings act as the studio's game, and come back as you left them when it is switched on again.</Value>
+    <Key>GuiTick0OnAndItsSwitchesIfNoneOfThemIsUntickOffIts_8307f88c63c2</Key>
+    <Value>Tick: {0} on - and its switches, if none of them is. Untick: off - its settings act as the studio's game, and come back as you left them when it is switched on again.</Value>
   </String>
   <String>
     <Key>GuiNotNowTheGameWasStartedWithNomodsOrWithoutTheMo_ad5776ae1ca2</Key>

@@ -234,6 +234,23 @@ namespace UnclaimedWorld.Test
             Assert.IsNotNull(b.Entry.Options, "MOD OPTIONS is still there: settings change in game");
         }
 
+        /// <summary>
+        /// Kastuk, "Main menu", 2026-10-23: "It feels unnecessary to have switcher setting outside and
+        /// inside extended parts of the mod tab". A mod whose one setting is a switch has no MOD
+        /// OPTIONS where its own switch is shown; in game, where it is not, MOD OPTIONS stays.
+        /// </summary>
+        [TestMethod]
+        public void AModWhoseOneSettingIsASwitch_ShowsItOnce()
+        {
+            const string single = "uitestsingle";
+            ModSettings.Toggle(single, "only", "THE ONE SWITCH", false, "On or off.");
+            Built menu = NewEntry(single);
+            Assert.IsNull(menu.Entry.Options, "the mod's switch is the setting: no MOD OPTIONS beside it");
+            Assert.IsFalse(menu.Entry.Switch.IsChecked, "its one setting off: the mod shows off");
+            Built inGame = NewEntry(single, switchesShown: false);
+            Assert.IsNotNull(inGame.Entry.Options, "in game there is no switch, so MOD OPTIONS has it");
+        }
+
         [TestMethod]
         public void ThePortEntry_HasNoSwitch_AndAlwaysShowsItsOptions()
         {

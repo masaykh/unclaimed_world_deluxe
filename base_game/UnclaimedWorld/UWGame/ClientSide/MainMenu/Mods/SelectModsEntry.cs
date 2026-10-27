@@ -29,7 +29,9 @@ namespace UWGame.ClientSide.MainMenu.Mods;
 /// be explicitly under modding"). Shown only while the mod is on: a switched-off mod's settings
 /// read stock and the file keeps the player's values (ModSettings.SetModEnabled), so a change made
 /// to them here would not be kept. PORT's (<see cref="ModCatalog.Entry.AlwaysOn"/>) always shows,
-/// and has no switch.
+/// and has no switch. A mod whose one setting is a single switch has no MOD OPTIONS beside its own
+/// switch, which is that setting (<see cref="ModCatalog.Entry.SwitchIsItsSetting"/>) - except in
+/// game, where its own switch is not shown.
 /// </summary>
 public sealed class SelectModsEntry
 {
@@ -142,15 +144,15 @@ public sealed class SelectModsEntry
 		text.Width = content.Width - textX - 8;
 
 		OptionSettings = entry.Settings.ToList();
-		if (OptionSettings.Count > 0)
+		if (OptionSettings.Count > 0 && !(switchesShown && entry.SwitchIsItsSetting))
 		{
 			Options = BuildOptions(expanded);
 		}
 
-		Switch.IsChecked = entry.SwitchedOn;
+		Switch.IsChecked = entry.ShownOn;
 		Switch.Enabled = entry.CanSwitch;
 		Switch.ToolTip = entry.CanSwitch
-			? string.Format(UWGame.Locale.Text("Tick: {0} on. Untick: off - its settings act as the studio's game, and come back as you left them when it is switched on again."), entry.Name)
+			? string.Format(UWGame.Locale.Text("Tick: {0} on - and its switches, if none of them is. Untick: off - its settings act as the studio's game, and come back as you left them when it is switched on again."), entry.Name)
 			: UWGame.Locale.Text("Not now: the game was started with -nomods, or without the mod loader.");
 		Switch.Click += delegate
 		{
@@ -257,6 +259,8 @@ public sealed class SelectModsEntry
 		ModCatalog.Entry now = ModCatalog.Entries().FirstOrDefault((ModCatalog.Entry e) => string.Equals(e.Id, entry.Id, StringComparison.OrdinalIgnoreCase)) ?? entry;
 		Bar.Summary = Summary(now);
 		text.Text = Details(now, switchesShown);
+		// Off while none of its switches is on, so a change under MOD OPTIONS can tick or untick it.
+		Switch.IsChecked = now.ShownOn;
 		if (Options != null)
 		{
 			Options.Summary = rows.Summary(OptionSettings);
@@ -334,7 +338,7 @@ public sealed class SelectModsEntry
 		{
 			lines.Add(string.Format(UWGame.Locale.Text("Made by: {0}"), entry.Author));
 		}
-		if (entry.Settings.Count > 0)
+		if (entry.Settings.Count > 0 && !(switchesShown && entry.SwitchIsItsSetting))
 		{
 			string where = ShowsOptions(entry) ? UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - under MOD OPTIONS below.")
 				: switchesShown ? UWGame.Locale.Text("Settings: {0}, {1} changed from the studio's game - switch the mod on to change them.")

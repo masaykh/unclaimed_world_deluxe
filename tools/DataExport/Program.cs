@@ -687,6 +687,35 @@ internal static partial class Program
               "switched on again: the player's own values are back");
         Check(!File.ReadAllText(path).Contains("<DisabledMod id=\"selftest\""), "and the file no longer lists it");
 
+        // Kastuk, "Main menu", 2026-10-23: a mod none of whose switches is on reads as off, and
+        // ticking it switches them on, as the old OPTIONS category checkbox did.
+        var idleA = UWGame.Mods.ModSettings.Toggle("selftestidle", "a", "A", defaultValue: false);
+        var idleB = UWGame.Mods.ModSettings.Toggle("selftestidle", "b", "B", defaultValue: false);
+        var idle = UWGame.Mods.ModCatalog.Entries().FirstOrDefault(e => e.Id == "selftestidle");
+        Check(idle != null && idle.DoesNothing && !idle.ShownOn && idle.State == UWGame.Mods.ModCatalog.ModState.Off,
+              "SELECT MODS: a mod with none of its switches on shows off");
+        if (idle != null)
+        {
+            UWGame.Mods.ModCatalog.Switch(idle, true);
+        }
+        idle = UWGame.Mods.ModCatalog.Entries().FirstOrDefault(e => e.Id == "selftestidle");
+        Check(idleA.On && idleB.On && idle != null && idle.ShownOn && idle.State == UWGame.Mods.ModCatalog.ModState.On,
+              "  ticked: every switch of it goes on, and it shows on");
+        Check(File.ReadAllText(path).Contains("selftestidle.a\" value=\"true\""), "  and the file has them");
+        idleA.Value = "false";
+        if (idle != null)
+        {
+            UWGame.Mods.ModCatalog.Switch(idle, false);
+            UWGame.Mods.ModCatalog.Switch(idle, true);
+        }
+        Check(!idleA.On && idleB.On, "  off and on again with one switch on: the player's choice stays");
+        var mixed = UWGame.Mods.ModCatalog.Entries().FirstOrDefault(e => e.Id == "selftest");
+        Check(mixed != null && !mixed.DoesNothing && mixed.ShownOn && !mixed.SwitchIsItsSetting,
+              "  a mod with a switch on shows on; two settings are not its switch");
+        UWGame.Mods.ModSettings.Toggle("selftestsingle", "only", "ONLY", defaultValue: true);
+        Check(UWGame.Mods.ModCatalog.Entries().FirstOrDefault(e => e.Id == "selftestsingle")?.SwitchIsItsSetting == true,
+              "  a mod whose one setting is a switch: its own switch is that setting, not shown twice");
+
         // A third-party DLL: listed from user/Mods with what its files say, switched off by file name.
         string mods = UWGame.Config.GetDataFolderPath(UWGame.Config.DataType.UserMods);
         Directory.CreateDirectory(mods);

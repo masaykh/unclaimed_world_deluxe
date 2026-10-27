@@ -83,6 +83,27 @@ public static class ModCatalog
 
         /// <summary>How many of its settings differ from the studio's game.</summary>
         public int Changed => Settings.Count((ModSetting s) => !s.IsStock);
+
+        /// <summary>
+        /// One of the game's own mods with switches, none of them on: switched on in name, it changes
+        /// nothing. SELECT MODS shows it off (Kastuk, "Main menu", 2026-10-23: "every mod is enabled by
+        /// default, included that ones which I didn't turned on"), and ticking it switches them on
+        /// (<see cref="Switch"/>).
+        /// </summary>
+        public bool DoesNothing =>
+            FileName == null && !AlwaysOn && Settings.Any(IsSwitch) && !Settings.Any((ModSetting s) => IsSwitch(s) && s.On);
+
+        /// <summary>Whether SELECT MODS ticks its switch: switched on, and not <see cref="DoesNothing"/>.</summary>
+        public bool ShownOn => SwitchedOn && !DoesNothing;
+
+        /// <summary>
+        /// A mod whose one setting is a single switch - STOCKPILE PRIORITY. Its own switch is that
+        /// setting, so SELECT MODS does not show it twice (Kastuk, 2026-10-23: "It feels unnecessary to
+        /// have switcher setting outside and inside").
+        /// </summary>
+        public bool SwitchIsItsSetting => FileName == null && !AlwaysOn && Settings.Count == 1 && IsSwitch(Settings[0]);
+
+        private static bool IsSwitch(ModSetting s) => s.Kind == ModSettingKind.Toggle;
     }
 
     /// <summary>
@@ -165,6 +186,13 @@ public static class ModCatalog
         {
             entries.Add(DllEntry(path, byModId));
         }
+        foreach (Entry e in entries)
+        {
+            if (e.State == ModState.On && e.DoesNothing)
+            {
+                e.State = ModState.Off;
+            }
+        }
         return entries;
     }
 
@@ -238,6 +266,11 @@ public static class ModCatalog
     /// Switches a mod on or off (<see cref="ModSettings.SetModEnabled"/>) and saves. The game's own
     /// mods follow at once, their settings to stock or back; the bundled Unhidden Mod and a DLL at
     /// the next start of the game.
+    ///
+    /// Switched on with none of its switches on (<see cref="Entry.DoesNothing"/>), all of them go on,
+    /// as the category checkbox of the old OPTIONS -> MODS did (Kastuk, 2026-10-23: "turning on a mod
+    /// is not turning its options switchers on, like before in Options menu"). A mod with any of them
+    /// on keeps the player's choice.
     /// </summary>
     public static void Switch(Entry entry, bool on, Action<string, string> log = null)
     {
@@ -246,6 +279,14 @@ public static class ModCatalog
             return;
         }
         ModSettings.SetModEnabled(entry.Id, on, log);
+        if (on && entry.DoesNothing)
+        {
+            foreach (ModSetting s in entry.Settings.Where((ModSetting s) => s.Kind == ModSettingKind.Toggle))
+            {
+                s.Value = "true";
+            }
+            ModSettings.Save(log);
+        }
         if (entry.FileName != null)
         {
             if (!switchedThisSession.Remove(entry.Id))
