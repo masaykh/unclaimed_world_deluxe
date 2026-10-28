@@ -139,6 +139,7 @@ internal static class Program
 		UWGame.Mods.RawhideStringMod.RegisterSettings();
 		UWGame.Mods.RespawnCapMod.RegisterSettings();
 		UWGame.Mods.MainMenuMod.RegisterSettings();
+		UWGame.Mods.DebugMonitorMod.RegisterSettings();
 
 		// Third-party mods from user/Mods. Before the game object is constructed, so a mod can
 		// patch anything the game does on the way up - including the data loaders, which run

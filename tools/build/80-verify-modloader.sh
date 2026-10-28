@@ -459,7 +459,7 @@ pass "an unrecognised choice value does not stop the load"
 # test them: it writes false, which IS their default, and dataexport prints only what differs
 # from default. Written true instead - which is also the direction that matters, since an overlay
 # nobody can turn ON is the whole failure mode.
-for id in debug.overlayJobs debug.overlayRanges debug.recordGame statedump.enabled; do
+for id in debug.overlayJobs debug.overlayRanges debug.recordGame statedump.enabled debugmonitor.enabled; do
   d=$(new_install "case11${id#debug.}"); write_setting "$d" "$id" true
   out=$( cd "$d" && "$EXPORT" . 2>&1 ) || { echo "$out"; fail "dataexport returned nonzero"; }
   if echo "$out" | grep -q "$id = true"; then
@@ -1258,6 +1258,8 @@ fi
 # collider is seen, and the area is clipped at the map's edge (Kastuk, dev chat, 2026-10-23).
 # TestScenarioListTests: the dev panel's TEST SCENARIO list holds every registered debug scenario, by
 # name, with its map, and a pick starts that one (tripleacoder, #general, 2026-10-24).
+# DebugMonitorTests: the debug monitor's page and snapshot over a real localhost request, the answer
+# with no game running, and its field reader - cycles, collections, budget (tripleacoder, dev chat, 2026-10-28).
 say "==> 44. interface: the hover lets go; SELECT MODS' switch and MOD OPTIONS"
 out=$( "$DOTNET" test test/UnclaimedWorld.Test/UnclaimedWorld.Test.csproj -nologo 2>&1 ) || true
 if echo "$out" | grep -q "^Passed!"; then

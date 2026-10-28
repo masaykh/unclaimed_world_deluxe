@@ -1675,6 +1675,9 @@ namespace UWGame.ClientSide
             // MOD: samples the colony to a text file on a game-time interval, so a change can be
             // checked by reading rather than by watching. Returns on its first line when off.
             UWGame.Mods.StateDumpMod.Sample();
+            // MOD: serves live debug details - entities, goal trees, component fields - to a
+            // browser page on localhost, outside the game. Returns on its first lines when off.
+            UWGame.Mods.DebugMonitorMod.Tick();
             // MOD: pauses the game between turns and swaps files with whatever is playing it -
             // agent/observe.txt out, agent/act.xml in. Returns on its first line when off.
             UWGame.Mods.AgentMod.Tick(base.Controller);

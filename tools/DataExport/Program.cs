@@ -495,6 +495,7 @@ internal static partial class Program
         UWGame.Mods.RawhideStringMod.RegisterSettings();
         UWGame.Mods.RespawnCapMod.RegisterSettings();
         UWGame.Mods.MainMenuMod.RegisterSettings();
+        UWGame.Mods.DebugMonitorMod.RegisterSettings();
     }
 
 

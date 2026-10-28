@@ -3624,6 +3624,19 @@ turns this off.</Value>
     <Key>GuiThisColumnShowsTheStatusOfTheNeededInputMateria_33a6d37c8def</Key>
     <Value>This column shows the status of the needed input materials</Value>
   </String>
+  <!-- ClientSide/Interface/TestScenarioPanel.cs -->
+  <String>
+    <Key>GuiPickADebugScenarioThoseOn0HaveBlackGroundThatSt_55ec441bcb9a</Key>
+    <Value>Pick a debug scenario. Those on '{0}' have black ground: that studio test map has no soil or vegetation layer.</Value>
+  </String>
+  <String>
+    <Key>GuiSTART</Key>
+    <Value>START</Value>
+  </String>
+  <String>
+    <Key>GuiStartsTheSelectedScenario_1a645049383a</Key>
+    <Value>Starts the selected scenario.</Value>
+  </String>
   <!-- ClientSide/Interface/World_map/SiteMarker.cs -->
   <String>
     <Key>GuiDistance_95e89f0d37bf</Key>
@@ -3872,10 +3885,6 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
   <String>
     <Key>GuiEXTRAOPTIONS</Key>
     <Value>EXTRA OPTIONS</Value>
-  </String>
-  <String>
-    <Key>GuiSTART</Key>
-    <Value>START</Value>
   </String>
   <String>
     <Key>GuiStartTheGame</Key>
@@ -5456,6 +5465,35 @@ An exploration mission that took place before the main landing operation. A sele
   <String>
     <Key>SettingTipDebugTestScenario</Key>
     <Value>The name of one of the debug scenarios in PlaceGameEntities - NeedsTest, FightTest, CookingTest, FindPreyTest, StorageTest, RobotTest and ninety more. NOTE: 86 of the 90 run on 'd Mezzomap MLo', a studio test map that ships with no Soil or Vegetation layer, so the GROUND IS BLACK on those - that is the map, not the port. MidsizeTest and mineShowcase are the two with real terrain. An unrecognised name writes the full list to Errors.txt and uses the studio's default.</Value>
+  </String>
+  <!-- settings: debugmonitor -->
+  <String>
+    <Key>SettingGroupDebugmonitor</Key>
+    <Value>DEBUG MONITOR</Value>
+  </String>
+  <String>
+    <Key>SettingDebugmonitorEnabled</Key>
+    <Value>DEBUG MONITOR</Value>
+  </String>
+  <String>
+    <Key>SettingTipDebugmonitorEnabled</Key>
+    <Value>Shows live debug details in a browser window outside the game: every colonist, creature, item and building, and for the one picked its goal tree, job scores and every component, four times a second. Serves on this computer only. Off by default, and nothing listens while it is off.</Value>
+  </String>
+  <String>
+    <Key>SettingDebugmonitorOpenBrowser</Key>
+    <Value>OPEN THE MONITOR IN A BROWSER</Value>
+  </String>
+  <String>
+    <Key>SettingTipDebugmonitorOpenBrowser</Key>
+    <Value>Opens the monitor page in the default browser when a game starts with the monitor on. Once per run of the game.</Value>
+  </String>
+  <String>
+    <Key>SettingDebugmonitorPort</Key>
+    <Value>DEBUG MONITOR PORT</Value>
+  </String>
+  <String>
+    <Key>SettingTipDebugmonitorPort</Key>
+    <Value>The monitor is at http://localhost:&lt;port&gt;/ . Change it only if another program already uses the port.</Value>
   </String>
   <!-- settings: diet -->
   <String>
@@ -16331,6 +16369,10 @@ Time would tell if the human presence on Antheia was just a temporary incursion 
   <String>
     <Key>ModDescriptionDebug</Key>
     <Value>Turns the studio's own developer tools back on: the map overlays, the dev panel with its prepared test situations, session recording for replay, and a key that adds trade credits.</Value>
+  </String>
+  <String>
+    <Key>ModDescriptionDebugmonitor</Key>
+    <Value>Live debug details - colonists, creatures, items, buildings, goal trees, component fields - in a browser window outside the game. For testing.</Value>
   </String>
   <String>
     <Key>ModDescriptionDiet</Key>
