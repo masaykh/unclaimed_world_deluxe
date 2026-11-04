@@ -1591,6 +1591,31 @@ namespace UWGame.SimSide.Entities
             return Locomotor.CalculateSpeed(bulk);
         }
 
+        public float? CalculateLoadedVehicleSpeed(float bulk)
+        {
+            var vehicleContainerType = this.EntityType.ContainerType as VehicleContainerType;
+            if (vehicleContainerType != null)
+            {
+                switch (vehicleContainerType.Transport)
+                {
+                    case SurfaceType.TransportType.Foot:
+                        return EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed; // TODO
+                    case SurfaceType.TransportType.Car:
+                        return EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed; // TODO
+                    case SurfaceType.TransportType.OffRoad:
+                        return EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed; // TODO
+                    case SurfaceType.TransportType.Air:
+                        return ((VehicleContainerType)this.EntityType.ContainerType).Aircraft.MaxAirSpeed; // not affected by load...
+                    default:
+                        throw new NotImplementedException("Unknown transport type: " + vehicleContainerType.Transport.ToString());
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public void ImpairMovement(float aMovementPartToRemove)
         {
             Locomotor.ImpairMovement(aMovementPartToRemove);
@@ -1720,8 +1745,8 @@ namespace UWGame.SimSide.Entities
 
         public PassengerOrCargoSlot GetFreeDriversSlot()
         {
-            Vehicle vehicle;
-            if (Find(out vehicle))
+            VehicleContainer vehicle = Contains as VehicleContainer;
+            if (vehicle != null)
             {
                 return vehicle.GetFreeDriversSlot();
             }
@@ -1731,8 +1756,8 @@ namespace UWGame.SimSide.Entities
 
         public List<PassengerOrCargoSlot> GetCargoSlotsForLoading(float bulkToLoad)
         {
-            Vehicle vehicle;
-            if (Find(out vehicle))
+            VehicleContainer vehicle = Contains as VehicleContainer;
+            if (vehicle != null)
             {
                 return vehicle.GetCargoSlotsForLoading(bulkToLoad);
             }
@@ -1742,8 +1767,8 @@ namespace UWGame.SimSide.Entities
 
         public List<PassengerOrCargoSlot> GetCargoSlotsForUnloading(float bulkToLoad)
         {
-            Vehicle vehicle;
-            if (Find(out vehicle))
+            VehicleContainer vehicle = Contains as VehicleContainer;
+            if (vehicle != null)
             {
                 return vehicle.GetCargoSlotsForUnloading(bulkToLoad);
             }
@@ -2105,12 +2130,12 @@ namespace UWGame.SimSide.Entities
         }
 
 
-        public Vehicle Vehicle
+        public VehicleContainer Vehicle
         {
             get
             {
-                Vehicle v;
-                if (Find(out v))
+                VehicleContainer v = Contains as VehicleContainer;
+                if (v != null)
                 {
                     return v;
                 }
@@ -8066,8 +8091,8 @@ namespace UWGame.SimSide.Entities
             }
             */
 
-            Vehicle vehicle;
-            if (Find(out vehicle))
+            VehicleContainer vehicle = Contains as VehicleContainer;
+            if (vehicle != null)
             {
                 vehicle.Destroy();
             }
@@ -8543,8 +8568,8 @@ namespace UWGame.SimSide.Entities
 
         public bool IsVehicleValidForHauling(Entity entity, IKnownEntityData item)
         {
-            Vehicle vehicleComponent;
-            if (Find(out vehicleComponent)
+            VehicleContainer vehicleComponent = Contains as VehicleContainer;
+            if (vehicleComponent != null
                 && ((vehicleComponent.DrivenBy == null) || vehicleComponent.DrivenBy == entity)
                 && AgentStorage != null
                 && AgentStorage.ItemStorage.TotalCapacity >= item.Bulk

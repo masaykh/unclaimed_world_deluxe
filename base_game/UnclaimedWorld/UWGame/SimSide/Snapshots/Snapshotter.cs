@@ -67,7 +67,8 @@ public class Snapshotter
 		/// no sweep yet, and its next one samples the zone afresh; an older GoalSearchArea sweeps its
 		/// own points, as the studio's did, until it ends.
 		/// </summary>
-		ScoutingSweep = 5u
+		ScoutingSweep = 5u,
+		VehicleSnapshotReferences = 6u
 	}
 
 	public struct TypeInformation

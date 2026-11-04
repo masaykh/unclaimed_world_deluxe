@@ -8,6 +8,11 @@ using Microsoft.Xna.Framework;
 using UWGame.SimSide.Buildings;
 using UWGame.SimSide.Snapshots;
 using System.Diagnostics;
+using UWGame.ClientSide;
+using UWGame.ClientSide.Renderables;
+using UWGame.SimSide.Maps;
+using UWGame.SimSide.AI;
+using Xclna.Xna.Animation;
 
 namespace UWGame.SimSide.Entities.Containers.Components
 {
@@ -35,10 +40,45 @@ namespace UWGame.SimSide.Entities.Containers.Components
  */
 
     /// <summary>
-    /// TODO: merge with Vehicle!
+    /// TODO: EnterVehicle should probably just be AddToContainList
+    /// and ExitVehicle should be removed
+    ///     
     /// </summary>
-    class VehicleContainer : Container, ICrew, ITransport, IGarrison, IStorage, IExit, IHasReplenishItems // IReplenishes
+    public class VehicleContainer : Container, ICrew, ITransport, IGarrison, IStorage, IExit, IHasReplenishItems // IReplenishes
     {
+        /// <summary>
+        /// The roll angle about the direction vector.
+        /// Positive = roll to the right.
+        /// Negative = roll to the left.
+        /// </summary>
+        public float Roll = 0f;
+
+
+        /// <summary>
+        /// The pitch angle.
+        /// </summary>
+        public float Pitch = 0f;
+
+        // these are used in AI evaluators:
+        public const float CommonLowestHaulingSpeed = 0.8f;
+        public const float CommonCarryLimit = 6f;
+
+        public Entity DrivenBy;
+        public Aircraft Aircraft;
+
+        public List<Entity> Passengers = new List<Entity>();
+        public List<Passenger> PassengerItinerary = new List<Passenger>();
+        private EntityID drivenByID;
+        private List<EntityID> snapshotPassengers;
+
+        public float CargoCapacityTakenUpByPassengers;
+        public List<PassengerOrCargoSlot> Slots = new List<PassengerOrCargoSlot>();
+
+        /// <summary>
+        /// Used when we are accepting passengers and waiting for the passengers to take their seat.
+        /// </summary>
+        public int WaitingForPassengers = 0;
+
         ItemStorage storage;
 
         Residence residence;
@@ -68,7 +108,41 @@ namespace UWGame.SimSide.Entities.Containers.Components
         {
             VehicleContainerType vehicleType = (VehicleContainerType)parent.EntityType.ContainerType;
 
+            if (vehicleType.Aircraft != null)
+            {
+                Aircraft = new Aircraft();
+            }
+
+            if (vehicleType.PassengerOrCargoSlotTypes != null)
+            {
+                foreach (PassengerOrCargoSlotType slot in vehicleType.PassengerOrCargoSlotTypes)
+                {
+                    PassengerOrCargoSlot thisSlot = new PassengerOrCargoSlot(this) { PassengerOrCargoSlotType = slot };
+                    if (slot.CargoSlotType != null)
+                    {
+                        thisSlot.CargoSlot = new CargoSlot(thisSlot);
+                    }
+
+                    if (slot.PassengerSlotType != null)
+                    {
+                        thisSlot.PassengerSlot = new PassengerSlot();
+
+                        if (slot.PassengerSlotType.IsDriversSeat)
+                        {
+                            thisSlot.DriversSlot = new DriversSlot();
+                        }
+                    }
+
+                    Slots.Add(thisSlot);
+                }
+            }
+
             storage = new ItemStorage(parent, true, vehicleType.ItemStorageType);
+
+            if (vehicleType.RequiresReplenishType != null)
+            {
+                replenishItems = new ReplenishItems(parent);
+            }
 
             if (vehicleType.MaxPassengers > 0)
             {
@@ -93,15 +167,26 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers,
                 GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
 
-            replenishItems.UncontainAllEntities(
-                GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers,
-                GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
+            if (replenishItems != null)
+            {
+                replenishItems.UncontainAllEntities(
+                    GameData.Instance.Constants.ConditionDamageMeanToContentsOfDestroyedContainers,
+                    GameData.Instance.Constants.ConditionDamageSpreadToContentsOfDestroyedContainers);
 
-            replenishItems.Destroy();
+                replenishItems.Destroy();
+            }
 
             if (garrison != null)
             {
                 garrison.UncontainAllEntities();
+            }
+
+            if (Slots != null)
+            {
+                foreach (PassengerOrCargoSlot slot in Slots)
+                {
+                    slot.Destroy();
+                }
             }
 
         }
@@ -180,20 +265,599 @@ namespace UWGame.SimSide.Entities.Containers.Components
         /// </summary>
         public EntityID? Driver
         {
-            // TODO
             get
             {
-                return null;
+                return DrivenBy?.EntityID;
             }
             set
             {
+                if (DrivenBy != null)
+                {
+                    DrivenBy.DrivingVehicle = null;
+                }
 
+                if (value.HasValue)
+                {
+                    DrivenBy = Entity.FindByID(value.Value);
+                    if (DrivenBy != null)
+                    {
+                        DrivenBy.DrivingVehicle = Parent.EntityID;
+                    }
+                }
+                else
+                {
+                    DrivenBy = null;
+                }
             }
+        }
+
+        public bool IsDriver(Entity entity)
+        {
+            return DrivenBy == entity;
+        }
+
+        public bool IsPassenger(Entity entity)
+        {
+            return Passengers.Contains(entity);
         }
 
         public StorageCompartment GetCompartment(StorageID storageID)
         {
             return StorageCompartment.NormalStorage;
+        }
+
+        public void TellPassengerToGetOff(Entity sendingEntity, Passenger passenger)
+        {
+            passenger.Entity.SendMessage(new Message(sendingEntity, Message.MessageTypes.GetOff, null));
+            if (PassengerItinerary.Contains(passenger))
+            {
+                PassengerItinerary.Remove(passenger);
+            }
+        }
+
+        public void TellPassengerToGetOff(Entity sendingEntity, Entity passenger)
+        {
+            passenger.SendMessage(new Message(sendingEntity, Message.MessageTypes.GetOff, null));
+
+            int passengerToRemove = -1;
+            for (int i = 0; i < PassengerItinerary.Count; i++)
+            {
+                if (PassengerItinerary[i].Entity == passenger)
+                {
+                    passengerToRemove = i;
+                    break;
+                }
+            }
+            if (passengerToRemove != -1)
+            {
+                PassengerItinerary.RemoveAt(passengerToRemove);
+            }
+        }
+
+        private void RecalculateCargoCapacity()
+        {
+            CargoCapacityTakenUpByPassengers = 0f;
+
+            foreach (PassengerOrCargoSlot slot in Slots)
+            {
+                if (slot.CargoSlot != null
+                    && ((slot.PassengerSlot != null && slot.PassengerSlot.Passenger != null)
+                        || (slot.DriversSlot != null && slot.DriversSlot.Driver != null)))
+                {
+                    CargoCapacityTakenUpByPassengers += slot.PassengerOrCargoSlotType.CargoSlotType.Capacity;
+                }
+            }
+
+            if (this.storage != null)
+            {
+                this.storage.RecalculateTotalCapacity();
+            }
+        }
+
+        public bool EnterVehicleAsPassenger(Entity entity, PassengerOrCargoSlot slot)
+        {
+            Passengers.Add(entity);
+            entity.PassengerInVehicle = Parent.EntityID;
+
+            slot.PassengerSlot.Passenger = entity;
+            slot.PassengerSlot.TargetedBy = null;
+
+            RecalculateCargoCapacity();
+
+            return false;
+        }
+
+        public bool EnterVehicleAsDriver(Entity entity, PassengerOrCargoSlot slot)
+        {
+            DrivenBy = entity;
+            entity.DrivingVehicle = Parent.EntityID;
+
+            slot.DriversSlot.Driver = entity;
+            slot.DriversSlot.TargetedBy = null;
+
+            this.AddToContain(entity);
+
+            RecalculateCargoCapacity();
+
+            return false;
+        }
+
+        public bool ExitVehicle(Entity entity)
+        {
+            bool isOnBoard = false;
+            if (DrivenBy == entity)
+            {
+                DrivenBy = null;
+                entity.DrivingVehicle = null;
+                isOnBoard = true;
+            }
+            else if (Passengers != null && Passengers.Contains(entity))
+            {
+                Passengers.Remove(entity);
+                entity.PassengerInVehicle = null;
+                isOnBoard = true;
+            }
+
+            if (isOnBoard)
+            {
+                PassengerOrCargoSlot slot = GetEntityPlaceInVehicle(entity);
+
+                if (slot.PassengerSlot != null)
+                {
+                    slot.PassengerSlot.Passenger = null;
+                    slot.PassengerSlot.TargetedBy = null;
+                }
+
+                if (slot.DriversSlot != null)
+                {
+                    slot.DriversSlot.Driver = null;
+                    slot.DriversSlot.TargetedBy = null;
+                }
+
+                RecalculateCargoCapacity();
+            }
+
+            return isOnBoard;
+        }
+
+        public PassengerOrCargoSlot GetEntityPlaceInVehicle(Entity entity)
+        {
+            foreach (PassengerOrCargoSlot slot in Slots)
+            {
+                if (slot.PassengerSlot != null && slot.PassengerSlot.Passenger != null && slot.PassengerSlot.Passenger == entity)
+                {
+                    return slot;
+                }
+                else if (slot.DriversSlot != null && slot.DriversSlot.Driver != null && slot.DriversSlot.Driver == entity)
+                {
+                    return slot;
+                }
+            }
+
+            return null;
+        }
+
+        public void GetRendezvousPoint(Vector3 vehicleLocation, Vector3 entityLocation, out Vector3 rendezvousLocation)
+        {
+            Common.GetLocationAtDistance(vehicleLocation, entityLocation, 60f, out rendezvousLocation);
+        }
+
+        public bool HasIntelligenceOnboard()
+        {
+            if (DrivenBy != null)
+            {
+                return true;
+            }
+
+            foreach (Entity entity in Passengers)
+            {
+                if (entity.Intelligence != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public List<PassengerOrCargoSlot> GetCargoSlotsForLoading(float bulkToLoad)
+        {
+            if (Slots != null)
+            {
+                List<PassengerOrCargoSlot> listOfCargoSlots = null;
+
+                foreach (PassengerOrCargoSlot slot in Slots)
+                {
+                    if (slot.CargoSlot != null
+                        && !slot.CargoSlot.IsFull()
+                        && (slot.PassengerSlot == null || (slot.PassengerSlot.Passenger == null && slot.PassengerSlot.TargetedBy == null))
+                        && (slot.DriversSlot == null || (slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null)))
+                    {
+                        if (listOfCargoSlots == null)
+                        {
+                            listOfCargoSlots = new List<PassengerOrCargoSlot>();
+                        }
+
+                        listOfCargoSlots.Add(slot);
+                    }
+                }
+
+                if (listOfCargoSlots != null)
+                {
+                    listOfCargoSlots.Sort((a, b) => b.CargoSlot.BulkCarried.CompareTo(a.CargoSlot.BulkCarried));
+
+                    float bulkStillToLoad = bulkToLoad;
+
+                    List<PassengerOrCargoSlot> cargoSlotsToLoadInto = new List<PassengerOrCargoSlot>();
+                    foreach (PassengerOrCargoSlot slot in listOfCargoSlots)
+                    {
+                        float roomInSlot = slot.CargoSlot.GetRemainingRoom();
+
+                        bulkStillToLoad -= roomInSlot;
+
+                        cargoSlotsToLoadInto.Add(slot);
+
+                        if (bulkStillToLoad <= 0f)
+                        {
+                            break;
+                        }
+                    }
+
+                    return cargoSlotsToLoadInto;
+                }
+            }
+
+            return null;
+        }
+
+        public List<PassengerOrCargoSlot> GetCargoSlotsForUnloading(float bulkToUnload)
+        {
+            if (Slots != null)
+            {
+                List<PassengerOrCargoSlot> listOfCargoSlots = null;
+
+                foreach (PassengerOrCargoSlot slot in Slots)
+                {
+                    if (slot.CargoSlot != null && slot.CargoSlot.BulkCarried > 0f)
+                    {
+                        if (listOfCargoSlots == null)
+                        {
+                            listOfCargoSlots = new List<PassengerOrCargoSlot>();
+                        }
+
+                        listOfCargoSlots.Add(slot);
+                    }
+                }
+
+                if (listOfCargoSlots != null)
+                {
+                    listOfCargoSlots.Sort((a, b) => a.CargoSlot.BulkCarried.CompareTo(b.CargoSlot.BulkCarried));
+
+                    float bulkStillToUnload = bulkToUnload;
+
+                    List<PassengerOrCargoSlot> cargoSlotsToUnloadFrom = new List<PassengerOrCargoSlot>();
+                    foreach (PassengerOrCargoSlot slot in listOfCargoSlots)
+                    {
+                        float bulkInSlot = slot.CargoSlot.BulkCarried;
+
+                        bulkStillToUnload -= bulkInSlot;
+
+                        cargoSlotsToUnloadFrom.Add(slot);
+
+                        if (bulkStillToUnload <= 0f)
+                        {
+                            break;
+                        }
+                    }
+
+                    return cargoSlotsToUnloadFrom;
+                }
+            }
+
+            return null;
+        }
+
+        // Vehicle, inventory, storage, and visitor should all share a common contain parent.
+        public void UpdateCargoSlotsWithAttachedModels()
+        {
+            foreach (PassengerOrCargoSlot slot in Slots)
+            {
+                if (slot.CargoSlot != null)
+                {
+                    AttachPoint attachPoint = Parent.Renderable.RenderAsModel.ModelData.GetAttachPointFromKeyName(slot.PassengerOrCargoSlotType.AttachPointName);
+
+                    if (attachPoint != null)
+                    {
+                        if (slot.CargoSlot.BulkCarried > 0f)
+                        {
+                            Parent.Renderable.AttachPooledObjectIfPossible("box", attachPoint, AttacheePoint.Bottom, true);
+                        }
+                        else
+                        {
+                            Parent.Renderable.RemoveAttachedBoxModelsFromHand();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clean up procedure.
+        /// </summary>
+        public void EmptyAllCargoSlots()
+        {
+            foreach (PassengerOrCargoSlot slot in Slots)
+            {
+                if (slot.CargoSlot != null)
+                {
+                    slot.CargoSlot.BulkCarried = 0f;
+                }
+            }
+        }
+
+        public PassengerOrCargoSlot GetFreeDriversSlot()
+        {
+            if (Slots != null)
+            {
+                float bestComfort = 0;
+                PassengerOrCargoSlot bestSlot = null;
+                foreach (PassengerOrCargoSlot slot in Slots)
+                {
+                    if (slot.DriversSlot != null && slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null)
+                    {
+                        if (slot.PassengerOrCargoSlotType.PassengerSlotType.Comfort > bestComfort)
+                        {
+                            bestSlot = slot;
+                        }
+                    }
+                }
+
+                return bestSlot;
+            }
+
+            return null;
+        }
+
+        public PassengerOrCargoSlot GetPlaceForNewPassenger()
+        {
+            if (Slots != null)
+            {
+                float bestComfort = 0;
+                PassengerOrCargoSlot bestSlot = null;
+                foreach (PassengerOrCargoSlot slot in Slots)
+                {
+                    if (slot.PassengerSlot != null && slot.PassengerSlot.Passenger == null && slot.PassengerSlot.TargetedBy == null
+                        && (slot.DriversSlot == null || (slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null))
+                        && (slot.CargoSlot == null || (slot.CargoSlot.BulkCarried == 0f && slot.CargoSlot.TargetedByHauler == null)))
+                    {
+                        if (slot.PassengerOrCargoSlotType.PassengerSlotType.Comfort > bestComfort)
+                        {
+                            bestSlot = slot;
+                        }
+                    }
+                }
+
+                return bestSlot;
+            }
+
+            return null;
+        }
+
+        public Vector2 GetRelativePointRotated(Vector2? pointOnModel)
+        {
+            if (pointOnModel.HasValue)
+            {
+                Matrix rotationMatrix = Matrix.CreateRotationZ(Parent.Rotation);
+
+                return new Vector2(Parent.PlaySiteLocation.X, Parent.PlaySiteLocation.Y) + Vector2.Transform(pointOnModel.Value, rotationMatrix);
+            }
+
+            return new Vector2(Parent.PlaySiteLocation.X, Parent.PlaySiteLocation.Y);
+        }
+
+        public void ComputeRelativePointInWorld(Vector2 pointOnModel, out Vector3 transformedLocation)
+        {
+            Matrix rotationMatrix =
+                   Matrix.CreateRotationX(Roll) *
+                   Matrix.CreateRotationZ(Parent.Rotation);
+
+            Vector2 vehicleLocation = Parent.PlaySiteLocation.ToVector2();
+
+            Vector2 transformedPoint = vehicleLocation + Vector2.Transform(pointOnModel, rotationMatrix);
+
+            if (MapManager.IsPointReachableInStraightLine(Parent.PlaySiteLocation, transformedPoint.ToVector3()))
+            {
+                transformedLocation = transformedPoint.ToVector3();
+            }
+            else
+            {
+                transformedLocation = Parent.PlaySiteLocation;
+            }
+        }
+
+        public static bool FindParkingSpot(Point from, Allegiances.Allegiance allegiance, IKnownEntityData vehicle, Rectangle tileArea, SurfaceType.TransportType transport, ProtectionLevel protectionLevel,
+            EntityType driverType, ThreatStance approach,
+            Point targetTile,
+            out Vector3 foundLocation)
+        {
+            Point targetTile1;
+            Point? targetTile2 = null;
+
+            foundLocation = Vector3.Zero;
+
+            targetTile1 = targetTile;
+
+            if (The.Map.IsNoParkingSpot(vehicle.EntityType, protectionLevel, driverType, approach, targetTile))
+            {
+                // Bail out if this was previously registered as a no parking spot area.
+                return false;
+            }
+
+            MovementMap moveMap = allegiance.SharedKnowledge.GetMovementMap(protectionLevel, driverType, approach);
+            SurfaceType.TransportType transportToUse = transport;
+            if (transportToUse == SurfaceType.TransportType.Air)
+            {
+                transportToUse = SurfaceType.TransportType.OffRoad;
+            }
+            bool[][] isBlockedMap = Structure.CreateIsBlockedMapAvoidConstructions(tileArea, The.Map.TerrainCosts[transportToUse]);
+
+            byte[][] subtileMap = null;
+            Common.InitJaggedArray(ref subtileMap, Common.GetJaggedArrayWidth(isBlockedMap), Common.GetJaggedArrayHeight(isBlockedMap));
+
+            byte passableValue = 40;
+            byte unpassableValue = 10;
+            int targetCenterValue = 40;
+            int targetRadius = 18;
+
+            int width = Common.GetJaggedArrayWidth(subtileMap);
+            int height = Common.GetJaggedArrayHeight(subtileMap);
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    subtileMap[x][y] = passableValue;
+                }
+            }
+
+            CreatePassageMap(vehicle, tileArea, subtileMap, vehicle.BoundingRadius3D, isBlockedMap, unpassableValue);
+
+            byte[][] passageMap = null;
+            if (targetTile2.HasValue)
+            {
+                passageMap = Common.CloneJaggedArray(subtileMap);
+            }
+
+            Point targetSubtile2;
+            Point targetSubtile1 = new Point((targetTile1.X - tileArea.X) * 3, (targetTile1.Y - tileArea.Y) * 3);
+            InfluenceMap.DrawLinearInfluenceCircle(subtileMap, targetSubtile1, targetCenterValue, InfluenceMap.Operation.AddToExisting, InfluenceMap.Falloff.Yes, InfluenceMap.CircleParameter.Radius, targetRadius);
+
+            Point bestSubtilePoint = new Point(-1, -1);
+            Point bestSubtilePoint1;
+            Point bestSubtilePoint2;
+            int bestTarget1Value = InfluenceMap.GetBestSubtileLocationThatIsntBlocked(subtileMap, isBlockedMap, out bestSubtilePoint1);
+            if (targetTile2.HasValue)
+            {
+                targetSubtile2 = new Point((targetTile2.Value.X - tileArea.X) * 3, (targetTile2.Value.Y - tileArea.Y) * 3);
+                InfluenceMap.DrawLinearInfluenceCircle(passageMap, targetSubtile2, targetCenterValue, InfluenceMap.Operation.AddToExisting, InfluenceMap.Falloff.Yes, InfluenceMap.CircleParameter.Radius, targetRadius);
+                int bestTarget2Value = InfluenceMap.GetBestSubtileLocationThatIsntBlocked(passageMap, isBlockedMap, out bestSubtilePoint2);
+
+                if (bestTarget2Value > bestTarget1Value)
+                {
+                    bestSubtilePoint = bestSubtilePoint2;
+                }
+                else if (bestTarget1Value > bestTarget2Value)
+                {
+                    bestSubtilePoint = bestSubtilePoint1;
+                }
+                else if (bestTarget1Value != -1)
+                {
+                    if (Common.DistanceOctile(from, bestSubtilePoint1) < Common.DistanceOctile(from, bestSubtilePoint2))
+                    {
+                        bestSubtilePoint = bestSubtilePoint1;
+                    }
+                    else
+                    {
+                        bestSubtilePoint = bestSubtilePoint2;
+                    }
+                }
+                else
+                {
+                    The.Map.RegisterNoParkingSpot(vehicle.EntityType, protectionLevel, driverType, approach, targetTile);
+                    return false;
+                }
+            }
+            else
+            {
+                bestSubtilePoint = bestSubtilePoint1;
+            }
+
+            if (bestSubtilePoint.X != -1)
+            {
+                MapManager.SubtileAndTilePosToWorldPos(bestSubtilePoint, new Point(tileArea.Left, tileArea.Top), out foundLocation);
+
+                if (foundLocation.X < 0 || foundLocation.Y < 0)
+                {
+                    throw new Exception();
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public static Rectangle GetSurroundingAreaUsingEntityRadius(IKnownEntityData entity, Point destination)
+        {
+            int tileRadius = (int)(GameData.Instance.AIConstants.AreaSizeRadiusForFindingParkingSpot * entity.BoundingRadius3D / MapManager.tileSize);
+
+            Entity targetBuilding = The.Map.TileMap[destination.X][destination.Y].GetMainBuildingOnTile();
+            Point topLeft;
+            Point bottomRight;
+            if (targetBuilding == null)
+            {
+                topLeft = The.Map.ClampTileMapPosition(new Point(destination.X - tileRadius, destination.Y - tileRadius));
+                bottomRight = The.Map.ClampTileMapPosition(new Point(destination.X + tileRadius, destination.Y + tileRadius));
+            }
+            else
+            {
+                topLeft = The.Map.ClampTileMapPosition(new Point(targetBuilding.MapPosition.Value.X - tileRadius, targetBuilding.MapPosition.Value.Y - tileRadius));
+                bottomRight = The.Map.ClampTileMapPosition(new Point(targetBuilding.MapPosition.Value.X + targetBuilding.EntityType.StructureType.WidthInTiles + tileRadius,
+                    targetBuilding.MapPosition.Value.Y + targetBuilding.EntityType.StructureType.HeightInTiles + tileRadius));
+            }
+
+            return new Rectangle(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
+        }
+
+        /// <summary>
+        /// "Grows" an isBlockedMap with negative influence. SubtileMap must be pre-filled.
+        /// Also adds negative influence from vehicles and entities according to the radius.
+        /// </summary>
+        public static void CreatePassageMap(IKnownEntityData entity, Rectangle tileArea, byte[][] subtileMap, float agentRadius, bool[][] isBlockedMap, byte notPassableValue)
+        {
+            int agentSubtileRadius = (int)(agentRadius / MapManager.subTileSize);
+
+            int width = Common.GetJaggedArrayWidth(subtileMap);
+            int height = Common.GetJaggedArrayHeight(subtileMap);
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (isBlockedMap[x][y])
+                    {
+                        InfluenceMap.DrawLinearInfluenceCircle(subtileMap, new Point(x, y),
+                                    notPassableValue, InfluenceMap.Operation.SetValue, InfluenceMap.Falloff.No, InfluenceMap.CircleParameter.Radius, agentSubtileRadius);
+                    }
+                }
+            }
+
+            TerrainTile[][] map = The.Map.TileMap;
+
+            Vector3 topLeftOfArea = MapManager.EdgeOfTileToWorldPos(tileArea.Left, tileArea.Top);
+
+            for (int x = tileArea.X; x < tileArea.X + tileArea.Width; x++)
+            {
+                for (int y = tileArea.Y; y < tileArea.Y + tileArea.Height; y++)
+                {
+                    TerrainTile tile = map[x][y];
+                    if (tile.EntitiesOnTile != null)
+                    {
+                        foreach (Entity tileEntity in tile.EntitiesOnTile)
+                        {
+                            if (tileEntity != entity && tileEntity.ContainedBy == null
+                                && !tileEntity.IsInsideVehicle()
+                                && tileEntity.Renderable.RenderAsModel != null)
+                            {
+                                int combinedRadius = (int)((agentRadius + tileEntity.BoundingRadius3D) / MapManager.subTileSize);
+                                Point subTilePosOfEntity = MapManager.WorldPosToRelativeSubtile(tileEntity.PlaySiteLocation, topLeftOfArea);
+                                InfluenceMap.DrawLinearInfluenceCircle(subtileMap, subTilePosOfEntity,
+                                        notPassableValue, InfluenceMap.Operation.SetValue, InfluenceMap.Falloff.No, InfluenceMap.CircleParameter.Radius, combinedRadius);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
@@ -249,16 +913,10 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 if (TotalStored == 0f)
                 {
                     // clean up!!!
-                    if (Parent.Vehicle != null)
-                    {
-                        Parent.Vehicle.EmptyAllCargoSlots();
-                    }
+                    EmptyAllCargoSlots();
                 }
 
-                if (Parent.Vehicle != null)
-                {
-                    Parent.Vehicle.UpdateCargoSlotsWithAttachedModels();
-                }
+                UpdateCargoSlotsWithAttachedModels();
             }
 
 
@@ -368,10 +1026,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
 
 
 
-            if (Parent.Vehicle != null)
-            {
-                Parent.Vehicle.UpdateCargoSlotsWithAttachedModels();
-            }
+            UpdateCargoSlotsWithAttachedModels();
 
 
             return true;
@@ -470,10 +1125,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
 
                              
 
-                if (Parent.Vehicle != null)
-                {
-                    Parent.Vehicle.UpdateCargoSlotsWithAttachedModels();
-                }
+                UpdateCargoSlotsWithAttachedModels();
 
 
                 return true;
@@ -678,7 +1330,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -686,6 +1338,22 @@ namespace UWGame.SimSide.Entities.Containers.Components
         public override ISnapshot DoSnapshot(Snapshotter sn)
         {
             base.DoSnapshot(sn);
+
+            Aircraft = (Aircraft)sn.DoISnapshot(Aircraft);
+            sn.DoFloat(CargoCapacityTakenUpByPassengers);
+            if (sn.mode != Snapshotter.Mode.Load)
+            {
+                drivenByID = DrivenBy?.EntityID ?? default;
+                snapshotPassengers = Passengers.Select(passenger => passenger.EntityID).ToList();
+            }
+            drivenByID = sn.DoEntityID(drivenByID);
+            snapshotPassengers = sn.DoList(snapshotPassengers);
+            PassengerItinerary = sn.DoList(PassengerItinerary);
+            sn.DoList(Passengers);
+            sn.DoFloat(Pitch);
+            sn.DoFloat(Roll);
+            Slots = sn.DoList(Slots);
+            sn.DoInt32(WaitingForPassengers);
 
             this.storage = (ItemStorage)sn.DoISnapshot(storage);
             this.replenishItems = (ReplenishItems)sn.DoISnapshot(replenishItems);
@@ -702,6 +1370,28 @@ namespace UWGame.SimSide.Entities.Containers.Components
             if (storage != null)
             {
                 storage.LoadPostProcess(sn);
+            }
+
+            DrivenBy = Entity.FindByID(drivenByID);
+            Passengers = snapshotPassengers?
+                .Select(Entity.FindByID)
+                .Where(passenger => passenger != null)
+                .ToList() ?? new List<Entity>();
+
+            if (PassengerItinerary != null)
+            {
+                foreach (Passenger passenger in PassengerItinerary)
+                {
+                    passenger.LoadPostProcess(sn);
+                }
+            }
+
+            if (Slots != null)
+            {
+                foreach (PassengerOrCargoSlot slot in Slots)
+                {
+                    slot.LoadPostProcess(sn);
+                }
             }
 
             if (residence != null)

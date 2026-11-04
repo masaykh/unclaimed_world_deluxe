@@ -64,9 +64,12 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 
 	private bool notOnboardDrivenVehicle;
 
-	private float loadedVehicleSpeed;
+	private float loadedLocomotorSpeed;
 
-	private PassengerOrCargoSlot freeDriversSlot;
+	private float? loadedVehicleSpeed;
+
+
+    private PassengerOrCargoSlot freeDriversSlot;
 
 	private List<PassengerOrCargoSlot> listOfCargoSlotsForLoading;
 
@@ -380,10 +383,15 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 
 	public float CalculateSpeed(float bulk)
 	{
-		return loadedVehicleSpeed;
+		return loadedLocomotorSpeed;
 	}
 
-	public PassengerOrCargoSlot GetFreeDriversSlot()
+    public float? CalculateLoadedVehicleSpeed(float bulk)
+    {
+        return loadedVehicleSpeed;
+    }
+
+    public PassengerOrCargoSlot GetFreeDriversSlot()
 	{
 		Entity entity = Entity.FindByID(EntityID);
 		if (entity != null)
@@ -609,13 +617,19 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 		if (entity.Find<Locomotor>(out var c))
 		{
 			CurrentMaximumSpeed = c.CurrentMaximumSpeed;
-			loadedVehicleSpeed = c.CalculateSpeed(1f);
+			loadedLocomotorSpeed = c.CalculateSpeed(1f);
 		}
 		else
 		{
 			CurrentMaximumSpeed = null;
-			loadedVehicleSpeed = 0f;
+			loadedLocomotorSpeed = 0f;
 		}
+
+		if (entity.EntityType.ContainerType is VehicleContainerType)
+		{
+            loadedVehicleSpeed = entity.CalculateLoadedVehicleSpeed(0f) ?? 0f;
+        }
+
 		if (entity.EntityType.NonLivingType != null && entity.Find<NonLivingEntity>(out var c2))
 		{
 			Condition = c2.Condition;
@@ -1160,8 +1174,9 @@ public class MemoryFact : GameObject, IKnownEntityData, IHasExposedProperties, I
 		IsMoving = sn.DoBoolNullable(IsMoving);
 		IsPrepared = sn.DoBoolNullable(IsPrepared);
 		isWeatherProof = sn.DoBool(isWeatherProof);
-		loadedVehicleSpeed = sn.DoFloat(loadedVehicleSpeed);
-		location = sn.DoVector3Nullable(location);
+		loadedLocomotorSpeed = sn.DoFloat(loadedLocomotorSpeed);
+        loadedVehicleSpeed = sn.DoFloatNullable(loadedVehicleSpeed);
+        location = sn.DoVector3Nullable(location);
 		MapPosition = sn.DoPointNullable(MapPosition);
 		Name = sn.DoString(Name);
 		NoOfRounds = sn.DoInt32Nullable(NoOfRounds);

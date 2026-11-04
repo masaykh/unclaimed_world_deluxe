@@ -16,12 +16,15 @@ namespace UWGame.SimSide.AI.Goals
     class GoalEnterVehicleAsPassenger : CompositeGoal
     {
         Entity vehicle;
-        Vehicle vehicleComponent;
+        VehicleContainer vehicleComponent;
+        EntityID vehicleID;
 
         GoalFollowPath parentGoal;
+        GoalID? snapshotParentGoal;
         // bool okToWait;
         // Place? place;
         PassengerOrCargoSlot slot;
+        PassengerOrCargoSlotID? snapshotSlot;
 
         float? previousDistanceToVehicle = null;
 
@@ -29,7 +32,7 @@ namespace UWGame.SimSide.AI.Goals
             : base(owner)
         {
             this.vehicle = vehicle;
-            vehicle.Find(out vehicleComponent);
+            vehicleComponent = vehicle.Vehicle;
 
             this.previousDistanceToVehicle = previousDistanceToVehicle;
 
@@ -48,7 +51,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -58,18 +61,41 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoSnapshot(sn);
 
-            sn.DoUnknownObject(vehicle);//TODO lookup
-            sn.DoUnknownObject(vehicleComponent);//TODO lookup
-            sn.DoUnknownObject(parentGoal);//TODO summarily assign in parent snapshot
+            if (sn.mode != Snapshotter.Mode.Load)
+            {
+                vehicleID = vehicle.EntityID;
+                snapshotParentGoal = sn.SnapshotID<Goal, GoalID>(parentGoal);
+                snapshotSlot = slot?.ID;
+            }
 
-            sn.DoUnknownObject(this.slot);
+            vehicleID = sn.DoEntityID(vehicleID);
+            snapshotParentGoal = sn.DoEnumNullable(snapshotParentGoal);
+            snapshotSlot = sn.DoEnumNullable(snapshotSlot);
             this.previousDistanceToVehicle = sn.DoFloatNullable(previousDistanceToVehicle);
+
+            sn.Ignore(vehicle);
+            sn.Ignore(vehicleComponent);
+            sn.Ignore(parentGoal);
+            sn.Ignore(slot);
 
             return this;
         }
 
         public GoalEnterVehicleAsPassenger()
         {
+        }
+
+        public override void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+            base.LoadPostProcess(sn);
+
+            vehicle = Entity.FindByID(vehicleID);
+            vehicleComponent = vehicle?.Vehicle;
+            parentGoal = (GoalFollowPath)LookUpGoals.FindByID(snapshotParentGoal);
+            slot = snapshotSlot.HasValue
+                ? LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.FindByID(snapshotSlot.Value)
+                : null;
         }
 
 

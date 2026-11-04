@@ -433,14 +433,14 @@ namespace UWGame.SimSide.AI.Goals
         {
             // see if we can get a vehicle:
 
-            // commented out since a crash was reported in this method... and we don't even have vehicles yet.
+            // NEW
 
-            /*  if (entity.PersonEntity != null && ownersOfVehicles != null && Destination.HasValue) // only people may drive... and only to ground locations?
+              if (entity.PersonEntity != null && ownersOfVehicles != null && Destination.HasValue) // only people may drive... and only to ground locations?
               {
                   IKnownEntityData vehicleToUse;
 
                   RegionMap.Result result = GetVehicleForPersonTransport(entity, DestinationTilePos.Value.ToPoint(), out vehicleToUse, ownersOfVehicles,
-                      entityIntelligence.ProtectionLevel, entity.EntityType.ThreatCategory, entityIntelligence.ThreatStance);
+                      entityIntelligence.ProtectionLevel, entityIntelligence.ThreatStance);
 
                   if (Status == Goals.Status.Failed)
                       return false;
@@ -468,10 +468,10 @@ namespace UWGame.SimSide.AI.Goals
                   }
               }
               else
-              {*/
-            // go there by foot. get a path:
-            GetPath(pathStartLocation, destinationData);
-            // }
+              {
+                // go there by foot. get a path:
+                GetPath(pathStartLocation, destinationData);
+             }
 
             return true;
         }
@@ -503,7 +503,10 @@ namespace UWGame.SimSide.AI.Goals
 
 
         /// <summary>
-        /// will set Status to Failed if the ownerID failed to resolve.
+        /// Gets an optional vehicle. Note that this happens outside the evaluator since a vehicle is not critical...
+        /// Accordingly, vehicles will not be commandeered if they are not available. The goal will simply go by foot.
+        /// 
+        /// Will set Status to Failed if the ownerID failed to resolve.
         /// </summary>
         /// <param name="entity"></param>
         /// <param name="to"></param>
@@ -559,7 +562,7 @@ namespace UWGame.SimSide.AI.Goals
 
                 double travelTimeByVehicleScore;
 
-                float timeByVehicleOverTerrain, timeByFootToVehicle;
+                double timeByVehicleOverTerrain, timeByFootToVehicle;
 
                 Allegiances.Allegiance allegiance = entity.Intelligence.Allegiance;
 
@@ -613,17 +616,27 @@ namespace UWGame.SimSide.AI.Goals
                                 timeByFootToVehicle = distanceToVehicle / entity.Locomotor.CurrentMaximumSpeedNoTerrain;
 
                                 VehicleContainerType vehicleContainerType = (VehicleContainerType)vehicleData.EntityType.ContainerType;
-                                if (vehicleContainerType.Transport == SurfaceType.TransportType.Air)
+                                /*if (vehicleContainerType.Transport == SurfaceType.TransportType.Air)
                                 {
                                     timeByVehicleOverTerrain = Common.DistanceOctile(vehicleLocation, destinationWorldLocation) / vehicleData.CurrentMaximumSpeed.Value; //  .Locomotor.CurrentMaximumSpeed;
 
                                     // aircraft take some time taking off and landing.     
                                     timeByVehicleOverTerrain += 2 * vehicleContainerType.Aircraft.EstimatedTakeOffLandingTime;
+                                }*/
+                                if (vehicleContainerType.Transport == SurfaceType.TransportType.Air)
+                                {
+                                    timeByVehicleOverTerrain = EvaluateHaulingJobs.EstimateAirTime(
+                                        vehicleData,
+                                        destinationWorldLocation,
+                                        vehicleLocation);
                                 }
                                 else
                                 {
-                                    // move to destination:
-                                    RegionMap.Result result3 = footRegionMap.GetDistance(entity, vehicleSubtilePos, destinationSubtilePos, ref distanceFromVehicleDestination);
+                                    // move to the destination:
+                                    /////RegionMap.Result result3 = footRegionMap.GetDistance(entity, vehicleSubtilePos, destinationSubtilePos, ref distanceFromVehicleDestination);
+
+                                    RegionMap.Result result3 = vehicleRegionMap.GetDistance(entity, vehicleSubtilePos, destinationSubtilePos, ref distanceFromVehicleDestination);
+
 
                                     if (result3 == RegionMap.Result.Wait)
                                     { // we will have to wait and start over...
@@ -631,7 +644,7 @@ namespace UWGame.SimSide.AI.Goals
                                     }
 
                                     if (result3 == RegionMap.Result.NoAccess)
-                                    {   // can't reach this vehicle - look at the next one:
+                                    {   // can't reach the destination in this vehicle - look at the next one:
                                         continue;
                                     }
 
@@ -702,39 +715,50 @@ namespace UWGame.SimSide.AI.Goals
 
         private void GoByVehicle(IKnownEntityData vehicleToUse)
         {
-            //  Vector2 parkAtOffset;
-            //  Point parkAtTile;
-            Vector3 parkAtLocation;
-            Rectangle parkingArea;
-
-            parkingArea = Vehicle.GetSurroundingAreaUsingEntityRadius(vehicleToUse, DestinationTilePos.Value.ToPoint());
-
-            // NEW:
-            // we use the vehicle's transport type instead of the driver's.
-            if (Vehicle.FindParkingSpot(vehicleToUse.MapPosition.Value, entity.Intelligence.Allegiance, vehicleToUse, parkingArea, //targetBuilding.GetSurroundingAreaUsingEntityRadius(vehicleToUse),
-                ((VehicleContainerType)vehicleToUse.EntityType.ContainerType).Transport, entityIntelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance,
-                DestinationTilePos.Value.ToPoint(), out parkAtLocation)) // out parkAtTile, out parkAtOffset))
+            // NEW
+            if (((VehicleContainerType)vehicleToUse.EntityType.ContainerType).Aircraft != null)
             {
-                // Nesting.IsNested: To make sure we don't end here again in an infinite recursion!
-                AddSubgoal(new GoalMoveToPosition(entity, parkAtLocation, Nesting.IsNested, ownersOfVehicles));
-
-                // is this necessary:
-                AddSubgoal(new GoalExitVehicle(entity, vehicleToUse.EntityID));
-
-
-                // walk the last bit: this is not wanted when we are unloading from a vehicle. The character will walk to here, and then turn right around when Unload unfolds...
-                // but for GoalDoHarvest, it is needed!
-                if (IsFinalDestination)
-                {
-                    AddSubgoal(new GoalMoveToPosition(entity, Destination.Value.ToVector3(), ownersOfVehicles, VehicleUse.NoVehicle));
-                }
-
+                AddSubgoal(new GoalTakeoff(entity));
+                AddSubgoal(new GoalFlyToPosition(entity, DestinationTilePos.Value.ToPoint()));
+                AddSubgoal(new GoalLand(entity));
+                return;
             }
             else
             {
-                // we cannot park here.
-                // TODO: Find a way to check for this situation before selecting a vehicle!!!
+                //  Vector2 parkAtOffset;
+                //  Point parkAtTile;
+                Vector3 parkAtLocation;
+                Rectangle parkingArea;
 
+                parkingArea = VehicleContainer.GetSurroundingAreaUsingEntityRadius(vehicleToUse, DestinationTilePos.Value.ToPoint());
+
+                // NEW:
+                // we use the vehicle's transport type instead of the driver's.
+                if (VehicleContainer.FindParkingSpot(vehicleToUse.MapPosition.Value, entity.Intelligence.Allegiance, vehicleToUse, parkingArea, //targetBuilding.GetSurroundingAreaUsingEntityRadius(vehicleToUse),
+                    ((VehicleContainerType)vehicleToUse.EntityType.ContainerType).Transport, entityIntelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance,
+                    DestinationTilePos.Value.ToPoint(), out parkAtLocation)) // out parkAtTile, out parkAtOffset))
+                {
+                    // Nesting.IsNested: To make sure we don't end here again in an infinite recursion!
+                    AddSubgoal(new GoalMoveToPosition(entity, parkAtLocation, Nesting.IsNested, ownersOfVehicles));
+
+                    // is this necessary:
+                    AddSubgoal(new GoalExitVehicle(entity, vehicleToUse.EntityID));
+
+
+                    // walk the last bit: this is not wanted when we are unloading from a vehicle. The character will walk to here, and then turn right around when Unload unfolds...
+                    // but for GoalDoHarvest, it is needed!
+                    if (IsFinalDestination)
+                    {
+                        AddSubgoal(new GoalMoveToPosition(entity, Destination.Value.ToVector3(), ownersOfVehicles, VehicleUse.NoVehicle));
+                    }
+
+                }
+                else
+                {
+                    // we cannot park here.
+                    // TODO: Find a way to check for this situation before selecting a vehicle!!!
+
+                }
             }
 
             /* OLD:

@@ -154,7 +154,10 @@ public interface IKnownEntityData : IHasExposedProperties
 
 	float CalculateSpeed(float bulk);
 
-	PassengerOrCargoSlot GetFreeDriversSlot();
+	float? CalculateLoadedVehicleSpeed(float bulk);
+
+
+    PassengerOrCargoSlot GetFreeDriversSlot();
 
 	List<PassengerOrCargoSlot> GetCargoSlotsForLoading(float bulkToLoad);
 

@@ -288,7 +288,7 @@ public class BaseDataLoader : DataLoader
 		entityType.LocomotorType = new LocomotorType
 		{
 			MaxAngularSpeed = (float)Math.PI / 3f,
-			LeggedLocomotorType = new LeggedLocomotorType
+			LeggedLocomotorType = new LeggedLocomotorType // TODO
 			{
 				WalkSlowSpeed = 55f,
 				WalkNormalSpeed = 55f,
@@ -1008,6 +1008,9 @@ public class BaseDataLoader : DataLoader
 		entityType.LocomotorType = new LocomotorType
 		{
 			MaxAngularSpeed = (float)Math.PI / 6f,
+
+			// TODO: Create a FlightLocomotor?
+			// Note that locomotors are probably intended for independent agents, not for vehicles...
 			LeggedLocomotorType = new LeggedLocomotorType
 			{
 				WalkSlowSpeed = 21f,

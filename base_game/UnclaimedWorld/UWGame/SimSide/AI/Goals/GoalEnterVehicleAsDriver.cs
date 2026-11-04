@@ -152,7 +152,7 @@ namespace UWGame.SimSide.AI.Goals
                     return; // Status;
                 }
 
-                Vehicle vehicleComponent = vehicleEntity.Vehicle;
+                VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
                 if (vehicleComponent.DrivenBy == null && driversSlot.DriversSlot.Driver == null) // just to make sure...
                 {

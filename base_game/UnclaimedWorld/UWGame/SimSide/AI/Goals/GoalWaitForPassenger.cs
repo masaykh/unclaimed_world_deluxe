@@ -4,6 +4,7 @@ using System.Text;
 using UWGame.SimSide.Entities;
 using Microsoft.Xna.Framework;
 using UWGame.SimSide.Snapshots;
+using UWGame.SimSide.Entities.Containers.Components;
 namespace UWGame.SimSide.AI.Goals
 {
     class GoalWaitForPassenger : Goal
@@ -12,6 +13,7 @@ namespace UWGame.SimSide.AI.Goals
         double waitProgress = 0d;
 
         Entity passenger;
+        EntityID passengerID;
 
         public GoalWaitForPassenger(Entity owner, double? maxPeriod, Entity passenger)
             : base(owner)
@@ -29,7 +31,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -41,13 +43,25 @@ namespace UWGame.SimSide.AI.Goals
 
             this.maxPeriodInSeconds = sn.DoDoubleNullable(maxPeriodInSeconds);
             this.waitProgress = sn.DoDouble(waitProgress);
-            sn.DoUnknownObject(passenger);
+            if (sn.mode != Snapshotter.Mode.Load)
+            {
+                passengerID = passenger.EntityID;
+            }
+            passengerID = sn.DoEntityID(passengerID);
+            sn.Ignore(passenger);
 
             return this;
         }
 
         public GoalWaitForPassenger()
         {
+        }
+
+        public override void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+            base.LoadPostProcess(sn);
+            passenger = Entity.FindByID(passengerID);
         }
 
         protected override void Activate()
@@ -81,7 +95,7 @@ namespace UWGame.SimSide.AI.Goals
                 return; // Status;
             }
 
-            Vehicles.Vehicle vehicleComponent = vehicle.Vehicle;
+            VehicleContainer vehicleComponent = vehicle.Vehicle;
 
             if (vehicleComponent.WaitingForPassengers == 0) // we may have missed a message form a boading passenger
             {
@@ -116,7 +130,7 @@ namespace UWGame.SimSide.AI.Goals
 
         }
 
-        private void SetNoLongerWaiting(Vehicles.Vehicle vehicle)
+        private void SetNoLongerWaiting(VehicleContainer vehicle)
         {
 
             vehicle.WaitingForPassengers--;
@@ -142,7 +156,7 @@ namespace UWGame.SimSide.AI.Goals
                         return true;
                     }
 
-                    Vehicles.Vehicle vehicleComponent = vehicle.Vehicle;
+                    VehicleContainer vehicleComponent = vehicle.Vehicle;
 
                     SetNoLongerWaiting(vehicleComponent);
 

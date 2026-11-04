@@ -185,8 +185,7 @@ namespace UWGame.SimSide.AI.Goals
         private void ManagePassengersWithNewPath(Entity drivenVehicle)
         {
 
-            Vehicle vehicleComponent;
-            drivenVehicle.Find(out vehicleComponent);
+            VehicleContainer vehicleComponent = drivenVehicle.Vehicle;
 
             List<Passenger> newItinerary = new List<Passenger>();
             Passenger currentPassenger;
@@ -596,8 +595,7 @@ namespace UWGame.SimSide.AI.Goals
                             if (vehicleEntity != null)
                             {
 
-                                Vehicle vehicleComponent;
-                                vehicleEntity.Find(out vehicleComponent);
+                                VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
                                 if (vehicleComponent.PassengerItinerary != null &&
                                     vehicleComponent.PassengerItinerary.Count > 0)
@@ -629,7 +627,7 @@ namespace UWGame.SimSide.AI.Goals
               return Status;*/
         }
 
-        private void HandlePassengerDropoffsAndPickups(GoalTraverseEdgeBetweenWaypoints traverseEdge, Vehicle vehicleComponent)
+        private void HandlePassengerDropoffsAndPickups(GoalTraverseEdgeBetweenWaypoints traverseEdge, VehicleContainer vehicleComponent)
         {
             // handle drop offs and pick ups:
             Passenger passenger;
@@ -716,7 +714,7 @@ namespace UWGame.SimSide.AI.Goals
                return Status;
            }*/
 
-        private bool IsAtRendezvous(Vehicle vehicleComponent, int waypointNumber, out Passenger passenger, ref int lastIndex)
+        private bool IsAtRendezvous(VehicleContainer vehicleComponent, int waypointNumber, out Passenger passenger, ref int lastIndex)
         {
             passenger = null;
 
@@ -767,7 +765,7 @@ namespace UWGame.SimSide.AI.Goals
         }
          * */
 
-        private bool IsAtDropoff(Vehicle vehicleComponent, int waypointNumber, out Passenger passenger)
+        private bool IsAtDropoff(VehicleContainer vehicleComponent, int waypointNumber, out Passenger passenger)
         {
             passenger = null;
 
@@ -823,8 +821,7 @@ namespace UWGame.SimSide.AI.Goals
 
                                 if (vehicle != null)
                                 {
-                                    Vehicle vehicleComponent;
-                                    vehicle.Find(out vehicleComponent);
+                                    VehicleContainer vehicleComponent = vehicle.Vehicle;
 
                                     // disregard bulk of carried items - we are not hauling anything...
                                     if (vehicleComponent.Passengers.Count + vehicleComponent.WaitingForPassengers < ((VehicleContainerType)vehicle.EntityType.ContainerType).MaxPassengers
@@ -872,8 +869,7 @@ namespace UWGame.SimSide.AI.Goals
                                     message.Sender.SendMessage(
                                                     new Message(entity, Message.MessageTypes.GoToRendezvousPoint, WaypointPath[rendezvousIndex].Location));
 
-                                    Vehicle vehicleComponent;
-                                    vehicleEntity.Find(out vehicleComponent);
+                                    VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
                                     vehicleComponent.PassengerItinerary.Add(
                                         new Passenger(WaypointPath[rendezvousIndex].Number, WaypointPath[dropOffPointIndex.Value].Number, ((FromTo)message.OtherInfo).To, message.Sender));
@@ -896,8 +892,7 @@ namespace UWGame.SimSide.AI.Goals
 
                             if (vehicleEntity != null)
                             {
-                                Vehicle vehicleComponent;
-                                vehicleEntity.Find(out vehicleComponent);
+                                    VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
                                 Vector3 positionToStandAt;
                                 vehicleComponent.GetRendezvousPoint((Vector3)message.OtherInfo, entity.PlaySiteLocation, out positionToStandAt);

@@ -8,6 +8,7 @@ using UWGame.SimSide.Entities;
 using UWGame.SimSide.Snapshots;//TODO DECOUPLE
 using UWGame.SimSide.Systems;
 using UWGame.SimSide.Vehicles;
+using UWGame.SimSide.Entities.Containers.Components;
 using Xclna.Xna.Animation;
 namespace UWGame.SimSide.AI.Goals
 {
@@ -132,7 +133,7 @@ namespace UWGame.SimSide.AI.Goals
 
 
                         Vector3 exitLocation, seatLocation;
-                        Vehicle vehicleComponent = vehicleEntity.Vehicle;
+                        VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
                         PassengerOrCargoSlot place = vehicleComponent.GetEntityPlaceInVehicle(entity);
                         // Place? place = vehicleComponent.GetEntityPlaceInVehicle(entity);

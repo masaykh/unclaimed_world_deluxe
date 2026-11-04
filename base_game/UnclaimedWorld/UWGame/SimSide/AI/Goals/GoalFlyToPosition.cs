@@ -19,7 +19,8 @@ namespace UWGame.SimSide.AI.Goals
         bool isAtTarget = false;
 
         public Entity Aircraft;
-        Vehicle vehicleComponent;
+        private EntityID aircraftID;
+        VehicleContainer vehicleComponent;
 
 
         private bool hasLoweredLandingGear = false;
@@ -59,7 +60,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -70,17 +71,33 @@ namespace UWGame.SimSide.AI.Goals
             base.DoSnapshot(sn);
 
             this.isAtTarget = sn.DoBool(isAtTarget);
-            sn.DoUnknownObject(Aircraft); //TODO use lookup
-            sn.DoUnknownObject(vehicleComponent);//TODO use lookup
+            if (sn.mode != Snapshotter.Mode.Load)
+            {
+                aircraftID = Aircraft.EntityID;
+            }
+
+            aircraftID = sn.DoEntityID(aircraftID);
             this.hasLoweredLandingGear = sn.DoBool(hasLoweredLandingGear);
             this.destination = sn.DoPoint(destination);
             this.destinationPoint = sn.DoVector2(destinationPoint);
+
+            sn.Ignore(Aircraft);
+            sn.Ignore(vehicleComponent);
 
             return this;
         }
 
         public GoalFlyToPosition()
         {
+        }
+
+        public override void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+            base.LoadPostProcess(sn);
+
+            Aircraft = Entity.FindByID(aircraftID);
+            vehicleComponent = Aircraft?.Vehicle;
         }
 
         public override bool IsSame(Jobs.Job job)
@@ -95,7 +112,7 @@ namespace UWGame.SimSide.AI.Goals
                 return;
             }
 
-            Aircraft.Find(out vehicleComponent);
+            vehicleComponent = Aircraft.Vehicle;
 
 
             SelectSteeringType();
@@ -376,7 +393,7 @@ namespace UWGame.SimSide.AI.Goals
         }
 
         public enum PropDirection { Start, Stop }
-        public static void UpdatePropellers(Entity aircraft, Vehicle vehicleComponent, float elapsedTime, PropDirection direction)
+        public static void UpdatePropellers(Entity aircraft, VehicleContainer vehicleComponent, float elapsedTime, PropDirection direction)
         {
             VehicleContainerType vehicleContainerType = (VehicleContainerType)aircraft.EntityType.ContainerType;
 
@@ -397,7 +414,7 @@ namespace UWGame.SimSide.AI.Goals
             SetPropellerAngle(aircraft, ref rotateTransform, "propeller_joint_left");
         }
 
-        public static void SetLeftDuctAngle(Entity aircraft, Vehicle vehicleComponent, float rotate, float elapsedTime)
+        public static void SetLeftDuctAngle(Entity aircraft, VehicleContainer vehicleComponent, float rotate, float elapsedTime)
         {
             // Vehicle vehicleComponent;
             // aircraft.Find(out vehicleComponent);
@@ -410,7 +427,7 @@ namespace UWGame.SimSide.AI.Goals
 
         }
 
-        public static void SetRightDuctAngle(Entity Aircraft, Vehicle vehicleComponent, float rotate, float elapsedTime)
+        public static void SetRightDuctAngle(Entity Aircraft, VehicleContainer vehicleComponent, float rotate, float elapsedTime)
         {
             rotate -= vehicleComponent.Pitch;
 
@@ -419,7 +436,7 @@ namespace UWGame.SimSide.AI.Goals
             vehicleComponent.Aircraft.RightDuctFanAngle = SetDuctAngle(Aircraft, vehicleComponent, vehicleComponent.Aircraft.RightDuctFanAngle, rotate, "jet_engine_joint_right", elapsedTime);
         }
 
-        private static float SetDuctAngle(Entity aircraft, Vehicle vehicleComponent, float currentAngle, float rotate, /*BonePose*/ string duct, float elapsedTime)
+        private static float SetDuctAngle(Entity aircraft, VehicleContainer vehicleComponent, float currentAngle, float rotate, /*BonePose*/ string duct, float elapsedTime)
         {
             VehicleContainerType vehicleContainerType = (VehicleContainerType)aircraft.EntityType.ContainerType;
 

@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Snapshots;
+using UWGame.SimSide.Entities.Containers.Components;
 
 namespace UWGame.SimSide.Vehicles;
 
@@ -15,7 +16,7 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 
 	public DriversSlot DriversSlot;
 
-	private Vehicle parent;
+	private VehicleContainer parent;
 
 	private EntityID snapshotParent;
 
@@ -45,7 +46,7 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	{
 	}
 
-	public PassengerOrCargoSlot(Vehicle parent)
+	public PassengerOrCargoSlot(VehicleContainer parent)
 	{
 		AddToLookup();
 		this.parent = parent;
@@ -101,7 +102,7 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	public void LoadPostProcess(Snapshotter sn)
 	{
 		sn.RegisterLoadPostProcessCall(this);
-		parent = Entity.FindByID(snapshotParent).Vehicle;
+		parent = Entity.FindByID(snapshotParent).Contains as VehicleContainer;
 	}
 
 	public PassengerOrCargoSlotID GetUniqueID()

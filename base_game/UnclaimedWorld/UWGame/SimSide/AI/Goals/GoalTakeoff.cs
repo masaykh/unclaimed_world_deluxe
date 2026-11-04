@@ -14,7 +14,8 @@ namespace UWGame.SimSide.AI.Goals
     public class GoalTakeoff : CompositeGoal
     {
         public Entity Aircraft;
-        Vehicle vehicleComponent;
+        private EntityID aircraftID;
+        VehicleContainer vehicleComponent;
 
         /*  public Point Destination
           {
@@ -56,7 +57,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -66,15 +67,31 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoSnapshot(sn);
 
-            sn.DoUnknownObject(this.Aircraft);
+            if (sn.mode != Snapshotter.Mode.Load)
+            {
+                aircraftID = Aircraft.EntityID;
+            }
+
+            aircraftID = sn.DoEntityID(aircraftID);
             this.destinationPoint = sn.DoVector3(destinationPoint);
-            sn.DoUnknownObject(this.vehicleComponent);
+
+            sn.Ignore(Aircraft);
+            sn.Ignore(vehicleComponent);
 
             return this;
         }
 
         public GoalTakeoff()
         {
+        }
+
+        public override void LoadPostProcess(Snapshotter sn)
+        {
+            sn.RegisterLoadPostProcessCall(this);
+            base.LoadPostProcess(sn);
+
+            Aircraft = Entity.FindByID(aircraftID);
+            vehicleComponent = Aircraft?.Vehicle;
         }
 
 
@@ -89,7 +106,7 @@ namespace UWGame.SimSide.AI.Goals
                 Status = Goals.Status.Failed;
                 return;
             }
-            Aircraft.Find(out vehicleComponent);
+            vehicleComponent = Aircraft.Vehicle;
 
 
             Status = Status.Active;
@@ -170,7 +187,7 @@ namespace UWGame.SimSide.AI.Goals
             //));
         }
 
-        public static bool UpdateAircraftUpDown(float desiredMoveSpeed, Microsoft.Xna.Framework.GameTime elapsed, Entity pilot, Entity aircraft, Vehicle vehicleComponent, Vector3 destinationPoint)
+        public static bool UpdateAircraftUpDown(float desiredMoveSpeed, Microsoft.Xna.Framework.GameTime elapsed, Entity pilot, Entity aircraft, VehicleContainer vehicleComponent, Vector3 destinationPoint)
         {
             float elapsedTime = (float)elapsed.ElapsedGameTime.TotalSeconds;
 
