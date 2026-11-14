@@ -18,4 +18,9 @@ type  base_game/UnclaimedWorld/UWGame/SimSide/Items/PowerCell.cs  PowerCell
 type  base_game/UnclaimedWorld/UWGame/SimSide/Combat/SplashAttack.cs  SplashAttack
 
 type	test/UnclaimedWorld.Test/Test1.cs	SimulationRegressionTests # the new unit test project
+type	test/UnclaimedWorld.Test/MechanicalAnimationTests.cs	MechanicalAnimationTests
+type	test/UnclaimedWorld.Test/ParticleEmitterCleanupTests.cs	ParticleEmitterCleanupTests
+type	test/UnclaimedWorld.Test/RenderedLocationTests.cs	RenderedLocationTests
+type	test/UnclaimedWorld.Test/VehicleContainmentTests.cs	VehicleContainmentTests
+type	test/UnclaimedWorld.Test/VehicleSensorTests.cs	VehicleSensorTests
 

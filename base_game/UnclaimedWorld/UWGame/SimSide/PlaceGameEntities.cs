@@ -3637,6 +3637,8 @@ public class PlaceGameEntities
         Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(5, 5)));
         PlacePerson("Ward", "Conlan", Reproduction.Male, new Point(5, 2), Color.White, 52f, noSkills: false, "blue1", expedition).SetRotationAndDir(-(float)Math.PI / 2f);
         
+		AddColonyItem("item:sentryWeaponMount", new Point(6, 2));
+
         // why does it have Intelligence, and allegiance..?
         AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(9, 2));
     }

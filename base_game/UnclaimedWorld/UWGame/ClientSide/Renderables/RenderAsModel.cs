@@ -1010,7 +1010,7 @@ namespace UWGame.ClientSide.Renderables
                 return;
             }
 
-#if DEBUG || PROFILE
+#if DEBUG
             if ((animBracket1 != null ? animBracket1.AnimationKey : null) != previousMainGait)
             {
                 The.MapUI.AddDebugMarker(Location + new Vector3(0f, 20f, 0f), Color.Pink, this);
