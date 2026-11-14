@@ -94,6 +94,30 @@ esac
 
 OUT="$UW_REPO/artifacts/release"
 STAGE="$UW_REPO/artifacts/release-stage"
+
+# THE PLAYER'S user/ SURVIVES A REBUILD. The game keeps user/ beside the exe (Config.cs: mod
+# settings, user maps, scenarios and mods), and docs/build.md says to run from the staged folder -
+# so wiping the stage wiped the tester's settings with it (Kastuk, 2026-11-14). user/ is moved
+# out of the way here, kept out of the archive, and put back once the platform is packaged. A
+# run that fails half-way leaves it in $KEEP, and the next run puts it back; nothing here deletes
+# $KEEP, so a kept copy is never overwritten by a newer empty one.
+KEEP="$UW_REPO/artifacts/release-user-keep"
+keep_user() { # keep_user <folder holding user/> <key>
+  [ -d "$1/user" ] || return 0
+  if [ -d "$KEEP/$2/user" ]; then
+    echo "  ! $KEEP/$2/user already kept from an earlier run; leaving $1/user to be rebuilt over" >&2
+    return 0
+  fi
+  mkdir -p "$KEEP/$2" && mv "$1/user" "$KEEP/$2/user"
+}
+restore_user() { # restore_user <folder to hold user/> <key>
+  [ -d "$KEEP/$2/user" ] || return 0
+  rm -rf "$1/user" && mv "$KEEP/$2/user" "$1/user" && rmdir "$KEEP/$2" "$KEEP" 2>/dev/null
+  echo "    kept user/ in $1"
+}
+for d in "$STAGE"/*/UnclaimedWorldDeluxe; do
+  [ -d "$d" ] && keep_user "$d" "stage-$(basename "$(dirname "$d")")"
+done
 rm -rf "$STAGE"
 mkdir -p "$OUT"
 
@@ -352,11 +376,13 @@ DXNOTE
   # --- archive ---------------------------------------------------------------------------------
   if [ -n "$FOLDER" ]; then
     name="UnclaimedWorldDeluxe-$VERSION-$rid"
+    keep_user "$OUT/$name" "folder-$name"
     rm -rf "$OUT/$name"
     cp -r "$app" "$OUT/$name"
     for want in UnclaimedWorld.dll install.md LICENSE-UnclaimedWorld-Community.md MapData.xml; do
       find "$OUT/$name" -name "$want" | grep -q . || { echo "  !! missing from folder: $want" >&2; exit 1; }
     done
+    restore_user "$OUT/$name" "folder-$name"
   else
   name="UnclaimedWorldDeluxe-$VERSION-$rid.7z"
   rm -f "$OUT/$name"
@@ -401,6 +427,9 @@ DXNOTE
         echo "  !! steam_appid.txt in $rid - Steam is win-x64 only here" >&2; exit 1; }
       : ;;
   esac
+
+  # Packaged and checked without it; now the tester's user/ goes back where the game reads it.
+  restore_user "$app" "stage-$rid"
 
   size=$(du -sh "$OUT/$name" | cut -f1)
   echo "    $name  ($size)"

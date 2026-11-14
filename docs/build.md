@@ -56,7 +56,9 @@ sh tools/build/70-make-release.sh --folder 0.0-dev win-x64-dx # a plain folder t
 **do not** build DX with `-r win-x64` by hand, which is what the script is carefully avoiding;
 see the comment at its `--- code ---` block. The archive lands in `artifacts/release/` and the
 staged directory it was cut from is in `artifacts/release-stage/win-x64-dx/`, which is the one to
-run from.
+run from. A rebuild keeps that folder's `user/` (mod settings, your maps, scenarios and mods) and
+the `user/` of a `--folder` output; neither goes into the archive. Saves and replays are in
+Documents and are never touched.
 
 Without `--full` the archive has no `Content/` — you point it at your own copy, exactly as the
 GL archives do. With `--full` it is standalone. Both need 7-Zip on `PATH` (or `SEVENZIP` set),
