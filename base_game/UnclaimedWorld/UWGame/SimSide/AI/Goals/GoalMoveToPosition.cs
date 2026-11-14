@@ -972,7 +972,7 @@ namespace UWGame.SimSide.AI.Goals
 
             if (insideBuilding != null)
             { // move out...
-                AddSubgoal(new GoalExit(entity));
+                AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
                 pathStartLocation = insideBuilding.AccessPoint.Value;
             }
 

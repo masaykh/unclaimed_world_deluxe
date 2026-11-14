@@ -200,7 +200,7 @@ internal class GoalDoTakeFive : CompositeGoal
 			{
 				if (ContainerIsTooCrowded())
 				{
-					AddSubgoal(new GoalExit(entity));
+					AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
 				}
 				else
 				{
