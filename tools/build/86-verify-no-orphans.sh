@@ -16,6 +16,7 @@
 #           its own declaration. Harmony's by-convention names (Prefix, Postfix, ...) are exempt.
 #   type    A class, struct, enum, interface or delegate whose name appears nowhere but its own
 #           declaration. An attribute counts as used when its short name ([Author]) appears.
+#           MSTest test classes are discovered by attribute, not by a reference to their name.
 #           The content runtimes (AnimationComponentRuntime, SpriteSheetRuntime) are exempt: .xnb
 #           files name their types, and those files are not in the repository.
 #   setting A ModSetting (mods/*.cs, PortSettings.cs) that nothing reads - it shows in the options
@@ -115,6 +116,14 @@ perl -0777 -e '
     next if $f =~ m{/Generated/|^base_game/(AnimationComponentRuntime|SpriteSheetRuntime)/};
     while ($text{$f} =~ /^[ \t]*(?:(?:public|internal|private|protected|static|sealed|abstract|partial|readonly|unsafe|file)\s+)*(?:class|struct|enum|interface|record|delegate)\s+(?:[\w<>\[\],.?]+\s+(?=\w+\s*[(<;]))?(\w+)/mg) {
       my $name = $1;
+      my $start = $-[0];
+      if ($f =~ m{^test/UnclaimedWorld\.Test/}) {
+        my $before = substr($text{$f}, 0, $start);
+        if ($before =~ /(?:^[ \t]*\[[^\]\n]*\][ \t]*\n)+\z/m) {
+          my $attributes = $&;
+          next if $attributes =~ /(?:^|[\s\[,])(?:global::)?(?:Microsoft\.VisualStudio\.TestTools\.UnitTesting\.)?TestClass(?:Attribute)?\s*(?=[,\]\(])/;
+        }
+      }
       next if ($count{$name} // 0) > 1;
       next if $name =~ /^(\w+)Attribute$/ && ($count{$1} // 0) > 0;
       push @out, "type\t$f\t$name";
