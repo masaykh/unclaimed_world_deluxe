@@ -143,3 +143,8 @@ The data tables are translated once they are complete (`GameData.PostDataComplet
 self-test translates every data text and checks that every number, flag and enum in all the tables
 is unchanged, and `37-make-strings.sh` refuses a name compared with English in the simulation or a
 mod.
+
+## Fonts
+Default font can be changed to make it more readable in other languages.
+1. Enter command in git bash at core project folder: `UW_FONT_FACE_LCD=Play sh tools/build/36-build-fonts.sh`
+2. Copy the contents of `artifacts/content/fonts/dx` (for dx build, `/gl` for gl build) into `<game>\port-content\` (create folder if it missed), so you get `port-content\Arial.xnb` and `port-content\Fonts\LCDandHUDBody.xnb` (not `port-content\dx\...`).
