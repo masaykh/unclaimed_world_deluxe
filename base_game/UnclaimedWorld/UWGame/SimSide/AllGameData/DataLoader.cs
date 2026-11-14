@@ -663,8 +663,7 @@ public abstract class DataLoader
 			{
 				Directory.CreateDirectory(dataFolderPath);
 			}
-			using TextWriter textWriter = new StreamWriter(dataFolderPath2);
-			xmlSerializer.Serialize(textWriter, listToSerialize);
+			WriteWholeOrNothing(xmlSerializer, dataFolderPath2, listToSerialize);
 		}
 		DeserializeTypeList(dataFolderPath, dataFolderPath2, out listToSerialize, dataType);
 	}
@@ -682,8 +681,7 @@ public abstract class DataLoader
 				{
 					Directory.CreateDirectory(dataFolderPath);
 				}
-				using TextWriter textWriter = new StreamWriter(dataFolderPath2);
-				xmlSerializer.Serialize(textWriter, listToSerialize);
+				WriteWholeOrNothing(xmlSerializer, dataFolderPath2, listToSerialize);
 			}
 			DeserializeTypeList(dataFolderPath, dataFolderPath2, out listToSerialize, dataSource);
 		}
@@ -699,6 +697,14 @@ public abstract class DataLoader
 		{
 			if (Sim.CurrentSerializeMode == Sim.SerializeMode.WriteAndRead)
 			{
+				// PORT FIX. A scenario's loader has no GUIConstants (or AIConstants...) of its own and
+				// returns null. Written, that is an xsi:nil file, and reading it back through the
+				// object's IXmlSerializable proxy throws - every scenario export reported GUIConstants
+				// failed. Nothing of its own, nothing written; the base game's stays in force.
+				if (objectToSerialize == null)
+				{
+					return;
+				}
 				SerializeObject(objectToSerialize, folderName, xmlFileName, dataType);
 			}
 			DeserializeObject<T>(folderName, xmlFileName, out objectToSerialize, dataType);
@@ -734,8 +740,34 @@ public abstract class DataLoader
 		{
 			Directory.CreateDirectory(dataFolderPath);
 		}
-		using TextWriter textWriter = new StreamWriter(Config.GetDataFolderPath(dataType, folderName, xmlFileName));
-		xmlSerializer.Serialize(textWriter, objectToSerialize);
+		WriteWholeOrNothing(xmlSerializer, Config.GetDataFolderPath(dataType, folderName, xmlFileName), objectToSerialize);
+	}
+
+	/// <summary>
+	/// PORT FIX. XmlSerializer writes as it goes, so one that throws part-way - an unexpected type
+	/// deep in a table - left the file cut off where it stopped, and the next read of it failed
+	/// far from the cause ("Unexpected end of file", "Root element is missing"). An exported
+	/// scenario reached a player like that (Kastuk, 2026-11-14). The table is written to a
+	/// temporary file and moved into place only when complete; a failed one leaves no file at all,
+	/// and the exception still says why.
+	/// </summary>
+	public static void WriteWholeOrNothing(XmlSerializer xmlSerializer, string filePath, object value)
+	{
+		string temporary = filePath + ".partial";
+		try
+		{
+			using (TextWriter textWriter = new StreamWriter(temporary))
+			{
+				xmlSerializer.Serialize(textWriter, value);
+			}
+			File.Move(temporary, filePath, overwrite: true);
+		}
+		catch
+		{
+			File.Delete(temporary);
+			File.Delete(filePath);
+			throw;
+		}
 	}
 
 	public static void DeserializeObject<T>(string folderName, string xmlFileName, out T objectToSerialize, Config.DataType dataType)

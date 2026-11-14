@@ -2937,7 +2937,7 @@ internal static partial class Program
         }
 
         var loaders = (System.Collections.IEnumerable)field.GetValue(null);
-        int ok = 0, failed = 0;
+        int ok = 0, partial = 0, failed = 0;
         foreach (UWGame.SimSide.AllGameData.Scenarios.ScenarioLoader loader in loaders)
         {
             string name = loader.FolderName;
@@ -2957,8 +2957,19 @@ internal static partial class Program
 
                 int rc = RunLoader(loader.GetDataLoader(), header, Sim.SerializeMode.WriteAndRead,
                                    "    tables for " + name);
-                Console.WriteLine(rc == 0 ? $"    ok      {name}" : $"    PARTIAL {name}  (some tables failed above)");
-                ok++;
+                // RunLoader answers non-zero only when NOTHING loaded, so it said "ok" for a scenario
+                // whose actionSets.xml had failed half-way - and that file reached a player
+                // (Kastuk, 2026-11-14). A failed table is a scenario that will not load back.
+                if (rc == 0 && LastRunFailures == 0)
+                {
+                    Console.WriteLine($"    ok      {name}");
+                    ok++;
+                }
+                else
+                {
+                    Console.WriteLine($"    PARTIAL {name}  ({LastRunFailures} table(s) failed above; this scenario will not load as exported)");
+                    partial++;
+                }
             }
             catch (Exception ex)
             {
@@ -2974,7 +2985,7 @@ internal static partial class Program
         }
 
         Console.WriteLine();
-        Console.WriteLine($"==> scenarios: {ok} written, {failed} failed  -> data/Scenarios/<name>/");
+        Console.WriteLine($"==> scenarios: {ok} written, {partial} partial, {failed} failed  -> data/Scenarios/<name>/");
         Console.WriteLine("    Each folder holds scenario.xml and scenarioData.xml PLUS that scenario's own");
         Console.WriteLine("    tables - its event actions, entity types, polled events and hooks.");
         Console.WriteLine();
@@ -2982,7 +2993,7 @@ internal static partial class Program
         Console.WriteLine("    action ('spawnWorld') and its Actions as KEYS, and those keys are defined in the");
         Console.WriteLine("    SCENARIO's loader, not the base one - so a scenarioData.xml copied on its own");
         Console.WriteLine("    dies in Sim.ExecuteStartAction with KeyNotFoundException on the first one.");
-        return failed == 0 ? 0 : 1;
+        return failed == 0 && partial == 0 ? 0 : 1;
     }
 
     /// <summary>
