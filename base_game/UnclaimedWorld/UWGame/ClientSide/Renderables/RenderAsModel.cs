@@ -1464,7 +1464,7 @@ namespace UWGame.ClientSide.Renderables
         /// <summary>
         /// a multiple of the lag cutoff distance where we want to gradually reduce lagging from.
         /// </summary>
-        private const float distanceFactorToReduceLerping = 8f; // 4f; 
+        /*private const float distanceFactorToReduceLerping = 8f; // 4f; */
 
 
 
@@ -1605,6 +1605,7 @@ namespace UWGame.ClientSide.Renderables
             return false;
         }
 
+        /*
         /// <summary>
         /// if it is a ChangeStance action, returns the resulting end stance
         /// </summary>
@@ -1683,10 +1684,9 @@ namespace UWGame.ClientSide.Renderables
 
             }
 
-
-
             return null;
         }
+        */
 
         /// <summary>
         /// the purpose of this is to avoid stance related anim errors that may have originated in AI goals,
@@ -1733,6 +1733,7 @@ namespace UWGame.ClientSide.Renderables
             return false;
         }
 
+        /*
         private bool IsStanding(AnimConditions conditionSet)
         {
             return conditionSet == null
@@ -1741,6 +1742,7 @@ namespace UWGame.ClientSide.Renderables
                         || conditionSet.Modifiers.Test(AnimModifier.Kneeling)
                         || conditionSet.Modifiers.Test(AnimModifier.Lying));
         }
+        */
 
         /*
         public void CycleAlternateAnims()
@@ -2239,6 +2241,8 @@ namespace UWGame.ClientSide.Renderables
         }
 
         List<Pair<Entity, Vector2>> nearByEntitiesOfSameType = new List<Pair<Entity, Vector2>>();
+
+        /*
         /// <summary>
         /// when picking a random anim, avoid ones that are already played nearby. This will look especially bad if they are in sync...
         /// </summary>
@@ -2264,6 +2268,7 @@ namespace UWGame.ClientSide.Renderables
 
             return false;
         }
+        */
 
         private void AdoptAdditionalAnim(Looping? previousAnimIsLooping, string previousAdditionalAnimKey, string previousAdditionalBlendAnimKey, string currentAdditionalAnimKey, AnimationTrack track)
         {

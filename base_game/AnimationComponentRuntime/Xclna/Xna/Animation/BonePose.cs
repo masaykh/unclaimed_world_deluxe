@@ -237,11 +237,13 @@ namespace Xclna.Xna.Animation
         // True if the current blend animation contains a track for this bone
         private bool doesMainBlendAnimAffectBone = false;
 
+        
         // True if the current animation contains a track for this bone
-        private bool doesSecondGaitAnimAffectBone = false;
-        // True if the current blend animation contains a track for this bone
-        private bool doesSecondGaitBlendAnimAffectBone = false;
+        /*private bool doesSecondGaitAnimAffectBone = false;*/
 
+        // True if the current blend animation contains a track for this bone
+        /*private bool doesSecondGaitBlendAnimAffectBone = false;*/
+        
 
         private List<AnimationTrack> additionalAnimationTracks = new List<AnimationTrack>();
         private List<bool> additionalAnimAffectsBone = new List<bool>();
@@ -391,6 +393,8 @@ namespace Xclna.Xna.Animation
                     break;
 
                 case AnimationTrack.TrackType.ExtraGait:
+
+                    /*
                     if (track.currentController != null)
                     {
                         doesSecondGaitAnimAffectBone = track.currentController.AnimationInfo.AffectsBone(this.name);
@@ -399,7 +403,9 @@ namespace Xclna.Xna.Animation
                     {
                         doesSecondGaitAnimAffectBone = false;
                     }
+                    */
 
+                    /*
                     if (track.controllerBeingBlendedTo != null)
                     {
                         doesSecondGaitBlendAnimAffectBone = track.controllerBeingBlendedTo.AnimationInfo.AffectsBone(this.name);
@@ -409,6 +415,7 @@ namespace Xclna.Xna.Animation
                     {
                         doesSecondGaitBlendAnimAffectBone = false;
                     }
+                    */
 
                     break;
                 case AnimationTrack.TrackType.Additional:

@@ -333,6 +333,7 @@ namespace UWGame.SimSide.AI.Goals
             return job.ScoreTimePassed();
         }
 
+        /*
         private bool IsCurrentlyHaulingItem(IKnownEntityData entityData)
         {
             if (entityData.AssignedToJob.HasValue)
@@ -353,7 +354,7 @@ namespace UWGame.SimSide.AI.Goals
 
             return false;
         }
-
+        */
 
 
         /// <summary>

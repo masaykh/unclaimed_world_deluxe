@@ -1143,11 +1143,6 @@ namespace UWGame.ClientSide.Interface.HUD_Windows
             }
         }
 
-        void bt_MouseOver(UIComponent sender, InputEventSystem.MouseEventArgs args)
-        {
-            // show the context menu??? without selecting?
-        }
-
         /// <summary>
         /// only updates the position, and only for entity markers
         /// </summary>
