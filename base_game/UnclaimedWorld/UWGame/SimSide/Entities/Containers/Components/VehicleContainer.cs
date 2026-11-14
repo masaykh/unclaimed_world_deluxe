@@ -600,6 +600,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 foreach (PassengerOrCargoSlot slot in Slots)
                 {
                     if (slot.DriversSlot != null && slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null)
+                        && (slot.CargoSlot == null || (slot.CargoSlot.BulkCarried == 0f && slot.CargoSlot.TargetedByHauler == null)))
                     {
                         if (slot.PassengerOrCargoSlotType.PassengerSlotType.Comfort > bestComfort)
                         {
