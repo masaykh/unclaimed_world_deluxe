@@ -2568,15 +2568,56 @@ namespace UWGame.ClientSide.Renderables
         public void StartAdditionalAnimation(string animKey, Playback playback, StartingPoint startingPoint,
                                     BlendMode mode, float speedFactor = 1f, Looping looping = Looping.No, float? startOffsetToAdd = null)
         {
-            // see if there is a free animation track...
-            foreach (var track in additionalAnimationTracks)
+            // PORT FIX, for a reversible part only: a Current start played Forwards or Backwards.
+            // The studio's loop below started it on EVERY free track and never looked at the track
+            // already moving it, so the skimmer's landing gear half-way up got a second copy instead
+            // of turning round (Kastuk, 2026-11-14: "paused in the middle of animation"). Such a part
+            // now has one track: the one already playing (or blending to) it, which
+            // AnimationTrack.StartAnimation reverses from where it is, else the first free one.
+            // Every other mode keeps the studio's routing (Lars's MechanicalAnimationTests:
+            // AdditionalCurrentUsesOneTrackAndReusesItForReversal, OtherAdditionalModesKeepExistingFreeTrackRouting).
+            bool reversiblePart = startingPoint == StartingPoint.Current
+                && (playback == Playback.Forwards || playback == Playback.Backwards);
+            if (!reversiblePart)
             {
-                if (track.currentController == null)
+                foreach (var track in additionalAnimationTracks)
                 {
-                    StartAnimation(animKey, track, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd);
+                    if (track.currentController == null)
+                    {
+                        StartAnimation(animKey, track, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd);
+                    }
                 }
+                return;
             }
 
+            AnimationController anim = animKey != null ? AnimatedModel.ModelAnimator.GetAnimControllerFromKey(animKey) : null;
+            AnimationTrack chosen = null;
+            if (anim != null)
+            {
+                foreach (var track in additionalAnimationTracks)
+                {
+                    if (track.currentController == anim || track.controllerBeingBlendedTo == anim)
+                    {
+                        chosen = track;
+                        break;
+                    }
+                }
+            }
+            if (chosen == null)
+            {
+                foreach (var track in additionalAnimationTracks)
+                {
+                    if (track.currentController == null)
+                    {
+                        chosen = track;
+                        break;
+                    }
+                }
+            }
+            if (chosen != null)
+            {
+                StartAnimation(animKey, chosen, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd);
+            }
         }
 
         public void StopMainAnimation()
