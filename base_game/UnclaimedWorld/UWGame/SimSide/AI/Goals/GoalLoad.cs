@@ -15,7 +15,10 @@ internal class GoalLoad : CompositeGoal
 
 	private EntityID vehicleToLoad;
 
-	public OwnerID? NewOwner;
+    /// <summary>
+    /// if filled, if the owner cannot be resolved, the goal fails
+    /// </summary>
+    public OwnerID? NewOwner;
 
 	private List<PassengerOrCargoSlot> slots;
 
@@ -31,6 +34,21 @@ internal class GoalLoad : CompositeGoal
 		NewOwner = newOwner;
 	}
 
+	public override void Terminate()
+	{
+		base.Terminate();
+		if (slots != null)
+		{
+			foreach (PassengerOrCargoSlot slot in slots)
+			{
+				if (slot.CargoSlot.TargetedByHauler == entity)
+				{
+					slot.CargoSlot.TargetedByHauler = null;
+				}
+			}
+		}
+	}
+
 	public GoalLoad()
 	{
 	}
@@ -43,10 +61,14 @@ internal class GoalLoad : CompositeGoal
 		{
 			return;
 		}
-		bool flag = entity.AgentStorage.Contains(itemToLoad);
-		if (flag || data.Bulk <= entity.AgentStorage.GetCompartment(compartment).UnusedCapacity)
+
+        bool isCarryingItemToLoad = entity.AgentStorage.Contains(itemToLoad);
+
+        if (isCarryingItemToLoad || // if we are not already carrying the item, we must have capacity to pick it up:
+            data.Bulk <= entity.AgentStorage.GetCompartment(compartment).UnusedCapacity)
 		{
-			if (entity.DrivingVehicle.HasValue)
+            // first make sure we are out of any vehicle:
+            if (entity.DrivingVehicle.HasValue)
 			{
 				AddSubgoal(new GoalExitVehicle(entity, entity.DrivingVehicle.Value));
 			}
@@ -54,7 +76,8 @@ internal class GoalLoad : CompositeGoal
 			{
 				AddSubgoal(new GoalExitVehicle(entity, entity.PassengerInVehicle.Value));
 			}
-			if (!flag)
+
+			if (!isCarryingItemToLoad)
 			{
 				AddSubgoal(new GoalMoveToPosition(entity, null, data, GoalMoveToPosition.VehicleUse.NoVehicle));
 				if (!PickupItemOrUnloadFirst(data, mountAfterPickup: false, bendDown: true, standUpAfterwards: true, compartment))
@@ -62,11 +85,19 @@ internal class GoalLoad : CompositeGoal
 					return;
 				}
 			}
+
 			slots = data2.GetCargoSlotsForLoading(data.Bulk);
+			if (slots == null || slots.Count == 0 || slots.Sum(slot => slot.CargoSlot.GetRemainingRoom()) < data.Bulk)
+			{
+				base.Status = Status.Failed;
+				return;
+			}
+
 			foreach (PassengerOrCargoSlot slot in slots)
 			{
 				slot.CargoSlot.TargetedByHauler = entity;
 			}
+
 			slots[0].GetEntryPoints(out var transformedEntry, out var transformedPointToFace);
 			AddSubgoal(new GoalMoveToPosition(entity, transformedEntry, null, GoalMoveToPosition.VehicleUse.NoVehicle));
 			AddSubgoal(new GoalTurnToFace(entity, transformedPointToFace.ToVector2()));
@@ -85,8 +116,21 @@ internal class GoalLoad : CompositeGoal
 		{
 			if (base.entity.AgentStorage.Uncontain(entity, destroy: false, shouldQueue: false, null, placeInStorageEntity, null, null, slots))
 			{
-				IOwner newOwner = LookUpOwners.FindByID(NewOwner);
+                if (NewOwner.HasValue)
+                {
+                    IOwner newOwner = LookUpOwners.FindByID(NewOwner);
+					if (newOwner == null)
+					{
+						base.Status = Status.Failed;
+						return;
+					}
+
+                    entity.ChangeOwnership(newOwner);
+                }
+				/*
+                IOwner newOwner = LookUpOwners.FindByID(NewOwner);
 				entity.ChangeOwnership(newOwner);
+				*/
 				base.Status = Status.Completed;
 			}
 			else

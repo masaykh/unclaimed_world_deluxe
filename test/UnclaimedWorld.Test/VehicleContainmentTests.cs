@@ -158,6 +158,25 @@ public sealed class VehicleContainmentTests
     }
 
     [TestMethod]
+    public void DriverSeatOccupiedByPassengerOrCargoIsNotAvailable()
+    {
+        var vehicle = NewVehicle();
+        var seat = NewSeat(driverSeat: true, cargoCapacity: 5);
+        seat.PassengerOrCargoSlotType.PassengerSlotType.Comfort = 1;
+        vehicle.Slots.Add(seat);
+        Assert.AreSame(seat, vehicle.GetFreeDriversSlot());
+
+        seat.PassengerSlot.Passenger = NewEntity(106);
+        Assert.IsNull(vehicle.GetFreeDriversSlot());
+        seat.PassengerSlot.Passenger = null;
+        seat.CargoSlot.BulkCarried = 1;
+        Assert.IsNull(vehicle.GetFreeDriversSlot());
+        seat.CargoSlot.BulkCarried = 0;
+        seat.CargoSlot.TargetedByHauler = NewEntity(107);
+        Assert.IsNull(vehicle.GetFreeDriversSlot());
+    }
+
+    [TestMethod]
     public void SeatSnapshotRestoresIdentityOccupantReservationAndCargo()
     {
         Entity.CreateLookupCollection();

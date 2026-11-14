@@ -108,6 +108,11 @@ namespace UWGame.SimSide.AI.Goals
 
                 Vector3 entryLocation, seatLocation;
                 driversSlot = vehicleData.GetFreeDriversSlot();
+                if (driversSlot == null)
+                {
+                    Status = Status.Failed;
+                    return;
+                }
                 driversSlot.GetEntryPoints(out entryLocation, out seatLocation);
 
                 //vehicleComponent.GetEntryPoint(Place.Driver, out entryLocation, out seatLocation); 

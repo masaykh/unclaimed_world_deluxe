@@ -57,6 +57,10 @@ public class ModelData
 		{
 			return DriverAttachor;
 		}
+		if (PassengerAttachors == null)
+		{
+			return null;
+		}
 		foreach (AttachPoint passengerAttachor in PassengerAttachors)
 		{
 			if (passengerAttachor.KeyName == keyName)
@@ -96,6 +100,10 @@ public class ModelData
 		if (DriverAttachor != null && tag == DriverAttachor.Tag)
 		{
 			return DriverAttachor;
+		}
+		if (PassengerAttachors == null)
+		{
+			return null;
 		}
 		foreach (AttachPoint passengerAttachor in PassengerAttachors)
 		{

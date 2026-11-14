@@ -31,6 +31,21 @@ internal class GoalUnload : CompositeGoal
 		containerToUnload = container;
 	}
 
+	public override void Terminate()
+	{
+		base.Terminate();
+		if (slots != null)
+		{
+			foreach (PassengerOrCargoSlot slot in slots)
+			{
+				if (slot.CargoSlot.TargetedByHauler == entity)
+				{
+					slot.CargoSlot.TargetedByHauler = null;
+				}
+			}
+		}
+	}
+
 	public GoalUnload(Entity owner, EntityID container, EntityID item, Job assignToJob)
 		: base(owner)
 	{

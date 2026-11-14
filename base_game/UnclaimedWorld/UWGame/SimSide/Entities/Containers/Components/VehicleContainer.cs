@@ -466,6 +466,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 {
                     if (slot.CargoSlot != null
                         && !slot.CargoSlot.IsFull()
+                        && slot.CargoSlot.TargetedByHauler == null
                         && (slot.PassengerSlot == null || (slot.PassengerSlot.Passenger == null && slot.PassengerSlot.TargetedBy == null))
                         && (slot.DriversSlot == null || (slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null)))
                     {
@@ -556,6 +557,10 @@ namespace UWGame.SimSide.Entities.Containers.Components
         // Vehicle, inventory, storage, and visitor should all share a common contain parent.
         public void UpdateCargoSlotsWithAttachedModels()
         {
+            if (Parent.Renderable?.RenderAsModel?.ModelData == null)
+            {
+                return;
+            }
             foreach (PassengerOrCargoSlot slot in Slots)
             {
                 if (slot.CargoSlot != null)
@@ -599,7 +604,8 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 PassengerOrCargoSlot bestSlot = null;
                 foreach (PassengerOrCargoSlot slot in Slots)
                 {
-                    if (slot.DriversSlot != null && slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null)
+                    if (slot.DriversSlot != null && slot.DriversSlot.Driver == null && slot.DriversSlot.TargetedBy == null
+                        && (slot.PassengerSlot == null || (slot.PassengerSlot.Passenger == null && slot.PassengerSlot.TargetedBy == null))
                         && (slot.CargoSlot == null || (slot.CargoSlot.BulkCarried == 0f && slot.CargoSlot.TargetedByHauler == null)))
                     {
                         if (slot.PassengerOrCargoSlotType.PassengerSlotType.Comfort > bestComfort)
@@ -939,6 +945,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 return removed;
             }
 
+            slots ??= GetCargoSlotsForUnloading(entity.Bulk);
             if (slots != null)
             {
                 foreach (PassengerOrCargoSlot slot in slots)
@@ -1012,9 +1019,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 //HandleAttachedBoxAnimation(parent);
             }
 
-            //   return wasRemoved;
-
-            return true;
+            return wasRemoved;
 
         }
 
@@ -1052,59 +1057,34 @@ namespace UWGame.SimSide.Entities.Containers.Components
             }
             else
             {
-                return storage.Add(entity, placeInStorage, ignoreCapacity);
+                if (!storage.Add(entity, placeInStorage, ignoreCapacity))
+                {
+                    return false;
+                }
             }
 
-           /* if (!storage.Add(entity, null, ignoreCapacity))
-            {
-                return false;
-            }*/
-
-            return true;
-
-            // TODO: enable this code again:
-
-            foreach (PassengerOrCargoSlot slotToLoad in slotsToUse)
-            {
-                slotToLoad.CargoSlot.TargetedByHauler = null;
-            }
-                      
-
-            entity.Item.OKToTakeThisItemFromCarrier = null;
-
-
-            Parent.Locomotor.CurrentMaximumSpeedIsDirty = true;
-            Parent.Locomotor.CurrentMaximumSpeedNotAffectedByTerrainIsDirty = true;
-            // must not affect evaluator speed.
-
-            float roomInSlot;
+            slotsToUse ??= GetCargoSlotsForLoading(entity.Bulk);
             float bulkStillToLoad = entity.Bulk;
-            //float bulkToLoadInThisSlot;
-
-            // fill 'em up:
-            foreach (PassengerOrCargoSlot slotToLoad in slotsToUse)
+            if (slotsToUse != null)
             {
-                roomInSlot = slotToLoad.CargoSlot.GetRemainingRoom();
-
-                if (roomInSlot >= bulkStillToLoad)
+                foreach (PassengerOrCargoSlot slotToLoad in slotsToUse)
                 {
-                    slotToLoad.CargoSlot.BulkCarried += bulkStillToLoad;
-
-                    break;
-                }
-                else
-                {
-                    slotToLoad.CargoSlot.BulkCarried += roomInSlot;
-
-                    bulkStillToLoad -= roomInSlot;
+                    slotToLoad.CargoSlot.TargetedByHauler = null;
+                    float loaded = Math.Min(slotToLoad.CargoSlot.GetRemainingRoom(), bulkStillToLoad);
+                    slotToLoad.CargoSlot.BulkCarried += loaded;
+                    bulkStillToLoad -= loaded;
                 }
             }
-
-
-
+            if (entity.Item != null)
+            {
+                entity.Item.OKToTakeThisItemFromCarrier = null;
+            }
+            if (Parent.Locomotor != null)
+            {
+                Parent.Locomotor.CurrentMaximumSpeedIsDirty = true;
+                Parent.Locomotor.CurrentMaximumSpeedNotAffectedByTerrainIsDirty = true;
+            }
             UpdateCargoSlotsWithAttachedModels();
-
-
             return true;
            
         }

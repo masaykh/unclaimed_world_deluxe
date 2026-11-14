@@ -310,10 +310,16 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 				base.Status = Status.Failed;
 				return;
 			}
-			if (vehicle != data && Common.DistanceOctile(data.PlaySiteLocation, playSiteLocation) > ((VehicleContainerType)data.EntityType.ContainerType).LoadingRadius)
+			if (vehicle != null && vehicle.EntityID != vehicleID.Value)
 			{
-				AddSubgoal(new GoalEnterVehicleAsDriver(entity, vehicleID.Value, null));
-				AddSubgoal(new GoalMoveToPosition(entity, playSiteLocation, ownersOfVehicles, GoalMoveToPosition.VehicleUse.KeepVehicle));
+				AddSubgoal(new GoalExitVehicle(entity, vehicle.EntityID));
+			}
+			if (Common.DistanceOctile(data.PlaySiteLocation, playSiteLocation) > ((VehicleContainerType)data.EntityType.ContainerType).LoadingRadius)
+			{
+				AddSubgoal(new GoalMoveToPosition(entity, playSiteLocation, ownersOfVehicles, GoalMoveToPosition.VehicleUse.KeepVehicle)
+				{
+					UsedVehicle = vehicleID
+				});
 			}
 			if (!SourcePileIsHandled)
 			{
@@ -332,7 +338,12 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 			}
 			if (!num3 && (ParentGoal != null || IsOuterGoal))
 			{
-				AddSubgoal(new GoalMoveToPosition(entity, job.ToLocation.Value, ownersOfVehicles, GoalMoveToPosition.VehicleUse.KeepVehicle)
+				if (!job.GetToLocation(entity, out var destination) || !destination.HasValue)
+				{
+					base.Status = Status.Failed;
+					return;
+				}
+				AddSubgoal(new GoalMoveToPosition(entity, destination.Value, ownersOfVehicles, GoalMoveToPosition.VehicleUse.KeepVehicle)
 				{
 					UsedVehicle = vehicleID
 				});
@@ -356,7 +367,9 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 			num = ((!vehicleData.ContainsEntity(job.Item.Value)) ? (vehicleData.TotalItemStorageCapacity.Value - vehicleData.TotalStored.Value - itemData.Bulk) : (vehicleData.TotalItemStorageCapacity.Value - vehicleData.TotalStored.Value));
 			if (((VehicleContainerType)vehicleData.EntityType.ContainerType).Aircraft != null)
 			{
-				usingAirTransport = true;
+				// The nested vehicle-hauling goals cannot safely route between multiple destinations.
+				// Haul one item per flight until that routing is supported.
+				return ExtraCargoResult.OK;
 			}
 		}
 		else
@@ -718,8 +731,11 @@ internal class GoalHaul : CompositeGoal, ITopLevelGoal
 		}
 		if (piledSourceJobs.Count == 1)
 		{
-			AddSubgoal(new GoalPickup(entity, piledSourceJobs[0].Item1.Item.Value, NewOwner, StorageCompartment.Haul, false));
-			AddSubgoal(new GoalLoad(entity, vehicleID.Value, piledSourceJobs[0].Item1.Item.Value, NewOwner));
+			var item = piledSourceJobs[0].Item2;
+			if (item.ContainedBy != vehicleID && PickupItemOrUnloadFirst(item))
+			{
+				AddSubgoal(new GoalLoad(entity, vehicleID.Value, piledSourceJobs[0].Item1.Item.Value, NewOwner));
+			}
 		}
 		else
 		{

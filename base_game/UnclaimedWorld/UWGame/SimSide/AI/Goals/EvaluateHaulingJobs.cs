@@ -189,6 +189,10 @@ namespace UWGame.SimSide.AI.Goals
 
             if (haulingParams.Value.Vehicle != null)
             {
+                if (EntityDataResultCausesSkip(entity.Intelligence.GetKnownData(haulingParams.Value.Item, out item)))
+                {
+                    return CalculateResult.Done;
+                }
                 if (EstimateHaulingTimeByVehicle(entity, haulingParams.Value.Item, haulingParams.Value.Vehicle, haulingJob.GetToStorageEntity /*ToStorageEntity*/, haulingJob.ToLocation, regionMapToUse, ref time) == CalculateResult.Processing)
                 {
                     // wait for result!
@@ -1030,8 +1034,14 @@ namespace UWGame.SimSide.AI.Goals
 
             if (((VehicleContainerType)vehicle.EntityType.ContainerType).Transport == SurfaceType.TransportType.Air)
             {
+                Vector3? destination = groundLocation ?? storageData?.PlaySiteLocation;
+                if (!destination.HasValue)
+                {
+                    haulingTime = -1;
+                    return CalculateResult.Done;
+                }
                 timeByVehicleOverTerrain = EstimateAirTime(vehicle,
-                    groundLocation.Value, vehicleData.PlaySiteLocation, loadedVehicleSpeed, itemData.PlaySiteLocation);
+                    destination.Value, vehicleData.PlaySiteLocation, loadedVehicleSpeed, itemData.PlaySiteLocation);
 
             }
             else
@@ -1199,7 +1209,7 @@ namespace UWGame.SimSide.AI.Goals
                 // find all vehicles too:
                 IKnownEntityData vehicleData;
                 EntityID vehicleID;
-                if (personEntity != null && personEntity.CanDrive())
+                if (personEntity != null && personEntity.CanDrive() && OwnersOfVehicles != null)
                 {
                     foreach (EntityGroup ownerOfvehicles in OwnersOfVehicles) // 1 or more sets of vehicles can be searched...
                     {
@@ -1212,7 +1222,7 @@ namespace UWGame.SimSide.AI.Goals
 
                                 // NEW: Also include any vehicle occupied by the entity himself:                   
                                 // Can also take vehicles reserved by others!
-                                if (vehicleData.IsVehicleValidForHauling(entity, itemData)) // moved to IKnownData
+                                if (CanUseVehicleForHauling(entity, vehicleData, itemData))
                                 {
                                     // Store this combo:
                                     // what about unseen vehicles...?
@@ -1225,6 +1235,22 @@ namespace UWGame.SimSide.AI.Goals
                 }
 
             }
+        }
+
+        private static bool CanUseVehicleForHauling(Entity entity, IKnownEntityData vehicle, IKnownEntityData item)
+        {
+            if (!vehicle.IsVehicleValidForHauling(entity, item))
+                return false;
+
+            if (vehicle.ContainsEntity(item.EntityID))
+                return true;
+
+            if (!vehicle.TotalItemStorageCapacity.HasValue || !vehicle.TotalStored.HasValue ||
+                vehicle.TotalItemStorageCapacity.Value - vehicle.TotalStored.Value < item.Bulk)
+                return false;
+
+            var slots = vehicle.GetCargoSlotsForLoading(item.Bulk);
+            return slots != null && slots.Sum(slot => slot.CargoSlot.GetRemainingRoom()) >= item.Bulk;
         }
 
 
@@ -1434,7 +1460,7 @@ namespace UWGame.SimSide.AI.Goals
             {
                 if (comboVehicleData != null)
                 {
-                    return comboVehicleData.IsVehicleValidForHauling(entity, comboItemData);
+                    return CanUseVehicleForHauling(entity, comboVehicleData, comboItemData);
                 }
                 else return true;
 

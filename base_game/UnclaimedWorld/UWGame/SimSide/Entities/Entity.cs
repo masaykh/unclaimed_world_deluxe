@@ -8605,8 +8605,7 @@ namespace UWGame.SimSide.Entities
             VehicleContainer vehicleComponent = Contains as VehicleContainer;
             if (vehicleComponent != null
                 && ((vehicleComponent.DrivenBy == null) || vehicleComponent.DrivenBy == entity)
-                && AgentStorage != null
-                && AgentStorage.ItemStorage.TotalCapacity >= item.Bulk
+                && vehicleComponent.TotalItemStorageCapacity >= item.Bulk
                 && GoalEvaluator.IsOnPlaySite(this)
                 && IsCompleted()
                 && IsFunctional(this)) // GoalEvaluator.ScoreIsEntityFunctional(this) > 0.0) // omit broken down vehicles
