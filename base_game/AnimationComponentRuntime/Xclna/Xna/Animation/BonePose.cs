@@ -151,7 +151,8 @@ namespace Xclna.Xna.Animation
 
         //  private Matrix defaultMatrix;
         // Buffers for interpolation when blending
-        private static Matrix currentMatrixBuffer;
+        /*private static Matrix currentMatrixBuffer;*/
+
         private int index;
 
         // The bone name
@@ -177,13 +178,13 @@ namespace Xclna.Xna.Animation
         }
 
 
-
+        /*
         /// <summary>
         /// we can run 2 gaits simultaneously
         /// NOT USED currently!
         /// </summary>
         private AnimationTrack secondGaitTrack;
-
+        */
 
 
         private BonePoseCollection children;
@@ -345,7 +346,7 @@ namespace Xclna.Xna.Animation
                     break;
 
                 case AnimationTrack.TrackType.ExtraGait:
-                    secondGaitTrack = track;
+                    /*secondGaitTrack = track;*/
                     break;
 
                 case AnimationTrack.TrackType.Additional:
