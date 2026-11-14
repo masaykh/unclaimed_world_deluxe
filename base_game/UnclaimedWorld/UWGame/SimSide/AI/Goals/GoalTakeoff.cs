@@ -216,8 +216,8 @@ namespace UWGame.SimSide.AI.Goals
             planeAdjustment.Y = MathHelper.Clamp(destinationPoint.Y - aircraft.PlaySiteLocation.Y, -maxAdjustment, maxAdjustment);
 
             // move the aircraft:  
-            pilot.Location = aircraft.Location + new Vector3(planeAdjustment, vehicleComponent.Aircraft.VerticalSpeed * elapsedTime);
-            // aircraft.Location = aircraft.Location + new Vector3(planeAdjustment, vehicleComponent.Aircraft.VerticalSpeed * elapsedTime);
+            ////pilot.Location = aircraft.Location + new Vector3(planeAdjustment, vehicleComponent.Aircraft.VerticalSpeed * elapsedTime);
+            aircraft.Location = aircraft.Location + new Vector3(planeAdjustment, vehicleComponent.Aircraft.VerticalSpeed * elapsedTime);
 
 
             if (aircraft.Renderable.RenderAsModel.ModelData.HasAircraftDucts)

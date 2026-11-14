@@ -154,11 +154,9 @@ namespace UWGame.SimSide.AI.Goals
 
                 VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
-                if (vehicleComponent.DrivenBy == null && driversSlot.DriversSlot.Driver == null) // just to make sure...
+                if (vehicleComponent.DrivenBy == null && driversSlot.DriversSlot.Driver == null
+                    && vehicleComponent.AddToContain(entity, seat: driversSlot, asDriver: true)) // just to make sure...
                 {
-                    vehicleComponent.EnterVehicleAsDriver(entity, driversSlot);
-
-
                     // attach to drivers seat, if open vehicle:
                     //BonePose attachTo;
                     //attachTo = parent.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.BonePoses[""];

@@ -289,6 +289,7 @@ namespace UWGame.ClientSide.Map
 
         private HashSet<Renderable> previouslyDrawnRenderablesThatCanLerp = new HashSet<Renderable>();
         private HashSet<Renderable> currentlyDrawnRenderablesThatCanLerp = new HashSet<Renderable>();
+        private readonly HashSet<Renderable> modelsRenderedLastFrame = new HashSet<Renderable>();
 
         public List<RenderAsBillboard> OverlayBillboards = new List<RenderAsBillboard>();
 
@@ -1307,6 +1308,12 @@ namespace UWGame.ClientSide.Map
 
         private void SortObjectsForDrawingAndComputeMatrices(bool drawModels)
         {
+            foreach (Renderable renderable in modelsRenderedLastFrame)
+            {
+                renderable.ModelWasRenderedLastFrame = false;
+            }
+            modelsRenderedLastFrame.Clear();
+
             foreach (var sortedList in sortedObjectsToDraw)
             {
                 sortedList.Clear();
@@ -1539,6 +1546,8 @@ namespace UWGame.ClientSide.Map
                     if (renderable != null && renderable.RenderAsModel != null)
                     {
                         renderable.RenderAsModel.ComputeMatricesForDrawing(AnimatedModel.Transformations.All, renderable.RenderAsModel.FinalModelScale);
+                        renderable.ModelWasRenderedLastFrame = true;
+                        modelsRenderedLastFrame.Add(renderable);
 
                     }
                 }

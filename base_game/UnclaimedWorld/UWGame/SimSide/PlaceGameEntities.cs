@@ -151,7 +151,7 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.NeedsTest, "d Mezzomap MLo", NeedsTest);
 		AddScenario(DebugScenarios.WeaponsTest, "d Mezzomap MLo", WeaponsTest);
 		AddScenario(DebugScenarios.LightingTest, "d Mezzomap MLo", LightingTest);
-        AddScenario(DebugScenarios.VehicleTest, "d Mezzomap MLo", VehicleTest);
+        AddScenario(DebugScenarios.VehicleTest, "9 Milestone Build" /*"d Mezzomap MLo"*/, VehicleTest);
         AddScenario(DebugScenarios.EmptyMap, "d Mezzomap MLo", EmptyMap);
 		// PORT FIX, same fault as MapApril2013 below: hard-coded tiles that do not fit the map the
 		// table gives them, so the scenario ends in IndexOutOfRangeException inside GetTile.

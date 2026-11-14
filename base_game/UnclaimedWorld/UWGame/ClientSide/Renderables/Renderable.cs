@@ -462,6 +462,7 @@ namespace UWGame.ClientSide.Renderables
 
 
         public bool LerpableWasRenderedLastFrame = false;
+        public bool ModelWasRenderedLastFrame = false;
 
         //ctor
         public Renderable(Entity entity, RenderableType type)
@@ -1273,21 +1274,24 @@ namespace UWGame.ClientSide.Renderables
 
 
         /// <summary>
-        /// only call this from ParticleManager - never from Sim
+        /// Was: AddParticleEmitter
         /// </summary>
         /// <param name="emitter"></param>
-        public void AddParticleEmitter(ParticleEmitter emitter)
+        public void Add2WayParticleEmitterReference(ParticleEmitter emitter)
         {
             if (ParticleEmitters == null)
             {
                 ParticleEmitters = new List<ParticleEmitter>();
             }
 
-            //  emitter.Parent = this;
+            // NEW:
+            emitter.Parent = this;
+            if (ParticleEmitters.Contains(emitter))
+            {
+                throw new InvalidOperationException("Emitter is already added to this renderable.");
+            }
 
             ParticleEmitters.Add(emitter);
-
-
         }
 
 
@@ -1299,8 +1303,13 @@ namespace UWGame.ClientSide.Renderables
         {
             if (ParticleEmitters != null)
             {
-                ParticleEmitters.RemoveAll(p => p.System.ParticleSystemType.KeyName == systemKey);
-
+                for (int i = ParticleEmitters.Count - 1; i >= 0; i--)
+                {
+                    if (ParticleEmitters[i].System.ParticleSystemType.KeyName == systemKey)
+                    {
+                        ParticleEmitters[i].Destroy();
+                    }
+                }
             }
         }
 
@@ -1325,9 +1334,16 @@ namespace UWGame.ClientSide.Renderables
             {
                 foreach (var item in oldEffects) // oldInfo.ParticleEmitters)
                 {
-                    // remove old effects:
-                    RemoveParticleEmitters(item.ParticleSystemKey);
-
+                    if (ParticleEmitters != null)
+                    {
+                        for (int i = ParticleEmitters.Count - 1; i >= 0; i--)
+                        {
+                            if (ParticleEmitters[i].AnimationEffect == item)
+                            {
+                                ParticleEmitters[i].Destroy();
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1336,7 +1352,8 @@ namespace UWGame.ClientSide.Renderables
                 // start new ones:
                 foreach (var item in newEffects) // SelectedAnimInfo.ParticleEmitters)
                 {
-                    The.Client.ParticleManager.AddEmitter(item.ParticleSystemKey, this, null, null, item.EmitParticlesInParentDirection, offset: item.Offset);
+                    ParticleEmitter emitter = The.Client.ParticleManager.AddEmitter(item.ParticleSystemKey, this, null, null, item.EmitParticlesInParentDirection, offset: item.Offset);
+                    emitter.AnimationEffect = item;
                 }
             }
 
@@ -2206,7 +2223,7 @@ namespace UWGame.ClientSide.Renderables
                 {
                     ParticleEmitter emitter = ParticleEmitters[i];
 
-                    The.Client.ParticleManager.RemoveEmitter(emitter);
+                    emitter.Destroy();
                 }
             }
 

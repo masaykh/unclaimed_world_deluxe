@@ -19,6 +19,12 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	private VehicleContainer parent;
 
 	private EntityID snapshotParent;
+	private EntityID? snapshotPassenger;
+	private EntityID? snapshotPassengerTarget;
+	private EntityID? snapshotDriver;
+	private EntityID? snapshotDriverTarget;
+	private EntityID? snapshotCargoTarget;
+	private float snapshotCargoBulk;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
@@ -81,7 +87,7 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
+		version = sn.DoVersion(Snapshotter.Version.VehicleSeatState);
 		return version;
 	}
 
@@ -92,6 +98,33 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 			snapshotParent = parent.Parent.ID;
 		}
 		snapshotParent = sn.DoEntityID(snapshotParent);
+		id = sn.DoEnum(id);
+		if (sn.mode == Snapshotter.Mode.Load)
+		{
+			LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.Add(id, this);
+			if (id > IDCounter)
+			{
+				IDCounter = id;
+			}
+		}
+		if (version >= Snapshotter.Version.VehicleSeatState)
+		{
+			if (sn.mode != Snapshotter.Mode.Load)
+			{
+				snapshotPassenger = PassengerSlot?.Passenger?.EntityID;
+				snapshotPassengerTarget = PassengerSlot?.TargetedBy?.EntityID;
+				snapshotDriver = DriversSlot?.Driver?.EntityID;
+				snapshotDriverTarget = DriversSlot?.TargetedBy?.EntityID;
+				snapshotCargoTarget = CargoSlot?.TargetedByHauler?.EntityID;
+				snapshotCargoBulk = CargoSlot?.BulkCarried ?? 0f;
+			}
+			snapshotPassenger = sn.DoEntityIDNullable(snapshotPassenger);
+			snapshotPassengerTarget = sn.DoEntityIDNullable(snapshotPassengerTarget);
+			snapshotDriver = sn.DoEntityIDNullable(snapshotDriver);
+			snapshotDriverTarget = sn.DoEntityIDNullable(snapshotDriverTarget);
+			snapshotCargoTarget = sn.DoEntityIDNullable(snapshotCargoTarget);
+			snapshotCargoBulk = sn.DoFloat(snapshotCargoBulk);
+		}
 		sn.Ignore(CargoSlot);
 		sn.Ignore(PassengerSlot);
 		sn.Ignore(PassengerOrCargoSlotType);
@@ -103,6 +136,32 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	{
 		sn.RegisterLoadPostProcessCall(this);
 		parent = Entity.FindByID(snapshotParent).Contains as VehicleContainer;
+		int index = parent.Slots.IndexOf(this);
+		PassengerOrCargoSlotType = ((VehicleContainerType)parent.Parent.EntityType.ContainerType).PassengerOrCargoSlotTypes[index];
+		if (PassengerOrCargoSlotType.CargoSlotType != null)
+		{
+			CargoSlot = new CargoSlot(this)
+			{
+				BulkCarried = snapshotCargoBulk,
+				TargetedByHauler = Entity.FindByID(snapshotCargoTarget)
+			};
+		}
+		if (PassengerOrCargoSlotType.PassengerSlotType != null)
+		{
+			PassengerSlot = new PassengerSlot
+			{
+				Passenger = Entity.FindByID(snapshotPassenger),
+				TargetedBy = Entity.FindByID(snapshotPassengerTarget)
+			};
+			if (PassengerOrCargoSlotType.PassengerSlotType.IsDriversSeat)
+			{
+				DriversSlot = new DriversSlot
+				{
+					Driver = Entity.FindByID(snapshotDriver),
+					TargetedBy = Entity.FindByID(snapshotDriverTarget)
+				};
+			}
+		}
 	}
 
 	public PassengerOrCargoSlotID GetUniqueID()
@@ -156,5 +215,6 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	public static void CreateLookupCollection()
 	{
 		LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.Create();
+		LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.SetPerformSnapshot(value: false);
 	}
 }

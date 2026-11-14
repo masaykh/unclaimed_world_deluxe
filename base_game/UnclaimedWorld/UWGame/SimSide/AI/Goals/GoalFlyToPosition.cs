@@ -213,7 +213,7 @@ namespace UWGame.SimSide.AI.Goals
                 // move the aircraft:
                 // this will update the aircraft locaion too
                 //  Aircraft.Location = Aircraft.Location + (new Vector3(Aircraft.Vehicle.Direction.X, Aircraft.Vehicle.Direction.Y, 0) * Aircraft.Locomotor.MoveSpeed * elapsedTime);
-                entity.Location = Aircraft.Location + (new Vector3(Aircraft.FacingNormal.X, Aircraft.FacingNormal.Y, 0) * Aircraft.Locomotor.MoveSpeed * elapsedTime);
+                Aircraft.Location = Aircraft.Location + (new Vector3(Aircraft.FacingNormal.X, Aircraft.FacingNormal.Y, 0) * Aircraft.Locomotor.MoveSpeed * elapsedTime);
 
 
 

@@ -26,6 +26,12 @@ public interface IKnownEntityData : IHasExposedProperties
 
 	Vector3 PlaySiteLocation { get; }
 
+	/// <summary>
+	/// Client presentation position; use Location or PlaySiteLocation for simulation.
+	/// Visible attachments use their attached position; hidden contents follow their
+	/// container. Off-screen entities fall back to their simulation position, while
+	/// remembered entities retain their last-known position.
+	/// </summary>
 	Vector3 RenderedLocation { get; }
 
 	Point? MapPosition { get; }

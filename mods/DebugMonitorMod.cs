@@ -173,7 +173,7 @@ public static class DebugMonitorMod
             }
         }
         long now = clock.ElapsedMilliseconds;
-        if (now - lastSnapshotMs < SnapshotMs)
+        if (lastSnapshotMs != long.MinValue && now - lastSnapshotMs < SnapshotMs)
         {
             return;
         }

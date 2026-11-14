@@ -68,7 +68,8 @@ public class Snapshotter
 		/// own points, as the studio's did, until it ends.
 		/// </summary>
 		ScoutingSweep = 5u,
-		VehicleSnapshotReferences = 6u
+		VehicleSnapshotReferences = 6u,
+		VehicleSeatState = 7u
 	}
 
 	public struct TypeInformation

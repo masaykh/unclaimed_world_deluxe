@@ -39,11 +39,6 @@ namespace UWGame.SimSide.Entities.Containers.Components
 [02:36:40] Mark Lorenzen: passengers and items are contained via ITransport
  */
 
-    /// <summary>
-    /// TODO: EnterVehicle should probably just be AddToContainList
-    /// and ExitVehicle should be removed
-    ///     
-    /// </summary>
     public class VehicleContainer : Container, ICrew, ITransport, IGarrison, IStorage, IExit, IHasReplenishItems // IReplenishes
     {
         /// <summary>
@@ -353,7 +348,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 this.storage.RecalculateTotalCapacity();
             }
         }
-
+        /*
         public bool EnterVehicleAsPassenger(Entity entity, PassengerOrCargoSlot slot)
         {
             Passengers.Add(entity);
@@ -419,6 +414,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
 
             return isOnBoard;
         }
+        */
 
         public PassengerOrCargoSlot GetEntityPlaceInVehicle(Entity entity)
         {
@@ -860,8 +856,87 @@ namespace UWGame.SimSide.Entities.Containers.Components
             }
         }
 
+        protected override bool AddToContainList(Entity entity, StorageCompartment? compartment, StorageCondition placeInStorage,
+            List<PassengerOrCargoSlot> slotsToUse, bool ignoreCapacity, bool replenish, bool isProductionOutput,
+            UpgradeCategory upgradeCategory, PassengerOrCargoSlot seat, bool asDriver)
+        {
+            if (seat == null)
+            {
+                return !asDriver && AddToContainList(entity, compartment, placeInStorage, slotsToUse, ignoreCapacity, replenish, isProductionOutput, upgradeCategory);
+            }
+
+            if (!Slots.Contains(seat) || entity.ContainedBy.HasValue || DrivenBy == entity || Passengers.Contains(entity)
+                || seat.PassengerSlot == null || seat.PassengerSlot.Passenger != null
+                || (seat.PassengerSlot.TargetedBy != null && seat.PassengerSlot.TargetedBy != entity)
+                || (seat.DriversSlot != null && (seat.DriversSlot.Driver != null
+                    || (seat.DriversSlot.TargetedBy != null && seat.DriversSlot.TargetedBy != entity)))
+                || (seat.CargoSlot != null && (seat.CargoSlot.BulkCarried > 0f || seat.CargoSlot.TargetedByHauler != null))
+                || (asDriver && (seat.DriversSlot == null || DrivenBy != null)))
+            {
+                return false;
+            }
+
+            if (garrison == null || !garrison.Add(entity.EntityID))
+            {
+                return false;
+            }
+
+            if (asDriver)
+            {
+                DrivenBy = entity;
+                entity.DrivingVehicle = Parent.EntityID;
+                seat.DriversSlot.Driver = entity;
+                seat.DriversSlot.TargetedBy = null;
+            }
+            else
+            {
+                Passengers.Add(entity);
+                entity.PassengerInVehicle = Parent.EntityID;
+                seat.PassengerSlot.Passenger = entity;
+                seat.PassengerSlot.TargetedBy = null;
+            }
+
+            RecalculateCargoCapacity();
+            return true;
+        }
+
         protected override bool RemoveFromContain(Entity entity, List<PassengerOrCargoSlot> slots)
         {
+            bool isDriver = DrivenBy == entity;
+            bool isPassenger = Passengers != null && Passengers.Contains(entity);
+            if (isDriver || isPassenger)
+            {
+                PassengerOrCargoSlot seat = GetEntityPlaceInVehicle(entity);
+                if (isDriver)
+                {
+                    DrivenBy = null;
+                    entity.DrivingVehicle = null;
+                    if (seat?.DriversSlot != null)
+                    {
+                        seat.DriversSlot.Driver = null;
+                        seat.DriversSlot.TargetedBy = null;
+                    }
+                }
+                else
+                {
+                    Passengers.Remove(entity);
+                    entity.PassengerInVehicle = null;
+                    if (seat?.PassengerSlot != null)
+                    {
+                        seat.PassengerSlot.Passenger = null;
+                        seat.PassengerSlot.TargetedBy = null;
+                    }
+                }
+
+                bool removed = garrison != null && garrison.Remove(entity.EntityID);
+                RecalculateCargoCapacity();
+                if (Parent.Locomotor != null)
+                {
+                    Parent.Locomotor.CurrentMaximumSpeedIsDirty = true;
+                    Parent.Locomotor.CurrentMaximumSpeedNotAffectedByTerrainIsDirty = true;
+                }
+                return removed;
+            }
 
             if (slots != null)
             {
@@ -1330,7 +1405,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.VehicleSeatState); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -1349,7 +1424,6 @@ namespace UWGame.SimSide.Entities.Containers.Components
             drivenByID = sn.DoEntityID(drivenByID);
             snapshotPassengers = sn.DoList(snapshotPassengers);
             PassengerItinerary = sn.DoList(PassengerItinerary);
-            sn.DoList(Passengers);
             sn.DoFloat(Pitch);
             sn.DoFloat(Roll);
             Slots = sn.DoList(Slots);
@@ -1392,6 +1466,12 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 {
                     slot.LoadPostProcess(sn);
                 }
+                RecalculateCargoCapacity();
+            }
+
+            foreach (Entity passenger in Passengers)
+            {
+                passenger.PassengerInVehicle = Parent.EntityID;
             }
 
             if (residence != null)

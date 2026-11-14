@@ -1,5 +1,6 @@
 //// MIGRATED FROM OLD SOURCE
 #region Using Statements
+using GameEngine.Sim.Sim.Entities.Container;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -1159,18 +1160,35 @@ namespace UWGame.SimSide.Entities
                     The.Map.UpdateWhoCanSeeEntityMovingBetweenTiles(this, intelligence, oldMapPosition, value);
 
 
-                    Sensor sensor;
-                    if (intelligence != null && IsCompleted() && intelligence.Allegiance != null
-                        && Find(out sensor) && sensor.IsActive && mapPosition != null)
+                    if (mapPosition.HasValue)
                     {
-
-                        sensor.UpdateTilesSeenBySensor(mapPosition.Value);
-
-                        //set nearby remembered entities to deprecated. Since the corresponding entity has not been spotted nearby, this means that the memory fact is stale and the agent should disregard it.
-
-                        DeprecateMemoryFactsInRadius();
-                    }                   
+                        UpdateSensorsOnMovement(mapPosition.Value, intelligence);
+                    }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Note: recursive method that also updates contained sensors.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="intelligence"></param>
+        private void UpdateSensorsOnMovement(Point position, Intelligence intelligence)
+        {
+            Sensor sensor;
+            if (intelligence != null && IsCompleted() && intelligence.Allegiance != null
+                && Find(out sensor) && sensor.IsActive)
+            {
+                sensor.UpdateTilesSeenBySensor(position);
+
+                //set nearby remembered entities to deprecated. Since the corresponding entity has not been spotted nearby, this means that the memory fact is stale and the agent should disregard it.
+                DeprecateMemoryFactsInRadius();
+            }
+
+            if (Contains != null)
+            {
+                Contains.IterateContained(containedEntity =>
+                    containedEntity.UpdateSensorsOnMovement(position, containedEntity.Intelligence));
             }
         }
 
@@ -3415,7 +3433,8 @@ namespace UWGame.SimSide.Entities
 
                 if (vehicleContains != null)
                 {
-                    if (!vehicleContains.IsDriver(this))
+                    ICrew vehicleCrew = vehicleContains as ICrew;
+                    if (vehicleCrew != null && !vehicleCrew.IsDriver(this))
                     {
                         vehicle = null;
                     }
@@ -3446,7 +3465,8 @@ namespace UWGame.SimSide.Entities
 
                 if (vehicleContains != null)
                 {
-                    if (!vehicleContains.IsDriver(this))
+                    ICrew vehicleCrew = vehicleContains as ICrew;
+                    if (vehicleCrew != null && !vehicleCrew.IsDriver(this))
                     {
                         vehicle = null;
                     }
@@ -3468,12 +3488,26 @@ namespace UWGame.SimSide.Entities
             if (vehicle != null)
             {
                 Container vehicleContains = vehicle.Contains;
-
+                
                 if (vehicleContains != null)
                 {
-                    if (vehicleContains.IsDriverOrPassenger(this))
+                    ICrew vehicleCrew = vehicleContains as ICrew;
+                    ITransport vehicleTransport = vehicleContains as ITransport;
+
+                    if (vehicleCrew != null)
                     {
-                        return true;
+                        if (vehicleCrew.IsDriver(this))
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (vehicleTransport != null)
+                    {
+                        if (vehicleTransport.IsPassenger(this))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -10070,14 +10104,41 @@ namespace UWGame.SimSide.Entities
         {
             get
             {
-                if (Renderable.RenderAsModel != null)
+                // Attached models are drawn with their parent, even when their own IsDrawn is false.
+                // This is the intended case for visible vehicle riders.
+                Renderable positionRenderable = Renderable;
+                if (positionRenderable?.RenderAsModel != null &&
+                    positionRenderable.RenderAsModel.TryGetAttachedWorldLocation(out Vector3 attachedLocation))
                 {
-                    return Renderable.RenderAsModel.Location;
+                    return attachedLocation;
                 }
-                else
+
+                // Hidden contents follow the outermost container's presentation position.
+                Entity positionEntity = GetRootAsEntity();
+                if (positionRenderable?.IsDrawn == false && positionEntity.containedBy.HasValue)
                 {
-                    return Renderable.Location.Value;
+                    while (positionEntity.containedBy.HasValue)
+                    {
+                        positionEntity = FindByID(positionEntity.containedBy.Value);
+                        if (positionEntity == null)
+                        {
+                            throw new InvalidOperationException("An entity's container is unavailable.");
+                        }
+
+                        positionEntity = positionEntity.GetRootAsEntity();
+                    }
+                    return positionEntity.RenderedLocation;
                 }
+
+                // Independently drawn movers use their interpolated model position.
+                if (positionRenderable != null && positionRenderable.IsDrawn &&
+                    positionRenderable.LerpableWasRenderedLastFrame && positionRenderable.RenderAsModel != null)
+                {
+                    return positionRenderable.RenderAsModel.Location;
+                }
+
+                // Off-screen or otherwise unrendered models use the simulation position.
+                return Location.Value;
             }
         }
         #region Exposed properties

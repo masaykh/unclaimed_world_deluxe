@@ -213,7 +213,15 @@ namespace UWGame.SimSide.AI.Goals
             if (Status == Status.Completed)
             {
 
-                vehicleComponent.EnterVehicleAsPassenger(entity, slot);
+                if (!vehicleComponent.AddToContain(entity, seat: slot))
+                {
+                    if (slot?.PassengerSlot?.TargetedBy == entity)
+                    {
+                        slot.PassengerSlot.TargetedBy = null;
+                    }
+                    Status = Status.Failed;
+                    return;
+                }
 
 
                 // AttachPoint attachPoint = vehicle.EntityType.Renderable.RenderAsModelType.ModelData.GetAttachPointFromKeyName(slot.PassengerOrCargoSlotType.AttachPointName); //.Value);                    

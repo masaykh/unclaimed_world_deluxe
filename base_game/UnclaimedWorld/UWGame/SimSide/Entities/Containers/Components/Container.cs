@@ -165,12 +165,13 @@ other buildings might be IGarrison but not IStorage... like a watchtower
         /// <param name="ignoreCapacity"></param>
         /// <returns></returns>
         public bool AddToContain(Entity entity, StorageCompartment? compartment = null, StorageCondition placeInStorage = null, bool ignoreCapacity = false,
-            bool replenish = false, bool isProductionOutput = false, bool assertContainment = true, UpgradeCategory upgradeCategory = null) //bool isUpgrade = false) 
+            bool replenish = false, bool isProductionOutput = false, bool assertContainment = true, UpgradeCategory upgradeCategory = null,
+            PassengerOrCargoSlot seat = null, bool asDriver = false) //bool isUpgrade = false) 
         {
             ValidateContainStatus(entity);
 
 
-            bool wasAdded = AddToContainList(entity, compartment, placeInStorage, null, ignoreCapacity, replenish, isProductionOutput, upgradeCategory: upgradeCategory); // isUpgrade: isUpgrade);
+            bool wasAdded = AddToContainList(entity, compartment, placeInStorage, null, ignoreCapacity, replenish, isProductionOutput, upgradeCategory, seat, asDriver);
             if (wasAdded)
             {
                 entity.ContainedBy = Parent.EntityID;
@@ -299,6 +300,13 @@ other buildings might be IGarrison but not IStorage... like a watchtower
 
             Parent.DebugLog.Add(string.Format("Containment: {0} was {1} container", entity.ID, action));
 
+        }
+
+        protected virtual bool AddToContainList(Entity entity, StorageCompartment? compartment, StorageCondition placeInStorage,
+            List<PassengerOrCargoSlot> slotsToUse, bool ignoreCapacity, bool replenish, bool isProductionOutput,
+            UpgradeCategory upgradeCategory, PassengerOrCargoSlot seat, bool asDriver)
+        {
+            return AddToContainList(entity, compartment, placeInStorage, slotsToUse, ignoreCapacity, replenish, isProductionOutput, upgradeCategory);
         }
 
         // The part of AddToContain that inheritors can override
@@ -722,9 +730,12 @@ other buildings might be IGarrison but not IStorage... like a watchtower
 
         }
 
-        public virtual bool IsDriver(Entity entity) { return false;}
-        public virtual bool IsPassenger(Entity entity) { return false; }
-        public virtual bool IsDriverOrPassenger(Entity entity) { return false; }
+        /*
+        public virtual bool IsDriver(Entity entity) { return false;}        
+         */
+
+        /*public virtual bool IsPassenger(Entity entity) { return false; }*/
+        /*public virtual bool IsDriverOrPassenger(Entity entity) { return false; }*/
 
         //public virtual bool IsStored(Entity entity) { return false; }
 

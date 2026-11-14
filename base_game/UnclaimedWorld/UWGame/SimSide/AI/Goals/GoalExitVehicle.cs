@@ -126,12 +126,6 @@ namespace UWGame.SimSide.AI.Goals
 
                         bool isDriving = entity.DrivingVehicle == vehicle;
 
-                        if (isDriving)
-                        {
-                            entity.DeleteTriggerOfType(GameData.Instance.AllTriggerTypes["drivenVehicle"]);
-                        }
-
-
                         Vector3 exitLocation, seatLocation;
                         VehicleContainer vehicleComponent = vehicleEntity.Vehicle;
 
@@ -141,8 +135,12 @@ namespace UWGame.SimSide.AI.Goals
                         place.GetEntryPoints(out exitLocation, out seatLocation);
                         //vehicleComponent.GetEntryPoint(place, out exitLocation, out seatLocation); 
 
-                        if (vehicleComponent.ExitVehicle(entity))
+                        if (vehicleComponent.Remove(entity))
                         {
+                            if (isDriving)
+                            {
+                                entity.DeleteTriggerOfType(GameData.Instance.AllTriggerTypes["drivenVehicle"]);
+                            }
                             entity.Location = exitLocation;
 
                             entity.FacingNormal = vehicleEntity.FacingNormal;
@@ -165,6 +163,11 @@ namespace UWGame.SimSide.AI.Goals
                                 vehicleEntity.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.DeattachObject(entity.Renderable.RenderAsModel, attachPoint.BoneName);
                             }
 
+                        }
+                        else
+                        {
+                            Status = Status.Failed;
+                            return;
                         }
 
                         // tell all passengers to Get Off:

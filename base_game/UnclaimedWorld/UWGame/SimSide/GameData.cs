@@ -537,6 +537,9 @@ public class GameData
 				ModelType = ModelType.Stiff,
 				CRTDisplayScale = 0.8f,
 				ModelOffset = new Vector3(0f, 0f, 0f),
+
+				// Keep these? Only if the cockpit opens. In that case, their orientation needs to be fixed.
+				/*
 				DriverAttachor = new AttachPoint
 				{
 					KeyName = "DriversSeat",
@@ -553,7 +556,7 @@ public class GameData
 						AttachedAnimationName = "passenger_1_seated",
 						Translation = new Vector3(-5f, 10f, 0f)
 					}
-				}
+				}*/
 			});
 			return Advance();
 		case 9:
