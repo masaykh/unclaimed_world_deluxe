@@ -3434,7 +3434,7 @@ namespace UWGame.SimSide.Entities
                 if (vehicleContains != null)
                 {
                     ICrew vehicleCrew = vehicleContains as ICrew;
-                    if (vehicleCrew != null && !vehicleCrew.IsDriver(this))
+                    if (vehicleCrew == null || !vehicleCrew.IsDriver(this)) // PORT: see GetDrivenVehicle
                     {
                         vehicle = null;
                     }
@@ -3465,8 +3465,14 @@ namespace UWGame.SimSide.Entities
 
                 if (vehicleContains != null)
                 {
+                    // PORT FIX. The studio asked Container.IsDriver, which was false for any container
+                    // but a vehicle. With it gone, `vehicleCrew != null && ...` let a container that is
+                    // not ICrew through: a colonist resting in a hut "drove" the hut, and
+                    // GoalEvaluator.GetEvaluatorTimeCostOfDistance read the hut's null Locomotor
+                    // (Kastuk, 2026-11-14, on maps with no vehicles at all). Not a crew, not driving.
+                    // GetVehicle above has the same test.
                     ICrew vehicleCrew = vehicleContains as ICrew;
-                    if (vehicleCrew != null && !vehicleCrew.IsDriver(this))
+                    if (vehicleCrew == null || !vehicleCrew.IsDriver(this))
                     {
                         vehicle = null;
                     }
