@@ -240,7 +240,9 @@ MODDING → MAP EDITOR and TEST SCENE open like a shipped map. Run it against yo
 artifacts/bin/DataExport/release/dataexport.exe "<game>" --generate-map=MyMap --seed=42 --size=80
 ```
 
-The map lands in `<game>/data/Maps/MyMap`, which is the only place the map picker looks. The same
+The map lands in `<game>/data/Maps/MyMap`. The map picker also lists `<game>/user/Maps`, which is
+where the Map Editor saves (a map there takes the place of a `data/Maps` map of the same name), and
+which survives updates and release builds; move a generated map there to keep it. The same
 seed always gives the same map. Sizes run from 32 to 256; the shipped playable maps are 64, 80 and
 128.
 

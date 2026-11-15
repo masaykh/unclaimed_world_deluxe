@@ -129,14 +129,41 @@ public class MapEditorSaveLoadPanel : Panel
 		lblFolderPath.ToolTip = path;
 	}
 
+	/// <summary>
+	/// PORT: every map by name, the game's (data/Maps) and the player's (user/Maps). A user map of
+	/// the same name takes the game's place, in the game's order; user maps of new names follow.
+	/// This is MapManager.AllMaps, the list scenarios and TEST MAP pick from.
+	/// </summary>
 	public static List<DirectoryInfo> GetListOfMapFolders()
 	{
-		return GetListOfMapFolders(GetDefaultPath());
+		return MergeMapFolders(GetListOfMapFolders(GetDefaultPath()), GetListOfMapFolders(GetUserMapsPath()));
+	}
+
+	public static List<DirectoryInfo> MergeMapFolders(List<DirectoryInfo> builtIn, List<DirectoryInfo> user)
+	{
+		List<DirectoryInfo> merged = new List<DirectoryInfo>(builtIn);
+		foreach (DirectoryInfo userMap in user)
+		{
+			int same = merged.FindIndex(d => string.Equals(d.Name, userMap.Name, StringComparison.OrdinalIgnoreCase));
+			if (same >= 0)
+			{
+				merged[same] = userMap;
+			}
+			else
+			{
+				merged.Add(userMap);
+			}
+		}
+		return merged;
 	}
 
 	public static List<DirectoryInfo> GetListOfMapFolders(string baseFolderPath)
 	{
 		List<DirectoryInfo> list = new List<DirectoryInfo>();
+		if (!Directory.Exists(baseFolderPath))
+		{
+			return list; // PORT: user/Maps does not exist until the first map is saved there
+		}
 		string[] directories = Directory.GetDirectories(baseFolderPath, "*", SearchOption.TopDirectoryOnly);
 		foreach (string path in directories)
 		{
@@ -156,14 +183,27 @@ public class MapEditorSaveLoadPanel : Panel
         return Path.GetFullPath(path);
 	}
 
+	public static string GetUserMapsPath()
+	{
+		return Path.GetFullPath(Config.GetDataFolderPath(Config.DataType.UserMaps));
+	}
+
+	// PORT: the Map Editor saved into data/Maps, the game's own folder, which every update and
+	// every 70-make-release.sh run replaces - an edited map did not survive the next build (Kastuk,
+	// 2026-11-14). It saves into user/Maps now. Both folders are listed, the player's maps marked,
+	// so a game map can still be opened, and saving it makes a user copy (pictures included,
+	// MapManager.SaveMap) instead of changing the original.
 	private void PopulateFileList()
 	{
-		List<DirectoryInfo> listOfMapFolders = GetListOfMapFolders(folderPath);
 		grid.BeginAddingEntries();
 		grid.Clear();
-		foreach (DirectoryInfo item in listOfMapFolders)
+		foreach (DirectoryInfo item in GetListOfMapFolders(GetDefaultPath()))
 		{
 			grid.AddEntry(item, item.Name);
+		}
+		foreach (DirectoryInfo item in GetListOfMapFolders(GetUserMapsPath()))
+		{
+			grid.AddEntry(item, item.Name + UWGame.Locale.Text(" (USER)"));
 		}
 		grid.EndAddingEntries();
 	}
@@ -177,10 +217,18 @@ public class MapEditorSaveLoadPanel : Panel
 			{
 				string fullFolderPath = Path.Combine(folderPath, tbMapName.Text);
 				string text = MapManager.ComposeMapDataXmlFilePathFromFolderPath(fullFolderPath);
+				// PORT: a game map saved under its own name becomes a user copy that keeps the
+				// original's MapData (name, description, starting points) rather than a blank one.
+				string builtIn = MapManager.ComposeMapDataXmlFilePathFromFolderPath(Path.Combine(GetDefaultPath(), tbMapName.Text));
 				if (File.Exists(text))
 				{
 					MapData mapData = MapLoader.LoadMapData(text, tbMapName.Text);
 					The.Map.SaveMap(fullFolderPath, mapData, createNewFolders: false);
+				}
+				else if (File.Exists(builtIn))
+				{
+					MapData mapData3 = MapLoader.LoadMapData(builtIn, tbMapName.Text);
+					The.Map.SaveMap(fullFolderPath, mapData3, createNewFolders: true);
 				}
 				else
 				{
@@ -215,7 +263,7 @@ public class MapEditorSaveLoadPanel : Panel
 	{
 		base.ShowDialog(modal);
 		DisplayPrompt();
-		folderPath = GetDefaultPath();
+		folderPath = GetUserMapsPath(); // PORT: where SAVE writes; see PopulateFileList
 		DisplayFolderPath(folderPath);
 		PopulateFileList();
 	}
