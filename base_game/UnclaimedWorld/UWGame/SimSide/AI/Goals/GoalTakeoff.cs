@@ -128,6 +128,19 @@ namespace UWGame.SimSide.AI.Goals
               */
 
 
+            // PORT FIX. Nothing finishes a flight that is cut short - GoalFlyToPosition has no
+            // cleanup - so a pilot whose task was removed mid-air left the skimmer hanging there, and
+            // his next flight began here with the whole ground sequence: fifteen seconds of engine and
+            // door waits, in the air, before it moved (Kastuk, 2026-11-14: "pausing during flight
+            // maneuvers too, wait some, then switching to another task"). Already in the air, the
+            // engines are running and the doors shut: climb at once, from a standstill rather than
+            // the speed the cut-short flight left behind.
+            if (StartsInTheAir(Aircraft.PlaySiteLocation.Z))
+            {
+                Aircraft.Locomotor.MoveSpeed = 0f;
+                return;
+            }
+
             // TODO: rework this... perhaps send a message when the aircraft is ready to take off.
             AddSubgoal(new GoalWait(entity, 3d, null, AnimModifier.Pre, AnimModifier.Right, AnimModifier.Slow)); //, Aircraft.ID));
             AddSubgoal(new GoalWait(entity, 3d, null, AnimModifier.Pre, AnimModifier.Left, AnimModifier.Slow)); //, Aircraft.ID));
@@ -185,6 +198,12 @@ namespace UWGame.SimSide.AI.Goals
             //    }
             //}
             //));
+        }
+
+        // PORT: GoalLand puts an aircraft down at altitude 0; anything above a pixel is still flying.
+        public static bool StartsInTheAir(float altitude)
+        {
+            return altitude > 1f;
         }
 
         public static bool UpdateAircraftUpDown(float desiredMoveSpeed, Microsoft.Xna.Framework.GameTime elapsed, Entity pilot, Entity aircraft, VehicleContainer vehicleComponent, Vector3 destinationPoint)
