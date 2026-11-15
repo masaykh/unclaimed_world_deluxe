@@ -17,7 +17,6 @@ internal static class XmlProxyRegistry
 	internal static readonly Dictionary<Type, Type> ProxyTypes = new()
 	{
 		{ typeof(global::UWGame.BitMask64), typeof(global::UWGame.Generated.XmlProxies.BitMask64) },
-		{ typeof(global::UWGame.ClientSide.GameEvents.SoundEffectAction), typeof(global::UWGame.Generated.XmlProxies.SoundEffectAction) },
 		{ typeof(global::UWGame.ClientSide.Interface.GUIConstants), typeof(global::UWGame.Generated.XmlProxies.GUIConstants) },
 		{ typeof(global::UWGame.ClientSide.Renderables.RenderableType), typeof(global::UWGame.Generated.XmlProxies.RenderableType) },
 		{ typeof(global::UWGame.SimSide.Buildings.StructureType), typeof(global::UWGame.Generated.XmlProxies.StructureType) },

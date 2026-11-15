@@ -8,16 +8,20 @@
 # AllScenarioLoader.GetScenarioDataLoader - UserDataLoader - then every key its scenarioData.xml
 # names is looked up, then GameData.PostDataCompleteInitialize runs.
 #
-# Two cases, and the second is the control that proves the first is checking something:
+# Three cases, and the second is the control that proves the first is checking something:
 #
 #   1. a full export of The Clay Pit loads, every key resolves, and validation passes
 #   2. the same scenario with ONLY scenario.xml and scenarioData.xml fails on 'spawnWorld' - the
 #      error Kastuk reported, and what every user scenario did before UserDataLoader read its
 #      folder (Sim.CurrentSerializeMode shipped as NoSerialize, so no loader opened any XML)
+#   3. every exported XML file parses, and Making Headway and Muckroot Mining Site - whose
+#      actions play sounds - load too. SoundEffectAction was IXmlSerializable, which XmlSerializer
+#      cannot write through EventActionType's [XmlInclude]: their actionSets.xml came out cut off
+#      (Making Headway) or empty (Muckroot Mining Site), and the export still said "ok" (Kastuk,
+#      2026-11-14).
 #
-# The Clay Pit because it is the one asked for, and because it round-trips today. Several others
-# do not: DataExport cannot yet write some of their tables (actionSets.xml with SoundEffectAction,
-# bodyTypes), and those fail here by NAME - that is the export's gap, not the loader's.
+# Not every built-in scenario round-trips yet: Castaways names option keys its own tables do not
+# define, and Twinkler Island trades entity:haulingRobot, which -nomods does not have.
 #
 # RUN IT LOCALLY, NOT IN CI, for the same reason as 80-verify-modloader.sh: the data loader
 # resolves content paths against the installation, and a runner has no copy of Content/.
@@ -89,10 +93,28 @@ else
   fail "a scenario with no tables was not refused - the check above is not checking anything"
 fi
 
+say "==> 3. every exported file parses, and the scenarios with sounds load"
+# A file cut off part-way is not well-formed XML; xmllint is not on every machine, so dataexport
+# is asked to load each scenario instead, and an empty or truncated table fails it by name.
+for f in "$d"/data/Scenarios/*/*.partial; do
+  [ -e "$f" ] && fail "a table was left half-written: $f"
+done
+for src in "Making Headway" "Muckroot Mining Site"; do
+  SOURCE="$src"; copy_as "$src Mod"
+  out=$( cd "$d" && "$EXPORT" . --nomods "--user-scenario=$src Mod" 2>&1 ) && rc=0 || rc=$?
+  if [ "$rc" -eq 0 ] && echo "$out" | grep -q "keys named by scenarioData.xml resolve"      && echo "$out" | grep -q "survive the game's own validation"; then
+    pass "$src loads, and validation passes"
+  else
+    echo "$out" | sed -n '/scenario tables/,$p' | sed "s/^/      /"
+    fail "an export of '$src' does not load as a user scenario"
+  fi
+done
+grep -q "PARTIAL\|FAILED " "$WORK/export.log" && { grep "PARTIAL\|FAILED " "$WORK/export.log" | sed "s/^/      /"; fail "the export reported scenarios it could not write whole"; }   || pass "the export wrote every scenario whole"
+
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "user scenarios OK - 2/2 cases passed."
+  say "user scenarios OK - 3/3 cases passed."
 else
   say "user scenarios FAILED - $FAILURES check(s)."
   exit 1
