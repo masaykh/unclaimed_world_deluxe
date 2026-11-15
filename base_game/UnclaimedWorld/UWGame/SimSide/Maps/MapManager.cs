@@ -1496,9 +1496,17 @@ namespace UWGame.SimSide.Maps
 
         public static string ComposeMapDataFolderPath(string folderName, string fileOrFolderName = "")
         {
-            string mapDataFolderPath = Config.GetDataFolderPath(Config.DataType.RGMap);
+            // PORT: a map the player saved in user/Maps (the Map Editor saves there) takes the place
+            // of the game's map of the same name, as it does in MapEditorSaveLoadPanel.GetListOfMapFolders.
+            string mapDataFolderPath = ChooseMapsFolder(folderName,
+                Config.GetDataFolderPath(Config.DataType.RGMap), Config.GetDataFolderPath(Config.DataType.UserMaps));
 
             return System.IO.Path.Combine(mapDataFolderPath, folderName, fileOrFolderName);
+        }
+
+        public static string ChooseMapsFolder(string folderName, string gameMaps, string userMaps)
+        {
+            return System.IO.File.Exists(System.IO.Path.Combine(userMaps, folderName, Config.MapDataName)) ? userMaps : gameMaps;
         }
 
         private void InitMaps()

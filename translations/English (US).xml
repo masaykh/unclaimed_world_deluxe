@@ -2142,6 +2142,10 @@ Structures can often have their lifespan extended with regular maintenance. Item
     <Value>Path: </Value>
   </String>
   <String>
+    <Key>GuiUSER_d041984358ee</Key>
+    <Value> (USER)</Value>
+  </String>
+  <String>
     <Key>GuiTheMapWasSaved_c9e2b5049a94</Key>
     <Value>The map was saved.</Value>
   </String>
