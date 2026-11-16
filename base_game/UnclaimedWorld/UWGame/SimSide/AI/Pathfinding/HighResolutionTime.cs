@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace UWGame.SimSide.AI.Pathfinding;
 
@@ -6,27 +6,13 @@ public class HighResolutionTime
 {
 	private long mStartCounter;
 
-	private long mFrequency;
-
-	[DllImport("Kernel32.dll")]
-	private static extern bool QueryPerformanceCounter(out long perfcount);
-
-	[DllImport("Kernel32.dll")]
-	private static extern bool QueryPerformanceFrequency(out long freq);
-
-	public HighResolutionTime()
-	{
-		QueryPerformanceFrequency(out mFrequency);
-	}
-
 	public void Start()
 	{
-		QueryPerformanceCounter(out mStartCounter);
+		mStartCounter = Stopwatch.GetTimestamp();
 	}
 
 	public double GetTime()
 	{
-		QueryPerformanceCounter(out var perfcount);
-		return (double)(perfcount - mStartCounter) / (double)mFrequency;
+		return (double)(Stopwatch.GetTimestamp() - mStartCounter) / Stopwatch.Frequency;
 	}
 }
