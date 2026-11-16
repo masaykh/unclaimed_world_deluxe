@@ -60,12 +60,12 @@ internal static class GlslFixups
     private static readonly Regex BareUse = new(@"\b(?:vs|ps)_b\d+\b(?!\s*\.x)", RegexOptions.Compiled);
 
     /// <summary>What one call changed, for reporting.</summary>
-    internal readonly record struct Result(byte[] Blob, int ShadersPatched, int ConditionsFixed)
+    internal readonly record struct Result(byte[] Blob, int ShadersPatched, int ConditionsFixed, int TransposesFixed = 0)
     {
         public override string ToString() =>
-            ConditionsFixed == 0
+            ConditionsFixed == 0 && TransposesFixed == 0
                 ? "no GLSL fixups needed"
-                : $"{ConditionsFixed} boolean condition(s) repaired in {ShadersPatched} shader(s)";
+                : $"{ConditionsFixed} boolean condition(s), {TransposesFixed} transpose(s) repaired in {ShadersPatched} shader(s)";
     }
 
     /// <summary>
@@ -89,6 +89,7 @@ internal static class GlslFixups
 
         var replacements = new List<(int LengthFieldOffset, int Start, int Length, byte[] Payload)>();
         int conditionsFixed = 0;
+        int transposesFixed = 0;
 
         foreach (MgfxV10Reader.ShaderBlock block in blocks)
         {
@@ -103,7 +104,22 @@ internal static class GlslFixups
                 return $"if ({reg}.x {op} 0.0)";
             });
 
-            if (fixedHere == 0)
+            // ShadowDusk leaves transpose(mat4(...)) in Vehicle. Versionless GLSL
+            // has no transpose builtin; keep the calculation using explicit column access.
+            int transposesHere = 0;
+            repaired = Regex.Replace(repaired, @"\btranspose\s*(?=\(\s*mat4\s*\()", match =>
+            {
+                transposesHere++;
+                return "uw_transpose4";
+            });
+            if (transposesHere > 0)
+            {
+                int main = repaired.IndexOf("void main", StringComparison.Ordinal);
+                if (main < 0) throw new InvalidDataException("GLSL shader has no main function.");
+                repaired = repaired.Insert(main, Transpose4Helper);
+            }
+
+            if (fixedHere == 0 && transposesHere == 0)
             {
                 continue;
             }
@@ -118,6 +134,7 @@ internal static class GlslFixups
             }
 
             conditionsFixed += fixedHere;
+            transposesFixed += transposesHere;
             replacements.Add((block.LengthFieldOffset, block.BytecodeOffset, block.Bytecode.Length,
                 Encoding.ASCII.GetBytes(repaired)));
         }
@@ -127,8 +144,20 @@ internal static class GlslFixups
             return new Result(blob, 0, 0);
         }
 
-        return new Result(Splice(blob, replacements), replacements.Count, conditionsFixed);
+        return new Result(Splice(blob, replacements), replacements.Count, conditionsFixed, transposesFixed);
     }
+
+    private const string Transpose4Helper = """
+        mat4 uw_transpose4(mat4 m)
+        {
+            return mat4(
+                vec4(m[0][0], m[1][0], m[2][0], m[3][0]),
+                vec4(m[0][1], m[1][1], m[2][1], m[3][1]),
+                vec4(m[0][2], m[1][2], m[2][2], m[3][2]),
+                vec4(m[0][3], m[1][3], m[2][3], m[3][3]));
+        }
+
+        """ + "\n";
 
     /// <summary>
     /// The first line still naming a boolean register outside its #define and outside a
