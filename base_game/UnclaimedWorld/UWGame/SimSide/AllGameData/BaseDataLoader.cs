@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using UWGame.Client.Audio;
 using UWGame.Client.Particles;
 using UWGame.ClientSide;
@@ -14,9 +14,9 @@ using UWGame.ClientSide.Particles;
 using UWGame.ClientSide.PropertyPresentation;
 using UWGame.ClientSide.Renderables;
 using UWGame.SimSide.AI.Constants;
-using UWGame.SimSide.AllGameData.EventHooks;
 using UWGame.SimSide.Allegiances;
 using UWGame.SimSide.Allegiances.Statistics;
+using UWGame.SimSide.AllGameData.EventHooks;
 using UWGame.SimSide.Buildings;
 using UWGame.SimSide.Combat;
 using UWGame.SimSide.Communication;
@@ -52,6 +52,7 @@ using UWGame.SimSide.Vegetation;
 using UWGame.SimSide.Vehicles;
 using UWGame.SimSide.XmlCollections;
 using WindowSystem;
+using Xclna.Xna.Animation;
 
 namespace UWGame.SimSide.AllGameData;
 
@@ -1002,8 +1003,108 @@ public class BaseDataLoader : DataLoader
 			RenderAsModelType = new RenderAsModelType
 			{
 				AssetName = "skimmer",
-				ModelScale = 1.3f
-			}
+				ModelScale = 1.3f,
+
+                // Original entries requested BlendMode.Additive, which is not currently
+                // available. These entries use the default BlendMode.Normal instead.
+                //
+                // Playback.Manual preserves the original value, but requires the client
+                // to supply animation progress. Reverse is a modifier, not playback direction.
+                AnimConditions = new AnimConditionInfo[]
+				{
+					// Aircraft, and possibly other vehicles: unloading.
+					new AnimConditionInfo
+					{
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet
+						{
+							BaseAnimations = new string[] { "open_for_loading" }
+						},
+						Playback = Playback.Manual,
+						ConditionSet = new AnimConditions
+						{
+							Action = AnimAction.Containing,
+							Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Reverse)
+						}
+					},
+
+					// Aircraft: original comment specified forwards playback.
+					// TODO: Actionless entries in AnimConditions are not currently selected.
+					new AnimConditionInfo
+					{
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet
+						{
+							BaseAnimations = new string[] { "propeller_right_start" }
+						},
+						Playback = Playback.Manual,
+						ConditionSet = new AnimConditions
+						{
+							Modifiers = new BitMask64(typeof(AnimModifier),
+								(int)AnimModifier.Pre, (int)AnimModifier.Right, (int)AnimModifier.Slow)
+						}
+					},
+
+					// Aircraft: original comment specified forwards playback.
+					// TODO: Actionless entries in AnimConditions are not currently selected.
+					new AnimConditionInfo
+					{
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet
+						{
+							BaseAnimations = new string[] { "propeller_left_start" }
+						},
+						Playback = Playback.Manual,
+						ConditionSet = new AnimConditions
+						{
+							Modifiers = new BitMask64(typeof(AnimModifier),
+								(int)AnimModifier.Pre, (int)AnimModifier.Left, (int)AnimModifier.Slow)
+						}
+					},
+
+					// Aircraft: original comment specified backwards playback.
+					new AnimConditionInfo
+					{
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet
+						{
+							BaseAnimations = new string[] { "driver_entry" }
+						},
+						Playback = Playback.Manual,
+						ConditionSet = new AnimConditions
+						{
+							Action = AnimAction.Containing,
+							Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Crew)
+						}
+					},
+
+					// Aircraft: original comment specified backwards playback.
+					new AnimConditionInfo
+					{
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet
+						{
+							BaseAnimations = new string[] { "passenger_entry" }
+						},
+						Playback = Playback.Manual,
+						ConditionSet = new AnimConditions
+						{
+							Action = AnimAction.Containing,
+							Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Passenger)
+						}
+					},
+
+					// Aircraft: original comment specified backwards playback.
+					new AnimConditionInfo
+					{
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet
+						{
+							BaseAnimations = new string[] { "open_for_loading" }
+						},
+						Playback = Playback.Manual,
+						ConditionSet = new AnimConditions
+						{
+							Action = AnimAction.Containing,
+							Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Open)
+						}
+					}
+				}
+            }
 		};
 		entityType.LocomotorType = new LocomotorType
 		{

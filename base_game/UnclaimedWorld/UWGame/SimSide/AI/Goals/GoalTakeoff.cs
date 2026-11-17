@@ -142,13 +142,15 @@ namespace UWGame.SimSide.AI.Goals
             }
 
             // TODO: rework this... perhaps send a message when the aircraft is ready to take off.
-            AddSubgoal(new GoalWait(entity, 3d, null, AnimModifier.Pre, AnimModifier.Right, AnimModifier.Slow)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(entity, 3d, null, AnimModifier.Pre, AnimModifier.Left, AnimModifier.Slow)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(entity, 3d, AnimAction.Containing, AnimModifier.Crew)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(entity, 3d, AnimAction.Containing, AnimModifier.Passenger)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(entity, 3d, AnimAction.Containing, AnimModifier.Open)); //, Aircraft.ID));  
+            // We need to run these 5 anims in parallel!
+            // start the propeller animations
+            AddSubgoal(new GoalWait(Aircraft, 3d, null, AnimModifier.Pre, AnimModifier.Right, AnimModifier.Slow)); //, Aircraft.ID));
+            AddSubgoal(new GoalWait(Aircraft, 3d, null, AnimModifier.Pre, AnimModifier.Left, AnimModifier.Slow)); //, Aircraft.ID));
 
-
+            // close all doors before takeoff:
+            AddSubgoal(new GoalWait(Aircraft, 3d, AnimAction.Containing, AnimModifier.Crew)); //, Aircraft.ID));
+            AddSubgoal(new GoalWait(Aircraft, 3d, AnimAction.Containing, AnimModifier.Passenger)); //, Aircraft.ID));
+            AddSubgoal(new GoalWait(Aircraft, 3d, AnimAction.Containing, AnimModifier.Open)); //, Aircraft.ID));  
 
 
 
