@@ -8,7 +8,7 @@
 # AllScenarioLoader.GetScenarioDataLoader - UserDataLoader - then every key its scenarioData.xml
 # names is looked up, then GameData.PostDataCompleteInitialize runs.
 #
-# Three cases, and the second is the control that proves the first is checking something:
+# Four cases, and the second is the control that proves the first is checking something:
 #
 #   1. a full export of The Clay Pit loads, every key resolves, validation passes, and a save of
 #      it reads back. SAVE is a save and then a load of the same file, and the load looked the
@@ -22,6 +22,9 @@
 #      cannot write through EventActionType's [XmlInclude]: their actionSets.xml came out cut off
 #      (Making Headway) or empty (Muckroot Mining Site), and the export still said "ok" (Kastuk,
 #      2026-11-14).
+#   4. every item and structure type of an exported Castaways has a category. Its own items set
+#      EntityType.Category and never CategoryKey, the export wrote none, and the stock panel threw
+#      on the null key (Kastuk, 2026-11-15).
 #
 # Not every built-in scenario round-trips yet: Castaways names option keys its own tables do not
 # define, and Twinkler Island trades entity:haulingRobot, which -nomods does not have.
@@ -115,10 +118,22 @@ for src in "Making Headway" "Muckroot Mining Site"; do
 done
 grep -q "PARTIAL\|FAILED " "$WORK/export.log" && { grep "PARTIAL\|FAILED " "$WORK/export.log" | sed "s/^/      /"; fail "the export reported scenarios it could not write whole"; }   || pass "the export wrote every scenario whole"
 
+say "==> 4. Castaways' own items keep their category"
+# Castaways still does not load whole - its options name keys only Twinkler Island defines - so
+# this case asks for the category line and not for a zero exit.
+SOURCE="TUTORIAL - Castaways"; copy_as "Castaways Mod"
+out=$( cd "$d" && "$EXPORT" . --nomods "--user-scenario=Castaways Mod" 2>&1 ) || true
+if echo "$out" | grep -q "every item and structure type has a category"; then
+  pass "every item and structure type of Castaways has a category"
+else
+  echo "$out" | sed -n '/scenario tables/,$p' | sed "s/^/      /"
+  fail "Castaways has item or structure types with no category - its stock panel will not open"
+fi
+
 rm -rf "$WORK"
 say ""
 if [ "$FAILURES" -eq 0 ]; then
-  say "user scenarios OK - 3/3 cases passed."
+  say "user scenarios OK - 4/4 cases passed."
 else
   say "user scenarios FAILED - $FAILURES check(s)."
   exit 1
