@@ -10,9 +10,10 @@ namespace UnclaimedWorld.Test;
 /// name through AllScenarioLoader.LoadScenarioHeader - which answered null for a user scenario,
 /// so every game of one crashed on SAVE (Kastuk, 2026-11-15). The whole header round trip, with
 /// real tables, is case 1 of tools/build/84-verify-user-scenarios.sh; this is the lookup alone.
+/// Not run in parallel: Config resolves user/Scenarios against the current directory.
 /// </summary>
 [TestClass]
-[DoNotParallelize] // Config resolves user/Scenarios against the current directory.
+[DoNotParallelize]
 public sealed class UserScenarioSaveTests
 {
     private string root = null!;
