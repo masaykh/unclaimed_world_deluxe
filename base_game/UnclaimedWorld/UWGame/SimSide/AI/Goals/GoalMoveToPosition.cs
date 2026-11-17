@@ -813,9 +813,17 @@ namespace UWGame.SimSide.AI.Goals
             }*/
         }
 
-
-
-
+        // PORT: the transport a path is planned for. A goal that may not use a vehicle walks, but it
+        // plans its path at once, while the GoalExitVehicle queued in front of it has not run yet:
+        // the entity is still its vehicle's driver, and GetTransportType answers for the vehicle.
+        // For the skimmer that is Air, and the movement maps keep no Air layer (MapManager skips
+        // it), so a pilot told to walk - to bed (GoalSleep -> GoalArriveAsVisitor), say - threw
+        // KeyNotFoundException 'Air' (Kastuk, 2026-11-14). A ground vehicle got its own layer for
+        // what is a walk. The walk is planned for feet, which is what follows the exit.
+        private SurfaceType.TransportType PathTransport()
+        {
+            return VehicleUseByGoal == VehicleUse.NoVehicle ? SurfaceType.TransportType.Foot : entity.GetTransportType();
+        }
 
         /// <summary>
         /// destinationData can be null if we are going to a location
@@ -905,7 +913,7 @@ namespace UWGame.SimSide.AI.Goals
                     MovementMap moveMap = entityIntelligence.Allegiance.SharedKnowledge.GetMovementMap(entityIntelligence.ProtectionLevel,
                         entity.EntityType, entityIntelligence.ThreatStance);
 
-                    List<AI.Pathfinding.PathFinderNode> path = entityIntelligence.PathPlanner.FindShortPathDirectly(moveMap.Layers[entity.GetTransportType()],
+                    List<AI.Pathfinding.PathFinderNode> path = entityIntelligence.PathPlanner.FindShortPathDirectly(moveMap.Layers[PathTransport()],
                           from, Destination.Value.ToVector3(), 2000);
 
                     if (path != null)
@@ -922,7 +930,7 @@ namespace UWGame.SimSide.AI.Goals
                 }
                 else
                 {
-                    RequestPath(entity.GetTransportType(), from);
+                    RequestPath(PathTransport(), from);
                 }
             }
             else
