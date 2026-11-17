@@ -81,7 +81,21 @@ public class EntityType : IXmlSerializable, IGameData, IHasCategory<EntityCatego
     public string FormalName;
 
 
-    public string CategoryKey { get; set; }
+    // PORT FIX. CategoryKey falls back to the key of Category when nothing set the key itself.
+    // Category is [XmlIgnore] and only CategoryKey is written, but some loaders set the object and
+    // never the key - Castaways' tutorial items (Scenario 3 ItemsLoader: item:lines, the catamaran
+    // parts) and the base upgrade items (ItemLoader, Category = AllEntityCategories["upgrades"]).
+    // Built in, those keep their Category; exported with `dataexport --scenarios` they came out with
+    // no category at all, loaded back as a user scenario with Category == null, and the stock panel
+    // keys its rows by Category (InventoryPanel.GetCategoryKey -> Grid.TryGetEntry), so opening it
+    // threw ArgumentNullException (Kastuk, 2026-11-15, TUTORIAL - Castaways). Init() resolves the key
+    // back to the same EntityCategory, so a built-in type ends up exactly as before.
+    private string categoryKey;
+    public string CategoryKey
+    {
+        get => categoryKey ?? Category?.KeyName;
+        set => categoryKey = value;
+    }
 
     [XmlIgnore]
     public EntityCategory Category { get; set; }

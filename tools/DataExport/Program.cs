@@ -2904,11 +2904,35 @@ internal static partial class Program
         {
             Console.WriteLine($"    FAIL {missing.Count} of {keys} keys named by scenarioData.xml are not defined:");
             foreach (string m in missing.Take(20)) Console.WriteLine("         " + m);
+        }
+        else
+        {
+            Console.WriteLine($"    ok - all {keys} keys named by scenarioData.xml resolve");
+        }
+
+        // Missing keys fail the check but no longer end it: the validation pass and the category
+        // check below are still worth running on a scenario that has them (Castaways - see
+        // 84-verify-user-scenarios.sh).
+        if (!ValidateDataComplete()) return 1;
+
+        // Every item and structure type needs a category: the stock panel groups its rows by
+        // EntityType.Category (InventoryPanel.PopulateWithCategories), and a null one is a
+        // Dictionary key it throws on. Castaways' own items set Category and never CategoryKey,
+        // so before EntityType.CategoryKey fell back to Category.KeyName they were exported with
+        // no category and the panel crashed on open (Kastuk, 2026-11-15). After validation:
+        // PostDataCompleteInitialize is what resolves CategoryKey into Category.
+        var uncategorised = GameData.Instance.AllEntityTypes
+            .Where(e => (e.Value.ItemType != null || e.Value.StructureType != null) && e.Value.Category == null)
+            .Select(e => e.Key).OrderBy(k => k, StringComparer.Ordinal).ToList();
+        if (uncategorised.Count > 0)
+        {
+            Console.WriteLine($"    FAIL {uncategorised.Count} item/structure type(s) have no category - the stock panel cannot list them:");
+            foreach (string k in uncategorised.Take(20)) Console.WriteLine("         " + k);
             return 1;
         }
-        Console.WriteLine($"    ok - all {keys} keys named by scenarioData.xml resolve");
+        Console.WriteLine("    ok - every item and structure type has a category");
 
-        return ValidateDataComplete() ? 0 : 1;
+        return missing.Count == 0 ? 0 : 1;
     }
 
     /// <summary>
