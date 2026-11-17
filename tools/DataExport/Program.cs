@@ -46,6 +46,9 @@ internal static partial class Program
         scoutReport = args.FirstOrDefault(a => a.StartsWith("--save-scout=", StringComparison.Ordinal))
             ?.Substring("--save-scout=".Length);
         if (scoutReport != null) saveSelfTest = scoutReport;
+        reloadReport = args.FirstOrDefault(a => a.StartsWith("--save-reload=", StringComparison.Ordinal))
+            ?.Substring("--save-reload=".Length);
+        if (reloadReport != null) saveSelfTest = reloadReport;
         if (saveSelfTest != null) saveSelfTest = Path.GetFullPath(saveSelfTest);
         printTraces = args.Contains("--traces");
 
@@ -124,6 +127,7 @@ internal static partial class Program
             Console.Error.WriteLine("  --save-collisions=<file.sav>  on the save's open ground: colonists still keep apart, at 30 to 144 updates a second");
             Console.Error.WriteLine("  --save-steprate=<file.sav>    run the save and print a digest of its state; with the fixed step on, the same at any frame rate");
             Console.Error.WriteLine("  --save-scout=<file.sav>       order a SCOUT and an EXAMINE zone on the save; each is swept once, across interruptions, and ends");
+            Console.Error.WriteLine("  --save-reload=<file.sav>      SAVE on the running save: Sim.DoSave, then Sim.LoadSavedGame of that file into the same session");
             Console.Error.WriteLine("               read a saved game with no window - its mod switches, its scenario's");
             Console.Error.WriteLine("               tables, then the whole simulation - and check the creatures a Port");
             Console.Error.WriteLine("               delivered: none waits as a passenger with nothing to ride, each");

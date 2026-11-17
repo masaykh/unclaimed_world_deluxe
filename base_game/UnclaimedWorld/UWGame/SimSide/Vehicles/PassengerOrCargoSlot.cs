@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using UWGame.SimSide.Entities;
 using UWGame.SimSide.Snapshots;
@@ -201,6 +202,21 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	public static void ResetIDCounter()
 	{
 		IDCounter = PassengerOrCargoSlotID.First;
+	}
+
+	/// <summary>
+	/// Empties the lookup of the slots of the game being replaced by a load, and restarts the ID
+	/// counter, as Sim.ClearData does for every snapshotted collection. See Sim.FreeMemoryBeforeLoad.
+	/// </summary>
+	public static void ForgetAllBeforeLoad()
+	{
+		List<PassengerOrCargoSlot> slots = new List<PassengerOrCargoSlot>();
+		LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.IterateMembers(slots.Add);
+		foreach (PassengerOrCargoSlot slot in slots)
+		{
+			LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.Remove(slot);
+		}
+		ResetIDCounter();
 	}
 
 	public void SetInvalid()

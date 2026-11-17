@@ -422,6 +422,7 @@ public class Controller : DrawableGameComponent
 		{
 			try
 			{
+				ThrowFailedInGameLoad();
 				AudioManager.Update(gameTime);
 				HandleReplay(ref gameTime);
 				if (!replayPaused)
@@ -585,6 +586,7 @@ public class Controller : DrawableGameComponent
 		{
 			try
 			{
+				ThrowFailedInGameLoad();
 				foreach (GameScreen screen in screens)
 				{
 					if (screen.ScreenState != ScreenState.Hidden)
@@ -640,6 +642,26 @@ public class Controller : DrawableGameComponent
 	private bool IngameLoadScreenIsActive()
 	{
 		return The.LoadScreen.IsLoadFinished;
+	}
+
+	/// <summary>
+	/// PORT FIX. A load in the running game - SAVE, which reloads what it wrote, or LOAD of a save
+	/// of the same scenario (SaveLoadMessageBox.LoadGameDirectlyInGame) - runs on a thread that
+	/// catches whatever it throws into Sim.LoadException. The studio meant the main thread to
+	/// rethrow it from Sim.LoadSavedGame, and noted itself that it "will likely not be entered by
+	/// the main thread": the Sim that would poll is the one the load replaced. Nothing did, so a
+	/// failed load left the client drawing a world with no Sim and no map, and the crash report
+	/// named GameWorldRenderer.ComputeDrawingArea or FogMap.DrawMapTexture instead of the cause
+	/// (Kastuk, 2026-11-15 and 2026-11-17). The LOAD menu's path rethrows it from the main thread
+	/// (LoadingScreen.VerifyLoadSaveGame); this is the same for the in-game path, checked before
+	/// any screen updates or draws. A load that succeeds leaves LoadException null.
+	/// </summary>
+	private void ThrowFailedInGameLoad()
+	{
+		if (Sim.LoadException != null && IngameLoadScreenIsActive())
+		{
+			throw Sim.LoadException;
+		}
 	}
 
 	public bool ZoomIsActive()
