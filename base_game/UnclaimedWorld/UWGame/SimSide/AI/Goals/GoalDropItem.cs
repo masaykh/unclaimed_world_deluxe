@@ -91,12 +91,12 @@ internal class GoalDropItem : CompositeGoal
 					{
 						if (container.EntityID != placeInStorage.Value.StorageEntity)
 						{
-							AddSubgoal(new GoalExit(base.entity));
+							AddSubgoal(GoalExitVehicle.ExitFor(base.entity)); // PORT: a vehicle lands before it is left
 						}
 					}
 					else
 					{
-						AddSubgoal(new GoalExit(base.entity));
+						AddSubgoal(GoalExitVehicle.ExitFor(base.entity)); // PORT: a vehicle lands before it is left
 					}
 				}
 				if (placeInStorage.HasValue)

@@ -202,7 +202,7 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 			}
 			if (container != null)
 			{
-				AddSubgoal(new GoalExit(entity));
+				AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
 				base.Status = Status.Active;
 				return;
 			}

@@ -170,7 +170,7 @@ internal class GoalProduce : CompositeGoal, ITopLevelGoal
 							JobID? thisJobID = ((job != null) ? new JobID?(job.ID) : ((JobID?)null));
 							DropUnneededItemsToMakeCapacity(data.Bulk, (Entity e) => e.AssignedToJob != thisJobID, out var _, StorageCompartment.Haul);
 							AddSubgoal(new GoalPickup(entity, data.EntityID, null, StorageCompartment.Haul, false));
-							AddSubgoal(new GoalExit(entity));
+							AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
 							AddSubgoal(new GoalDropItem(entity, data.EntityID, job));
 						}
 					}
