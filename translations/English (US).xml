@@ -3927,6 +3927,22 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Key>GuiRequires64BitNotAvailableUnder32Bit_322c49ec09ca</Key>
     <Value>Requires 64 bit, not available under 32 bit.</Value>
   </String>
+  <String>
+    <Key>GuiGAMESCENARIOS</Key>
+    <Value>GAME SCENARIOS</Value>
+  </String>
+  <String>
+    <Key>GuiShowTheScenariosThatComeWithTheGame</Key>
+    <Value>Show the scenarios that come with the game</Value>
+  </String>
+  <String>
+    <Key>GuiUSERSCENARIOS</Key>
+    <Value>USER SCENARIOS</Value>
+  </String>
+  <String>
+    <Key>GuiShowYourOwnScenariosFromTheUserScenariosFolder_b3d1d1942a27</Key>
+    <Value>Show your own scenarios, from the user/Scenarios folder</Value>
+  </String>
   <!-- ClientSide/Screens/IngameLoadGameInterface.cs -->
   <String>
     <Key>GuiLoadingGamePleaseWait_598c678b83af</Key>
