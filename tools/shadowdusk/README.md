@@ -111,8 +111,27 @@ constructor inside that operand would never be rescanned — Billboard's shadow 
 exactly that shape, and the first version lowered the outer one and shipped the inner one
 untouched, which is the same failure one level down.
 
-What is left after it: `transpose()` in one Vehicle vertex shader. That one needs a helper
-function emitted into the prologue rather than an expression rewrite.
+ShadowDusk still emits `transpose()` in three Vehicle vertex shaders. `MgfxTranscode` now
+lowers `transpose(mat4(...))` to an explicit GLSL 1.10 matrix transpose helper during `inject`.
+This fixes Mesa rejecting Vehicle with "no function with name 'transpose'". The helper is
+inserted once before `main`, after the preprocessor directives, and preserves column ordering.
+Existing compiled effects can be repaired without losing parameter defaults or techniques:
+
+```sh
+dotnet run --project tools/MgfxTranscode -- repair-glsl /path/to/Content/Vehicle.xnb artifacts/content/effects-gl/Vehicle.xnb
+dotnet run --project tools/MgfxTranscode.Tests -- /path/to/Content/Vehicle.xnb artifacts/validation/vehicle
+```
+
+The regression check requires the original affected Vehicle effect. It checks idempotence,
+parameter names and defaults, and that unrelated shader blocks and DirectX blobs stay unchanged.
+Compile every exported stage on the local OpenGL driver, requiring three failures before the
+repair and none afterwards (creates a hidden SDL2 window, without launching the game):
+
+```sh
+python3 tools/MgfxTranscode.Tests/compile-vehicle-gl.py artifacts/validation/vehicle/vehicle-shaders.json
+```
+
+Container validation alone cannot detect GLSL errors.
 
 This is the patch that matters most in the field. An effect that uses these loads on NVIDIA and
 on recent Intel drivers and is rejected at Effect-load time on older ones, where MonoGame's only
