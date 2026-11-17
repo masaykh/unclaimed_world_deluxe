@@ -345,6 +345,17 @@ sub sink_literals {
 }
 
 # The literals of an assignment to a control, one by one, left to right.
+# The line up to a trailing // comment that is not inside a string literal, so the hits below
+# keep their offsets into the whole line. MarkerWindow's `markerLabel.Text = expedition.Name; //
+# "Camp";` counted as English in the interface, and route would have "fixed" the comment.
+sub code_only {
+    my ($line) = @_;
+    while ($line =~ /($literal)|(\/\/)/g) {
+        return substr($line, 0, $-[0]) if defined $2;
+    }
+    return $line;
+}
+
 sub assigned_literals {
     my ($line) = @_;
     my @found;
@@ -396,7 +407,8 @@ if ($mode eq 'unrouted' || $mode eq 'route') {
             $in_block = 1 if $line =~ m{/\*(?!.*\*/)};
             next if $line =~ m{^\s*(//|/\*|\*)};
             my %seen;
-            my @hits = grep { !$seen{$_->[0]}++ } (assigned_literals($line), sink_literals($line, $file), returned_literals($line, $file));
+            my $code = code_only($line);
+            my @hits = grep { !$seen{$_->[0]}++ } (assigned_literals($code), sink_literals($code, $file), returned_literals($code, $file));
             $n += @hits;
             next unless $mode eq 'route';
             # Wrap the plain ones, right to left; an interpolated $"..." needs a format by hand.
