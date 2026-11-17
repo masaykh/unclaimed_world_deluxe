@@ -2908,7 +2908,78 @@ internal static partial class Program
         }
         Console.WriteLine($"    ok - all {keys} keys named by scenarioData.xml resolve");
 
-        return ValidateDataComplete() ? 0 : 1;
+        if (!ValidateDataComplete()) return 1;
+        return SaveHeaderRoundTrip(header) ? 0 : 1;
+    }
+
+    /// <summary>
+    /// A game of this scenario, saved and read back - as far as the save's header, which is the
+    /// part that names the scenario.
+    ///
+    /// SAVE in the game is a save followed at once by a load of the same file
+    /// (SaveLoadMessageBox.Update -> LoadGameDirectlyInGame), and the load reads the header's
+    /// StartScenarioParams back through AllScenarioLoader.LoadScenarioHeader. That answered null
+    /// for anything not built in, so every user scenario's load died there on a background thread
+    /// that swallows the exception, and the game crashed a frame later in whatever touched the
+    /// half-loaded world first: GameWorldRenderer.ComputeDrawingArea, or FogMap.DrawMapTexture
+    /// (Kastuk, 2026-11-15: "all of custom scenarios got crash during saving").
+    ///
+    /// The header is built as NEW GAME builds it (CustomizeScenarioScreen.StartGame: the
+    /// scenario's own Source, its name, and one option from each set), written with the game's
+    /// Snapshotter.Save and read with Snapshotter.LoadHeader - the same call the load panel makes.
+    /// </summary>
+    private static bool SaveHeaderRoundTrip(UWGame.SimSide.Scenarios.Scenario scenario)
+    {
+        var options = new UWGame.SimSide.XmlCollections.SerializableDictionary<string, UWGame.SimSide.Scenarios.Option>();
+        foreach (var set in scenario.ScenarioData.OptionSets ?? Array.Empty<UWGame.SimSide.Scenarios.OptionSet>())
+        {
+            if (set.Options != null && set.Options.Length > 0) options.Add(set.KeyName, set.Options[0]);
+        }
+        var startGameParams = new UWGame.SimSide.Scenarios.StartGameParams
+        {
+            StartScenarioParams = new UWGame.SimSide.Scenarios.StartScenarioParams
+            {
+                Scenario = scenario,
+                Options = options,
+                Source = scenario.Source,
+                ScenarioName = scenario.Name
+            }
+        };
+        try
+        {
+            var sn = new UWGame.SimSide.Snapshots.Snapshotter();
+            using var bytes = new MemoryStream();
+            using (var writer = new BinaryWriter(bytes, System.Text.Encoding.UTF8, leaveOpen: true))
+            {
+                sn.Save(writer, new UWGame.SimSide.Snapshots.SnapshotHeader(startGameParams), verifyCompleteness: true, snapShotHeader: true, snapShotBody: false);
+            }
+            bytes.Position = 0;
+            UWGame.SimSide.Snapshots.SnapshotHeader read;
+            using (var reader = new BinaryReader(bytes))
+            {
+                read = sn.LoadHeader(reader);
+            }
+            var back = read.StartGameParams?.StartScenarioParams;
+            if (back?.Scenario?.ScenarioData == null || back.Scenario.Name != scenario.Name)
+            {
+                Console.WriteLine("    FAIL a save of it reads back without its scenario");
+                return false;
+            }
+            if (back.Options.Count != options.Count)
+            {
+                Console.WriteLine($"    FAIL a save of it reads back {back.Options.Count} of its {options.Count} options");
+                return false;
+            }
+            Console.WriteLine($"    ok - a save of it reads back: '{back.Scenario.Name}' with {back.Options.Count} options");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Exception root = ex.GetBaseException();
+            Console.WriteLine("    FAIL a save of it does not read back: " + root.GetType().Name + ": " + root.Message);
+            if (printTraces) Console.WriteLine(root.StackTrace);
+            return false;
+        }
     }
 
     /// <summary>

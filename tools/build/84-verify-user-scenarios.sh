@@ -10,7 +10,10 @@
 #
 # Three cases, and the second is the control that proves the first is checking something:
 #
-#   1. a full export of The Clay Pit loads, every key resolves, and validation passes
+#   1. a full export of The Clay Pit loads, every key resolves, validation passes, and a save of
+#      it reads back. SAVE is a save and then a load of the same file, and the load looked the
+#      scenario up with AllScenarioLoader.LoadScenarioHeader, which answered null for a user
+#      scenario: every one crashed on SAVE (Kastuk, 2026-11-15)
 #   2. the same scenario with ONLY scenario.xml and scenarioData.xml fails on 'spawnWorld' - the
 #      error Kastuk reported, and what every user scenario did before UserDataLoader read its
 #      folder (Sim.CurrentSerializeMode shipped as NoSerialize, so no loader opened any XML)
@@ -75,8 +78,9 @@ say "==> 1. a full export loads as a user scenario"
 copy_as "Clay Pit Full"
 out=$( cd "$d" && "$EXPORT" . --nomods "--user-scenario=Clay Pit Full" 2>&1 ) && rc=0 || rc=$?
 if [ "$rc" -eq 0 ] && echo "$out" | grep -q "keys named by scenarioData.xml resolve" \
-   && echo "$out" | grep -q "survive the game's own validation"; then
-  pass "$(echo "$out" | sed -n 's/.*all \([0-9]*\) keys.*/\1/p') keys resolve, and validation passes"
+   && echo "$out" | grep -q "survive the game's own validation" \
+   && echo "$out" | grep -q "a save of it reads back"; then
+  pass "$(echo "$out" | sed -n 's/.*all \([0-9]*\) keys.*/\1/p') keys resolve, validation passes, and a save of it reads back"
 else
   echo "$out" | sed -n '/scenario tables/,$p' | sed "s/^/      /"
   fail "a full export of '$SOURCE' does not load as a user scenario"
@@ -102,8 +106,8 @@ done
 for src in "Making Headway" "Muckroot Mining Site"; do
   SOURCE="$src"; copy_as "$src Mod"
   out=$( cd "$d" && "$EXPORT" . --nomods "--user-scenario=$src Mod" 2>&1 ) && rc=0 || rc=$?
-  if [ "$rc" -eq 0 ] && echo "$out" | grep -q "keys named by scenarioData.xml resolve"      && echo "$out" | grep -q "survive the game's own validation"; then
-    pass "$src loads, and validation passes"
+  if [ "$rc" -eq 0 ] && echo "$out" | grep -q "keys named by scenarioData.xml resolve"      && echo "$out" | grep -q "survive the game's own validation" && echo "$out" | grep -q "a save of it reads back"; then
+    pass "$src loads, validation passes, and a save of it reads back"
   else
     echo "$out" | sed -n '/scenario tables/,$p' | sed "s/^/      /"
     fail "an export of '$src' does not load as a user scenario"
