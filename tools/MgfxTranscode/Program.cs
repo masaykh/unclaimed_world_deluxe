@@ -39,6 +39,10 @@ internal static class Program
               path writes the HLSL initialiser, and this game leaves several uniforms
               (LightColor, Alpha, AlphaFactor...) entirely to their initialisers.
 
+          repair-glsl <input.xnb> <output.xnb>
+              Repair known GLSL compatibility issues in an existing effect, preserving its
+              parameters, defaults and techniques. The output must differ from the input.
+
           shaders <path>...
               Per-shader DXBC report: shader model, whether an Aon9 (DX9 fallback) chunk is
               present, and the STAT chunk's instruction / temp-register / texture counts,
@@ -85,6 +89,7 @@ internal static class Program
                 "raw" when args.Length == 3 => Raw(args[1], args[2]),
                 "validate" when args.Length >= 2 => Validate(args[1..]),
                 "inject" when args.Length is 4 or 5 => Inject(args[1], args[2], args[3], args.Length == 5 ? args[4] : null),
+                "repair-glsl" when args.Length == 3 => RepairGlsl(args[1], args[2]),
                 "shaders" when args.Length >= 2 => Shaders(args[1..]),
                 "compare-params" when args.Length == 3 => CompareParams(args[1], args[2]),
                 "decompress" when args.Length == 2 => Decompress(args[1]),
@@ -441,6 +446,21 @@ internal static class Program
         return 0;
     }
 
+    /// <summary>Repairs a compiled effect into a separate XNB container.</summary>
+    private static int RepairGlsl(string input, string output)
+    {
+        if (Path.GetFullPath(input) == Path.GetFullPath(output))
+            throw new InvalidDataException("Use a separate output path to preserve the original.");
+        XnbFile source = XnbFile.Read(input);
+        GlslFixups.Result result = GlslFixups.Apply(source.ReadEffectBlob());
+        MgfxV10Reader.Validate(result.Blob);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
+        source.WriteWithEffectBlob(output, result.Blob);
+        MgfxV10Reader.Validate(XnbFile.Read(output).ReadEffectBlob());
+        Console.WriteLine(result);
+        return 0;
+    }
+
     /// <summary>
     /// Wraps a bare MGFX blob from mgfxc in an XNB container by reusing an existing effect
     /// container's header. This avoids needing an XNB *writer*: the type-reader table, the
@@ -494,7 +514,7 @@ internal static class Program
             _ => "unknown(" + stats.Profile + ")",
         };
         Console.WriteLine(Path.GetFileName(outXnb) + ": " + profileName + " " + checkStats);
-        if (fixups.ConditionsFixed > 0)
+        if (fixups.ShadersPatched > 0)
         {
             Console.WriteLine("  " + fixups);
         }

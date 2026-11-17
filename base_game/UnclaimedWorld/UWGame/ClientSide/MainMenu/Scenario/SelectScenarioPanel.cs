@@ -24,6 +24,15 @@ public class SelectScenarioPanel : Panel
 
 	private Grid grid;
 	private SelectScenarioInterface selectScenarioInterface;
+
+	// PORT (Kastuk, 2026-11-15: "show custom user scenarios in separated list at Start game menu to
+	// not be mixed with vanilla scenarios. Like special button at bottom near Main to switch onto
+	// user scenarios list."): the button beside MAIN that switches the list, and which list is
+	// showing. Static so the choice survives going on to a scenario and coming back - the panel is
+	// built anew each time this screen opens - and starts on the game's own list at every launch.
+	private TextButton btUserScenarios;
+
+	private static bool showUserScenarios;
 	private int itemPadding = 6;
 	public const int ThumbnailPanelWidth = 112;
 
@@ -64,6 +73,27 @@ public class SelectScenarioPanel : Panel
 				orderby s.SortOrder
 				select s).ToList();
 		}
+	}
+
+	/// <summary>
+	/// PORT: a user scenario is one read from user/Scenarios. Only RGScenarioLoader's headers go
+	/// through ScenarioLoader.GetScenarioHeader, which calls SetRGSource; AllScenarioLoader's
+	/// LoadUserScenarioHeaders deserializes scenario.xml and leaves Source at NotSet (Source is
+	/// [XmlIgnore], so a file cannot claim to be the game's). Anything not the game's is the user's.
+	/// </summary>
+	public static bool IsUserScenario(UWGame.SimSide.Scenarios.Scenario scenario)
+	{
+		return scenario.Source != Source.RefactoredGames;
+	}
+
+	/// <summary>
+	/// PORT: the part of the list one side of the GAME / USER SCENARIOS button shows, in the order
+	/// it was given (AllScenarioHeaders' SortOrder), so the game's list reads exactly as it did
+	/// before user scenarios were added to it.
+	/// </summary>
+	public static List<UWGame.SimSide.Scenarios.Scenario> ScenariosToShow(IEnumerable<UWGame.SimSide.Scenarios.Scenario> scenarios, bool userScenarios)
+	{
+		return scenarios.Where((UWGame.SimSide.Scenarios.Scenario s) => IsUserScenario(s) == userScenarios).ToList();
 	}
 
 	private List<UWGame.SimSide.Scenarios.Scenario> GetListOfScenarios()
@@ -161,7 +191,18 @@ public class SelectScenarioPanel : Panel
 
 	private void Populate()
 	{
-		List<UWGame.SimSide.Scenarios.Scenario> listOfScenarios = GetListOfScenarios();
+		List<UWGame.SimSide.Scenarios.Scenario> allScenarios = GetListOfScenarios();
+		// PORT: the game's scenarios or the user's, never both (Kastuk, 2026-11-03: "separate user
+		// and RG scenarios in the list ... not by alphabet like now"). With no user scenarios there
+		// is nothing to switch to, so the button is hidden and the game's list shown - also when the
+		// user list was showing and its folder has since been emptied.
+		bool anyUserScenarios = allScenarios.Any(IsUserScenario);
+		if (!anyUserScenarios)
+		{
+			showUserScenarios = false;
+		}
+		UpdateUserScenariosButton(anyUserScenarios);
+		List<UWGame.SimSide.Scenarios.Scenario> listOfScenarios = ScenariosToShow(allScenarios, showUserScenarios);
 		grid.BeginAddingEntries();
 		grid.Clear();
 		foreach (UWGame.SimSide.Scenarios.Scenario item in listOfScenarios)
@@ -181,8 +222,40 @@ public class SelectScenarioPanel : Panel
 		textButton.ScaleWidthToFitText();
 		textButton.ToolTip = UWGame.Locale.Text("Return to the main menu");
 		textButton.Click += btCancel_Click;
+		// PORT: the list switch, beside MAIN and in its style (placed as AddBottomButtonInSequence
+		// places a second bottom button). Its text and visibility are set by UpdateUserScenariosButton.
+		btUserScenarios = new TextButton(Interface.gui);
+		Window.Add(btUserScenarios);
+		btUserScenarios.Init(TextButton.TextButtonType.White);
+		PlaceButtonUnderLCD(btUserScenarios, textButton.Right + 5);
+		btUserScenarios.Click += btUserScenarios_Click;
 		Rectangle sourceRectangle = Interface.gui.GUISpriteSheet.GetSourceRectangle("main_panel_dirt_center");
 		Panel.AddImage(Interface.gui, Window, sourceRectangle, new Point(40, 30));
+	}
+
+	/// <summary>
+	/// PORT: the switch names the list it goes to; hidden while there are no user scenarios.
+	/// </summary>
+	private void UpdateUserScenariosButton(bool anyUserScenarios)
+	{
+		btUserScenarios.Visible = anyUserScenarios;
+		if (showUserScenarios)
+		{
+			btUserScenarios.Text = UWGame.Locale.Text("GAME SCENARIOS");
+			btUserScenarios.ToolTip = UWGame.Locale.Text("Show the scenarios that come with the game");
+		}
+		else
+		{
+			btUserScenarios.Text = UWGame.Locale.Text("USER SCENARIOS");
+			btUserScenarios.ToolTip = UWGame.Locale.Text("Show your own scenarios, from the user/Scenarios folder");
+		}
+		btUserScenarios.ScaleWidthToFitText();
+	}
+
+	private void btUserScenarios_Click(UIComponent sender, EventArgs e)
+	{
+		showUserScenarios = !showUserScenarios;
+		Populate();
 	}
 
 	public override void ShowDialog(bool modal)

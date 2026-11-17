@@ -32,7 +32,18 @@ public class AllScenarioLoader
 		{
 			return RGScenarioLoader.LoadScenarioHeader(name);
 		}
-		return null;
+		// PORT FIX. The studio left the user-scenario half of this as "TODO!!! for replays!!" and
+		// answered null. Loading a save is the other caller (StartScenarioParams.LoadScenarioFromName,
+		// from the save's header), and SAVE in the game is a save followed by a load of the same
+		// file - so every game of a user scenario crashed on SAVE: the load thread died here on a
+		// null Scenario, swallowed the exception, and left a half-loaded world that the next frame
+		// tripped over in GameWorldRenderer.ComputeDrawingArea or FogMap.DrawMapTexture (Kastuk,
+		// 2026-11-15: "all of custom scenarios got crash during saving"). A user scenario is its
+		// folder in user/Scenarios, named by its <Name> - where LoadUserScenarioHeaders found it
+		// and LoadScenarioData reads its scenarioData.xml. Its Source is left as the file gives it,
+		// which is what NEW GAME recorded in the save and what IsSameScenario compares against.
+		DataLoader.DeserializeObject<Scenario>(name, ScenarioLoader.scenarioHeaderFileName, out var header, Config.DataType.UserScenarios);
+		return header;
 	}
 
 	public static ScenarioData LoadScenarioData(Scenario scenario)
