@@ -964,8 +964,8 @@ namespace UWGame.SimSide.AI.Goals
             //clear any existing goals
             RemoveAllSubgoals(); // works???
 
-            Entity insideBuilding;
-            if (!entity.GetContainedBy(out insideBuilding))
+            Entity insideContainer;
+            if (!entity.GetContainedBy(out insideContainer))
             {
                 Status = Goals.Status.Failed;
                 return;
@@ -978,10 +978,10 @@ namespace UWGame.SimSide.AI.Goals
                                                                                             //Entities.Locomotors.LeggedLocomotor.Stance.Standing);
             }
 
-            if (insideBuilding != null)
+            if (insideContainer != null)
             { // move out...
-                AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
-                pathStartLocation = insideBuilding.AccessPoint.Value;
+                AddSubgoal(GoalExit.GetContainerExitGoal(entity)); // PORT: a vehicle lands before it is left
+                pathStartLocation = insideContainer.AccessPoint.Value;
             }
 
             AddSubgoal(

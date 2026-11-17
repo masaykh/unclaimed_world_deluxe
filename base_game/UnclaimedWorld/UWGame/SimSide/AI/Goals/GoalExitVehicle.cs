@@ -61,20 +61,6 @@ namespace UWGame.SimSide.AI.Goals
         // PORT: how far a pilot looks for ground to land on before he lands where he is.
         public const int LandingSearchRadius = 12;
 
-        /// <summary>
-        /// PORT: the goal that takes this entity out of whatever holds it. GoalExit uncontains at the
-        /// door at once, which for a vehicle means mid-air or on the water and leaves the driver's
-        /// trigger and attachment behind; a vehicle has its own exit, which lands first.
-        /// </summary>
-        public static Goal ExitFor(Entity entity)
-        {
-            if (entity.IsInsideVehicle())
-            {
-                return new GoalExitVehicle(entity, entity.InsideVehicle.Value);
-            }
-            return new GoalExit(entity);
-        }
-
         public static bool IsAirborne(Entity vehicleEntity)
         {
             return vehicleEntity.Vehicle?.Aircraft != null && vehicleEntity.PlaySiteLocation.Z > 1f;

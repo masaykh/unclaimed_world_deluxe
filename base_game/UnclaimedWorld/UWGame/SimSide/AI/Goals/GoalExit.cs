@@ -7,6 +7,9 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.AI.Goals;
 
+/// <summary>
+/// Goal for exiting a non-vehicle container.
+/// </summary>
 internal class GoalExit : Goal
 {
 	private bool isDisembarking;
@@ -23,7 +26,21 @@ internal class GoalExit : Goal
 	{
 	}
 
-	protected override void Activate()
+    /// <summary>
+    /// PORT: the goal that takes this entity out of whatever holds it. GoalExit uncontains at the
+    /// door at once, which for a vehicle means mid-air or on the water and leaves the driver's
+    /// trigger and attachment behind; a vehicle has its own exit, which lands first.
+    /// </summary>
+    public static Goal GetContainerExitGoal(Entity entity)
+    {
+        if (entity.IsInsideVehicle())
+        {
+            return new GoalExitVehicle(entity, entity.InsideVehicle.Value);
+        }
+        return new GoalExit(entity);
+    }
+
+    protected override void Activate()
 	{
 		if (!entity.GetContainedBy(out Entity container))
 		{
@@ -51,18 +68,22 @@ internal class GoalExit : Goal
 			base.Status = Status.Failed;
 			return;
 		}
+
 		Vector3 position = Vector3.Zero;
 		((IExit)container.Contains).GetDoorPosition(ref position, exiting: true, out var _);
 		container.Contains.Uncontain(entity, destroy: false, shouldQueue: true, null, null, null, null, null, position);
+		
 		if (((IGarrison)container.Contains).GetNoOfAgentsInside() == 0)
 		{
 			container.TurnOffTheLight();
 		}
+
 		if (isDisembarking && entityIntelligence.Allegiance.AllegianceType == AllegianceType.Player)
 		{
 			entity.EntityType.IntelligenceType.EventActions.TryGetValue(AgentActionHooks.DisembarkedNewPlayerAllegianceMember, out var value);
 			Goal.FireEventActions(entity, null, value);
 		}
+
 		base.Status = Status.Completed;
 	}
 

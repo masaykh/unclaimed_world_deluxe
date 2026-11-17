@@ -71,12 +71,12 @@ internal class GoalPickup : CompositeGoal
 					{
 						if (container.EntityID != data.ContainedBy.Value)
 						{
-							AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
+							AddSubgoal(GoalExit.GetContainerExitGoal(entity)); // PORT: a vehicle lands before it is left
 						}
 					}
 					else
 					{
-						AddSubgoal(GoalExitVehicle.ExitFor(entity)); // PORT: a vehicle lands before it is left
+						AddSubgoal(GoalExit.GetContainerExitGoal(entity)); // PORT: a vehicle lands before it is left
 					}
 				}
 				if (data.ContainedBy.HasValue)
