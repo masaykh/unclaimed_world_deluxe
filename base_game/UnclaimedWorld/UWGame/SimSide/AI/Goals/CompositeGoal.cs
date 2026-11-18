@@ -319,6 +319,21 @@ public abstract class CompositeGoal : Goal
 		if (entity.Locomotor.LeggedLocomotor != null)
 		{
 			entityIntelligence.Brain.RemoveAllSubgoals();
+			// FIX: a driver planned his flee path for his vehicle's transport - Air for a skimmer
+			// pilot, and the movement maps keep no Air layer (MapManager skips it), so a frightened
+			// pilot in GoalTakeFive or GoalDoTakeFive threw KeyNotFoundException 'Air'. The exit was
+			// also queued behind the path, to be followed still aboard (Lars's flight audit,
+			// 2026-11-17). He gets out first - GoalExitVehicle lands an airborne aircraft, perhaps
+			// some tiles away on ground he can stand on - and GoalTakeFive then judges the danger
+			// again on foot, where he actually stands, and flees from there if it is still there.
+			// The studio's driver branch below is not reached any more.
+			if (entity.DrivingVehicle.HasValue)
+			{
+				entityIntelligence.Brain.AddSubgoal(new GoalExitVehicle(entity, entity.DrivingVehicle.Value));
+				entityIntelligence.Brain.AddSubgoal(new GoalTakeFive(entity));
+				base.Status = Status.Active;
+				return false;
+			}
 			// MOD: PreyFearMod - cornered prey (a dog on one side, water on the other) heads for less
 			// danger instead of standing still where it is (Kastuk).
 			List<PathFinderNode> list = FindPathToSafety(dMap, entity) ?? UWGame.Mods.PreyFearMod.PathWhenCornered(dMap, entity);

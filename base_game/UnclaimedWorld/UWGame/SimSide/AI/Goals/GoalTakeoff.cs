@@ -67,9 +67,14 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoSnapshot(sn);
 
+            // FIX: GoalMoveToPosition queues takeoff, flight and landing together, every goal is saved,
+            // and Aircraft is set only in Activate - so a save while the pilot walked to the skimmer
+            // or waited threw NullReferenceException here (Lars's flight audit, 2026-11-17). A goal
+            // that has not started saves no aircraft: Invalid, not the default 0, which is a real
+            // entity that LoadPostProcess would find. Activate looks the aircraft up again anyway.
             if (sn.mode != Snapshotter.Mode.Load)
             {
-                aircraftID = Aircraft.EntityID;
+                aircraftID = Aircraft != null ? Aircraft.EntityID : EntityID.Invalid;
             }
 
             aircraftID = sn.DoEntityID(aircraftID);
@@ -138,6 +143,10 @@ namespace UWGame.SimSide.AI.Goals
             if (StartsInTheAir(Aircraft.PlaySiteLocation.Z))
             {
                 Aircraft.Locomotor.MoveSpeed = 0f;
+                // FIX: the vertical speed too. A landing cut short left it descending, and this climb
+                // began at that downward speed, with 30 px/s per second to turn it round (Lars's flight audit,
+                // 2026-11-17). A speed, not a position: nothing jumps.
+                vehicleComponent.Aircraft.VerticalSpeed = 0f;
                 return;
             }
 

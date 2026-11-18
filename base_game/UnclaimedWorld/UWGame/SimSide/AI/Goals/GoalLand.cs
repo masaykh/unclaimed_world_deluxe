@@ -46,9 +46,12 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoSnapshot(sn);
 
+            // FIX: as in GoalTakeoff.DoSnapshot - queued behind the takeoff and the flight, this goal
+            // has no Aircraft until Activate, and saving it threw NullReferenceException (Lars's
+            // flight audit, 2026-11-17). Not started, it saves Invalid, which loads as no aircraft.
             if (sn.mode != Snapshotter.Mode.Load)
             {
-                aircraftID = Aircraft.EntityID;
+                aircraftID = Aircraft != null ? Aircraft.EntityID : EntityID.Invalid;
             }
 
             aircraftID = sn.DoEntityID(aircraftID);
@@ -83,7 +86,12 @@ namespace UWGame.SimSide.AI.Goals
             }
             vehicleComponent = Aircraft.Vehicle;
 
-
+            // FIX: only a finished takeoff or landing zeroes the climb speed. After a task cancelled
+            // during the climb this landing began at the takeoff's upward speed, with
+            // MaxVerticalAcceleration (30 px/s per second) to turn it round - the skimmer kept climbing for a
+            // while after it was told to come down (Lars's flight audit, 2026-11-17). Start from a
+            // standstill instead. A speed, not a position: the skimmer stops climbing, it does not jump.
+            vehicleComponent.Aircraft.VerticalSpeed = 0f;
 
             Status = Status.Active;
             destinationPoint = new Vector3(MapManager.tileSize * (0.5f + entity.MapPosition.Value.X),
