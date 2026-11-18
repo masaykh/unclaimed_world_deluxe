@@ -61,11 +61,16 @@ reproduce with every patch reverted):
 
 ```sh
 sh tools/shadowdusk/build-shadowdusk.sh
-export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
+export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"   # Linux/macOS: ShadowDuskCLI.dll
 sh tools/build/34-build-gl-effects-shadowdusk.sh  # -> artifacts/content/effects-gl
 ```
 
-That script is what CI runs. It fetches two different things from two different places, on
+Only Windows gets an apphost (`ShadowDuskCLI.exe`). On Linux and macOS point `UW_SHADOWDUSK` at
+`ShadowDuskCLI.dll`: `tools/build/34-build-gl-effects-shadowdusk.sh` runs any value ending in
+`.dll` as `dotnet ShadowDuskCLI.dll ...`, which is also how CI runs it. The script prints the
+right line for the platform it ran on.
+
+`build-shadowdusk.sh` is what CI runs. It fetches two different things from two different places, on
 purpose:
 
 | | from | why |
@@ -79,6 +84,14 @@ cacheable in CI; a git object is permanent.
 
 `patches/` here carries the same delta as files. The fork is the source of truth for *building*;
 these are for reading without cloning anything, and for submitting upstream.
+
+**One more edit is made by the script, and is in neither.** The .NET 8.0.1xx SDKs' C# compiler
+reports CS0121 on upstream's `Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], ...)`
+in `FileSystemIncludePathCanonicalizer.cs` (it considers `Split(string)` as well as
+`Split(char[])`); 8.0.4xx does not. `build-shadowdusk.sh` rewrites that one argument to
+`new[] { ... }` in the checkout. It is about this repository's SDK floor rather than a ShadowDusk
+bug, so it is not a fork commit, and it does nothing once the line changes upstream. Reported by
+Kastuk building on Ubuntu 24.04, whose distribution feed carries 8.0.1xx.
 
 **The pin is deliberate.** `UW_SHADOWDUSK_REF` in the script fixes the exact commit, so an
 upstream force-push cannot silently change what the effects are compiled with. Bump it on

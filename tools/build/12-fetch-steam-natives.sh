@@ -22,23 +22,49 @@ cd "$UW_REPO"
 
 VER=2024.8.0            # must match <PackageVersion Include="Steamworks.NET"> in Directory.Packages.props
 URL="https://github.com/rlabrecque/Steamworks.NET/releases/download/$VER/Steamworks.NET-Standalone_$VER.zip"
+MEMBERS="Windows-x64/steam_api64.dll Windows-x86/steam_api.dll"
+
+# PORT: the unpacker. env.sh only finds 7-Zip at its Windows install path, so on Linux $SEVENZIP
+# was empty and the unpack ran "" as a command -"12-fetch-steam-natives.sh: 31: : Permission denied" (Kastuk,
+# Ubuntu 24.04). Any of these can pull two named members out of a zip, flattened.
+UNZIP=""
+for cand in "$SEVENZIP" 7zz 7z 7za unzip bsdtar; do
+  [ -n "$cand" ] || continue
+  if [ -x "$cand" ] || command -v "$cand" >/dev/null 2>&1; then UNZIP="$cand"; break; fi
+done
+if [ -z "$UNZIP" ]; then
+  echo "FATAL: nothing to unpack a .zip with. Install one of 7-Zip, unzip or bsdtar" >&2
+  echo "       (apt install unzip / brew install p7zip), or set SEVENZIP to 7-Zip's path." >&2
+  exit 2
+fi
+
 WORK=$(mktemp -d)
 
 echo "==> fetching Steamworks.NET $VER standalone package"
 curl -sfL -o "$WORK/sw.zip" "$URL"
 
 mkdir -p native/steam
-"$SEVENZIP" e -y -o"native/steam" "$WORK/sw.zip" "Windows-x64/steam_api64.dll" "Windows-x86/steam_api.dll" >/dev/null
+case "$(basename "$UNZIP")" in
+  unzip*)  "$UNZIP" -o -j -q "$WORK/sw.zip" $MEMBERS -d native/steam ;;
+  bsdtar*) "$UNZIP" -x -f "$WORK/sw.zip" -C native/steam --strip-components 1 $MEMBERS ;;
+  *)       "$UNZIP" e -y -o"native/steam" "$WORK/sw.zip" $MEMBERS >/dev/null ;;
+esac
 rm -rf "$WORK"
 
 echo "==> native/steam:"
 ls -la native/steam
 
 echo "==> verifying the exports current Steamworks.NET requires"
+# PORT: the MSYS2 strings this was written against, else binutils' on PATH, else the same thing
+# done with tr - a symbol name is a run of printable bytes either way.
 STRINGS=/c/tools/msys64/usr/bin/strings
+[ -x "$STRINGS" ] || STRINGS=$(command -v strings 2>/dev/null || true)
+dll_strings() {
+  if [ -n "$STRINGS" ]; then "$STRINGS" -a "$1"; else tr -c '[:print:]' '\n' < "$1"; fi
+}
 fail=0
 for sym in SteamInternal_SteamAPI_Init SteamInternal_CreateInterface SteamAPI_ManualDispatch_Init SteamAPI_Shutdown SteamAPI_RunCallbacks; do
-  if "$STRINGS" -a native/steam/steam_api64.dll | grep -qx "$sym"; then
+  if dll_strings native/steam/steam_api64.dll | grep -qx "$sym"; then
     echo "    OK      $sym"
   else
     echo "    MISSING $sym"; fail=1

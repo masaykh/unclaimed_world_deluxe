@@ -9,7 +9,7 @@ platform**.
 
 | | |
 |---|---|
-| .NET 8 SDK | `dotnet --version` should report 8.x |
+| .NET 8 SDK | `dotnet --version` should report 8.x — any 8.0 feature band; `global.json` takes the newest 8.0 SDK installed |
 | your own copy of the game | for the content only — see below |
 | a POSIX shell | the scripts are `sh`; on Windows use the Git Bash that ships with Git |
 
@@ -24,7 +24,8 @@ dotnet build base_game/UnclaimedWorld/UnclaimedWorld.csproj -c Release -p:UwPlat
 
 # 2. shaders  (needs the patched compiler; fetched and built for you)
 sh tools/shadowdusk/build-shadowdusk.sh
-export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
+export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"   # Windows
+# export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.dll" # Linux/macOS: run via dotnet
 export UW_STEAM="/c/Program Files (x86)/Steam/steamapps/common/Unclaimed World"   # your copy, only read
 # (UW_STEAM, not UW_GAME: UW_GAME is the working copy 40-deploy.sh writes into)
 sh tools/build/34-build-gl-effects-shadowdusk.sh   # runs step 35 first if its output is missing
@@ -40,7 +41,9 @@ directory.
 
 There is no `61-package-dx.sh`, and looking for one is the obvious mistake — `60-package-gl.sh`
 is GL-only and refuses anything else. The DX package comes out of the release script, one
-platform at a time:
+platform at a time, and **only on Windows** — `UwPlatform=DX` is `net8.0-windows` + WinForms,
+so off Windows the release script refuses `win-x64-dx` by name and leaves it out of the default
+all-platforms run:
 
 ```sh
 # 1. code + effects  (the studio's own DXBC, rewritten into a v10 container - no recompile)

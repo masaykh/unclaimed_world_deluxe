@@ -44,7 +44,7 @@ XML — 56 of 69 tables, 3.2 MB — and `--data-from-xml` loads them back. See
 
 | | |
 |---|---|
-| .NET SDK | 8.0 (`global.json` pins 8.0.420, rolls forward on feature band) |
+| .NET SDK | 8.0, any feature band (`global.json` asks for 8.0.100 and rolls forward to the newest 8.0 SDK installed) |
 | OS | Windows, Linux or macOS - DesktopGL is the only target that ships |
 | A legal copy of the game | to build a runnable package - the compiled `Content/` is a build output and is not committed |
 
@@ -58,7 +58,7 @@ Building the game is [build.md](build.md); this is the short version.
 ```sh
 sh tools/build/12-fetch-steam-natives.sh          # steam_api64.dll for the pinned Steamworks.NET
 sh tools/shadowdusk/build-shadowdusk.sh           # the shader compiler
-export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"
+export UW_SHADOWDUSK="$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe"   # Linux/macOS: ShadowDuskCLI.dll
 sh tools/build/34-build-gl-effects-shadowdusk.sh  # the 19 effects
 sh tools/build/32-convert-media.sh                # WMA -> Ogg Vorbis
 sh tools/build/60-package-gl.sh Release           # -> artifacts/package/UnclaimedWorld-GL

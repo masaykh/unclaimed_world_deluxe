@@ -21,13 +21,25 @@ if [ -z "$SD" ] || [ ! -f "$SD" ]; then
   echo "Set UW_SHADOWDUSK to a PATCHED ShadowDuskCLI." >&2
   echo >&2
   echo "  sh tools/shadowdusk/build-shadowdusk.sh" >&2
-  echo "  export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe\"" >&2
+  if [ -n "$UW_WINDOWS" ]; then
+    echo "  export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe\"" >&2
+  else
+    echo "  export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.dll\"" >&2
+  fi
   echo >&2
   echo "See tools/shadowdusk/README.md for what the patches fix and why." >&2
   exit 2
 fi
 
-TOOL=artifacts/bin/MgfxTranscode/debug/mgfxtranscode.exe
+# PORT: UW_SHADOWDUSK may be the apphost (ShadowDuskCLI.exe, Windows only - the build ships no
+# apphost for Linux or macOS) or the managed ShadowDuskCLI.dll, which runs anywhere through
+# dotnet. Executing the .dll directly is what Linux answered with "Exec format error" (Kastuk).
+case "$SD" in
+  *.dll) run_sd() { "$DOTNET" "$SD" "$@"; } ;;
+  *)     run_sd() { "$SD" "$@"; } ;;
+esac
+
+TOOL=artifacts/bin/MgfxTranscode/debug/mgfxtranscode$UW_EXE
 [ -f "$TOOL" ] || "$DOTNET" build tools/MgfxTranscode/MgfxTranscode.csproj -v q --nologo >/dev/null
 
 # Shader SOURCES are in the repository; everything else here is a build output or comes from
@@ -143,7 +155,7 @@ for name in $EFFECTS; do
   mkdir -p "$(dirname "$OBJ/$name")" "$(dirname "$OUT/$name")"
 
   # A non-.xnb extension makes ShadowDusk emit the bare MGFX blob, which is what inject wants.
-  if ! "$SD" "$fx" "$OBJ/$name.ogl.mgfxo" /Profile:OpenGL >"$OBJ/$name.log" 2>&1; then
+  if ! run_sd "$fx" "$OBJ/$name.ogl.mgfxo" /Profile:OpenGL >"$OBJ/$name.log" 2>&1; then
     echo "  !! $name: ShadowDusk failed"; sed 's/^/       /' "$OBJ/$name.log" >&2
     failed=$((failed + 1))
     continue
