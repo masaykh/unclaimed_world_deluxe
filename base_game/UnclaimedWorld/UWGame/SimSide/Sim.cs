@@ -478,22 +478,21 @@ public class Sim : GameScreen, ISnapshot
 	public void FreeMemoryBeforeLoad()
 	{
 		ClearData(clearBaseData: false);
-		// PORT FIX. ClearData(false) keeps every collection that is not snapshotted, because the
-		// studio meant those to be game data. PassengerOrCargoSlot's is not snapshotted either, but
-		// its slots belong to the vehicles in play, and since the vehicles feature each slot puts
-		// itself back into it as it is read (PassengerOrCargoSlot.DoSnapshot). SAVE reloads the
-		// file in the same session, so a game with a vehicle - a trader's barge - read slot 2
-		// while the old slot 2 was still there, and the load died on a duplicate key (Kastuk,
-		// 2026-11-17: The Clay Pit, Making Headway, Cudgel Hills and the Muckroot maps crashed on
-		// SAVE). The LOAD menu starts from an emptied Sim, which is why the same file loads there.
-		PassengerOrCargoSlot.ForgetAllBeforeLoad();
 	}
 
 	private void ClearData(bool clearBaseData)
 	{
 		foreach (ILookUpCollectible value in CollectionOfCollections.Values)
 		{
-			if (clearBaseData || value.SnapshotThis)
+			// PORT FIX. Was value.SnapshotThis, which left out the vehicle seats: their lookup is not
+			// saved as a collection, each vehicle saves its own seats, and since the vehicles feature
+			// every seat puts itself back into the lookup as it is read (PassengerOrCargoSlot.DoSnapshot).
+			// SAVE reloads the file into the same session, so a game with a vehicle - a trader's barge -
+			// read seat 2 while the old seat 2 was still there, and the load died on a duplicate key
+			// (Kastuk, 2026-11-17: The Clay Pit, Making Headway, Cudgel Hills and the Muckroot maps
+			// crashed on SAVE). The LOAD menu starts from an emptied Sim, which is why the same file
+			// loads there.
+			if (clearBaseData || value.ClearedWithGame)
 			{
 				value.ClearCollection();
 			}

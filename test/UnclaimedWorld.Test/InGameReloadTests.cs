@@ -60,8 +60,8 @@ public sealed class InGameReloadTests
         // The running game: a Sim with its collections, and a vehicle whose seats registered themselves.
         var sim = new Sim { Mode = Sim.EngineMode.Game };
         typeof(Sim).GetMethod("CreateLookupCollections", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(sim, null);
+        sim.FreeMemoryBeforeLoad(); // no seats left over from another test
         The.Sim = sim;
-        PassengerOrCargoSlot.ForgetAllBeforeLoad();
         List<PassengerOrCargoSlot> seats = NewVehicleWithSeats().Slots;
         Assert.AreEqual(2, RegisteredSlots());
 
@@ -97,8 +97,19 @@ public sealed class InGameReloadTests
                 "the seat read back is the one the loaded game finds by its ID");
         }
         Assert.AreEqual(2, RegisteredSlots(), "no seat of the replaced game is left registered");
-        PassengerOrCargoSlot.ForgetAllBeforeLoad();
-        The.Sim = null!;
+        sim.FreeMemoryBeforeLoad();
+        Assert.AreEqual(0, RegisteredSlots());
+    }
+
+    [TestMethod]
+    public void SeatsAreClearedWithTheGameButNotSavedAsACollection()
+    {
+        var sim = new Sim { Mode = Sim.EngineMode.Game };
+        typeof(Sim).GetMethod("CreateLookupCollections", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(sim, null);
+        var all = (Collections)typeof(Sim).GetField("CollectionOfCollections", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+        ILookUpCollectible seats = all[typeof(PassengerOrCargoSlot)];
+        Assert.IsTrue(seats.ClearedWithGame, "a load empties the seats of the game it replaces");
+        Assert.IsFalse(seats.SnapshotThis, "each vehicle saves its own seats; the save format is unchanged");
     }
 
     [TestMethod]
