@@ -143,6 +143,7 @@ iteration. A gap in the automated gates is a gap that reaches players.
 | `tools/build/85-verify-no-dead-code.sh` | no unused private member, never-read field or unreachable branch; in our own code also no unused parameter or discarded assignment. `--quick` before a commit (GL, seconds) |
 | `tools/build/86-verify-no-orphans.sh` | no Absent-stub member the core stopped calling, unnamed mod member or type, dead or unregistered ModSetting, unused or undefined `#if` symbol, project entry for a missing file, or build script nothing mentions |
 | `tools/build/87-report-code-rot.sh` | not a gate: weekly report (`code-rot-report.yml`) of what might be dead — public methods nothing names, commented-out code, settings long TESTING, the PORT DEVIATION index |
+| `tools/build/88-verify-asset-case.sh` | every asset or data name the code asks for in a case that differs from the file on disk is a known one (`88-asset-case-allowlist.txt`). Linux names are case-sensitive; `UWGame.Port.CasePath` is the fallback that finds them. Local only: needs `UW_STEAM` |
 | `tools/ContentProbe` | every asset loads on a real `GraphicsDevice` |
 
 **Three rules learned the hard way:**

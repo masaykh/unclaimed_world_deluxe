@@ -1501,7 +1501,8 @@ namespace UWGame.SimSide.Maps
             string mapDataFolderPath = ChooseMapsFolder(folderName,
                 Config.GetDataFolderPath(Config.DataType.RGMap), Config.GetDataFolderPath(Config.DataType.UserMaps));
 
-            return System.IO.Path.Combine(mapDataFolderPath, folderName, fileOrFolderName);
+            // PORT: CasePath - a scenario names its map folder as the studio spelled it on Windows.
+            return UWGame.Port.CasePath.Resolve(System.IO.Path.Combine(mapDataFolderPath, folderName, fileOrFolderName));
         }
 
         public static string ChooseMapsFolder(string folderName, string gameMaps, string userMaps)

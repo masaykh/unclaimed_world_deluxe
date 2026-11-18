@@ -1,0 +1,21 @@
+# Findings of tools/build/88-verify-asset-case.sh that were looked at and kept on purpose.
+#
+#   <literal> -> <on disk>   # why
+#
+# Keyed by the name pair, never by line. The gate fails on a finding not listed here AND on an
+# entry here that no longer matches anything, so remove an entry when you remove what it describes.
+
+# --- Real loads, spelled otherwise than the file. Windows opens them; on a case-sensitive file
+# --- system UWGame.Port.CasePath does (UwContentManager.OpenStream). Both load before the main
+# --- menu, which is why the Linux build could not start without ciopfs.
+Fonts/CRT_18pt -> Fonts/crt_18pt   # GUIManager.CRTBasicFontPath; kept: port-content's Fonts/CRT_18pt.supplement (36-build-fonts.sh) and ContentProbe use this spelling
+billboard -> Billboard             # GameWorldRenderer.LoadContent, the studio's literal; the effect itself is Billboard.fx
+
+# --- Not file names: the same word used for something else.
+Water -> water                     # an effect technique (Water.Draw, waterEffect.Techniques["Water"]) and the water type's display name
+OverlayGradient -> overlayGradient # an effect parameter name (SkinnedAnimatedModel, StiffAnimatedModel); the texture load is spelled overlayGradient
+Skimmer -> Models/skimmer          # EntityType.Name, a display name
+Backpack -> Models/backpack        # HideGearMod's effect profile display name
+Spear -> Models/spear              # HideGearMod matches it inside an item key, not a file
+Knife -> Models/knife              # HideGearMod matches it inside an item key, not a file
+Machete -> Models/machete          # HideGearMod matches it inside an item key, not a file
