@@ -71,7 +71,7 @@ namespace UWGame.SimSide.AI.Goals
             base.DoSnapshot(sn);
 
             this.isAtTarget = sn.DoBool(isAtTarget);
-            // FIX: as in GoalTakeoff.DoSnapshot - queued behind the takeoff, this goal has no Aircraft
+            // BASE: as in GoalTakeoff.DoSnapshot - queued behind the takeoff, this goal has no Aircraft
             // until Activate, and saving it threw NullReferenceException (Lars's flight audit,
             // 2026-11-17). Not started, it saves Invalid, which loads as no aircraft.
             if (sn.mode != Snapshotter.Mode.Load)

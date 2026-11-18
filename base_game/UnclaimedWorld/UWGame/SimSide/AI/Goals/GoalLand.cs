@@ -46,7 +46,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoSnapshot(sn);
 
-            // FIX: as in GoalTakeoff.DoSnapshot - queued behind the takeoff and the flight, this goal
+            // BASE: as in GoalTakeoff.DoSnapshot - queued behind the takeoff and the flight, this goal
             // has no Aircraft until Activate, and saving it threw NullReferenceException (Lars's
             // flight audit, 2026-11-17). Not started, it saves Invalid, which loads as no aircraft.
             if (sn.mode != Snapshotter.Mode.Load)
@@ -86,7 +86,7 @@ namespace UWGame.SimSide.AI.Goals
             }
             vehicleComponent = Aircraft.Vehicle;
 
-            // FIX: only a finished takeoff or landing zeroes the climb speed. After a task cancelled
+            // BASE: only a finished takeoff or landing zeroes the climb speed. After a task cancelled
             // during the climb this landing began at the takeoff's upward speed, with
             // MaxVerticalAcceleration (30 px/s per second) to turn it round - the skimmer kept climbing for a
             // while after it was told to come down (Lars's flight audit, 2026-11-17). Start from a

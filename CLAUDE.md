@@ -220,3 +220,18 @@ evidence about intent — read it before replacing it.
 Say what was **not** checked. "Builds clean and the gates pass" and "someone played it" are
 different claims, and only one of them is usually true. Name the classes and methods involved —
 the people reading these updates read the source, and naming the code tells them where to look.
+
+---
+
+## 9. Label every change to the studio's code
+
+A comment at each change says which kind it is, so a search finds everything that differs from
+`original_src/` and why:
+
+- `PORT:` — platform work: what the move to MonoGame, .NET 8, OpenGL, Linux or macOS needs.
+  The older `PORT FIX.` and `PORT DEVIATION n` comments are this kind too.
+- `BASE:` — a change to the base game's behaviour: a bug fix or a rule that plays differently.
+- `NEW:` — a feature the studio's game did not have, such as the vehicles.
+
+Lars asked for `BASE` and `NEW` on 2026-11-17, so that gameplay changes stand out from the port.
+Earlier gameplay fixes are still labelled `PORT FIX.`; relabel one when you are changing it anyway.
