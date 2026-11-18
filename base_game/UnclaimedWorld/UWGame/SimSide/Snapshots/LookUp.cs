@@ -13,11 +13,15 @@ public class LookUp<T, Id> : ILookUpCollectible, ISnapshot where T : ILookUp<T, 
 
 	private static bool performSnapshot = true;
 
+	private static bool clearedWithGame;
+
 	private static int order = 100;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
 	public bool SnapshotThis => performSnapshot;
+
+	public bool ClearedWithGame => performSnapshot || clearedWithGame;
 
 	public int LoadPostProcessOrder => order;
 
@@ -26,6 +30,16 @@ public class LookUp<T, Id> : ILookUpCollectible, ISnapshot where T : ILookUp<T, 
 	public static void SetPerformSnapshot(bool value)
 	{
 		performSnapshot = value;
+	}
+
+	/// <summary>
+	/// PORT FIX. Marks a collection that is not saved as a collection, because each member is saved
+	/// by its owner, as game state all the same: a load empties it first. See
+	/// ILookUpCollectible.ClearedWithGame.
+	/// </summary>
+	public static void SetClearedWithGame(bool value)
+	{
+		clearedWithGame = value;
 	}
 
 	public static void SetLoadPostProcessOrder(int orderToUse)

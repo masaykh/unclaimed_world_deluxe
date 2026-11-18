@@ -214,7 +214,7 @@ internal static partial class Program
             AfterScoutFrame(colonists);
             if (saveOut != null && scoutNow >= saveAfter && orders.All(o => PointsLeft(o.Job) is { Count: > 0 } && PointsVisited(o.Job) > 0))
             {
-                SaveGameHeadless(sn, sim, saveOut);
+                SaveGameHeadless(sn, sim, saveOut, scoutReport);
                 foreach (Order o in orders)
                 {
                     Console.WriteLine($"saved {o.Name}: {PointsLeft(o.Job).Count} left, {PointsVisited(o.Job)} visited");
@@ -409,13 +409,13 @@ internal static partial class Program
         throw new InvalidOperationException("no blocked subtile near the zone");
     }
 
-    /// <summary>Sim.DoSave, with the StartGameParams the game keeps from the save's header when it loads one.</summary>
-    private static void SaveGameHeadless(Snapshotter sn, Sim sim, string path)
+    /// <summary>Sim.DoSave, with the StartGameParams the game keeps from the header of <paramref name="loadedFrom"/> when it loads it.</summary>
+    private static void SaveGameHeadless(Snapshotter sn, Sim sim, string path, string loadedFrom)
     {
         if (sim.StartGameParams == null)
         {
             SnapshotHeader header;
-            using (OpenSave(sn, Path.GetFullPath(scoutReport)))
+            using (OpenSave(sn, Path.GetFullPath(loadedFrom)))
             {
                 header = (SnapshotHeader)sn.DoISnapshot<SnapshotHeader>(null);
             }

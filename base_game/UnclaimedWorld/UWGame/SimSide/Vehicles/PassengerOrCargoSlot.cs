@@ -216,5 +216,8 @@ public class PassengerOrCargoSlot : ILookUp<PassengerOrCargoSlot, PassengerOrCar
 	{
 		LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.Create();
 		LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.SetPerformSnapshot(value: false);
+		// PORT FIX. Not saved as a collection - each vehicle saves its seats - but they are the
+		// running game's, so a load empties the lookup and restarts the ID counter (Sim.ClearData).
+		LookUp<PassengerOrCargoSlot, PassengerOrCargoSlotID>.SetClearedWithGame(value: true);
 	}
 }
