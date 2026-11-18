@@ -194,6 +194,12 @@ public class Snapshotter
 			snapshotHeader.LoadPostProcess(this);
 			The.Sim.LoadPostProcess(this);
 			The.Sim.StartGameParams = snapshotHeader.StartGameParams;
+			// PORT FIX. A scenario's lasting smoke, fog and haze are client-only and not in the
+			// save, and its start actions only ever ran for a new game - so every load, and the
+			// reload after every in-game SAVE, lost them (Twinkler Island's sulphur lake). Here
+			// both the main-menu load and the in-game one pass, with the new client up and the
+			// map read. See ParticleEffectAction.RestoreLastingStartEmittersAfterLoad.
+			UWGame.ClientSide.GameEvents.ParticleEffectAction.RestoreLastingStartEmittersAfterLoad(The.Sim.StartGameParams);
 			The.Sim.IsSnapshotted = false;
 			The.Sim.beginRunProgress = 4;
 			The.Sim.startGameMode = startGameMode;
