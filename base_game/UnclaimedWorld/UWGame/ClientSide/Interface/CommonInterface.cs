@@ -228,7 +228,8 @@ public abstract class CommonInterface
 	/// </summary>
 	private MouseCursor CreateCursor(string cursorImage, Microsoft.Xna.Framework.Point hotspot)
 	{
-		using FileStream stream = File.OpenRead(cursorImage);
+		// PORT: CasePath - a raw file under Content/, outside the content manager, same case-blind rule.
+		using FileStream stream = File.OpenRead(UWGame.Port.CasePath.Resolve(cursorImage));
 		Texture2D texture = PadToSquare(Texture2D.FromStream(Game.GraphicsDevice, stream));
 		return MouseCursor.FromTexture2D(texture, hotspot.X, hotspot.Y);
 	}

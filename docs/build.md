@@ -285,3 +285,10 @@ rejects GL effects with *"This MGFX effect was built for a different platform!"*
 they are correct.
 
 `tools/build/80-verify-modloader.sh` checks the mod loader the same way.
+
+`tools/build/88-verify-asset-case.sh` lists every asset and data name the code asks for in a
+different letter case from the file in your `Content/` and `data/` (the studio asks for
+`Fonts/CRT_18pt`; the file is `crt_18pt.xnb`). Windows does not care and Linux does: there,
+`UWGame.Port.CasePath` finds the file ignoring case, from `UwContentManager.OpenStream` and
+`Config.GetDataFolderPath`, so no `ciopfs` mount is needed. The gate fails on a mismatch that is
+not in `tools/build/88-asset-case-allowlist.txt`, so a new one is seen on Windows too.

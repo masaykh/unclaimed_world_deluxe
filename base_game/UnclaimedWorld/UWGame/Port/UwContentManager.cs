@@ -82,7 +82,8 @@ public sealed class UwContentManager : ContentManager
             string folder = OverrideFolder ?? OverrideFolderFor(RootDirectory);
             if (folder != null)
             {
-                string overridePath = Path.Combine(folder, assetName) + ".xnb";
+                // PORT: CasePath - the name as the studio spelled it may differ in case from the file.
+                string overridePath = CasePath.Resolve(Path.Combine(folder, assetName) + ".xnb");
                 if (File.Exists(overridePath))
                 {
                     return File.OpenRead(overridePath);
@@ -94,7 +95,46 @@ public sealed class UwContentManager : ContentManager
             // An unreadable override must not stop the shipped asset from loading.
         }
 
+        string shipped = ShippedAssetPath(assetName);
+        if (shipped != null)
+        {
+            return File.OpenRead(shipped);
+        }
+
         return base.OpenStream(assetName);
+    }
+
+    /// <summary>
+    /// PORT: the shipped <c>.xnb</c> for an asset whose name differs from the file on disk only
+    /// in letter case, or null - null on Windows, and whenever the name is spelled as on disk, so
+    /// the base implementation (TitleContainer) opens everything it always opened.
+    ///
+    /// The studio's code asks for <c>Fonts/CRT_18pt</c> (on disk <c>crt_18pt.xnb</c>) and
+    /// <c>billboard</c> (<c>Billboard.xnb</c>), both before the main menu, so on a case-sensitive
+    /// file system the game stopped at startup. Here, in the one funnel every asset - and every
+    /// external reference inside a model - passes through, rather than at each load site.
+    /// The content root is resolved as TitleContainer resolves it on DesktopGL: a relative
+    /// RootDirectory is under the application's base directory.
+    /// </summary>
+    private string ShippedAssetPath(string assetName)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return null;
+        }
+        string root = RootDirectory ?? "";
+        if (!Path.IsPathRooted(root))
+        {
+            root = Path.Combine(AppContext.BaseDirectory, root);
+        }
+        // TitleContainer turns the studio's '\' into '/' itself; an asset it can open is its own.
+        string exact = (Path.Combine(root, assetName) + ".xnb").Replace('\\', '/');
+        if (File.Exists(exact))
+        {
+            return null;
+        }
+        string resolved = CasePath.Resolve(exact);
+        return resolved != exact && File.Exists(resolved) ? resolved : null;
     }
 
     /// <summary>
@@ -122,8 +162,9 @@ public sealed class UwContentManager : ContentManager
     private bool HasAsset(string assetName)
     {
         string folder = OverrideFolder ?? OverrideFolderFor(RootDirectory);
-        return (folder != null && File.Exists(Path.Combine(folder, assetName) + ".xnb"))
-            || File.Exists(Path.Combine(RootDirectory ?? "", assetName) + ".xnb");
+        // PORT: CasePath, so a supplement is found under the same case-blind rule as the asset (OpenStream).
+        return (folder != null && File.Exists(CasePath.Resolve(Path.Combine(folder, assetName) + ".xnb")))
+            || File.Exists(CasePath.Resolve(Path.Combine(RootDirectory ?? "", assetName) + ".xnb"));
     }
 
     public static string OverrideFolderFor(string contentRoot)

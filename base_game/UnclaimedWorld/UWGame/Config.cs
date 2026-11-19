@@ -82,7 +82,11 @@ public static class Config
 			path = "data/BaseData";
 			break;
 		}
-		return Path.Combine(Directory.GetCurrentDirectory(), path, folderName, fileName);
+		// PORT: CasePath - data/ is the user's copy of the game and the studio named its files on
+		// Windows, so on a case-sensitive file system the folders and files are matched ignoring
+		// case. Unchanged on Windows and wherever the path exists as spelled; a file not yet
+		// written keeps its name, under whatever existing folders it resolves to.
+		return UWGame.Port.CasePath.Resolve(Path.Combine(Directory.GetCurrentDirectory(), path, folderName, fileName));
 	}
 
 }

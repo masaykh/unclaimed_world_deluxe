@@ -77,9 +77,10 @@ public static class EffectVersionCheck
 
             foreach (string candidate in Candidates)
             {
-                // Resolve exactly as UwContentManager.OpenStream would: override wins.
-                string overridePath = Path.Combine(overrideDir, candidate);
-                string contentPath = Path.Combine(contentDir, candidate);
+                // Resolve exactly as UwContentManager.OpenStream would: override wins, and on a
+                // case-sensitive file system the name is matched ignoring case (CasePath).
+                string overridePath = CasePath.Resolve(Path.Combine(overrideDir, candidate));
+                string contentPath = CasePath.Resolve(Path.Combine(contentDir, candidate));
                 string resolved = File.Exists(overridePath) ? overridePath
                     : File.Exists(contentPath) ? contentPath
                     : null;
