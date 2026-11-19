@@ -33,7 +33,7 @@ public class LookUp<T, Id> : ILookUpCollectible, ISnapshot where T : ILookUp<T, 
 	}
 
 	/// <summary>
-	/// PORT FIX. Marks a collection that is not saved as a collection, because each member is saved
+	/// BASE: Marks a collection that is not saved as a collection, because each member is saved
 	/// by its owner, as game state all the same: a load empties it first. See
 	/// ILookUpCollectible.ClearedWithGame.
 	/// </summary>

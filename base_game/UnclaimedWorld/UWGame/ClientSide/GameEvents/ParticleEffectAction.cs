@@ -99,7 +99,7 @@ public class ParticleEffectAction : EventActionType
 	}
 
 	/// <summary>
-	/// PORT FIX. A scenario's lasting map effects - Twinkler Island's sulphur lake smoke, its
+	/// BASE: A scenario's lasting map effects - Twinkler Island's sulphur lake smoke, its
 	/// fog and haze - are ParticleEffectActions in the scenario's start actions. They run once,
 	/// in Sim.StartGamePostLoadMapExecuteEvents, and only for ScenarioNewGame
 	/// (StartGamePostLoadMapPrepareEventActions has no case for a loaded game, in the studio's
@@ -139,7 +139,7 @@ public class ParticleEffectAction : EventActionType
 	}
 
 	/// <summary>
-	/// PORT FIX. The start actions Sim.StartGamePostLoadMapPrepareEventActions collects for a new
+	/// BASE: The start actions Sim.StartGamePostLoadMapPrepareEventActions collects for a new
 	/// game - the scenario's own, then each chosen option's - narrowed to the lasting emitters.
 	/// </summary>
 	public static List<ParticleEffectAction> LastingStartEmitters(StartScenarioParams scenarioParams)
