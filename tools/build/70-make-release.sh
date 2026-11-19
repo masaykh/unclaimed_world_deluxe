@@ -59,6 +59,25 @@ shift 2>/dev/null || true
 # graphics drivers, not a second first-class target.
 RIDS=${*:-"win-x64 linux-x64 osx-x64 osx-arm64 win-x64-dx"}
 
+# PORT: THE DX BUILD NEEDS WINDOWS. UwPlatform=DX is net8.0-windows with WinForms, and off Windows
+# the SDK either has no Microsoft.NET.Sdk.WindowsDesktop at all (distribution-built SDKs - the
+# MSB4019 Kastuk got on Ubuntu 24.04) or refuses it without EnableWindowsTargeting, which would
+# compile a build nobody here could start to check. So: asked for by name, refuse with a reason;
+# part of the default all-platforms run, leave it out and say so.
+if [ -z "$UW_WINDOWS" ]; then
+  case " $RIDS " in
+    *" win-x64-dx "*)
+      if [ -n "$*" ]; then
+        echo "FATAL: win-x64-dx (the DirectX build) can only be built on Windows." >&2
+        echo "       Every other platform, win-x64 included, builds here: drop win-x64-dx from the list." >&2
+        exit 2
+      fi
+      RIDS=$(echo "$RIDS" | sed 's/ *win-x64-dx//')
+      echo "    note: skipping win-x64-dx - the DirectX build can only be made on Windows"
+      ;;
+  esac
+fi
+
 # THE VERSION THE GAME DISPLAYS MUST BE THE VERSION ON THE ARCHIVE.
 #
 # UnclaimedWorld.GetVersion() reads AssemblyVersion off the running assembly, and
@@ -265,7 +284,9 @@ for rid in $RIDS; do
     echo "  effects: $EFFECTS_HOWTO" >&2
     if [ "$UWPLATFORM" != "DX" ]; then
       echo "           sh tools/shadowdusk/build-shadowdusk.sh" >&2
-      echo "           export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/ShadowDuskCLI.exe\"" >&2
+      # PORT: Windows gets an apphost; elsewhere build/34 runs the .dll through dotnet.
+      if [ -n "$UW_WINDOWS" ]; then sd_cli=ShadowDuskCLI.exe; else sd_cli=ShadowDuskCLI.dll; fi
+      echo "           export UW_SHADOWDUSK=\"\$PWD/artifacts/tools/shadowdusk/bin/$sd_cli\"" >&2
     fi
     echo "  music:   sh tools/build/32-convert-media.sh" >&2
     echo >&2

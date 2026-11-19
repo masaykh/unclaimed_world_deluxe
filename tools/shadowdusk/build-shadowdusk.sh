@@ -49,6 +49,24 @@ fi
 ( cd "$SRC" && git checkout -q "$SD_REF" )
 echo "==> ShadowDusk source at $SD_REF"
 
+# ---- 1b. PORT: build with any 8.0 SDK, not only the newest feature band ----------------------
+# The C# compiler in the 8.0.1xx SDKs reports CS0121 on this upstream line -
+#
+#     full[root.Length..].Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], ...)
+#
+# "ambiguous between string.Split(char[]?, ...) and string.Split(string?, ...)": it still counts
+# string as a target for a collection expression. 8.0.4xx picks char[], which is why this built
+# here and in CI and failed for Kastuk on Ubuntu 24.04, whose distribution feed carries 8.0.1xx.
+# Spelling the array out means the same thing to every compiler. Applied to the checkout rather
+# than committed to the fork because it is about our SDK floor, not a ShadowDusk bug - and it
+# is a no-op once upstream changes the line, so a pin bump cannot silently break on it.
+CANON="$SRC/src/ShadowDusk.Core/Preprocessor/FileSystemIncludePathCanonicalizer.cs"
+if [ -f "$CANON" ] && grep -q '\[Path\.DirectorySeparatorChar, Path\.AltDirectorySeparatorChar\]' "$CANON"; then
+  sed 's/\[Path\.DirectorySeparatorChar, Path\.AltDirectorySeparatorChar\]/new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }/' \
+    "$CANON" > "$CANON.uwtmp" && mv -f "$CANON.uwtmp" "$CANON"
+  echo "==> applied the 8.0.1xx SDK fix to FileSystemIncludePathCanonicalizer.cs"
+fi
+
 # ---- 2. build the managed CLI --------------------------------------------------------------
 # ShadowDusk's libraries multi-target net8.0;net10.0 (the CLI itself is single-TFM). With BOTH
 # SDKs present, build it the way upstream intends. With only .NET 8, restrict the target
@@ -96,6 +114,8 @@ rm -rf "$OUT"; mkdir -p "$OUT"
 cp -r "$TOOLDIR"/. "$OUT"/
 cp -f "$BUILT"/ShadowDusk.*.dll "$BUILT"/ShadowDuskCLI.* "$OUT"/
 
+# PORT: only the Windows build gets an apphost. Elsewhere the CLI is the managed .dll, which is
+# not executable by itself - build/34 runs a UW_SHADOWDUSK ending in .dll through dotnet.
 CLI="$OUT/ShadowDuskCLI.exe"
 [ -f "$CLI" ] || CLI="$OUT/ShadowDuskCLI.dll"
 
@@ -103,3 +123,6 @@ echo
 echo "==> ready: $CLI"
 echo "    build/34-build-gl-effects-shadowdusk.sh reads UW_SHADOWDUSK; export it as:"
 echo "      export UW_SHADOWDUSK=\"$CLI\""
+case "$CLI" in
+  *.dll) echo "    (a .dll is run as: dotnet \"\$UW_SHADOWDUSK\" <in.fx> <out> /Profile:OpenGL)" ;;
+esac

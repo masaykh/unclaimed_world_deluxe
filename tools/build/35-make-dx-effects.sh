@@ -47,9 +47,10 @@ if [ ! -d "$SRC" ]; then
 fi
 
 "$DOTNET" build tools/MgfxTranscode/MgfxTranscode.csproj -c Release -v q --nologo
-TOOL=$(find artifacts/bin/MgfxTranscode -name 'mgfxtranscode.exe' -path '*release*' | head -1)
-[ -n "$TOOL" ] || TOOL=$(find artifacts/bin/MgfxTranscode -name 'mgfxtranscode.exe' | head -1)
-[ -n "$TOOL" ] || { echo "FATAL: mgfxtranscode.exe not found" >&2; exit 1; }
+# PORT: mgfxtranscode.exe on Windows, mgfxtranscode on Linux and macOS - see UW_EXE in env.sh.
+TOOL=$(find artifacts/bin/MgfxTranscode -name "mgfxtranscode$UW_EXE" -type f -path '*release*' | head -1)
+[ -n "$TOOL" ] || TOOL=$(find artifacts/bin/MgfxTranscode -name "mgfxtranscode$UW_EXE" -type f | head -1)
+[ -n "$TOOL" ] || { echo "FATAL: mgfxtranscode$UW_EXE not found under artifacts/bin/MgfxTranscode" >&2; exit 1; }
 
 rm -rf "$OUT"; mkdir -p "$OUT"
 

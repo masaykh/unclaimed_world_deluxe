@@ -21,6 +21,8 @@ if [ -z "$UW_STEAM" ]; then
     "/c/Program Files/Steam/steamapps/common/Unclaimed World" \
     "$HOME/.steam/steam/steamapps/common/Unclaimed World" \
     "$HOME/.local/share/Steam/steamapps/common/Unclaimed World" \
+    "$HOME/snap/steam/common/.local/share/Steam/steamapps/common/Unclaimed World" \
+    "$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Unclaimed World" \
     "$HOME/Library/Application Support/Steam/steamapps/common/Unclaimed World"
   do
     [ -d "$candidate" ] && { UW_STEAM="$candidate"; break; }
@@ -47,5 +49,15 @@ if [ -z "$SEVENZIP" ] && [ -x "/c/Program Files/7-Zip/7z.exe" ]; then
   SEVENZIP="/c/Program Files/7-Zip/7z.exe"
   PATH="/c/Program Files/7-Zip:$PATH"
 fi
+
+# --- our own tools' executables ---------------------------------------------------------------
+# PORT: `dotnet build` names a tool's apphost mgfxtranscode.exe on Windows and plain mgfxtranscode
+# on Linux and macOS. Scripts look for "mgfxtranscode$UW_EXE" rather than hard-coding the .exe,
+# which on Linux reported "mgfxtranscode.exe not found" beside a perfectly good build (Kastuk,
+# Ubuntu 24.04). Git Bash, MSYS2 and Cygwin are Windows; anything else is not.
+case "$(uname -s 2>/dev/null)" in
+  MINGW*|MSYS*|CYGWIN*) UW_WINDOWS=1; UW_EXE=.exe ;;
+  *)                    UW_WINDOWS="";  UW_EXE="" ;;
+esac
 
 export PATH UW_REPO UW_STEAM UW_GAME DOTNET SEVENZIP
