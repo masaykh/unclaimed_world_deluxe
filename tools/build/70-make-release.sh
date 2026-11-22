@@ -342,14 +342,28 @@ for rid in $RIDS; do
   # linux-x64 and osx-x64 import "steam_api" (libsteam_api.so / .dylib). These used to be
   # win-x64 only, so the Linux build ran with Steam off (Kastuk, Ubuntu).
   #
-  # osx-arm64 gets none, deliberately: Steamworks.NET 2024.8.0 has no osx-arm64 assembly, so that
-  # RID falls back to the Windows-packed one, which imports "steam_api64" with Windows struct
-  # packing. Shipping the dylib there would load and then misread callbacks. See the macOS issue.
+  # PORT: osx-arm64. Steamworks.NET 2024.8.0 has no osx-arm64 assembly, so that publish falls back
+  # to the package's default one - the WINDOWS build, importing "steam_api64" with Windows struct
+  # packing - and Apple Silicon had no Steam (issue #24). The osx-x64 assembly is plain IL, so it
+  # runs on arm64 as it is; it is put in its place, beside the dylib, which is universal (x86_64
+  # and arm64). The version comes from the pin, so a Steamworks.NET bump cannot leave it behind.
   steamlib=""
   case "$PUBRID" in
     win-x64)   steamlib=steam_api64.dll ;;
     linux-x64) steamlib=libsteam_api.so ;;
     osx-x64)   steamlib=libsteam_api.dylib ;;
+    osx-arm64)
+      steamlib=libsteam_api.dylib
+      swver=$(sed -n 's/.*<PackageVersion Include="Steamworks.NET" Version="\([^"]*\)".*/\1/p' Directory.Packages.props)
+      nugetroot=$(dotnet nuget locals global-packages -l | sed 's/^global-packages: *//' | tr -d '\r')
+      swasm="$nugetroot/steamworks.net/$swver/runtimes/osx-x64/lib/netstandard2.1/Steamworks.NET.dll"
+      [ -n "$swver" ] && [ -f "$swasm" ] || {
+        echo "  !! the osx-x64 Steamworks.NET assembly is not in the NuGet cache:" >&2
+        echo "     $swasm" >&2
+        exit 1; }
+      cp -p "$swasm" "$app/Steamworks.NET.dll"
+      echo "    Steamworks.NET: the osx-x64 assembly (none is published for osx-arm64)"
+      ;;
   esac
   if [ -n "$steamlib" ]; then
       # Committed, so this should never fire - it guards against a deleted or LFS-less checkout,
