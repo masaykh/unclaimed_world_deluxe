@@ -203,14 +203,21 @@ if [ -f native/steam/steam_api64.dll ]; then
   cp -p native/steam/steam_api64.dll "$PKG/"
   echo "    + steam_api64.dll (Windows)"
 fi
-for extra in libsteam_api.so libsteam_api.dylib; do
-  [ -f "native/steam/$extra" ] && { cp -p "native/steam/$extra" "$PKG/"; echo "    + $extra"; }
+# PORT: NOT beside the exe. This package is published without a RID, so Steamworks.NET stays
+# under runtimes/<rid>/lib/, and .NET looks for its native in runtimes/<rid>/native/, the
+# runtime's own folder and the assembly's folder - never the app root. A libsteam_api.so in the
+# root was never found (Kastuk's Ubuntu log lists every path it tried). Both are committed.
+for pair in linux-x64:libsteam_api.so osx-x64:libsteam_api.dylib; do
+  rid=${pair%%:*}; lib=${pair#*:}
+  if [ -f "native/steam/$lib" ]; then
+    mkdir -p "$PKG/runtimes/$rid/native"
+    cp -p "native/steam/$lib" "$PKG/runtimes/$rid/native/"
+    echo "    + runtimes/$rid/native/$lib"
+  else
+    echo "    ! native/steam/$lib missing - Steam will be off on $rid." >&2
+    echo "      Restore it with 'git checkout -- native/steam' or sh tools/build/12-fetch-steam-natives.sh" >&2
+  fi
 done
-if [ ! -f native/steam/libsteam_api.so ]; then
-  echo "    ! libsteam_api.so / libsteam_api.dylib not present - Steam achievements will be"
-  echo "      unavailable on Linux/macOS (the game degrades gracefully, see PORT DEVIATION 4)."
-  echo "      Both ship in the Steamworks.NET standalone zip alongside steam_api64.dll."
-fi
 
 echo
 echo "==> packaged: $PKG"

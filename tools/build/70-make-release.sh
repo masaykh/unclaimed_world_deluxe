@@ -337,20 +337,30 @@ for rid in $RIDS; do
   # anyone building from source gets - shipped without it. Reported against a hand-built
   # win-x64-dx, and it was never specific to DX.
   #
-  # win-x64 only, and not by omission: native/steam holds Valve's Windows binary, and
-  # 12-fetch-steam-natives.sh fetches nothing for linux or macOS. A .dll in those archives would
-  # be cargo.
+  # PORT: one native per RID. Published WITH a RID, Steamworks.NET's RID-specific assembly lands
+  # in the archive root and .NET finds its native beside it: win-x64 imports "steam_api64",
+  # linux-x64 and osx-x64 import "steam_api" (libsteam_api.so / .dylib). These used to be
+  # win-x64 only, so the Linux build ran with Steam off (Kastuk, Ubuntu).
+  #
+  # osx-arm64 gets none, deliberately: Steamworks.NET 2024.8.0 has no osx-arm64 assembly, so that
+  # RID falls back to the Windows-packed one, which imports "steam_api64" with Windows struct
+  # packing. Shipping the dylib there would load and then misread callbacks. See the macOS issue.
+  steamlib=""
   case "$PUBRID" in
-    win-x64)
+    win-x64)   steamlib=steam_api64.dll ;;
+    linux-x64) steamlib=libsteam_api.so ;;
+    osx-x64)   steamlib=libsteam_api.dylib ;;
+  esac
+  if [ -n "$steamlib" ]; then
       # Committed, so this should never fire - it guards against a deleted or LFS-less checkout,
       # not against a missing fetch step.
-      [ -f native/steam/steam_api64.dll ] || {
-        echo "  !! native/steam/steam_api64.dll is missing from the checkout." >&2
+      [ -f "native/steam/$steamlib" ] || {
+        echo "  !! native/steam/$steamlib is missing from the checkout." >&2
         echo "     The archive would start and run with Steam silently off. Restore it with" >&2
         echo "     'git checkout -- native/steam' or re-fetch:" >&2
         echo "         sh tools/build/12-fetch-steam-natives.sh" >&2
         exit 1; }
-      cp -p native/steam/steam_api64.dll "$app/"
+      cp -p "native/steam/$steamlib" "$app/"
 
       # The appid matters as much as the native does: SteamAPI_InitEx needs to know which app
       # it is, and outside a Steam-launched process this file is the only thing that says so, so
@@ -362,8 +372,7 @@ for rid in $RIDS; do
       # steam_api64.dll beside it is COMMITTED to this repository. So nothing about Steam needs
       # your install any more. UW_STEAM is for --full's compiled Content/ and nothing else.
       echo 284100 > "$app/steam_appid.txt"
-      ;;
-  esac
+  fi
 
   # --- licences and instructions --------------------------------------------------------------
   # Same shape as the repository: what a player opens first stays at the top level, everything

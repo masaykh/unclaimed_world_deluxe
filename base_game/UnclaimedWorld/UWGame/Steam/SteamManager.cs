@@ -73,8 +73,30 @@ public class SteamManager
 		// P/Invokes flat-API exports that only exist in newer builds, so a steam_api64.dll from
 		// the shipped 2016 game loads and then fails to bind - the size and timestamp are what
 		// tell an old one from a current one at a glance.
-		AppendFile(text, "  steam_api64.dll   : ", Path.Combine(dir, "steam_api64.dll"));
-		AppendFile(text, "  steam_api.dll     : ", Path.Combine(dir, "steam_api.dll"));
+		//
+		// PORT: the file for THIS platform, where .NET looks for it. Linux and macOS used to be
+		// told about steam_api64.dll, which they never load - Kastuk's Ubuntu report said
+		// "steam_api64.dll: 300392 bytes" above a DllNotFoundException for libsteam_api.so.
+		// Steamworks.NET's linux/osx assemblies import "steam_api"; .NET probes beside the
+		// assembly and in runtimes/<rid>/native/, so both places are reported.
+		string assemblyDir = SafeAssemblyDirectory();
+		text.AppendLine("  Steamworks.NET at : " + (assemblyDir ?? "unknown"));
+		if (OperatingSystem.IsWindows())
+		{
+			AppendFile(text, "  steam_api64.dll   : ", Path.Combine(dir, "steam_api64.dll"));
+		}
+		else
+		{
+			string lib = OperatingSystem.IsMacOS() ? "libsteam_api.dylib" : "libsteam_api.so";
+			string rid = (OperatingSystem.IsMacOS() ? "osx-" : "linux-")
+				+ System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+			AppendFile(text, "  " + lib + " (root)   : ", Path.Combine(dir, lib));
+			AppendFile(text, "  runtimes/" + rid + "/native : ", Path.Combine(dir, "runtimes", rid, "native", lib));
+			if (assemblyDir != null)
+			{
+				AppendFile(text, "  beside assembly   : ", Path.Combine(assemblyDir, lib));
+			}
+		}
 
 		// steam_appid.txt is how the API knows which game it is when the exe was not launched by
 		// Steam. Without it, and outside Steam, Init fails with no obvious cause.
@@ -100,10 +122,24 @@ public class SteamManager
 		text.AppendLine("  Steamworks.NET    : " + SafeAssemblyVersion());
 		text.AppendLine("  Packsize.Test()   : " + SafeTest(() => Packsize.Test()));
 		text.AppendLine("  DllCheck.Test()   : " + SafeTest(() => DllCheck.Test()));
-		text.Append("  If Steam is not running, that is the whole answer. If it is, and the DLL is ");
-		text.Append("the one that shipped with the game in 2016, it is too old for this build - ");
-		text.Append("build/12-fetch-steam-natives.sh fetches a matching one.");
+		text.Append("  If Steam is not running, that is the whole answer. If the native library is ");
+		text.Append("absent, or is the steam_api64.dll that shipped with the game in 2016, ");
+		text.Append("tools/build/12-fetch-steam-natives.sh fetches matching ones and the packaging ");
+		text.Append("scripts put them where .NET looks.");
 		return text.ToString();
+	}
+
+	private static string SafeAssemblyDirectory()
+	{
+		try
+		{
+			string location = typeof(SteamAPI).Assembly.Location;
+			return string.IsNullOrEmpty(location) ? null : Path.GetDirectoryName(location);
+		}
+		catch (Exception)
+		{
+			return null;
+		}
 	}
 
 	private static void AppendFile(StringBuilder text, string label, string path)

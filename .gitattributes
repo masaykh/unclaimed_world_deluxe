@@ -10,5 +10,7 @@
 *.hlsl    text eol=crlf
 *.xnb     binary
 *.dll     binary
+*.so      binary
+*.dylib   binary
 *.exe     binary
 *.png     binary

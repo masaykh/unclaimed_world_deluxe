@@ -11,9 +11,10 @@
 # These are Valve's freely redistributable Steamworks binaries, bundled with the
 # MIT-licensed Steamworks.NET release. Every Steam game ships them.
 #
-# native/steam/steam_api64.dll IS COMMITTED to this repository - 300 KB, redistributable,
-# and it changes only when the Steamworks.NET pin does. This script is how it gets
-# REFRESHED, not how it arrives: a fresh clone already has it, and packaging needs no
+# native/steam/steam_api64.dll, libsteam_api.so and libsteam_api.dylib ARE COMMITTED to this
+# repository - about 1.3 MB together, redistributable, and they change only when the
+# Steamworks.NET pin does. This script is how they get
+# REFRESHED, not how it arrives: a fresh clone already has them, and packaging needs no
 # Steam install to put Steam integration in a build. (An earlier version of this comment
 # said the opposite, and sent someone looking for a fetch step they did not need.)
 set -e
@@ -22,7 +23,11 @@ cd "$UW_REPO"
 
 VER=2024.8.0            # must match <PackageVersion Include="Steamworks.NET"> in Directory.Packages.props
 URL="https://github.com/rlabrecque/Steamworks.NET/releases/download/$VER/Steamworks.NET-Standalone_$VER.zip"
-MEMBERS="Windows-x64/steam_api64.dll Windows-x86/steam_api.dll"
+# PORT: the Linux and macOS natives too. Steamworks.NET's linux-x64 and osx-x64 assemblies
+# P/Invoke "steam_api", which .NET resolves to libsteam_api.so / libsteam_api.dylib. Until these
+# were fetched a Linux build had no Steam at all (Kastuk, Ubuntu: DllNotFoundException).
+# The dylib is universal (i386, x86_64, arm64).
+MEMBERS="Windows-x64/steam_api64.dll Windows-x86/steam_api.dll OSX-Linux-x64/libsteam_api.so OSX-Linux-x64/steam_api.bundle/Contents/MacOS/libsteam_api.dylib"
 
 # PORT: the unpacker. env.sh only finds 7-Zip at its Windows install path, so on Linux $SEVENZIP
 # was empty and the unpack ran "" as a command -"12-fetch-steam-natives.sh: 31: : Permission denied" (Kastuk,
@@ -46,7 +51,7 @@ curl -sfL -o "$WORK/sw.zip" "$URL"
 mkdir -p native/steam
 case "$(basename "$UNZIP")" in
   unzip*)  "$UNZIP" -o -j -q "$WORK/sw.zip" $MEMBERS -d native/steam ;;
-  bsdtar*) "$UNZIP" -x -f "$WORK/sw.zip" -C native/steam --strip-components 1 $MEMBERS ;;
+  bsdtar*) "$UNZIP" -x -f "$WORK/sw.zip" -C native/steam -s ',^.*/,,' $MEMBERS ;;   # flatten: the dylib is 4 deep
   *)       "$UNZIP" e -y -o"native/steam" "$WORK/sw.zip" $MEMBERS >/dev/null ;;
 esac
 rm -rf "$WORK"
@@ -63,11 +68,15 @@ dll_strings() {
   if [ -n "$STRINGS" ]; then "$STRINGS" -a "$1"; else tr -c '[:print:]' '\n' < "$1"; fi
 }
 fail=0
-for sym in SteamInternal_SteamAPI_Init SteamInternal_CreateInterface SteamAPI_ManualDispatch_Init SteamAPI_Shutdown SteamAPI_RunCallbacks; do
-  if dll_strings native/steam/steam_api64.dll | grep -qx "$sym"; then
-    echo "    OK      $sym"
-  else
-    echo "    MISSING $sym"; fail=1
-  fi
+for lib in steam_api64.dll libsteam_api.so libsteam_api.dylib; do
+  echo "    $lib"
+  for sym in SteamInternal_SteamAPI_Init SteamInternal_CreateInterface SteamAPI_ManualDispatch_Init SteamAPI_Shutdown SteamAPI_RunCallbacks; do
+    # Mach-O symbol names carry a leading underscore; PE and ELF ones do not.
+    if dll_strings "native/steam/$lib" | grep -qx "_\{0,1\}$sym"; then
+      echo "      OK      $sym"
+    else
+      echo "      MISSING $sym"; fail=1
+    fi
+  done
 done
 [ "$fail" = 0 ] || { echo "FATAL: fetched native does not match the pinned Steamworks.NET." >&2; exit 1; }
