@@ -277,7 +277,7 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 			AddSubgoal(new GoalFlyToPosition(entity, home.Value));
 		}
 		AddSubgoal(new GoalLand(entity));
-		AddSubgoal(new GoalDoTakeFive(entity));
+
 		base.Status = Status.Active;
 		return true;
 	}

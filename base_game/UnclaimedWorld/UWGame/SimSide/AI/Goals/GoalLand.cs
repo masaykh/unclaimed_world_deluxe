@@ -131,8 +131,8 @@ namespace UWGame.SimSide.AI.Goals
                 //  Aircraft.Renderable.RenderAsModel.RotationSpeed = 0f;
                 vehicleComponent.Aircraft.VerticalSpeed = 0f;
 
-                // put us on the ground:
-                entity.Location = new Vector3(entity.PlaySiteLocation.X, entity.PlaySiteLocation.Y, 0f);
+                // Put the aircraft on the ground; the pilot is contained by it.
+                Aircraft.Location = new Vector3(Aircraft.PlaySiteLocation.X, Aircraft.PlaySiteLocation.Y, 0f);
 
                 // stop engines. don't wait for them to stop before getting out...
                 Aircraft.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.ShowMesh("propeller_left", true);
