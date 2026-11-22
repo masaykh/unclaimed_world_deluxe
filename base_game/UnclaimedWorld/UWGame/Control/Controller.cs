@@ -645,7 +645,7 @@ public class Controller : DrawableGameComponent
 	}
 
 	/// <summary>
-	/// PORT FIX. A load in the running game - SAVE, which reloads what it wrote, or LOAD of a save
+	/// BASE: A load in the running game - SAVE, which reloads what it wrote, or LOAD of a save
 	/// of the same scenario (SaveLoadMessageBox.LoadGameDirectlyInGame) - runs on a thread that
 	/// catches whatever it throws into Sim.LoadException. The studio meant the main thread to
 	/// rethrow it from Sim.LoadSavedGame, and noted itself that it "will likely not be entered by

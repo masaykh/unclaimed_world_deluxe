@@ -484,7 +484,7 @@ public class Sim : GameScreen, ISnapshot
 	{
 		foreach (ILookUpCollectible value in CollectionOfCollections.Values)
 		{
-			// PORT FIX. Was value.SnapshotThis, which left out the vehicle seats: their lookup is not
+			// BASE: Was value.SnapshotThis, which left out the vehicle seats: their lookup is not
 			// saved as a collection, each vehicle saves its own seats, and since the vehicles feature
 			// every seat puts itself back into the lookup as it is read (PassengerOrCargoSlot.DoSnapshot).
 			// SAVE reloads the file into the same session, so a game with a vehicle - a trader's barge -
