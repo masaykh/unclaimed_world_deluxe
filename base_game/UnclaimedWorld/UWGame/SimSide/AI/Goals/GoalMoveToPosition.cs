@@ -595,7 +595,16 @@ namespace UWGame.SimSide.AI.Goals
 
                             EntityID? inUseBy = entityIntelligence.Allegiance.SharedKnowledge.GetInUseBy(vehicleData.EntityID);
                             //TODO: TaskProcess
-                            if (//vehicleComponent.DrivenBy == null && ?????
+                            // BASE: the studio's open question ("DrivenBy == null && ?????") answered the
+                            // way hauling answers it (Entity.IsVehicleValidForHauling): not a vehicle
+                            // someone else drives. The reservation alone is not enough - it clears when
+                            // the pilot's travel goal ends (Deactivate, FreeUpAfterUse) while he is
+                            // still seated, and a colonist who then picked the skimmer failed to board
+                            // it three times (issue #27). GetFreeDriversSlot is also null while another
+                            // colonist is walking to the seat (TargetedBy).
+                            bool driverSeatFree = vehicleData.GetFreeDriversSlot() != null
+                                || entity.DrivingVehicle == vehicleData.EntityID;
+                            if (driverSeatFree &&
                                 inUseBy == null && // vehicleComponent.TakenBy == null &&
                                                    // !The.Sim.IsKnownToBeDestroyed(allegiance, vehicle) && // NEW
                                 Entity.IsFunctional(vehicleData) &&  //EvaluateHaulingJobs.ScoreIsEntityFunctional(vehicleData) > 0.0 && 
