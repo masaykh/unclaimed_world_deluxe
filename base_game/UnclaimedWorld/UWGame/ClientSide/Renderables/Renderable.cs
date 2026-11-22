@@ -312,6 +312,39 @@ namespace UWGame.ClientSide.Renderables
         /// </summary>
         public AnimConditions AnimConditions { get; set; }
 
+        // Keep independent requests separate from the main flags: opposing modifiers such as Left
+        // and Right can then select animations at the same time.
+        private List<AnimConditions> parallelAnimationConditions = new List<AnimConditions>();
+
+        public IReadOnlyList<AnimConditions> ParallelAnimationConditions => (IReadOnlyList<AnimConditions>)parallelAnimationConditions ?? Array.Empty<AnimConditions>();
+
+        public void AddParallelAnimationCondition(AnimConditions condition)
+        {
+            if (parallelAnimationConditions == null)
+                parallelAnimationConditions = new List<AnimConditions>();
+            // Copy the request so later changes to the caller's mask do not alter the active state.
+            parallelAnimationConditions.Add(new AnimConditions
+            {
+                Action = condition.Action,
+                Modifiers = condition.Modifiers != null ? new BitMask64(condition.Modifiers) : new BitMask64(typeof(AnimModifier))
+            });
+            SetAnimFlagsDirty();
+        }
+
+        public void RemoveParallelAnimationCondition(AnimConditions condition)
+        {
+            if (parallelAnimationConditions == null)
+                return;
+            // Remove one occurrence only: another goal may have requested the same set.
+            int index = parallelAnimationConditions.FindIndex(item => item.Action == condition.Action &&
+                (item.Modifiers?.Bits ?? 0) == (condition.Modifiers?.Bits ?? 0));
+            if (index >= 0)
+            {
+                parallelAnimationConditions.RemoveAt(index);
+                SetAnimFlagsDirty();
+            }
+        }
+
         /// <summary>
         /// current state flags for structures, trees and other non-animated entities        
         /// </summary>
@@ -4184,6 +4217,7 @@ namespace UWGame.ClientSide.Renderables
         public class SnapshotRenderable : ISnapshot
         {
             private AnimConditions animConditions;
+            private List<AnimConditions> parallelAnimationConditions;
             private BitMask64 spriteConditions;
             private bool flipHorizontally;
             private RenderEffect renderEffect;
@@ -4214,6 +4248,7 @@ namespace UWGame.ClientSide.Renderables
             {
                 this.spriteConditions = renderable.spriteConditions;
                 this.animConditions = renderable.AnimConditions;
+                this.parallelAnimationConditions = renderable.parallelAnimationConditions;
                 this.flipHorizontally = renderable.flipHorizontally;
                 this.renderEffect = renderable.renderEffect;
                 this.attachables = renderable.snapshotAttachables;
@@ -4236,6 +4271,7 @@ namespace UWGame.ClientSide.Renderables
             {
                 renderable.spriteConditions = spriteConditions;
                 renderable.AnimConditions = animConditions;
+                renderable.parallelAnimationConditions = parallelAnimationConditions ?? new List<AnimConditions>();
                 renderable.flipHorizontally = flipHorizontally;
                 renderable.renderEffect = renderEffect;
                 renderable.snapshotAttachables = attachables;
@@ -4311,6 +4347,12 @@ namespace UWGame.ClientSide.Renderables
 
                 SnapshotRenderAsModel = (SnapshotRenderasModel)sn.DoISnapshot(SnapshotRenderAsModel);
 
+                // Older snapshots do not contain the separate parallel request list.
+                if (version >= Snapshotter.Version.ParallelAnimationConditions)
+                    parallelAnimationConditions = sn.DoList(parallelAnimationConditions);
+                else
+                    sn.Ignore(parallelAnimationConditions);
+
 
                 return this;
 
@@ -4322,7 +4364,7 @@ namespace UWGame.ClientSide.Renderables
             Snapshotter.Version version = Snapshotter.Version.Original;
             public Snapshotter.Version DoVersion(Snapshotter sn)
             {
-                version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+                version = sn.DoVersion(Snapshotter.Version.ParallelAnimationConditions);
                 return version;
             }
 
@@ -4341,6 +4383,12 @@ namespace UWGame.ClientSide.Renderables
                 if (animConditions != null)
                 {
                     animConditions.LoadPostProcess(sn);
+                }
+
+                if (parallelAnimationConditions != null)
+                {
+                    foreach (AnimConditions condition in parallelAnimationConditions)
+                        condition.LoadPostProcess(sn);
                 }
 
                 if (SnapshotRenderAsModel != null)

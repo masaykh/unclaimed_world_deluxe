@@ -57,7 +57,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.GoalWaitAnimationTarget);
             return version;
         }
 
@@ -79,6 +79,8 @@ namespace UWGame.SimSide.AI.Goals
 
             aircraftID = sn.DoEntityID(aircraftID);
             this.destinationPoint = sn.DoVector3(destinationPoint);
+            if (version == Snapshotter.Version.VehicleAnimationRequests)
+                sn.DoBool(false);
 
             sn.Ignore(Aircraft);
             sn.Ignore(vehicleComponent);
@@ -150,16 +152,9 @@ namespace UWGame.SimSide.AI.Goals
                 return;
             }
 
-            // TODO: rework this... perhaps send a message when the aircraft is ready to take off.
-            // We need to run these 5 anims in parallel!
-            // start the propeller animations
-            AddSubgoal(new GoalWait(Aircraft, 3d, null, AnimModifier.Pre, AnimModifier.Right, AnimModifier.Slow)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(Aircraft, 3d, null, AnimModifier.Pre, AnimModifier.Left, AnimModifier.Slow)); //, Aircraft.ID));
-
-            // close all doors before takeoff:
-            AddSubgoal(new GoalWait(Aircraft, 3d, AnimAction.Containing, AnimModifier.Crew)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(Aircraft, 3d, AnimAction.Containing, AnimModifier.Passenger)); //, Aircraft.ID));
-            AddSubgoal(new GoalWait(Aircraft, 3d, AnimAction.Containing, AnimModifier.Open)); //, Aircraft.ID));  
+            // Request both engine starts and both door closures concurrently. The three-second
+            // simulation delay is fixed; takeoff does not depend on client animation completion.
+            AddSubgoal(new GoalWait(entity, new List<AnimConditions>(TakeoffAnimationConditions()), 3d, animationTargetEntity: Aircraft));
 
 
 
@@ -209,6 +204,14 @@ namespace UWGame.SimSide.AI.Goals
             //    }
             //}
             //));
+        }
+
+        private static IEnumerable<AnimConditions> TakeoffAnimationConditions()
+        {
+            yield return new AnimConditions { Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre, (int)AnimModifier.Right, (int)AnimModifier.Slow) };
+            yield return new AnimConditions { Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre, (int)AnimModifier.Left, (int)AnimModifier.Slow) };
+            yield return new AnimConditions { Action = AnimAction.Containing, Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Crew) };
+            yield return new AnimConditions { Action = AnimAction.Containing, Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Passenger) };
         }
 
         // PORT: GoalLand puts an aircraft down at altitude 0; anything above a pixel is still flying.

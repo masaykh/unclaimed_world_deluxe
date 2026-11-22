@@ -1004,9 +1004,51 @@ public class BaseDataLoader : DataLoader
 			{
 				AssetName = "skimmer",
 				ModelScale = 1.3f,
+				// These independent additive clips match the condition sets requested by GoalTakeoff.
+				ParallelAnimations = new AnimConditionInfo[]
+				{
+					new AnimConditionInfo
+					{
+						ConditionSet = new AnimConditions { Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre, (int)AnimModifier.Right, (int)AnimModifier.Slow) },
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet { BaseAnimations = new[] { "propeller_right_start" } },
+						BlendMode = BlendMode.Additive, Looping = Looping.No
+					},
+					new AnimConditionInfo
+					{
+						ConditionSet = new AnimConditions { Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre, (int)AnimModifier.Left, (int)AnimModifier.Slow) },
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet { BaseAnimations = new[] { "propeller_left_start" } },
+						BlendMode = BlendMode.Additive, Looping = Looping.No
+					},
+					// Close each door by reversing its entry clip from its current pose; preserve that pose if interrupted.
+					new AnimConditionInfo
+					{
+						ConditionSet = new AnimConditions { Action = AnimAction.Containing, Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Crew) },
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet { BaseAnimations = new[] { "driver_entry" } },
+						Playback = Playback.Backwards, StartingPoint = StartingPoint.Current, BlendMode = BlendMode.Additive, Looping = Looping.No, HoldOnExit = true
+					},
+					new AnimConditionInfo
+					{
+						ConditionSet = new AnimConditions { Action = AnimAction.Containing, Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Passenger) },
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet { BaseAnimations = new[] { "passenger_entry" } },
+						Playback = Playback.Backwards, StartingPoint = StartingPoint.Current, BlendMode = BlendMode.Additive, Looping = Looping.No, HoldOnExit = true
+					},
+					new AnimConditionInfo
+					{
+						ConditionSet = new AnimConditions { Action = AnimAction.Containing, Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre, (int)AnimModifier.Crew) },
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet { BaseAnimations = new[] { "driver_entry" } },
+						Playback = Playback.Forwards, StartingPoint = StartingPoint.Current, BlendMode = BlendMode.Additive, Looping = Looping.No, HoldOnExit = true
+					},
+					new AnimConditionInfo
+					{
+						ConditionSet = new AnimConditions { Action = AnimAction.Containing, Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre, (int)AnimModifier.Passenger) },
+						SoundAndAnimationSet = new RandomSoundAndAnimationSet { BaseAnimations = new[] { "passenger_entry" } },
+						Playback = Playback.Forwards, StartingPoint = StartingPoint.Current, BlendMode = BlendMode.Additive, Looping = Looping.No, HoldOnExit = true
+					},
+					// The compiled open_for_loading clip has no channels; back_door_joint is in the separate skimmer clip.
+					// Restore the cargo-door animation after the model import is corrected.
+				},
 
-                // Original entries requested BlendMode.Additive, which is not currently
-                // available. These entries use the default BlendMode.Normal instead.
+				// These legacy condition entries use the default BlendMode.Normal.
                 //
                 // Playback.Manual preserves the original value, but requires the client
                 // to supply animation progress. Reverse is a modifier, not playback direction.

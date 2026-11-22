@@ -39,7 +39,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.GoalWaitAnimationTarget);
             return version;
         }
 
@@ -50,6 +50,11 @@ namespace UWGame.SimSide.AI.Goals
             base.DoSnapshot(sn);
 
             this.vehicle = (EntityID)sn.DoEnum(vehicle);
+            if (version == Snapshotter.Version.VehicleAnimationRequests)
+            {
+                sn.DoBool(false);
+                sn.DoBool(false);
+            }
 
             return this;
         }
@@ -151,8 +156,7 @@ namespace UWGame.SimSide.AI.Goals
                     AddSubgoal(new GoalLand(entity));
                 }
 
-                // TODO: change this:
-                AddSubgoal(new GoalWait(entity, 3, AnimAction.Containing, AnimModifier.Crew)); //, vehicle));
+                AddSubgoal(new GoalWait(entity, new List<AnimConditions> { GoalEnterVehicleAsDriver.OpenCondition(entity.DrivingVehicle == vehicle) }, 3, animationTargetEntity: vehicle));
 
 
                 //AddSubgoal(new GoalStartAnimationAndWaitForEnd(entity, vehicleEntity.EntityID, "driver_entry", Playback.Forwards, StartingPoint.Current, //TODO DECOUPLE
@@ -261,7 +265,7 @@ namespace UWGame.SimSide.AI.Goals
                         }
 
                         // close the door...
-                        vehicleEntity.Renderable.StartAdditionalAnimation("driver_entry", Playback.Backwards, StartingPoint.Current, BlendMode.Normal);
+                        vehicleEntity.Renderable.StartAdditionalAnimation(isDriving ? "driver_entry" : "passenger_entry", Playback.Backwards, StartingPoint.Current, BlendMode.Normal);
 
 
                         Status = Status.Completed;
@@ -278,5 +282,6 @@ namespace UWGame.SimSide.AI.Goals
              return Status;*/
 
         }
+
     }
 }

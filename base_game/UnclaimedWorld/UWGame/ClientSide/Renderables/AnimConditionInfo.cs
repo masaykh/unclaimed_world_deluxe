@@ -58,6 +58,9 @@ public class AnimConditionInfo
 
 	public BlendMode BlendMode;
 
+	// For parallel animations, pause at the current pose on exit so a later request can resume from it.
+	public bool HoldOnExit;
+
 	public Looping Looping;
 
 	public float SpeedFactor;

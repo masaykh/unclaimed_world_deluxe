@@ -19,6 +19,9 @@ public class RenderAsModelType
 
 	public AnimConditionInfo[] AnimConditions;
 
+	// Definitions selected independently of the main animation, one match per parallel condition set.
+	public AnimConditionInfo[] ParallelAnimations;
+
 	[XmlIgnore]
 	public Dictionary<AnimAction, List<AnimConditionInfo>> AnimConditionsByAction;
 
@@ -34,6 +37,13 @@ public class RenderAsModelType
 
 	public void Initialize()
 	{
+		if (ParallelAnimations != null)
+		{
+			foreach (AnimConditionInfo animation in ParallelAnimations)
+			{
+				animation.Initialize();
+			}
+		}
 		if (AnimConditions != null)
 		{
 			AnimConditionsByAction = new Dictionary<AnimAction, List<AnimConditionInfo>>();
@@ -120,6 +130,13 @@ public class RenderAsModelType
 		foreach (string item in hashSet)
 		{
 			AnimationInfoCollection animations = AnimationInfoCollection.FromModel(GameData.Instance.AllModels[item].Model);
+			if (ParallelAnimations != null)
+			{
+				foreach (AnimConditionInfo animation in ParallelAnimations)
+				{
+					animation.PostLoadContentValidate(listOfErrors, item, animations);
+				}
+			}
 			if (GaitAnimations != null)
 			{
 				foreach (KeyValuePair<string, GaitAnimationBracket[]> gaitAnimation in GaitAnimations)
@@ -170,6 +187,33 @@ public class RenderAsModelType
 			EntityType.CreateValidationError(ref listOfErrors, key + " animation not found on model: " + modelName);
 		}
 		return listOfErrors;
+	}
+
+	// Unlike the main animation lookup, parallel matching also accepts actionless condition sets.
+	// Actions must match exactly; required modifiers are a subset, forbidden modifiers must be absent,
+	// and the first most-specific definition wins.
+	public AnimConditionInfo FindBestParallelAnimInfo(AnimConditions condition)
+	{
+		AnimConditionInfo best = null;
+		uint bestSpecificity = 0;
+		if (condition == null || ParallelAnimations == null)
+			return null;
+		ulong modifiers = condition.Modifiers?.Bits ?? 0;
+		foreach (AnimConditionInfo candidate in ParallelAnimations)
+		{
+			if (candidate?.ConditionSet == null || candidate.ConditionSet.Action != condition.Action)
+				continue;
+			ulong required = candidate.ConditionSet.Modifiers?.Bits ?? 0;
+			if ((modifiers & required) != required || (modifiers & (candidate.Forbiddens?.Bits ?? 0)) != 0)
+				continue;
+			uint specificity = candidate.ConditionSet.Modifiers?.CountBits() ?? 0;
+			if (best == null || specificity > bestSpecificity)
+			{
+				best = candidate;
+				bestSpecificity = specificity;
+			}
+		}
+		return best;
 	}
 
 	public void FindBestAnimInfo(AnimConditions condition, out AnimConditionInfo bestMatch)

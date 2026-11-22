@@ -28,9 +28,9 @@ namespace Xclna.Xna.Animation
     public enum BlendMode
     {
         Normal,
-        NoBlending
-        /*,
-    Additive*/
+        NoBlending,
+        // Apply the animation as a weighted delta from the bone's default pose.
+        Additive
     }
     public enum Looping
     {
@@ -71,6 +71,11 @@ namespace Xclna.Xna.Animation
         public float blendingProgress;
 
         private bool blendToNull = false;
+
+        public BlendMode Mode { get; private set; }
+
+        // A track fading to null loses its additive contribution rather than fading the base pose.
+        public float AdditiveWeight => MathHelper.Clamp((weightFactor ?? 1f) * (blendToNull ? 1f - blendingProgress : 1f), 0f, 1f);
 
 
         private float? weightFactor;// = 1f;
@@ -321,8 +326,9 @@ namespace Xclna.Xna.Animation
         {
             float blendPeriodToUse;
 
-            if (currentController.AnimationInfo.IsGaitAnim &&
-                controllerBeingBlendedTo.AnimationInfo.IsGaitAnim)
+            // Fades to or from no controller use the ordinary blend period, not the gait transition period.
+            if (currentController != null && controllerBeingBlendedTo != null &&
+                currentController.AnimationInfo.IsGaitAnim && controllerBeingBlendedTo.AnimationInfo.IsGaitAnim)
             {
                 blendPeriodToUse = GaitBlendPeriodInMilliseconds;
             }
@@ -624,8 +630,9 @@ namespace Xclna.Xna.Animation
 
             // mode = BlendMode.NoBlending;
 
-            // now control blending:
-            if (mode == BlendMode.Normal)
+            // Additive clips use the same controller transitions as normal clips; BonePose applies their delta separately.
+            Mode = mode;
+            if (mode == BlendMode.Normal || mode == BlendMode.Additive)
             {
                 /*
 #if DEBUG
@@ -896,6 +903,11 @@ namespace Xclna.Xna.Animation
                         ref blendMatrix,
                         blendingProgress,
                         out returnMatrix);
+                }
+                else if (Mode == BlendMode.Additive && controllerBeingBlendedTo != null)
+                {
+                    // A bone absent from the incoming clip must lose the outgoing additive delta during the transition.
+                    Util.SlerpMatrix(ref currentMatrixBuffer, ref bonePose.DefaultTransform, blendingProgress, out returnMatrix);
                 }
                 else// Else just return the current animation transform
                 {

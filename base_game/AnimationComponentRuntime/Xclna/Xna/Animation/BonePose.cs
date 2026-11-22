@@ -480,27 +480,45 @@ namespace Xclna.Xna.Animation
 
             bool doesAdditionalAnimAffectBone, doesAdditionalBlendAnimAffectBone;
 
-            //these tracks take precedence over the other tracks, if they affect the same bone...
-            // they also have established priority over each other.
+            // Preserve the existing first-matching normal track precedence before applying additive tracks.
+            Matrix? overridingTransform = null;
             foreach (var track in additionalAnimationTracks)
             {
+                if (track.Mode == BlendMode.Additive)
+                    continue;
+
                 doesAdditionalAnimAffectBone = additionalAnimAffectsBone[track.Index];
                 doesAdditionalBlendAnimAffectBone = additionalBlendAnimAffectsBone[track.Index];
 
                 if (doesAdditionalAnimAffectBone || doesAdditionalBlendAnimAffectBone)
                 {
-                    Matrix additionalTransform = track.GetCurrentTransform(this, doesAdditionalAnimAffectBone, doesAdditionalBlendAnimAffectBone);
+                    overridingTransform = track.GetCurrentTransform(this, doesAdditionalAnimAffectBone, doesAdditionalBlendAnimAffectBone);
+                    break;
+                }
+            }
 
-                    // overrides all other tracks...
-                    return additionalTransform;
+            Matrix mainTransform = overridingTransform ?? mainAnimationTrack.GetCurrentTransform(this, doesMainAnimAffectBone, doesMainBlendAnimAffectBone);
+
+            // Compose each affected track as a weighted delta from the default pose, not as another absolute pose.
+            foreach (var track in additionalAnimationTracks)
+            {
+                if (track.Mode != BlendMode.Additive)
+                    continue;
+
+                doesAdditionalAnimAffectBone = additionalAnimAffectsBone[track.Index];
+                doesAdditionalBlendAnimAffectBone = additionalBlendAnimAffectsBone[track.Index];
+                if (doesAdditionalAnimAffectBone || doesAdditionalBlendAnimAffectBone)
+                {
+                    Matrix transform = track.GetCurrentTransform(this, doesAdditionalAnimAffectBone, doesAdditionalBlendAnimAffectBone);
+                    Matrix delta = Matrix.Invert(DefaultTransform) * transform;
+                    Matrix identity = Matrix.Identity;
+                    Util.SlerpMatrix(ref identity, ref delta, track.AdditiveWeight, out delta);
+                    mainTransform *= delta;
                 }
             }
 
 
-            Matrix mainTransform = mainAnimationTrack.GetCurrentTransform(this, doesMainAnimAffectBone, doesMainBlendAnimAffectBone);
-
-
-            if (blendToSpecialTransform.HasValue)
+            if (!overridingTransform.HasValue && blendToSpecialTransform.HasValue)
             //specialTransformBlendingProgress.HasValue)
             {
 

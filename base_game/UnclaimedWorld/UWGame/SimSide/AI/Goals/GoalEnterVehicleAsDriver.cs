@@ -41,7 +41,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.GoalWaitAnimationTarget);
             return version;
         }
 
@@ -54,6 +54,8 @@ namespace UWGame.SimSide.AI.Goals
             this.vehicle = (EntityID)sn.DoEnum(vehicle);
             sn.DoUnknownObject(this.trigger);
             sn.DoUnknownObject(this.driversSlot);
+            if (version == Snapshotter.Version.VehicleAnimationRequests)
+                sn.DoBool(false);
 
             return this;
         }
@@ -121,8 +123,7 @@ namespace UWGame.SimSide.AI.Goals
 
                 AddSubgoal(new GoalTurnToFace(entity, seatLocation.ToVector2()));
 
-                // TODO: change this:
-                AddSubgoal(new GoalWait(entity, 3, AnimAction.Containing, AnimModifier.Crew)); //, ((Entity)vehicleData).ID));
+                AddSubgoal(new GoalWait(entity, new List<AnimConditions> { OpenCondition(true) }, 3, animationTargetEntity: vehicle));
 
 
                 //AddSubgoal(new GoalStartAnimationAndWaitForEnd(entity, vehicle, "driver_entry", Playback.Forwards, StartingPoint.Current, //TODO DECOUPLE
@@ -134,7 +135,16 @@ namespace UWGame.SimSide.AI.Goals
                 // cannot enter vehicle - it is already taken. Fail.
                 Status = Status.Failed;
             }
+        }
 
+        public static AnimConditions OpenCondition(bool driver)
+        {
+            return new AnimConditions
+            {
+                Action = AnimAction.Containing,
+                Modifiers = new BitMask64(typeof(AnimModifier), (int)AnimModifier.Pre,
+                    (int)(driver ? AnimModifier.Crew : AnimModifier.Passenger))
+            };
         }
 
         protected override void ProcessWhileActive(GameTime elapsed)

@@ -22,9 +22,20 @@ public class GoalWait : Goal
 
 	public List<AnimModifier> ModifierStatesToSet;
 
+	// Independent client animation requests; they do not replace the ordinary action and modifiers.
+	public List<AnimConditions> ParallelConditionsToSet;
+
 	private OnExitFlagAction onExitFlagActionValue = OnExitFlagAction.Clear;
 
 	private bool scaleAnimationToFillWaitPeriod;
+
+	/// <summary>
+	/// Allows starting anims on non-agents like vehicles.
+	/// Never start animations directly on other agents - send a message instead!
+	/// </summary>
+	private EntityID? animationTargetEntityID;
+
+	private bool animationConditionsPublished;
 
 	private Snapshotter.Version version = Snapshotter.Version.Original;
 
@@ -35,7 +46,7 @@ public class GoalWait : Goal
 		return false;
 	}
 
-	public GoalWait(Entity owner, double? maxPeriodInSeconds, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
+	public GoalWait(Entity owner, double? maxPeriodInSeconds, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
 		: base(owner)
 	{
 		if (maxPeriodInSeconds.HasValue)
@@ -45,39 +56,53 @@ public class GoalWait : Goal
 		}
 		this.scaleAnimationToFillWaitPeriod = scaleAnimationToFillWaitPeriod;
 		onExitFlagActionValue = onExitAction;
+		animationTargetEntityID = animationTargetEntity?.EntityID;
 		ModifierStatesToSet = new List<AnimModifier>();
 	}
 
-	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
-		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction)
+	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
+		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction, animationTargetEntity)
 	{
 		ActionStateToSet = actionStateToSet;
 	}
 
-	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, List<AnimModifier> statesToSet, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
-		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction)
+	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, List<AnimModifier> statesToSet, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
+		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction, animationTargetEntity)
 	{
 		ActionStateToSet = actionStateToSet;
 		ModifierStatesToSet = statesToSet;
 	}
 
-	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, AnimModifier state, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
-		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction)
+	// The simulation waits for maxPeriodInSeconds, not for client animation completion.
+	public GoalWait(Entity owner, List<AnimConditions> parallelConditionsToSet, double? maxPeriodInSeconds, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
+		: this(owner, maxPeriodInSeconds, onExitAction: onExitAction, animationTargetEntity: animationTargetEntity)
+	{
+		ParallelConditionsToSet = parallelConditionsToSet;
+	}
+
+	public GoalWait(Entity owner, List<AnimConditions> parallelConditionsToSet, double? maxPeriodInSeconds, EntityID animationTargetEntity, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
+		: this(owner, parallelConditionsToSet, maxPeriodInSeconds, onExitAction)
+	{
+		animationTargetEntityID = animationTargetEntity;
+	}
+
+	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, AnimModifier state, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
+		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction, animationTargetEntity)
 	{
 		ActionStateToSet = actionStateToSet;
 		ModifierStatesToSet.Add(state);
 	}
 
-	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, AnimModifier state1, AnimModifier state2, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
-		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction)
+	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, AnimModifier state1, AnimModifier state2, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
+		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction, animationTargetEntity)
 	{
 		ActionStateToSet = actionStateToSet;
 		ModifierStatesToSet.Add(state1);
 		ModifierStatesToSet.Add(state2);
 	}
 
-	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, AnimModifier state1, AnimModifier state2, AnimModifier state3, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear)
-		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction)
+	public GoalWait(Entity owner, double? maxPeriodInSeconds, AnimAction? actionStateToSet, AnimModifier state1, AnimModifier state2, AnimModifier state3, bool scaleAnimationToFillWaitPeriod = false, OnExitFlagAction onExitAction = OnExitFlagAction.Clear, Entity animationTargetEntity = null)
+		: this(owner, maxPeriodInSeconds, scaleAnimationToFillWaitPeriod, onExitAction, animationTargetEntity)
 	{
 		ActionStateToSet = actionStateToSet;
 		ModifierStatesToSet.Add(state1);
@@ -85,9 +110,10 @@ public class GoalWait : Goal
 		ModifierStatesToSet.Add(state3);
 	}
 
-	public GoalWait(Entity owner)
+	public GoalWait(Entity owner, Entity animationTargetEntity = null)
 		: base(owner)
 	{
+		animationTargetEntityID = animationTargetEntity?.EntityID;
 	}
 
 	public GoalWait()
@@ -110,23 +136,41 @@ public class GoalWait : Goal
 	public override void OnEnter()
 	{
 		base.OnEnter();
+		Entity animationTarget = GetAnimationTarget();
+		if (animationTarget == null || animationTarget.Renderable == null)
+		{
+			base.Status = Status.Failed;
+			return;
+		}
+		animationConditionsPublished = true;
+		// Publish each set separately so the client can select multiple animations at once.
+		if (ParallelConditionsToSet != null)
+		{
+			foreach (AnimConditions condition in ParallelConditionsToSet)
+			{
+				animationTarget.Renderable.AddParallelAnimationCondition(condition);
+			}
+		}
+
 		if (ModifierStatesToSet != null || ActionStateToSet.HasValue)
 		{
 			if (ModifierStatesToSet != null)
 			{
 				foreach (AnimModifier item in ModifierStatesToSet)
 				{
-					entity.Renderable.SetAnimationStateFlag(item);
+					animationTarget.Renderable.SetAnimationStateFlag(item);
 				}
 			}
 			if (ActionStateToSet.HasValue)
 			{
-				entity.Renderable.SetAnimationActionStateFlag(ActionStateToSet.Value);
+				animationTarget.Renderable.SetAnimationActionStateFlag(ActionStateToSet.Value);
 			}
 		}
-		else if (!entity.DrivingVehicle.HasValue && !entity.PassengerInVehicle.HasValue)
-		{
-			entity.Renderable.SetAnimationActionStateFlag(AnimAction.Idle);
+		else if (animationTargetEntityID == null
+			&& !entity.DrivingVehicle.HasValue && !entity.PassengerInVehicle.HasValue)
+		{   
+			// This sets a waiting agent in the idle animation:
+            entity.Renderable.SetAnimationActionStateFlag(AnimAction.Idle);
 		}
 	}
 
@@ -137,6 +181,20 @@ public class GoalWait : Goal
 			entity.Locomotor.CollisionResponder.WaitsToGiveRoomToOtherAgent = false;
 		}
 		base.OnExit();
+		Entity animationTarget = GetAnimationTarget();
+		if (!animationConditionsPublished || animationTarget?.Renderable == null)
+		{
+			return;
+		}
+		animationConditionsPublished = false;
+		// Clear this goal's requests on completion or interruption unless the caller asked to leave them set.
+		if (onExitFlagActionValue == OnExitFlagAction.Clear && ParallelConditionsToSet != null)
+		{
+			foreach (AnimConditions condition in ParallelConditionsToSet)
+			{
+				animationTarget.Renderable.RemoveParallelAnimationCondition(condition);
+			}
+		}
 		if ((ModifierStatesToSet == null && !ActionStateToSet.HasValue) || onExitFlagActionValue != OnExitFlagAction.Clear)
 		{
 			return;
@@ -145,23 +203,29 @@ public class GoalWait : Goal
 		{
 			foreach (AnimModifier item in ModifierStatesToSet)
 			{
-				entity.Renderable.ClearAnimationStateFlag(item);
+				animationTarget.Renderable.ClearAnimationStateFlag(item);
 			}
 		}
 		if (ActionStateToSet.HasValue)
 		{
-			entity.Renderable.ClearAnimationActionStateFlag(ActionStateToSet.Value);
+			animationTarget.Renderable.ClearAnimationActionStateFlag(ActionStateToSet.Value);
 		}
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
+		Entity animationTarget = GetAnimationTarget();
+		if (animationTarget?.Renderable == null)
+		{
+			base.Status = Status.Failed;
+			return;
+		}
 		if (MaxTimeToWait.HasValue)
 		{
 			base.Status = ProcessCountdown(elapsed, MaxTimeToWait.Value, out var scalar);
 			if (scaleAnimationToFillWaitPeriod)
 			{
-				entity.Renderable.UpdateMainAnimationTimeScalar(scalar);
+				animationTarget.Renderable.UpdateMainAnimationTimeScalar(scalar);
 			}
 		}
 	}
@@ -173,6 +237,11 @@ public class GoalWait : Goal
 
 	public override bool HandleMessage(Message message)
 	{
+		if (GetAnimationTarget()?.Renderable == null)
+		{
+			base.Status = Status.Failed;
+			return false;
+		}
 		switch (message.MessageType)
 		{
 		case Message.MessageTypes.HopOnBoard:
@@ -198,7 +267,7 @@ public class GoalWait : Goal
 	public override Snapshotter.Version DoVersion(Snapshotter sn)
 	{
 		base.DoVersion(sn);
-		version = sn.DoVersion(Snapshotter.Version.Original);
+		version = sn.DoVersion(Snapshotter.Version.GoalWaitAnimationTarget);
 		return version;
 	}
 
@@ -211,6 +280,37 @@ public class GoalWait : Goal
 		ModifierStatesToSet = sn.DoList(ModifierStatesToSet);
 		onExitFlagActionValue = sn.DoEnum(onExitFlagActionValue);
 		scaleAnimationToFillWaitPeriod = sn.DoBool(scaleAnimationToFillWaitPeriod);
+		// Older snapshots have no parallel requests to restore.
+		if (version >= Snapshotter.Version.ParallelAnimationConditions)
+			ParallelConditionsToSet = sn.DoList(ParallelConditionsToSet);
+		else
+			sn.Ignore(ParallelConditionsToSet);
+		if (version >= Snapshotter.Version.GoalWaitAnimationTarget)
+		{
+			animationTargetEntityID = sn.DoEntityIDNullable(animationTargetEntityID);
+			animationConditionsPublished = sn.DoBool(animationConditionsPublished);
+		}
+		else
+		{
+			animationTargetEntityID = null;
+			animationConditionsPublished = hasEntered && !hasTerminated;
+		}
 		return this;
+	}
+
+	private Entity GetAnimationTarget()
+	{
+		return animationTargetEntityID.HasValue ? Entity.FindByID(animationTargetEntityID.Value) : entity;
+	}
+
+	public override void LoadPostProcess(Snapshotter sn)
+	{
+		base.LoadPostProcess(sn);
+		// Restore the nested condition masks as well as the goal's own references.
+		if (ParallelConditionsToSet != null)
+		{
+			foreach (AnimConditions condition in ParallelConditionsToSet)
+				condition.LoadPostProcess(sn);
+		}
 	}
 }

@@ -69,7 +69,11 @@ public class Snapshotter
 		/// </summary>
 		ScoutingSweep = 5u,
 		VehicleSnapshotReferences = 6u,
-		VehicleSeatState = 7u
+		VehicleSeatState = 7u,
+		/// <summary>GoalWait and Renderable snapshots include their separate parallel animation condition lists.</summary>
+		ParallelAnimationConditions = 8u,
+		VehicleAnimationRequests = 9u,
+		GoalWaitAnimationTarget = 10u
 	}
 
 	public struct TypeInformation

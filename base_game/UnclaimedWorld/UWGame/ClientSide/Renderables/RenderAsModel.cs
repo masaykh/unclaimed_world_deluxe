@@ -156,6 +156,8 @@ namespace UWGame.ClientSide.Renderables
         /// </summary>
         private List<AnimationTrack> additionalAnimationTracks;
 
+        private readonly Dictionary<AnimConditionInfo, string> activeParallelAnimations = new Dictionary<AnimConditionInfo, string>();
+
         // the animations being played:
 
 
@@ -2568,17 +2570,24 @@ namespace UWGame.ClientSide.Renderables
         public void StartAdditionalAnimation(string animKey, Playback playback, StartingPoint startingPoint,
                                     BlendMode mode, float speedFactor = 1f, Looping looping = Looping.No, float? startOffsetToAdd = null)
         {
+            // Additive clips need independent tracks so they can contribute simultaneously.
+            if (mode == BlendMode.Additive && animKey != null)
+            {
+                StartIndependentAnimation(animKey, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd);
+                return;
+            }
+
             // PORT FIX, for a reversible part only: a Current start played Forwards or Backwards.
             // The studio's loop below started it on EVERY free track and never looked at the track
             // already moving it, so the skimmer's landing gear half-way up got a second copy instead
             // of turning round (Kastuk, 2026-11-14: "paused in the middle of animation"). Such a part
             // now has one track: the one already playing (or blending to) it, which
             // AnimationTrack.StartAnimation reverses from where it is, else the first free one.
-            // Every other mode keeps the studio's routing (Lars's MechanicalAnimationTests:
-            // AdditionalCurrentUsesOneTrackAndReusesItForReversal, OtherAdditionalModesKeepExistingFreeTrackRouting).
+            // Other modes keep the studio's routing with the original two tracks; once extra tracks
+            // exist, select one track rather than starting the same clip on every free track.
             bool reversiblePart = startingPoint == StartingPoint.Current
                 && (playback == Playback.Forwards || playback == Playback.Backwards);
-            if (!reversiblePart)
+            if (!reversiblePart && additionalAnimationTracks.Count <= 2)
             {
                 foreach (var track in additionalAnimationTracks)
                 {
@@ -2587,6 +2596,7 @@ namespace UWGame.ClientSide.Renderables
                         StartAnimation(animKey, track, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd);
                     }
                 }
+
                 return;
             }
 
@@ -2607,7 +2617,7 @@ namespace UWGame.ClientSide.Renderables
             {
                 foreach (var track in additionalAnimationTracks)
                 {
-                    if (track.currentController == null)
+                    if (track.currentController == null && (additionalAnimationTracks.Count <= 2 || !track.RunsAnimation()))
                     {
                         chosen = track;
                         break;
@@ -2620,16 +2630,98 @@ namespace UWGame.ClientSide.Renderables
             }
         }
 
+        private void StartIndependentAnimation(string animKey, Playback playback, StartingPoint startingPoint,
+            BlendMode mode, float speedFactor, Looping looping, float? startOffsetToAdd)
+        {
+            // Reuse a track already playing this controller (including a held pose), then a free
+            // extra track, or allocate one. The first two tracks remain available to legacy routing.
+            AnimationController controller = AnimatedModel.ModelAnimator.GetAnimControllerFromKey(animKey);
+            AnimationTrack chosen = additionalAnimationTracks.Find(track =>
+                track.currentController == controller || track.controllerBeingBlendedTo == controller);
+            if (chosen == null)
+            {
+                for (int i = 2; i < additionalAnimationTracks.Count; i++)
+                {
+                    if (!additionalAnimationTracks[i].RunsAnimation())
+                    {
+                        chosen = additionalAnimationTracks[i];
+                        break;
+                    }
+                }
+            }
+            if (chosen == null)
+            {
+                chosen = new AnimationTrack(AnimatedModel.ModelAnimator, AnimationTrack.TrackType.Additional)
+                {
+                    Index = additionalAnimationTracks.Count
+                };
+                additionalAnimationTracks.Add(chosen);
+            }
+            StartAnimation(animKey, chosen, playback, startingPoint, mode, speedFactor, looping, startOffsetToAdd);
+        }
+
         public void StopMainAnimation()
         {
             mainAnimation.StopAnimation();
         }
 
         private int noOfFramesWeHaveBeenDirty = 0;
+        private void UpdateParallelAnimations()
+        {
+            // Multiple identical requests share one definition and one playback; it stays active
+            // until no condition set selects it. The main animation state is matched separately.
+            var desired = new HashSet<AnimConditionInfo>();
+            foreach (AnimConditions condition in Renderable.ParallelAnimationConditions)
+            {
+                AnimConditionInfo match = RenderAsModelType.FindBestParallelAnimInfo(condition);
+                if (match?.SoundAndAnimationSet?.BaseAnimations?.Length > 0)
+                    desired.Add(match);
+            }
+
+            foreach (var animation in activeParallelAnimations.Keys.ToArray())
+            {
+                if (!desired.Contains(animation))
+                {
+                    string key = activeParallelAnimations[animation];
+                    activeParallelAnimations.Remove(animation);
+                    // A different active definition may still be using the same controller.
+                    if (activeParallelAnimations.Values.Contains(key))
+                        continue;
+                    AnimationController controller = AnimatedModel.ModelAnimator.GetAnimControllerFromKey(key);
+                    AnimationTrack track = additionalAnimationTracks.Find(item =>
+                        item.currentController == controller || item.controllerBeingBlendedTo == controller);
+                    if (track != null && track.Mode == animation.BlendMode)
+                    {
+                        if (animation.HoldOnExit)
+                        {
+                            // Keep the current pose for a later reversal or resumption.
+                            controller.SpeedFactor = 0d;
+                        }
+                        else
+                        {
+                            track.StopAnimation();
+                        }
+                    }
+                }
+            }
+
+            foreach (AnimConditionInfo animation in desired)
+            {
+                if (activeParallelAnimations.ContainsKey(animation))
+                    continue;
+                string[] keys = animation.SoundAndAnimationSet.BaseAnimations;
+                string key = keys[The.Client.ClientRandomGenerator.Random.Next(keys.Length)];
+                StartIndependentAnimation(key, animation.Playback, animation.StartingPoint, animation.BlendMode,
+                    animation.SpeedFactor, animation.Looping, animation.StartingPointInSeconds);
+                activeParallelAnimations.Add(animation, key);
+            }
+        }
+
         public void UpdateAnimationConditionState()
         {
             if (animationFlagsAreDirty)
             {
+                UpdateParallelAnimations();
                 if (ReplaceAnimationConditionState()) // sometimes we want to delay switching in order to sow (Atomic) goals together...
                 {
                     animationFlagsAreDirty = false;
