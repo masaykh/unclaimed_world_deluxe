@@ -66,7 +66,7 @@ namespace UWGame.SimSide.AI.Goals
             return vehicleEntity.Vehicle?.Aircraft != null && vehicleEntity.PlaySiteLocation.Z > 1f;
         }
 
-        private static bool CanStandOn(Point tile)
+        internal static bool CanStandOn(Point tile) // PORT: shared with GoalTakeFive.FindHome
         {
             if (tile.X < 0 || tile.Y < 0 || tile.X >= The.Map.mapTileWidth || tile.Y >= The.Map.mapTileHeight)
             {

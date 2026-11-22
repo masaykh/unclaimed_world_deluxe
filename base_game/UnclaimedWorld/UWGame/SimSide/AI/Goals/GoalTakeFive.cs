@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using UWGame.SimSide.AI.Pathfinding;
+using UWGame.SimSide.Buildings;
 using UWGame.SimSide.Entities;
+using UWGame.SimSide.Entities.Containers.Components;
+using UWGame.SimSide.Expeditions;
 using UWGame.SimSide.Maps;
 using UWGame.SimSide.Resources;
 using UWGame.SimSide.Snapshots;
@@ -182,6 +185,10 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 			{
 				return;
 			}
+			if (TryFlyHome())
+			{
+				return;
+			}
 			DiscomfortMap discomfortMap = entityIntelligence.Allegiance.SharedKnowledge.GetDiscomfortMap(entityIntelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance);
 			int num = discomfortMap.Map.GetValue(entity.MapPosition.Value);
 			if (entity.ContainedBy.HasValue)
@@ -236,8 +243,138 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		}
 	}
 
+	/// <summary>
+	/// BASE: an idle pilot who is still in the air flies home instead of hovering until
+	/// GoalDoTakeFive's ContainerIsTooCrowded puts him out, wherever he happens to be (issue #25).
+	/// Home is the nearest free helipad, for an aircraft that uses them (Lars: "Return to base
+	/// should prioritize helipads"); else the standable tile nearest the expedition's centre. He
+	/// lands and takes five there, which gets him out at home.
+	///
+	/// A job that turns up on the way takes him straight from the air: ProcessWhileActive
+	/// arbitrates while he flies, so he does not land first and take off again (Lars's other point).
+	/// A job that exists when his last one ends needs nothing new - GoalThink arbitrates over every
+	/// evaluator before it settles on idling, and GoalMoveToPosition flies an airborne pilot onwards.
+	/// No state of its own: the subgoals are saved, and a loaded game finds him already flying.
+	/// </summary>
+	private bool TryFlyHome()
+	{
+		if (!entity.DrivingVehicle.HasValue)
+		{
+			return false;
+		}
+		Entity aircraft = Entity.FindByID(entity.DrivingVehicle.Value);
+		if (aircraft == null || !aircraft.MapPosition.HasValue || !GoalExitVehicle.IsAirborne(aircraft))
+		{
+			return false;
+		}
+		Point? home = FindHome(aircraft);
+		if (!home.HasValue)
+		{
+			return false;
+		}
+		if (home.Value != aircraft.MapPosition.Value)
+		{
+			AddSubgoal(new GoalFlyToPosition(entity, home.Value));
+		}
+		AddSubgoal(new GoalLand(entity));
+		AddSubgoal(new GoalDoTakeFive(entity));
+		base.Status = Status.Active;
+		return true;
+	}
+
+	private Point? FindHome(Entity aircraft)
+	{
+		Expedition expedition = entityIntelligence.CurrentExpedition;
+		if (expedition == null)
+		{
+			return null;
+		}
+		Point? helipad = FindFreeTerminal(aircraft, expedition);
+		if (helipad.HasValue)
+		{
+			return helipad;
+		}
+		if (!expedition.Center.HasValue)
+		{
+			return null;
+		}
+		return GoalExitVehicle.FindLandingTile(MapManager.WorldPosToTile(expedition.Center.Value), GoalExitVehicle.CanStandOn, GoalExitVehicle.LandingSearchRadius);
+	}
+
+	/// <summary>
+	/// The nearest working terminal of the kind this aircraft uses (VehicleContainerType.CanUseTerminal,
+	/// Helipad for the skimmers) that no other vehicle of the expedition stands on. Ties go to the
+	/// first in the expedition's list, so a replay picks the same one. Two pilots flying home at
+	/// once may choose the same pad; the second lands beside the first's.
+	/// </summary>
+	private Point? FindFreeTerminal(Entity aircraft, Expedition expedition)
+	{
+		TerminalType.TypesOfTerminal? kind = (aircraft.EntityType.ContainerType as VehicleContainerType)?.CanUseTerminal;
+		if (!kind.HasValue)
+		{
+			return null;
+		}
+		List<IKnownEntityData> terminals = expedition.GetWorkingTerminals(entityIntelligence.Allegiance.SharedKnowledge, kind.Value);
+		if (terminals == null)
+		{
+			return null;
+		}
+		List<Vector3> locations = terminals.ConvertAll((IKnownEntityData t) => t.PlaySiteLocation);
+		return ChooseTerminalTile(locations, aircraft.PlaySiteLocation, (Point tile) => IsTakenByAnotherVehicle(tile, aircraft, expedition));
+	}
+
+	/// <summary>
+	/// The tile of the terminal nearest <paramref name="from"/> that is not taken; the first of
+	/// equals in list order. Null when every one is taken, or there are none.
+	/// </summary>
+	public static Point? ChooseTerminalTile(IList<Vector3> terminals, Vector3 from, Func<Point, bool> taken)
+	{
+		Point? best = null;
+		float bestDistance = float.MaxValue;
+		foreach (Vector3 location in terminals)
+		{
+			Point tile = MapManager.WorldPosToTile(location);
+			if (taken(tile))
+			{
+				continue;
+			}
+			float distance = Vector2.DistanceSquared(location.ToVector2(), from.ToVector2());
+			if (distance < bestDistance)
+			{
+				best = tile;
+				bestDistance = distance;
+			}
+		}
+		return best;
+	}
+
+	private static bool IsTakenByAnotherVehicle(Point tile, Entity aircraft, Expedition expedition)
+	{
+		foreach (EntityID vehicleID in expedition.OwnedEntities.Vehicles)
+		{
+			if (vehicleID == aircraft.EntityID)
+			{
+				continue;
+			}
+			Entity vehicle = Entity.FindByID(vehicleID);
+			if (vehicle != null && vehicle.MapPosition.HasValue && vehicle.MapPosition.Value == tile)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	protected override void ProcessWhileActive(GameTime elapsed)
 	{
+		// BASE: see TryFlyHome. While flying home, look for work as a busy colonist does, at the
+		// slower while-busy rate: GoalTakeFive's inertia starts at zero, so EvaluateTakeFive can win
+		// against it, and each such restart only re-issues the same flight.
+		if (Subgoals.Count > 0 && Subgoals.Peek() is GoalFlyToPosition && entityIntelligence.Brain.ArbitrateWhileBusy(out var _))
+		{
+			HandleSubstitutedGoalByArbitrator();
+			return;
+		}
 		base.Status = ProcessSubgoals(elapsed);
 	}
 
