@@ -33,6 +33,13 @@ namespace UWGame.SimSide.Entities.Locomotors
 
             BallisticLocomotor ballisticLocomotor = parent.Parent.BallisticLocomotor;
 
+            // BASE: a falling aircraft (AircraftCrash) is not a missile and has no AttackType to
+            // hit anyone with; it does its damage where it lands.
+            if (ballisticLocomotor == null || ballisticLocomotor.AttackType == null)
+            {
+                return;
+            }
+
             // no friendly fire...
             if (otherEntity.EntityType.IntelligenceType != null
                                 && otherEntity.Intelligence.Allegiance != ballisticLocomotor.LaunchedByAllegiance) // parentEntity.Intelligence.Allegiance)
