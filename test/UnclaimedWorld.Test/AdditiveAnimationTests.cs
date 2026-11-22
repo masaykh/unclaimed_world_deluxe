@@ -12,8 +12,8 @@ using Xclna.Xna.Animation;
 
 namespace UnclaimedWorld.Test;
 
-[TestClass]
 // Some playback tests replace the global client; keep them isolated from other tests.
+[TestClass]
 [DoNotParallelize]
 public sealed class AdditiveAnimationTests
 {
