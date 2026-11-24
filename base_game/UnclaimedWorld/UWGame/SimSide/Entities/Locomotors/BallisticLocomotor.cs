@@ -114,7 +114,19 @@ namespace UWGame.SimSide.Entities.Locomotors
             
         }
 
-        public void Launch(Vector3 from, Vector3 velocity) 
+        /// <summary>
+        /// BASE: let go of something already in the air - an aircraft whose pilot died
+        /// (Vehicles.AircraftCrash). Unlike Launch it keeps the location and the heading, which a
+        /// hovering aircraft (no speed, so no direction) would otherwise lose.
+        /// </summary>
+        public void Drop(Vector3 velocity, double gravity)
+        {
+            this.velocity = velocity;
+            this.gravity = gravity;
+            Parent.CurrentMoveMode = Locomotor.Mode.Ballistic;
+        }
+
+        public void Launch(Vector3 from, Vector3 velocity)
         {
             this.velocity = velocity;
 
@@ -202,6 +214,14 @@ namespace UWGame.SimSide.Entities.Locomotors
 
             if (destinationReached)
             {
+                // BASE: an aircraft that fell (AircraftCrash.Start) hits the ground; an arrow's hit
+                // is the collision responder's business.
+                if (Parent.Parent.Vehicle?.Aircraft != null)
+                {
+                    float impactSpeed = -velocity.Z;
+                    velocity = Vector3.Zero;
+                    UWGame.SimSide.Vehicles.AircraftCrash.Impact(Parent.Parent, impactSpeed);
+                }
                 StopMoving();
             }
         }

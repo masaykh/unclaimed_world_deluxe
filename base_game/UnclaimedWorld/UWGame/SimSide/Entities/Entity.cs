@@ -6371,7 +6371,14 @@ namespace UWGame.SimSide.Entities
             {
                 // set owner?
                 //PlaceEntity does a lot more than this...
+                // BASE: a pilot who dies in the air leaves an aircraft nothing moves; it falls
+                // (issue #26). Asked before the swap, which takes him out of the driver's seat.
+                Entity fallingAircraft = UWGame.SimSide.Vehicles.AircraftCrash.AircraftLosingItsPilot(this);
                 container.SwitchEntities(this, carcass);
+                if (fallingAircraft != null)
+                {
+                    UWGame.SimSide.Vehicles.AircraftCrash.Start(fallingAircraft);
+                }
             }
             else
             {
