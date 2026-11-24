@@ -96,6 +96,10 @@ public class SteamManager
 			{
 				AppendFile(text, "  beside assembly   : ", Path.Combine(assemblyDir, lib));
 			}
+			if (OperatingSystem.IsLinux())
+			{
+				AppendLinuxSteamClient(text);
+			}
 		}
 
 		// steam_appid.txt is how the API knows which game it is when the exe was not launched by
@@ -127,6 +131,43 @@ public class SteamManager
 		text.Append("tools/build/12-fetch-steam-natives.sh fetches matching ones and the packaging ");
 		text.Append("scripts put them where .NET looks.");
 		return text.ToString();
+	}
+
+	/// <summary>
+	/// PORT. libsteam_api.so does not talk to Steam by itself: SteamAPI_Init loads the CLIENT's
+	/// steamclient.so, and on Linux it only ever looks in ~/.steam/sdk64/. A normal Steam install
+	/// makes that a link into its own folder. The Snap package of Steam does not - it keeps
+	/// everything under ~/snap/steam/common/ - so Init fails with
+	/// "FailedGeneric: Failed to load module '~/.steam/sdk64/steamclient.so'" while Steam runs.
+	///
+	/// Kastuk's strace (2026-11-24) showed exactly that path and no other, and copying
+	/// ~/snap/steam/common/.local/share/Steam/linux64/steamclient.so there made achievements work.
+	/// A link is better than a copy: a copy goes stale when Steam updates itself.
+	/// </summary>
+	private static void AppendLinuxSteamClient(StringBuilder text)
+	{
+		string home = Environment.GetEnvironmentVariable("HOME");
+		if (string.IsNullOrEmpty(home))
+		{
+			return;
+		}
+		string expected = Path.Combine(home, ".steam", "sdk64", "steamclient.so");
+		AppendFile(text, "  ~/.steam/sdk64/steamclient.so : ", expected);
+		if (File.Exists(expected))
+		{
+			return;
+		}
+		string snap = Path.Combine(home, "snap", "steam", "common", ".local", "share", "Steam", "linux64", "steamclient.so");
+		if (File.Exists(snap))
+		{
+			text.AppendLine("  Snap Steam found. The Steam API only looks in ~/.steam/sdk64/, so link it there:");
+			text.AppendLine("    mkdir -p ~/.steam/sdk64 && ln -sf ~/snap/steam/common/.local/share/Steam/linux64/steamclient.so ~/.steam/sdk64/steamclient.so");
+		}
+		else
+		{
+			text.AppendLine("  steamclient.so is not where the Steam API looks. Find it with: find ~ -name steamclient.so -path '*linux64*'");
+			text.AppendLine("  then link it to ~/.steam/sdk64/steamclient.so");
+		}
 	}
 
 	private static string SafeAssemblyDirectory()
