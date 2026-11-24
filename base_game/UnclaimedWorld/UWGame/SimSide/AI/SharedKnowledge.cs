@@ -25,6 +25,14 @@ public class SharedKnowledge : ISnapshot
 
 	public Dictionary<EntityID, EntityLock> EntityLocks;
 
+	/// <summary>
+	/// NEW (issue #33): the spot each vehicle of this allegiance has reserved to land or park on,
+	/// vehicle -> world location. Per allegiance like EntityLocks: another side never sees it, and
+	/// must find out about a vehicle on the spot the way it finds out about anything else. Kept
+	/// while the vehicle stands there; StoppingSpot owns every read and write.
+	/// </summary>
+	public Dictionary<EntityID, Vector3> StopLocks = new Dictionary<EntityID, Vector3>();
+
 	public EntityGroup AllKnownEntities;
 
 	private EntityGroupID snapshotAllKnownEntities;
@@ -770,6 +778,7 @@ public class SharedKnowledge : ISnapshot
 		AllKnownEntities.DeleteEntity(entityID, entityType);
 		SpecialActionLocks.Remove(entityID);
 		EntityLocks.Remove(entityID);
+		StopLocks.Remove(entityID);
 		if (PlaySiteKnowledge != null)
 		{
 			PlaySiteKnowledge.RemoveFromCollectionsOfKnownEntities(entityID);
@@ -833,7 +842,7 @@ public class SharedKnowledge : ISnapshot
 
 	public Snapshotter.Version DoVersion(Snapshotter sn)
 	{
-		version = sn.DoVersion(Snapshotter.Version.Original);
+		version = sn.DoVersion(Snapshotter.Version.StoppingSpots);
 		return version;
 	}
 
@@ -851,6 +860,14 @@ public class SharedKnowledge : ISnapshot
 		memoryFactLeafs = sn.DoMultiMap(memoryFactLeafs);
 		EntityLocks = sn.DoDictionary(EntityLocks);
 		SpecialActionLocks = sn.DoMultiMap(SpecialActionLocks);
+		if (version >= Snapshotter.Version.StoppingSpots)
+		{
+			StopLocks = sn.DoDictionary(StopLocks);
+		}
+		else
+		{
+			StopLocks = new Dictionary<EntityID, Vector3>();
+		}
 		sn.Ignore(Allegiance);
 		sn.Ignore(AllDetectedEntities);
 		sn.Ignore(MemoryFacts);

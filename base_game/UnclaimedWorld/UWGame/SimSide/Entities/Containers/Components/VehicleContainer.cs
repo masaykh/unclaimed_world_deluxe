@@ -681,7 +681,9 @@ namespace UWGame.SimSide.Entities.Containers.Components
         public static bool FindParkingSpot(Point from, Allegiances.Allegiance allegiance, IKnownEntityData vehicle, Rectangle tileArea, SurfaceType.TransportType transport, ProtectionLevel protectionLevel,
             EntityType driverType, ThreatStance approach,
             Point targetTile,
-            out Vector3 foundLocation)
+            out Vector3 foundLocation,
+            Func<Point, bool> unsafeTile = null,
+            IList<(Vector3 location, float radius)> reservedSpots = null)
         {
             Point targetTile1;
             Point? targetTile2 = null;
@@ -703,6 +705,7 @@ namespace UWGame.SimSide.Entities.Containers.Components
                 transportToUse = SurfaceType.TransportType.OffRoad;
             }
             bool[][] isBlockedMap = Structure.CreateIsBlockedMapAvoidConstructions(tileArea, The.Map.TerrainCosts[transportToUse]);
+            BlockUnsafeAndReserved(isBlockedMap, tileArea, vehicle.BoundingRadius3D, unsafeTile, reservedSpots);
 
             byte[][] subtileMap = null;
             Common.InitJaggedArray(ref subtileMap, Common.GetJaggedArrayWidth(isBlockedMap), Common.GetJaggedArrayHeight(isBlockedMap));
@@ -788,6 +791,53 @@ namespace UWGame.SimSide.Entities.Containers.Components
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// NEW (issue #33, StoppingSpot): the studio's "TODO: add discomfort to the map", and the
+        /// spots other vehicles of the side have reserved. Both are hard blocks, not the soft
+        /// penalty CreatePassageMap gives entities standing about: a parked truck may be squeezed
+        /// past, but a spot somebody is on his way to, or one the driver would panic on, is not a
+        /// parking spot at all. A reserved spot blocks every subtile nearer than the two radii
+        /// together - StoppingSpot.Overlaps, the rule aircraft use.
+        /// </summary>
+        public static void BlockUnsafeAndReserved(bool[][] isBlockedMap, Rectangle tileArea, float vehicleRadius,
+            Func<Point, bool> unsafeTile, IList<(Vector3 location, float radius)> reservedSpots)
+        {
+            if (unsafeTile == null && (reservedSpots == null || reservedSpots.Count == 0))
+            {
+                return;
+            }
+            int width = Common.GetJaggedArrayWidth(isBlockedMap);
+            int height = Common.GetJaggedArrayHeight(isBlockedMap);
+            Vector3 topLeft = MapManager.EdgeOfTileToWorldPos(tileArea.Left, tileArea.Top);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (isBlockedMap[x][y])
+                    {
+                        continue;
+                    }
+                    if (unsafeTile != null && unsafeTile(new Point(tileArea.X + x / 3, tileArea.Y + y / 3)))
+                    {
+                        isBlockedMap[x][y] = true;
+                        continue;
+                    }
+                    if (reservedSpots != null)
+                    {
+                        Vector3 centre = topLeft + new Vector3(x * MapManager.subTileSize + MapManager.subTileSizeOver2, y * MapManager.subTileSize + MapManager.subTileSizeOver2, 0f);
+                        foreach ((Vector3 location, float radius) reserved in reservedSpots)
+                        {
+                            if (AI.StoppingSpot.Overlaps(centre, vehicleRadius, reserved.location, reserved.radius))
+                            {
+                                isBlockedMap[x][y] = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static Rectangle GetSurroundingAreaUsingEntityRadius(IKnownEntityData entity, Point destination)

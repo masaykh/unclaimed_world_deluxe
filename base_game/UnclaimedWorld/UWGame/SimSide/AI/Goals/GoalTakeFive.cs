@@ -267,14 +267,24 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		{
 			return false;
 		}
-		Point? home = FindHome(aircraft);
-		if (!home.HasValue)
+		// NEW (issue #33): home is StoppingSpot's ReturnHome - the nearest helipad of the kind this
+		// aircraft uses (VehicleContainerType.CanUseTerminal) that nobody has reserved and his side
+		// knows no vehicle on, else a spot near the expedition's centre. Reserved, so two pilots
+		// flying home at once no longer choose the same pad, and re-checked on the way.
+		Expedition expedition = entityIntelligence.CurrentExpedition;
+		if (expedition == null)
 		{
 			return false;
 		}
-		if (home.Value != aircraft.MapPosition.Value)
+		Point near = expedition.Center.HasValue ? MapManager.WorldPosToTile(expedition.Center.Value) : aircraft.MapPosition.Value;
+		if (!StoppingSpot.Find(entity, aircraft, near, StopPurpose.ReturnHome, out Vector3 spot))
 		{
-			AddSubgoal(new GoalFlyToPosition(entity, home.Value));
+			return false;
+		}
+		Point home = MapManager.WorldPosToTile(spot);
+		if (home != aircraft.MapPosition.Value)
+		{
+			AddSubgoal(new GoalFlyToPosition(entity, home, StopPurpose.ReturnHome, near));
 		}
 		AddSubgoal(new GoalLand(entity));
 
@@ -282,50 +292,10 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 		return true;
 	}
 
-	private Point? FindHome(Entity aircraft)
-	{
-		Expedition expedition = entityIntelligence.CurrentExpedition;
-		if (expedition == null)
-		{
-			return null;
-		}
-		Point? helipad = FindFreeTerminal(aircraft, expedition);
-		if (helipad.HasValue)
-		{
-			return helipad;
-		}
-		if (!expedition.Center.HasValue)
-		{
-			return null;
-		}
-		return GoalExitVehicle.FindLandingTile(MapManager.WorldPosToTile(expedition.Center.Value), GoalExitVehicle.CanStandOn, GoalExitVehicle.LandingSearchRadius);
-	}
-
-	/// <summary>
-	/// The nearest working terminal of the kind this aircraft uses (VehicleContainerType.CanUseTerminal,
-	/// Helipad for the skimmers) that no other vehicle of the expedition stands on. Ties go to the
-	/// first in the expedition's list, so a replay picks the same one. Two pilots flying home at
-	/// once may choose the same pad; the second lands beside the first's.
-	/// </summary>
-	private Point? FindFreeTerminal(Entity aircraft, Expedition expedition)
-	{
-		TerminalType.TypesOfTerminal? kind = (aircraft.EntityType.ContainerType as VehicleContainerType)?.CanUseTerminal;
-		if (!kind.HasValue)
-		{
-			return null;
-		}
-		List<IKnownEntityData> terminals = expedition.GetWorkingTerminals(entityIntelligence.Allegiance.SharedKnowledge, kind.Value);
-		if (terminals == null)
-		{
-			return null;
-		}
-		List<Vector3> locations = terminals.ConvertAll((IKnownEntityData t) => t.PlaySiteLocation);
-		return ChooseTerminalTile(locations, aircraft.PlaySiteLocation, (Point tile) => IsTakenByAnotherVehicle(tile, aircraft, expedition));
-	}
-
 	/// <summary>
 	/// The tile of the terminal nearest <paramref name="from"/> that is not taken; the first of
-	/// equals in list order. Null when every one is taken, or there are none.
+	/// equals in list order, so a replay picks the same one. Null when every one is taken, or there
+	/// are none. StoppingSpot ranks terminals with it.
 	/// </summary>
 	public static Point? ChooseTerminalTile(IList<Vector3> terminals, Vector3 from, Func<Point, bool> taken)
 	{
@@ -346,23 +316,6 @@ internal class GoalTakeFive : CompositeGoal, ITopLevelGoal
 			}
 		}
 		return best;
-	}
-
-	private static bool IsTakenByAnotherVehicle(Point tile, Entity aircraft, Expedition expedition)
-	{
-		foreach (EntityID vehicleID in expedition.OwnedEntities.Vehicles)
-		{
-			if (vehicleID == aircraft.EntityID)
-			{
-				continue;
-			}
-			Entity vehicle = Entity.FindByID(vehicleID);
-			if (vehicle != null && vehicle.MapPosition.HasValue && vehicle.MapPosition.Value == tile)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	protected override void ProcessWhileActive(GameTime elapsed)

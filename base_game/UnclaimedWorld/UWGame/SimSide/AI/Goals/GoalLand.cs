@@ -86,6 +86,19 @@ namespace UWGame.SimSide.AI.Goals
             }
             vehicleComponent = Aircraft.Vehicle;
 
+            // NEW (issue #33): one last look at the reserved spot before coming down on it. If it
+            // went bad after GoalFlyToPosition's last check, fail while still in the air: GoalThink
+            // chooses again, and an idle pilot flies home (GoalTakeFive.TryFlyHome). A landing with
+            // no reservation here - a put-down where nothing better was found - goes ahead.
+            if (StoppingSpot.TryGetReserved(entity, Aircraft, out Vector3 heldSpot)
+                && Aircraft.MapPosition.HasValue && MapManager.WorldPosToTile(heldSpot) == Aircraft.MapPosition.Value
+                && !StoppingSpot.IsSuitable(entity, Aircraft, heldSpot))
+            {
+                StoppingSpot.Release(entity, Aircraft);
+                Status = Goals.Status.Failed;
+                return;
+            }
+
             // BASE: only a finished takeoff or landing zeroes the climb speed. After a task cancelled
             // during the climb this landing began at the takeoff's upward speed, with
             // MaxVerticalAcceleration (30 px/s per second) to turn it round - the skimmer kept climbing for a

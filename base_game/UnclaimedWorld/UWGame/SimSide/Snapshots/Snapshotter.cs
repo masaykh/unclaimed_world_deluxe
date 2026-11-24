@@ -73,7 +73,15 @@ public class Snapshotter
 		/// <summary>GoalWait and Renderable snapshots include their separate parallel animation condition lists.</summary>
 		ParallelAnimationConditions = 8u,
 		VehicleAnimationRequests = 9u,
-		GoalWaitAnimationTarget = 10u
+		GoalWaitAnimationTarget = 10u,
+		/// <summary>
+		/// SharedKnowledge gained StopLocks - the spot each vehicle has reserved to land or park on
+		/// (StoppingSpot, issue #33) - and GoalFlyToPosition the purpose it re-checks its spot for and
+		/// the time to the next check. An older SharedKnowledge has no locks; a vehicle already on
+		/// its way takes its lock again at its next re-check. An older GoalFlyToPosition has no
+		/// purpose, and flies to its tile as the studio's did, without re-checking.
+		/// </summary>
+		StoppingSpots = 11u
 	}
 
 	public struct TypeInformation

@@ -53,6 +53,25 @@ namespace UWGame.SimSide.AI.Goals
         }
 
         /// <summary>
+        /// NEW (issue #33): a flight to a spot StoppingSpot.Find chose and reserved. On the way the
+        /// spot is looked at again (Lars: "check the lz regularly, and more often as the distance
+        /// closes. Abort if it is no longer suitable"); when it no longer is, Find chooses another
+        /// for the same purpose near the same place. Without a purpose - the plain constructor, and
+        /// every flight in an older save - nothing is re-checked, as in the studio's game.
+        /// </summary>
+        public GoalFlyToPosition(Entity owner, Point destination, StopPurpose purpose, Point near)
+            : base(owner)
+        {
+            Destination = destination;
+            stopPurpose = purpose;
+            stopNear = near;
+        }
+
+        private StopPurpose? stopPurpose;
+        private Point stopNear;
+        private float secondsToRecheck;
+
+        /// <summary>
         /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
         /// </summary>
         Snapshotter.Version version = Snapshotter.Version.Original;
@@ -60,7 +79,7 @@ namespace UWGame.SimSide.AI.Goals
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.VehicleSnapshotReferences); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
+            version = sn.DoVersion(Snapshotter.Version.StoppingSpots); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
             return version;
         }
 
@@ -83,6 +102,14 @@ namespace UWGame.SimSide.AI.Goals
             this.hasLoweredLandingGear = sn.DoBool(hasLoweredLandingGear);
             this.destination = sn.DoPoint(destination);
             this.destinationPoint = sn.DoVector2(destinationPoint);
+            if (version >= Snapshotter.Version.StoppingSpots)
+            {
+                bool hasPurpose = sn.DoBool(stopPurpose.HasValue);
+                StopPurpose purpose = sn.DoEnum(stopPurpose ?? StopPurpose.Travel);
+                stopPurpose = hasPurpose ? purpose : null;
+                stopNear = sn.DoPoint(stopNear);
+                secondsToRecheck = sn.DoFloat(secondsToRecheck);
+            }
 
             sn.Ignore(Aircraft);
             sn.Ignore(vehicleComponent);
@@ -227,6 +254,11 @@ namespace UWGame.SimSide.AI.Goals
                     Aircraft.Renderable.StartAdditionalAnimation("raiselandinggear", Playback.Backwards, StartingPoint.Current, BlendMode.Normal);
                 }
 
+                if (stopPurpose.HasValue && !RecheckSpot(elapsedTime, (float)distToTarget))
+                {
+                    return;
+                }
+
                 float distanceSquaredToTarget = Vector2.DistanceSquared(new Vector2(Aircraft.PlaySiteLocation.X, Aircraft.PlaySiteLocation.Y), destinationPoint);
                 if (distanceSquaredToTarget < atDestinationLimit)
                 {
@@ -276,6 +308,43 @@ namespace UWGame.SimSide.AI.Goals
              ExitIfFailedOrCompleted();
 
              return Status;*/
+        }
+
+        /// <summary>
+        /// NEW (issue #33): every StoppingSpot.RecheckInterval seconds of game time, whether the
+        /// spot is still fit to land on. False when the flight is given up: the spot went bad and
+        /// there is no other, so the goal fails and GoalThink chooses again - an airborne pilot with
+        /// nothing to do then flies home (GoalTakeFive.TryFlyHome).
+        /// OPEN (issue #33, question 3): fail, or hover and keep looking for a while.
+        /// </summary>
+        private bool RecheckSpot(float elapsedTime, float distToTarget)
+        {
+            secondsToRecheck -= elapsedTime;
+            if (secondsToRecheck > 0f)
+            {
+                return true;
+            }
+            secondsToRecheck = StoppingSpot.RecheckInterval(distToTarget);
+
+            Vector3 spot = MapManager.TileToWorldPos(destination);
+            if (!StoppingSpot.TryGetReserved(entity, Aircraft, out Vector3 held) || MapManager.WorldPosToTile(held) != destination)
+            {
+                // An older save, or a lock dropped while nobody sat in the aircraft: take it again.
+                StoppingSpot.Reserve(entity, Aircraft, spot);
+            }
+            if (StoppingSpot.IsSuitable(entity, Aircraft, spot))
+            {
+                return true;
+            }
+
+            StoppingSpot.Release(entity, Aircraft);
+            if (StoppingSpot.Find(entity, Aircraft, stopNear, stopPurpose.Value, out Vector3 other))
+            {
+                Destination = MapManager.WorldPosToTile(other);
+                return true;
+            }
+            Status = Status.Failed;
+            return false;
         }
 
         private void SetPitch(float previousMoveSpeed, float elapsedTime)

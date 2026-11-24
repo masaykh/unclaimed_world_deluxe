@@ -353,11 +353,7 @@ namespace UWGame.SimSide.AI.Goals
                     if (((VehicleContainerType)vehicleData.EntityType.ContainerType).Aircraft != null)
                     {
                         // go by plane:
-                        // TODO: Find Landing spot!
-                        AddSubgoal(new GoalTakeoff(entity));
-                        AddSubgoal(new GoalFlyToPosition(entity, DestinationTilePos.Value.ToPoint()));
-                        AddSubgoal(new GoalLand(entity));
-
+                        AddFlight(vehicleData.EntityID);
                         return;
                     }
                     else
@@ -727,14 +723,42 @@ namespace UWGame.SimSide.AI.Goals
 
         }
 
+        /// <summary>
+        /// NEW (issue #33): the studio's "TODO: Find Landing spot!". The aircraft landed on the
+        /// destination tile whatever stood there - the building it was going to, another skimmer.
+        /// It now lands on the spot StoppingSpot chooses for Travel: a free helipad near the
+        /// destination, else the nearest acceptable ground to it, reserved and re-checked on the
+        /// way in. A pilot who came down short of his final destination walks the rest, as a
+        /// driver who parked does (GoByVehicle). With no acceptable spot at all, the studio's
+        /// flight, unreserved.
+        /// </summary>
+        private void AddFlight(EntityID aircraftID)
+        {
+            Point destinationTile = DestinationTilePos.Value.ToPoint();
+            Entity aircraft = Entity.FindByID(aircraftID);
+            AddSubgoal(new GoalTakeoff(entity));
+            if (aircraft != null && StoppingSpot.Find(entity, aircraft, destinationTile, StopPurpose.Travel, out Vector3 spot))
+            {
+                Point landing = MapManager.WorldPosToTile(spot);
+                AddSubgoal(new GoalFlyToPosition(entity, landing, StopPurpose.Travel, destinationTile));
+                AddSubgoal(new GoalLand(entity));
+                if (landing != destinationTile && IsFinalDestination)
+                {
+                    AddSubgoal(new GoalExitVehicle(entity, aircraftID));
+                    AddSubgoal(new GoalMoveToPosition(entity, Destination.Value.ToVector3(), ownersOfVehicles, VehicleUse.NoVehicle));
+                }
+                return;
+            }
+            AddSubgoal(new GoalFlyToPosition(entity, destinationTile));
+            AddSubgoal(new GoalLand(entity));
+        }
+
         private void GoByVehicle(IKnownEntityData vehicleToUse)
         {
             // NEW
             if (((VehicleContainerType)vehicleToUse.EntityType.ContainerType).Aircraft != null)
             {
-                AddSubgoal(new GoalTakeoff(entity));
-                AddSubgoal(new GoalFlyToPosition(entity, DestinationTilePos.Value.ToPoint()));
-                AddSubgoal(new GoalLand(entity));
+                AddFlight(vehicleToUse.EntityID);
                 return;
             }
             else
@@ -746,11 +770,18 @@ namespace UWGame.SimSide.AI.Goals
 
                 parkingArea = VehicleContainer.GetSurroundingAreaUsingEntityRadius(vehicleToUse, DestinationTilePos.Value.ToPoint());
 
-                // NEW:
-                // we use the vehicle's transport type instead of the driver's.
-                if (VehicleContainer.FindParkingSpot(vehicleToUse.MapPosition.Value, entity.Intelligence.Allegiance, vehicleToUse, parkingArea, //targetBuilding.GetSurroundingAreaUsingEntityRadius(vehicleToUse),
-                    ((VehicleContainerType)vehicleToUse.EntityType.ContainerType).Transport, entityIntelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance,
-                    DestinationTilePos.Value.ToPoint(), out parkAtLocation)) // out parkAtTile, out parkAtOffset))
+                // NEW (issue #33): through StoppingSpot, which runs the same FindParkingSpot with the
+                // spots other vehicles of the side have reserved, and those the driver would panic
+                // on, blocked - and reserves the one it finds.
+                Entity vehicleEntity = Entity.FindByID(vehicleToUse.EntityID);
+                bool parked = vehicleEntity != null
+                    ? StoppingSpot.Find(entity, vehicleEntity, DestinationTilePos.Value.ToPoint(), StopPurpose.Park, out parkAtLocation)
+                    // NEW:
+                    // we use the vehicle's transport type instead of the driver's.
+                    : VehicleContainer.FindParkingSpot(vehicleToUse.MapPosition.Value, entity.Intelligence.Allegiance, vehicleToUse, parkingArea, //targetBuilding.GetSurroundingAreaUsingEntityRadius(vehicleToUse),
+                        ((VehicleContainerType)vehicleToUse.EntityType.ContainerType).Transport, entityIntelligence.ProtectionLevel, entity.EntityType, entityIntelligence.ThreatStance,
+                        DestinationTilePos.Value.ToPoint(), out parkAtLocation); // out parkAtTile, out parkAtOffset))
+                if (parked)
                 {
                     // Nesting.IsNested: To make sure we don't end here again in an infinite recursion!
                     AddSubgoal(new GoalMoveToPosition(entity, parkAtLocation, Nesting.IsNested, ownersOfVehicles));
