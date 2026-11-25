@@ -4118,6 +4118,11 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Key>GuiNoLongerHas0InView_226d821d301c</Key>
     <Value>no longer has {0} in view</Value>
   </String>
+  <!-- SimSide/AI/StoppingSpot.cs -->
+  <String>
+    <Key>GuiNowhereSafeToSetDownHere_bf877ae8d3f7</Key>
+    <Value>Nowhere safe to set down here.</Value>
+  </String>
   <!-- SimSide/AI/StrategicDecisions/AllegianceRatings.cs -->
   <String>
     <Key>GuiATTRACTION_0f1058de9adb</Key>

@@ -147,11 +147,25 @@ namespace UWGame.SimSide.AI.Goals
                         Status = Status.Failed;
                         return;
                     }
+                    // NEW (issue #33): the nearest spot StoppingSpot accepts - safe for his stance,
+                    // and nobody else's - reserved and re-checked on the way. When there is none,
+                    // the nearest tile he can stand on, as before, without a reservation.
                     Point here = vehicleEntity.MapPosition.Value;
-                    Point? landing = FindLandingTile(here, CanStandOn, LandingSearchRadius);
-                    if (landing.HasValue && landing.Value != here)
+                    if (StoppingSpot.Find(entity, vehicleEntity, here, StopPurpose.PutDown, out Vector3 spot))
                     {
-                        AddSubgoal(new GoalFlyToPosition(entity, landing.Value));
+                        Point landing = MapManager.WorldPosToTile(spot);
+                        if (landing != here)
+                        {
+                            AddSubgoal(new GoalFlyToPosition(entity, landing, StopPurpose.PutDown, here));
+                        }
+                    }
+                    else
+                    {
+                        Point? landing = FindLandingTile(here, CanStandOn, LandingSearchRadius);
+                        if (landing.HasValue && landing.Value != here)
+                        {
+                            AddSubgoal(new GoalFlyToPosition(entity, landing.Value));
+                        }
                     }
                     AddSubgoal(new GoalLand(entity));
                 }

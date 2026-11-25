@@ -115,6 +115,13 @@ namespace UWGame.SimSide.AI.Goals
             }
             vehicleComponent = Aircraft.Vehicle;
 
+            // NEW (issue #33): leaving the spot it stood on frees it for the others. Only that one -
+            // when the flight's landing spot was found before the takeoff, the lock already moved there.
+            if (StoppingSpot.TryGetReserved(entity, Aircraft, out Vector3 heldSpot)
+                && Aircraft.MapPosition.HasValue && Maps.MapManager.WorldPosToTile(heldSpot) == Aircraft.MapPosition.Value)
+            {
+                StoppingSpot.Release(entity, Aircraft);
+            }
 
             Status = Status.Active;
             /*

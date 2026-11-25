@@ -937,6 +937,27 @@ namespace UWGame.SimSide.Entities
            // SpokenLineTimestamp = The.Sim.GameTime.TotalGameTime.Ticks;
         }
 
+        /// <summary>
+        /// NEW (issue #33): a line said on its own, outside any conversation - the pilot who finds
+        /// nowhere to land. SpeakLine needs a Conversation (it keeps its ID, and turns the speaker
+        /// to his listeners); this only shows the line, through the same Client.SpeakLine, which
+        /// lets the player hear it only from someone his side sees. Client.AddTalk takes a null
+        /// conversation. Silent when there is no client - the tests, a headless sim.
+        /// </summary>
+        public void Remark(string lineKey, string defaultText, float durationInSeconds)
+        {
+            if (The.Client == null || The.InGameUI?.UIAllegiance?.SharedKnowledge == null)
+            {
+                return;
+            }
+            string line = defaultText;
+            if (!string.IsNullOrEmpty(lineKey) && Parent.Find(out Person person) && person.Personality?.PersonalityType != null)
+            {
+                line = person.Personality.PersonalityType.GetSpokenLine(lineKey, defaultText);
+            }
+            The.Client.SpeakLine(Parent, durationInSeconds, null, line);
+        }
+
         
                 
 

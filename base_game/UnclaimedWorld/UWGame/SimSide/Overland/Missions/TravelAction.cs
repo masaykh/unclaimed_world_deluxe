@@ -253,6 +253,13 @@ public class TravelAction : MissionAction
 		parent.Abort();
 	}
 
+	// BASE (issue #33): an arriving mission no longer comes down on a terminal whatever stands on
+	// it. Each place below that chose a spot asks StoppingSpot.FindArrival first, which takes that
+	// terminal if it is free, else another free one, else open ground near them, and reserves it
+	// (Kastuk: "What will it be at arriving of an trade transport, if theres another ship is
+	// landed?"). The studio's choice stays as the fallback when there is no vehicle to place.
+	// Also: with an expedition but no terminal named, the studio looked up a terminal and then
+	// dropped it, landing on free ground; it is used now.
 	private bool LocateLandingArea(out Vector3? dockingLocation)
 	{
 		TravelLocation travelLocation = TravelActionTemplate.ToMissionStop.TravelLocation;
@@ -262,6 +269,7 @@ public class TravelAction : MissionAction
 		{
 			return false;
 		}
+		Vector3 spot;
 		if (TravelActionTemplate.ToMissionStop.TravelLocation.ExpeditionID.HasValue)
 		{
 			Expedition expedition = LookUp<Expedition, ExpeditionID>.FindByID((ExpeditionID)travelLocation.ExpeditionID.Value);
@@ -274,12 +282,16 @@ public class TravelAction : MissionAction
 				Entity entity = Entity.FindByID((EntityID)travelLocation.TerminalEntityID.Value);
 				if (entity != null)
 				{
-					dockingLocation = GetTerminalLocation(entity);
+					dockingLocation = FindArrivalSpot(allegiance, expedition, GetTerminalLocation(entity), out spot) ? spot : GetTerminalLocation(entity);
 					return true;
 				}
 				return false;
 			}
-			Vector3? vector = LocateLandingAreaInExpedition(expedition);
+			if (FindArrivalSpot(allegiance, expedition, null, out spot))
+			{
+				dockingLocation = spot;
+				return true;
+			}
 		}
 		else
 		{
@@ -288,13 +300,46 @@ public class TravelAction : MissionAction
 				Vector3? vector = LocateLandingAreaInExpedition(expedition2);
 				if (vector.HasValue)
 				{
-					dockingLocation = vector.Value;
+					dockingLocation = FindArrivalSpot(allegiance, expedition2, null, out spot) ? spot : vector.Value;
 					return true;
 				}
+			}
+			if (FindArrivalSpot(allegiance, allegiance.Expeditions[0], null, out spot))
+			{
+				dockingLocation = spot;
+				return true;
 			}
 		}
 		dockingLocation = EntityGroup.GetFreeGroundLocation(allegiance.Expeditions[0]);
 		return true;
+	}
+
+	/// <summary>
+	/// NEW (issue #33): a free spot at the host's expedition for this mission's main vehicle,
+	/// reserved for it - see StoppingSpot.FindArrival. <paramref name="asked"/> is the terminal the
+	/// mission was sent to, if it named one.
+	/// </summary>
+	private bool FindArrivalSpot(Allegiance host, Expedition expedition, Vector3? asked, out Vector3 spot)
+	{
+		spot = Vector3.Zero;
+		Allegiance traveller = LookUp<Allegiance, AllegianceID>.FindByID((AllegianceID)parent.MissionTemplate.Allegiance);
+		EntityType mainType = parent.MissionTemplate.TransportationType.GetMainTransportation();
+		Entity vehicle = null;
+		((MissionJob)LookUp<Job, JobID>.FindByID(parent.MissionJob)).IterateVehicles(delegate(Entity e)
+		{
+			if (vehicle == null || (e.EntityType == mainType && vehicle.EntityType != mainType))
+			{
+				vehicle = e;
+			}
+		});
+		if (vehicle == null || traveller == null || expedition == null)
+		{
+			return false;
+		}
+		TerminalType.TypesOfTerminal kind = (mainType?.ContainerType as VehicleContainerType)?.CanUseTerminal ?? TerminalType.TypesOfTerminal.Land;
+		List<IKnownEntityData> working = expedition.GetWorkingTerminals(traveller.SharedKnowledge, kind);
+		List<Vector3> terminals = working?.ConvertAll((IKnownEntityData t) => GetTerminalLocation(t)) ?? new List<Vector3>();
+		return StoppingSpot.FindArrival(traveller, host, vehicle, asked, terminals, EntityGroup.GetFreeGroundLocation(expedition), out spot);
 	}
 
 	private Vector3? LocateLandingAreaInExpedition(Expedition expedition)
