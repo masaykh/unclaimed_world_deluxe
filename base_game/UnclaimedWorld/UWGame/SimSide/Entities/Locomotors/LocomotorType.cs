@@ -34,6 +34,7 @@ namespace UWGame.SimSide.Entities.Locomotors
         public float MeleeRadius;
 
         public LeggedLocomotorType LeggedLocomotorType;
+        public VTOLLocomotorType VTOLLocomotorType;
         public BallisticLocomotorType BallisticLocomotorType;
 
 

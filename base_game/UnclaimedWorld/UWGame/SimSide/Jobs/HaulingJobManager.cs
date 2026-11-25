@@ -183,15 +183,8 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 		oneOverBaseSpeedOnFoot = 1f / (GameData.Instance.AllEntityTypes["entity:human"].LocomotorType.LeggedLocomotorType.WalkNormalSpeed * PlainsType.Instance.MovementFactor(SurfaceType.TransportType.Foot, SurfaceType.TerrainFeatures.None));
 		if (GameData.Instance.AllEntityTypes.TryGetValue("entity:skimmer", out var value))
 		{
-			oneOverBaseSpeedByAir = 1f / value.LocomotorType.LeggedLocomotorType.WalkNormalSpeed;
-			if (value.ContainerType == null)
-			{
-				takeOffAndLandTime = 17f;
-			}
-			else
-			{
-				takeOffAndLandTime = 2f * ((VehicleContainerType)value.ContainerType).Aircraft.EstimatedTakeOffLandingTime;
-			}
+			oneOverBaseSpeedByAir = 1f / value.LocomotorType.VTOLLocomotorType.MaxAirSpeed;
+			takeOffAndLandTime = 2f * value.LocomotorType.VTOLLocomotorType.EstimatedTakeOffLandingTime;
 		}
 		CreateRegulators();
 	}
@@ -458,7 +451,7 @@ public class HaulingJobManager : ICyclable, ILookUp<ICyclable, CyclableID>, ISna
 
 	public static double EstimateAirTime(Entity vehicle, ref Point destination, ref Vector3 knownVehicleLocation, float estimatedLoadedVehicleSpeed, ref Vector3 knownItemLocation)
 	{
-		return (double)(Common.DistanceOctile(knownVehicleLocation, knownItemLocation) / vehicle.Locomotor.CurrentMaximumSpeedForEvaluator + Common.DistanceOctile(knownItemLocation, MapManager.TileToWorldPos(destination)) / estimatedLoadedVehicleSpeed) + (double)(2f * ((VehicleContainerType)vehicle.EntityType.ContainerType).Aircraft.EstimatedTakeOffLandingTime);
+		return (double)(Common.DistanceOctile(knownVehicleLocation, knownItemLocation) / vehicle.Locomotor.CurrentMaximumSpeedForEvaluator + Common.DistanceOctile(knownItemLocation, MapManager.TileToWorldPos(destination)) / estimatedLoadedVehicleSpeed) + (double)(2f * vehicle.EntityType.LocomotorType.VTOLLocomotorType.EstimatedTakeOffLandingTime);
 	}
 
 	private static float ScoreItemStorage(ItemStorageCombo combo, IKnownEntityData itemData, Dictionary<EntityType, Dictionary<StorageLocation, float>> cachedItemStorageScores, SharedKnowledge sharedKnowledge)

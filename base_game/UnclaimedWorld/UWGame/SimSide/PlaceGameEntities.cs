@@ -3664,8 +3664,8 @@ public class PlaceGameEntities
         AddFinishedStructure("structure:helipad", new Point(13, 9), expedition);
 
         AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(9, 2));
-        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(13, 2));
-        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(17, 2));
+        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(10, 4));
+        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(14, 6));
     }
 
     public static void WeaponsTest()

@@ -631,7 +631,7 @@ namespace UWGame.SimSide.AI.Goals
                                     timeByVehicleOverTerrain = Common.DistanceOctile(vehicleLocation, destinationWorldLocation) / vehicleData.CurrentMaximumSpeed.Value; //  .Locomotor.CurrentMaximumSpeed;
 
                                     // aircraft take some time taking off and landing.     
-                                    timeByVehicleOverTerrain += 2 * vehicleContainerType.Aircraft.EstimatedTakeOffLandingTime;
+                                    timeByVehicleOverTerrain += 2 * vehicleData.EntityType.LocomotorType.VTOLLocomotorType.EstimatedTakeOffLandingTime;
                                 }*/
                                 if (vehicleContainerType.Transport == SurfaceType.TransportType.Air)
                                 {

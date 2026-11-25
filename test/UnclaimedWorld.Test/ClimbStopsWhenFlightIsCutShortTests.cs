@@ -45,7 +45,11 @@ public sealed class ClimbStopsWhenFlightIsCutShortTests
         Entity.CreateLookupCollection();
         skimmer = NewEntity(9401);
         typeof(Entity).GetProperty("EntityType")!.SetValue(skimmer,
-            new EntityType("entity:skimmer") { ContainerType = new VehicleContainerType { Aircraft = new AircraftType() } });
+            new EntityType("entity:skimmer")
+            {
+                LocomotorType = new LocomotorType { VTOLLocomotorType = new VTOLLocomotorType() },
+                ContainerType = new VehicleContainerType { Aircraft = new AircraftType() }
+            });
         skimmer.Components[typeof(Locomotor)] = (Locomotor)RuntimeHelpers.GetUninitializedObject(typeof(Locomotor));
         // Cut short half way up, still climbing.
         typeof(GameObject).GetField("location", AnyInstance)!.SetValue(skimmer, (Vector3?)new Vector3(100f, 100f, 120f));

@@ -128,7 +128,7 @@ namespace UWGame.SimSide.AI.Goals
             destinationPoint = new Vector3(MapManager.tileSize * (0.5f + entity.MapPosition.X),
                     MapManager.tileSize * (0.5f + entity.MapPosition.Y), TargetAltitude);
             */ // NEW: use the aircraft position instead of the pilot's:
-            destinationPoint = new Vector3(Aircraft.PlaySiteLocation.X, Aircraft.PlaySiteLocation.Y, ((VehicleContainerType)Aircraft.EntityType.ContainerType).Aircraft.CruiseAltitude);
+            destinationPoint = new Vector3(Aircraft.PlaySiteLocation.X, Aircraft.PlaySiteLocation.Y, Aircraft.EntityType.LocomotorType.VTOLLocomotorType.CruiseAltitude);
 
 
             /**
@@ -293,7 +293,7 @@ namespace UWGame.SimSide.AI.Goals
                 Aircraft.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.ShowMesh("propeller_left", false);
                 Aircraft.Renderable.RenderAsModel.AnimatedModel.ModelAnimator.ShowMesh("propeller_right", false);
 
-                float desiredMoveSpeed = ((VehicleContainerType)Aircraft.EntityType.ContainerType).Aircraft.MaxVerticalMoveSpeed;
+                float desiredMoveSpeed = Aircraft.EntityType.LocomotorType.VTOLLocomotorType.MaxVerticalMoveSpeed;
 
 
                 if (UpdateAircraftUpDown(desiredMoveSpeed, elapsed, entity, Aircraft, vehicleComponent, destinationPoint))

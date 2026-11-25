@@ -137,7 +137,7 @@ namespace UWGame.SimSide.AI.Goals
                 if (Status == Goals.Status.Active)
                 {*/
 
-            float desiredMoveSpeed = -((VehicleContainerType)Aircraft.EntityType.ContainerType).Aircraft.MaxVerticalMoveSpeed;
+            float desiredMoveSpeed = -Aircraft.EntityType.LocomotorType.VTOLLocomotorType.MaxVerticalMoveSpeed;
 
             if (GoalTakeoff.UpdateAircraftUpDown(desiredMoveSpeed, elapsed, entity, Aircraft, vehicleComponent, destinationPoint))
             {

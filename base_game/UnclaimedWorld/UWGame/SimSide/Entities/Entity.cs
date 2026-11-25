@@ -1617,13 +1617,10 @@ namespace UWGame.SimSide.Entities
                 switch (vehicleContainerType.Transport)
                 {
                     case SurfaceType.TransportType.Foot:
-                        return EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed; // TODO
                     case SurfaceType.TransportType.Car:
-                        return EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed; // TODO
                     case SurfaceType.TransportType.OffRoad:
-                        return EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed; // TODO
                     case SurfaceType.TransportType.Air:
-                        return ((VehicleContainerType)this.EntityType.ContainerType).Aircraft.MaxAirSpeed; // not affected by load...
+                        return TravelLocomotor.NormalSpeed; // not affected by load...
                     default:
                         throw new NotImplementedException("Unknown transport type: " + vehicleContainerType.Transport.ToString());
                 }
@@ -2115,6 +2112,8 @@ namespace UWGame.SimSide.Entities
             }
 
         }
+
+        public ITravelLocomotor TravelLocomotor => Locomotor?.TravelLocomotor;
 
         public SimEffectsComponent SimEffects
         {

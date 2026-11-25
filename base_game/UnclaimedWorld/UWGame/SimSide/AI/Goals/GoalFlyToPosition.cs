@@ -357,9 +357,9 @@ namespace UWGame.SimSide.AI.Goals
 
             // add accel to overcome drag: 
             // oscillates...
-            // float speedToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / Aircraft.EntityType.VehicleType.Aircraft.MaxAirSpeed; 
+            // float speedToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / Aircraft.TravelLocomotor.NormalSpeed; 
 
-            float rotateToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / vehicleContainerType.Aircraft.MaxAirSpeed;
+            float rotateToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / Aircraft.TravelLocomotor.NormalSpeed;
 
             float acceleration = deltaSpeed / elapsedTime; //(deltaSpeed + speedToCompensateForDrag) / elapsedTime;
 
@@ -398,15 +398,13 @@ namespace UWGame.SimSide.AI.Goals
 
         private void SetFansAngle(float previousMoveSpeed, float headingDifference, float elapsedTime)
         {
-            VehicleContainerType vehicleContainerType = (VehicleContainerType)Aircraft.EntityType.ContainerType;
-
             float deltaSpeed = Aircraft.Locomotor.MoveSpeed - previousMoveSpeed;
 
 
             // add accel to overcome drag: - oscillates violently 
-            //float speedToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / Aircraft.EntityType.VehicleType.Aircraft.MaxAirSpeed; // 0.2f; // (float)Math.Pow(((double)Aircraft.Locomotor.MoveSpeed), 2.0) / 1000f;
+            //float speedToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / Aircraft.TravelLocomotor.NormalSpeed; // 0.2f; // (float)Math.Pow(((double)Aircraft.Locomotor.MoveSpeed), 2.0) / 1000f;
 
-            float rotateToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / vehicleContainerType.Aircraft.MaxAirSpeed;
+            float rotateToCompensateForDrag = 0.5f * Aircraft.Locomotor.MoveSpeed / Aircraft.TravelLocomotor.NormalSpeed;
 
 
             //float acceleration = (deltaSpeed + speedToCompensateForDrag) / elapsedTime;            
@@ -588,9 +586,7 @@ namespace UWGame.SimSide.AI.Goals
 
             if (Math.Abs(headingDifference) < 0.2f)
             {
-                VehicleContainerType vehicleContainerType = (VehicleContainerType)Aircraft.EntityType.ContainerType;
-
-                return vehicleContainerType.Aircraft.MaxAirSpeed; // start...
+                return Aircraft.TravelLocomotor.NormalSpeed; // start...
             }
             else
             {
@@ -607,9 +603,7 @@ namespace UWGame.SimSide.AI.Goals
         private float FindMaxMoveSpeedForHardTurn(Vector2 waypoint, float elapsedTime, out float headingDifference)
         {
             //float r = FindRadius(waypoint);
-            VehicleContainerType vehicleContainerType = (VehicleContainerType)Aircraft.EntityType.ContainerType;
-
-            float finalSpeed = vehicleContainerType.Aircraft.MaxAirSpeed;
+            float finalSpeed = Aircraft.TravelLocomotor.NormalSpeed;
 
             // If closestDistance is less than turningRadius, then the waypoint is 
             // inside one of the 2 circles the Tank cannot turn into when moving at 
@@ -658,14 +652,11 @@ namespace UWGame.SimSide.AI.Goals
 
         private bool IsWaypointWithinTurningRadiusAtMaxSpeed(Vector2 waypoint)
         {
-            VehicleContainerType vehicleContainerType = (VehicleContainerType)Aircraft.EntityType.ContainerType;
-
-            float finalSpeed = vehicleContainerType.Aircraft.MaxAirSpeed;
             // Given a velocity v (Tank.MaxMoveSpeed) and an angular velocity 
             // w(Tank.MaxAngularVelocity), the smallest turning radius 
             // r(turningRadius) ofthe tank is the velocity divided by the turning
             // speed: r = v/w 
-            float turningRadius = vehicleContainerType.Aircraft.MaxAirSpeed / Aircraft.EntityType.LocomotorType.MaxAngularSpeed;
+            float turningRadius = Aircraft.TravelLocomotor.NormalSpeed / Aircraft.EntityType.LocomotorType.MaxAngularSpeed;
 
             // This code figures out if the tank can move to its waypoint from its 
             // current location based on its turning circle(turningRadius) when its 
@@ -698,14 +689,12 @@ namespace UWGame.SimSide.AI.Goals
 
         private float FindSlowCircleSpeed(float elapsedTime, out float headingDifference)
         {
-            VehicleContainerType vehicleContainerType = (VehicleContainerType)Aircraft.EntityType.ContainerType;
-
             // if we are overshooting the target, drop this and make a hard turn:
             if (!IsWaypointWithinTurningRadiusAtMaxSpeed(destinationPoint))
             {
                 headingDifference = 0f;
                 vehicleComponent.Aircraft.SteeringType = SteeringType.HardTurn;
-                return vehicleContainerType.Aircraft.MaxAirSpeed;
+                return Aircraft.TravelLocomotor.NormalSpeed;
             }
 
             float circleRadius = FindSlowCircleRadius(destinationPoint);
@@ -713,7 +702,7 @@ namespace UWGame.SimSide.AI.Goals
             // Now we use the radius from above to and Tank.MaxAngularVelocity 
             // to find out how fast we can move towards the waypoint by taking 
             // r = v/w and turning it into v = r*w
-            float angularSpeed = vehicleContainerType.Aircraft.MaxAirSpeed / circleRadius;
+            float angularSpeed = Aircraft.TravelLocomotor.NormalSpeed / circleRadius;
 
             float facingDirection;
 
@@ -733,14 +722,14 @@ namespace UWGame.SimSide.AI.Goals
 
 
 
-            return vehicleContainerType.Aircraft.MaxAirSpeed; // move at full speed
+            return Aircraft.TravelLocomotor.NormalSpeed; // move at full speed
         }
 
         private void SetRoll(float headingDifference, float elapsedTime)
         {
             VehicleContainerType vehicleContainerType = (VehicleContainerType)Aircraft.EntityType.ContainerType;
 
-            float desiredRoll = 5f * (Aircraft.Locomotor.MoveSpeed / vehicleContainerType.Aircraft.MaxAirSpeed) * headingDifference; // Math.Sign(headingDifference);
+            float desiredRoll = 5f * (Aircraft.Locomotor.MoveSpeed / Aircraft.TravelLocomotor.NormalSpeed) * headingDifference; // Math.Sign(headingDifference);
             float rollDifference = desiredRoll - vehicleComponent.Roll;
 
             if (!Common.IsEqual(rollDifference, 0f))

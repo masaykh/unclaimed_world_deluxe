@@ -172,13 +172,32 @@ public sealed class VehicleHaulingTests
     }
 
     [TestMethod]
+    public void LoadedVehicleSpeedUsesTheTravelLocomotor()
+    {
+        var vehicle = (Entity)RuntimeHelpers.GetUninitializedObject(typeof(Entity));
+        vehicle.Components = new();
+        typeof(Entity).GetProperty("EntityType")!.SetValue(vehicle, new EntityType
+        {
+            LocomotorType = new LocomotorType { VTOLLocomotorType = new VTOLLocomotorType { MaxAirSpeed = 180f } },
+            ContainerType = new VehicleContainerType { Transport = SurfaceType.TransportType.OffRoad }
+        });
+        vehicle.Components[typeof(Locomotor)] = new Locomotor(vehicle);
+
+        Assert.AreEqual(180f, vehicle.CalculateLoadedVehicleSpeed(5f));
+    }
+
+    [TestMethod]
     public void AirTimeIncludesBothFlightLegsAndLandingOverhead()
     {
         var type = new EntityType
         {
+            LocomotorType = new LocomotorType
+            {
+                VTOLLocomotorType = new VTOLLocomotorType { MaxAirSpeed = 10, MaxVerticalMoveSpeed = 10, CruiseAltitude = 20 }
+            },
             ContainerType = new VehicleContainerType
             {
-                Aircraft = new AircraftType { MaxAirSpeed = 10, EstimatedTakeOffLandingTime = 3 }
+                Aircraft = new AircraftType()
             }
         };
         var vehicle = Known((method, _) => method.Name == "get_EntityType"
@@ -186,6 +205,7 @@ public sealed class VehicleHaulingTests
 
         double time = EvaluateHaulingJobs.EstimateAirTime(vehicle, new Vector3(30, 0, 0), Vector3.Zero, 10, new Vector3(10, 0, 0));
         Assert.AreEqual(9d, time, 0.0001);
+        Assert.AreEqual(9d, EvaluateHaulingJobs.EstimateAirTime(vehicle, new Vector3(30, 0, 0), Vector3.Zero), 0.0001);
     }
 }
 

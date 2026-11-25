@@ -1115,7 +1115,7 @@ namespace UWGame.SimSide.AI.Goals
             // compute the 2-leg journey:
             // distances in pixels!
             timeByVehicleOverTerrain =
-                Common.DistanceOctile(knownVehicleLocation, knownItemLocation) / ((VehicleContainerType)vehicle.EntityType.ContainerType).Aircraft.MaxAirSpeed
+                Common.DistanceOctile(knownVehicleLocation, knownItemLocation) / vehicle.EntityType.LocomotorType.VTOLLocomotorType.MaxAirSpeed
                 + Common.DistanceOctile(knownItemLocation, destination) / estimatedLoadedVehicleSpeed; // include other items carried?
 
             /*
@@ -1127,7 +1127,7 @@ namespace UWGame.SimSide.AI.Goals
             // aircraft take some time taking off and landing.             
             // time should be in seconds now:
 
-            timeByVehicleOverTerrain += 2 * ((VehicleContainerType)vehicle.EntityType.ContainerType).Aircraft.EstimatedTakeOffLandingTime;
+            timeByVehicleOverTerrain += 2 * vehicle.EntityType.LocomotorType.VTOLLocomotorType.EstimatedTakeOffLandingTime;
             return timeByVehicleOverTerrain;
         }
 
@@ -1138,13 +1138,13 @@ namespace UWGame.SimSide.AI.Goals
             // distances in pixels!
             // CurrentMaximumSpeed is for agents..?!?
             timeByVehicleOverTerrain =
-                Common.DistanceOctile(knownVehicleLocation, destination) / ((VehicleContainerType)vehicle.EntityType.ContainerType).Aircraft.MaxAirSpeed;
+                Common.DistanceOctile(knownVehicleLocation, destination) / vehicle.EntityType.LocomotorType.VTOLLocomotorType.MaxAirSpeed;
                 ////vehicle.CurrentMaximumSpeed.Value;
 
             // aircraft take some time taking off and landing.             
             // time should be in seconds now:
 
-            timeByVehicleOverTerrain += 2 * ((VehicleContainerType)vehicle.EntityType.ContainerType).Aircraft.EstimatedTakeOffLandingTime;
+            timeByVehicleOverTerrain += 2 * vehicle.EntityType.LocomotorType.VTOLLocomotorType.EstimatedTakeOffLandingTime;
             return timeByVehicleOverTerrain;
         }
 

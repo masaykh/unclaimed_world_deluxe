@@ -51,8 +51,11 @@ namespace UWGame.SimSide.Entities.Locomotors
         /// my idea is that only one of these locomotors should be active at a time - they have a corresponding enum value
         /// </summary>
         public LeggedLocomotor LeggedLocomotor;
+        public VTOLLocomotor VTOLLocomotor;
         public BallisticLocomotor BallisticLocomotor;
         public CollisionResponder CollisionResponder;
+
+        public ITravelLocomotor TravelLocomotor => (ITravelLocomotor)VTOLLocomotor ?? LeggedLocomotor;
 
         public Stance Stance;
 
@@ -201,6 +204,11 @@ namespace UWGame.SimSide.Entities.Locomotors
                 LeggedLocomotor = new LeggedLocomotor(this);
             }
 
+            if (parent.EntityType.LocomotorType.VTOLLocomotorType != null)
+            {
+                VTOLLocomotor = new VTOLLocomotor(this);
+            }
+
             if (parent.EntityType.LocomotorType.BallisticLocomotorType != null)
             {
                 BallisticLocomotor = new BallisticLocomotor(this);
@@ -280,6 +288,7 @@ namespace UWGame.SimSide.Entities.Locomotors
             this.targetLocation = sn.DoVector3Nullable(targetLocation);
             this.terrainModifier = sn.DoFloat(terrainModifier);
             this.Rotator = (Rotator)sn.DoISnapshot(Rotator);
+            this.VTOLLocomotor = (VTOLLocomotor)sn.DoISnapshot(VTOLLocomotor);
 
 
 
@@ -290,18 +299,22 @@ namespace UWGame.SimSide.Entities.Locomotors
         /// <summary>
         /// when changes are made to the fields that should be snapshotted, such as type changes, addition or removal of fields, increase this version number!
         /// </summary>
-        Snapshotter.Version version = Snapshotter.Version.Original;
         public override Snapshotter.Version DoVersion(Snapshotter sn)
         {
             base.DoVersion(sn); // each class in the class hierarchy snapshots and maintains their own version.
 
-            version = sn.DoVersion(Snapshotter.Version.Original); // increase this number and make sure to add repair code in DoSnapshot to bring older versions up to this new version!
-            return version;
+            return sn.DoVersion(Snapshotter.Version.VTOLLocomotor);
         }
 
         public override void LoadPostProcess(Snapshotter sn)
         {
             base.LoadPostProcess(sn);
+
+            if (VTOLLocomotor != null)
+            {
+                VTOLLocomotor.Parent = this;
+                VTOLLocomotor.LoadPostProcess(sn);
+            }
 
             if (LeggedLocomotor != null)
             {
@@ -387,7 +400,7 @@ namespace UWGame.SimSide.Entities.Locomotors
             float baseSpeed;
             if (!calculateWithBurden)
             {
-                baseSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed;
+                baseSpeed = TravelLocomotor?.NormalSpeed ?? 1f;
             }
             else 
             {
@@ -414,12 +427,12 @@ namespace UWGame.SimSide.Entities.Locomotors
             // if needed, we can add more complex logic here, such as clamping, overriding modifiers etc.
             ApplyDisabilityModifier(ref speed);
 
-            if (calculateWithBurden == true)
+            if (calculateWithBurden == true && VTOLLocomotor == null)
             {
                 ApplyBurdenModifier(ref speed, totalBulkForCalculation);
             }
 
-            if (calculateWithTerrain == true)
+            if (calculateWithTerrain == true && VTOLLocomotor == null)
             {
                 ApplyTerrainModifier(ref speed);
             }
@@ -488,36 +501,7 @@ namespace UWGame.SimSide.Entities.Locomotors
         /// <returns></returns>
         public float GetTargetSpeed()
         {
-
-            float targetSpeed = 0.0f;
-            if (LeggedLocomotor == null)
-                return 1;//TODO HACK MLo, get rid of MobileENtity class, encorporate into locomotor
-
-            // get the speed the AI wants to move by:
-            switch (LeggedLocomotor.TargetSpeed)
-            {
-                case Goal.MovementSpeeds.WalkSlowly:
-                    targetSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkSlowSpeed;
-                    break;
-                case Goal.MovementSpeeds.Normal:
-                    targetSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed;
-                    break;
-                case Goal.MovementSpeeds.WalkFast:
-                    targetSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkFastSpeed;
-                    break;
-                case Goal.MovementSpeeds.Run:
-                    targetSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.RunSpeed;
-                    break;
-                case Goal.MovementSpeeds.Haul:                   
-                    targetSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.HaulSpeed;
-                    break;
-                default:
-                    targetSpeed = Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed;
-                    break;
-            }
-
-
-            return targetSpeed;
+            return TravelLocomotor?.GetTargetSpeed() ?? 1f;
         }
 
         #region Speed modifiers

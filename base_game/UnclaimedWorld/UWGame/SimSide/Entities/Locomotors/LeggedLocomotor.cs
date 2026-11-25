@@ -17,7 +17,7 @@ namespace UWGame.SimSide.Entities.Locomotors
     /// 
     /// for robots on wheels, some behaviour will be shared I think..
     /// </summary>
-    public class LeggedLocomotor : ISnapshot
+    public class LeggedLocomotor : ISnapshot, ITravelLocomotor
     {
         //TODO: move these stats to other class
         public float Strength;
@@ -39,6 +39,26 @@ namespace UWGame.SimSide.Entities.Locomotors
         }
         */
         public Locomotor Parent;  
+
+        public float NormalSpeed => Parent.Parent.EntityType.LocomotorType.LeggedLocomotorType.WalkNormalSpeed;
+
+        public float GetTargetSpeed()
+        {
+            LeggedLocomotorType type = Parent.Parent.EntityType.LocomotorType.LeggedLocomotorType;
+            switch (TargetSpeed)
+            {
+                case Goal.MovementSpeeds.WalkSlowly:
+                    return type.WalkSlowSpeed;
+                case Goal.MovementSpeeds.WalkFast:
+                    return type.WalkFastSpeed;
+                case Goal.MovementSpeeds.Run:
+                    return type.RunSpeed;
+                case Goal.MovementSpeeds.Haul:
+                    return type.HaulSpeed;
+                default:
+                    return type.WalkNormalSpeed;
+            }
+        }
 
         private Goal.MovementSpeeds currentMovementSpeedType = Goal.MovementSpeeds.Normal;
 

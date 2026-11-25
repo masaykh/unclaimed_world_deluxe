@@ -81,7 +81,8 @@ public class Snapshotter
 		/// its way takes its lock again at its next re-check. An older GoalFlyToPosition has no
 		/// purpose, and flies to its tile as the studio's did, without re-checking.
 		/// </summary>
-		StoppingSpots = 11u
+		StoppingSpots = 11u,
+		VTOLLocomotor = 12u
 	}
 
 	public struct TypeInformation

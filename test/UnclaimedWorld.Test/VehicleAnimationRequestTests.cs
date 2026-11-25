@@ -53,7 +53,11 @@ public sealed class VehicleAnimationRequestTests
         typeof(Sim).GetField("gameplayRandomGenerator", AnyInstance)!.SetValue(The.Sim, new RandomGenerator(1, RandomGenerator.GeneratorType.Sim));
         skimmer = NewEntity(9501);
         typeof(Entity).GetProperty("EntityType")!.SetValue(skimmer,
-            new EntityType("entity:skimmer") { ContainerType = new VehicleContainerType { Aircraft = new AircraftType { CruiseAltitude = 120f } } });
+            new EntityType("entity:skimmer")
+            {
+                LocomotorType = new LocomotorType { VTOLLocomotorType = new VTOLLocomotorType { CruiseAltitude = 120f } },
+                ContainerType = new VehicleContainerType { Aircraft = new AircraftType() }
+            });
         skimmer.Components[typeof(Locomotor)] = (Locomotor)RuntimeHelpers.GetUninitializedObject(typeof(Locomotor));
         typeof(GameObject).GetField("location", AnyInstance)!.SetValue(skimmer, (Vector3?)new Vector3(100f, 100f, 0f));
         var vehicle = (VehicleContainer)RuntimeHelpers.GetUninitializedObject(typeof(VehicleContainer));

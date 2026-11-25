@@ -1152,13 +1152,10 @@ public class BaseDataLoader : DataLoader
 		{
 			MaxAngularSpeed = (float)Math.PI / 6f,
 
-			// TODO: Create a FlightLocomotor?
-			// Note that locomotors are probably intended for independent agents, not for vehicles...
-			LeggedLocomotorType = new LeggedLocomotorType
+			VTOLLocomotorType = new VTOLLocomotorType
 			{
-				WalkSlowSpeed = 21f,
-				WalkNormalSpeed = 20f,
-				WalkFastSpeed = 25f
+				MaxAirSpeed = 180f,
+				MaxVerticalMoveSpeed = 90f
 			}
 		};
 		entityType.ContainerType = new VehicleContainerType(8f)
@@ -1172,10 +1169,8 @@ public class BaseDataLoader : DataLoader
 			AverageOverlandTravelSpeed = 3000f,
 			Aircraft = new AircraftType
 			{
-				MaxAirSpeed = 180f,
 				MaxRollDegreeWhenTurning = 0.7f,
 				MaxVerticalAcceleration = 30f,
-				MaxVerticalMoveSpeed = 90f,
 				MaxPitchInRadians = (float)Math.PI / 12f,
 				PitchChangeSpeed = (float)Math.PI / 6f,
 				DuctChangeAngleSpeed = (float)Math.PI / 2f,
@@ -1312,11 +1307,10 @@ public class BaseDataLoader : DataLoader
 		entityType.LocomotorType = new LocomotorType
 		{
 			MaxAngularSpeed = (float)Math.PI / 6f,
-			LeggedLocomotorType = new LeggedLocomotorType
+			VTOLLocomotorType = new VTOLLocomotorType
 			{
-				WalkSlowSpeed = 21f,
-				WalkNormalSpeed = 20f,
-				WalkFastSpeed = 25f
+				MaxAirSpeed = 180f,
+				MaxVerticalMoveSpeed = 90f
 			}
 		};
 		entityType.ContainerType = new VehicleContainerType(14f)
@@ -1330,10 +1324,8 @@ public class BaseDataLoader : DataLoader
 			AverageOverlandTravelSpeed = 2400f,
 			Aircraft = new AircraftType
 			{
-				MaxAirSpeed = 180f,
 				MaxRollDegreeWhenTurning = 0.7f,
 				MaxVerticalAcceleration = 30f,
-				MaxVerticalMoveSpeed = 90f,
 				MaxPitchInRadians = (float)Math.PI / 12f,
 				PitchChangeSpeed = (float)Math.PI / 6f,
 				DuctChangeAngleSpeed = (float)Math.PI / 2f,
