@@ -95,6 +95,7 @@ namespace UWGame.SimSide.AI.Goals
                 && !StoppingSpot.IsSuitable(entity, Aircraft, heldSpot))
             {
                 StoppingSpot.Release(entity, Aircraft);
+                StoppingSpot.SayNoSpot(entity);
                 Status = Goals.Status.Failed;
                 return;
             }

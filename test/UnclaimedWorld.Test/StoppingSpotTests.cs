@@ -49,10 +49,31 @@ public sealed class StoppingSpotTests
     public void AReservationCountsWhileSomebodyIsComingOrTheVehicleIsThere()
     {
         Vector3 spot = AtTile(10, 10);
-        Assert.IsFalse(StoppingSpot.IsStale(holderHasDriver: true, AtTile(40, 40), spot), "a pilot on his way");
-        Assert.IsFalse(StoppingSpot.IsStale(holderHasDriver: false, spot, spot), "parked on it, nobody in it");
-        Assert.IsTrue(StoppingSpot.IsStale(holderHasDriver: false, AtTile(40, 40), spot),
+        Assert.IsFalse(StoppingSpot.IsStale(holderOnPlaySite: true, holderHasDriver: true, AtTile(40, 40), spot), "a pilot on his way");
+        Assert.IsFalse(StoppingSpot.IsStale(holderOnPlaySite: true, holderHasDriver: false, spot, spot), "parked on it, nobody in it");
+        Assert.IsTrue(StoppingSpot.IsStale(holderOnPlaySite: true, holderHasDriver: false, AtTile(40, 40), spot),
             "no driver and somewhere else: the pilot died or got out, and nobody is coming");
+        Assert.IsTrue(StoppingSpot.IsStale(holderOnPlaySite: false, holderHasDriver: true, spot, spot),
+            "gone from the play site - a trader who flew home - whatever its last location says");
+    }
+
+    [TestMethod]
+    public void OnlySidesAtWarIgnoreEachOthersReservations()
+    {
+        // The studio's relation data: 0 hostile, 0.5 neutral, 1 friendly.
+        Assert.IsTrue(StoppingSpot.IsHostileRelation(0f), "at war");
+        Assert.IsFalse(StoppingSpot.IsHostileRelation(0.5f), "neutral - a trader from a colony we have no quarrel with");
+        Assert.IsFalse(StoppingSpot.IsHostileRelation(1f), "allied");
+        Assert.IsFalse(StoppingSpot.IsHostileRelation(null), "no relation at all");
+    }
+
+    [TestMethod]
+    public void TheNewPurposeKeepsTheSavedNumbersOfTheOldOnes()
+    {
+        // GoalFlyToPosition saves its purpose as a number: TravelPrecise must come after the rest.
+        Assert.AreEqual(3, (int)StopPurpose.Park);
+        Assert.AreEqual(4, (int)StopPurpose.TravelPrecise);
+        Assert.AreEqual(5, StoppingSpot.TravelTerminalTiles, "Lars, issue #33: a helipad wins within 5 tiles");
     }
 
     [TestMethod]

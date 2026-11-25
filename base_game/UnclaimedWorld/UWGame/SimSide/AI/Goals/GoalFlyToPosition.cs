@@ -343,6 +343,8 @@ namespace UWGame.SimSide.AI.Goals
                 Destination = MapManager.WorldPosToTile(other);
                 return true;
             }
+            // Nothing else suitable: fail, and GoalThink chooses again (Lars: "Yes, fail the goal").
+            StoppingSpot.SayNoSpot(entity);
             Status = Status.Failed;
             return false;
         }

@@ -123,7 +123,8 @@ public class PlaceGameEntities
 		NanomapTest,
 		PeatTest,
 		LightingTest,
-		VehicleTest
+		VehicleTest,
+		MultipleVehicleTest
 	}
 
 	private static Dictionary<DebugScenarios, Tuple<StartDebugScenarioParams, LoadDebugScenario>> loadScenarioFunctions;
@@ -152,6 +153,7 @@ public class PlaceGameEntities
 		AddScenario(DebugScenarios.WeaponsTest, "d Mezzomap MLo", WeaponsTest);
 		AddScenario(DebugScenarios.LightingTest, "d Mezzomap MLo", LightingTest);
         AddScenario(DebugScenarios.VehicleTest, "9 Milestone Build" /*"d Mezzomap MLo"*/, VehicleTest);
+        AddScenario(DebugScenarios.MultipleVehicleTest, "9 Milestone Build", MultipleVehicleTest);
         AddScenario(DebugScenarios.EmptyMap, "d Mezzomap MLo", EmptyMap);
 		// PORT FIX, same fault as MapApril2013 below: hard-coded tiles that do not fit the map the
 		// table gives them, so the scenario ends in IndexOutOfRangeException inside GetTile.
@@ -3641,6 +3643,29 @@ public class PlaceGameEntities
 
         // why does it have Intelligence, and allegiance..?
         AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(9, 2));
+    }
+
+    /// <summary>
+    /// NEW (issue #33, Lars: "can you add a MultipleVehicleTest scenario similar to the
+    /// VehicleTest?"): VehicleTest's camp with three pilots and three skimmers but only two
+    /// helipads, so the reservations in StoppingSpot have something to share out. Send two
+    /// skimmers to the same place and they should come down apart; leave all three idle and two
+    /// go to the pads (GoalTakeFive.TryFlyHome) while the third finds open ground near the camp.
+    /// </summary>
+    public static void MultipleVehicleTest()
+    {
+        The.MapUI.ZoomToMapPosition(9, 5);
+        Expedition expedition = new Expedition(The.Sim.PlaySite.PlayerAllegiance, "Start", "Start", MapManager.TileToWorldPos(new Point(9, 6)));
+        PlacePerson("Ward", "Conlan", Reproduction.Male, new Point(5, 2), Color.White, 52f, noSkills: false, "blue1", expedition).SetRotationAndDir(-(float)Math.PI / 2f);
+        PlacePerson("Ines", "Conlan", Reproduction.Female, new Point(5, 4), Color.White, 38f, noSkills: false, "blue1", expedition);
+        PlacePerson("Tomas", "Ahlberg", Reproduction.Male, new Point(5, 6), Color.White, 29f, noSkills: false, "blue1", expedition);
+
+        AddFinishedStructure("structure:helipad", new Point(9, 9), expedition);
+        AddFinishedStructure("structure:helipad", new Point(13, 9), expedition);
+
+        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(9, 2));
+        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(13, 2));
+        AddColonyVehicle(new Entity(GameData.Instance.AllEntityTypes["entity:skimmer"]), new Point(17, 2));
     }
 
     public static void WeaponsTest()
