@@ -123,6 +123,7 @@ At runtime, in the game folder:
 ```
 user/Mods/*.dll              your mods go here; loaded at startup in filename order
 user/ModSettings.xml        mod configuration; also editable in MODDING -> SELECT MODS (MOD OPTIONS)
+user/ModPresets.xml         SELECT MODS presets: named lists of the mods switched on
 port-content/**.xnb          ASSET OVERRIDES - any .xnb here wins over Content/ (see below)
 data/BaseData/*.xml          written by --export-data, read by --data-from-xml
 MainMenuIntro.uwanim         the menu background animation (see below); delete for a still one
@@ -490,6 +491,16 @@ dataexport <game-dir> --nomods   # stock tables, for diffing
 loop: it builds the sample mod, asserts `makeCharcoal`'s `DaysNeeded` actually halved in the
 exported XML, and checks the three failure cases (`-nomods` suppression, a corrupt DLL not
 stopping later mods, a stray `0Harmony.dll` refused).
+
+### Mod presets
+
+SELECT MODS keeps presets: named lists of the mods switched on (`ModPresets`). **APPLY** switches
+the listed mods on and every other mod off, each as a click on its switch would
+(`ModCatalog.Switch`). **SAVE AS** stores the mods ticked now under a name. A preset holds switches,
+not settings, so a mod's settings come back as you left them. **STOCK + DEBUG** ships with the
+game: the studio's game with only DEBUG, DEBUG MONITOR and STATE DUMP on, for checking a vanilla
+change without `-nomods` taking the debugging tools away too. The player's presets live in
+`user/ModPresets.xml`. The port's own entry is not a mod, and no preset touches it.
 
 ### Listing your mod in SELECT MODS
 

@@ -72,6 +72,22 @@ public class SelectModsPanel : Panel
 
 	private int entriesTop;
 
+	/// <summary>PRESET's list, its name box for SAVE, and what the last preset button did (ModPresets).</summary>
+	private ComboBox presetCombo;
+
+	private TextBox presetName;
+
+	private static string presetMessage;
+
+	/// <summary>The preset last applied or saved, chosen in the list when the panel opens again.</summary>
+	private static string lastPreset;
+
+	/// <summary>
+	/// Set by a preset button: the entries are built again on the next frame (<see cref="HandleKeys"/>),
+	/// not inside the click, which would empty the surface the button sits on while it is being clicked.
+	/// </summary>
+	private bool repopulate;
+
 	/// <summary>
 	/// Entries unfolded while the game runs, by mod id - and their MOD OPTIONS, by mod id and
 	/// <see cref="SelectModsEntry.OptionsKeySuffix"/>. Folded is the default.
@@ -126,6 +142,10 @@ public class SelectModsPanel : Panel
 		y = AddNote(switches
 			? UWGame.Locale.Text("Switch a mod on or off with the box on its left. Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. The language and the studio's own keys are set in OPTIONS. A mod that changes items, recipes or the map takes effect at the next game you start or load.")
 			: UWGame.Locale.Text("Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. Mods are switched on and off in the main menu, under MODDING -> SELECT MODS. A mod that changes items, recipes or the map takes effect at the next game you start or load."), y);
+		if (switches && !ModSettings.StockOnly)
+		{
+			y = AddPresets(y);
+		}
 		entriesTop = y + 4;
 		foreach (ModCatalog.Entry entry in ModCatalog.Entries())
 		{
@@ -133,6 +153,143 @@ public class SelectModsPanel : Panel
 		}
 		rows.MarkDuplicateKeys();
 		LayOut();
+	}
+
+	/// <summary>
+	/// NEW (Kastuk, "Mod settings", 2026-11-14: "saveable presets of activated mods. Especially to
+	/// disable all mods beside debug ones"): PRESET - a list, APPLY and DELETE - and SAVE AS - a
+	/// name and SAVE. See ModPresets. Returns the y below them.
+	/// </summary>
+	private int AddPresets(int y)
+	{
+		Label caption = AddCaption(UWGame.Locale.Text("PRESET") + ":", y);
+		presetCombo = new ComboBox(Interface.gui, ListBoxType.LCDCombo, isEditable: false);
+		surface.Add(presetCombo);
+		presetCombo.Init(ComboBoxTypes.LCD);
+		presetCombo.Width = 260;
+		presetCombo.X = 130;
+		presetCombo.CenterThisVertically(caption.Y + caption.Height / 2);
+		presetCombo.ToolTip = UWGame.Locale.Text("A preset is a list of mods switched on. APPLY switches those on and every other mod off; their settings stay as you left them. STOCK + DEBUG is the studio's game with only the debugging tools.");
+		presetCombo.TooltipExpires = false;
+		foreach (ModPresets.Preset preset in ModPresets.All(GameStateManagement.UnclaimedWorld.LogError))
+		{
+			presetCombo.AddEntry(preset.Name, preset.Name);
+		}
+		presetCombo.SelectedKey = (lastPreset != null && presetCombo.EntriesByKey.ContainsKey(lastPreset)) ? lastPreset : ModPresets.StockAndDebugName;
+		TextButton apply = AddPresetButton(UWGame.Locale.Text("APPLY"), presetCombo.Right + 8, presetCombo);
+		apply.Click += delegate
+		{
+			ApplyPreset();
+		};
+		TextButton delete = AddPresetButton(UWGame.Locale.Text("DELETE"), apply.Right + 8, presetCombo);
+		delete.Click += delegate
+		{
+			DeletePreset();
+		};
+		y = Math.Max(caption.Bottom, presetCombo.Bottom) + 8;
+
+		Label saveCaption = AddCaption(UWGame.Locale.Text("SAVE AS") + ":", y);
+		presetName = new TextBox(Interface.gui);
+		surface.Add(presetName);
+		presetName.Init(TextBox.TextBoxType.LCD);
+		presetName.X = 130;
+		presetName.Width = 260;
+		presetName.Height = 20;
+		presetName.VMargin = 1;
+		presetName.IsEditable = true;
+		presetName.CenterThisVertically(saveCaption.Y + saveCaption.Height / 2);
+		presetName.ToolTip = UWGame.Locale.Text("A name for the mods switched on now. A preset of that name is replaced.");
+		TextButton save = AddPresetButton(UWGame.Locale.Text("SAVE"), presetName.Right + 8, presetName);
+		save.Click += delegate
+		{
+			SavePreset();
+		};
+		y = Math.Max(saveCaption.Bottom, presetName.Bottom) + 6;
+		if (!string.IsNullOrEmpty(presetMessage))
+		{
+			y = AddNote(presetMessage, y);
+		}
+		return y;
+	}
+
+	private Label AddCaption(string text, int y)
+	{
+		Label caption = new Label(Interface.gui);
+		surface.Add(caption);
+		caption.Init(Label.LabelType.LCDSmallHeadingBanner);
+		caption.Text = text;
+		caption.FitToText();
+		caption.X = 8;
+		caption.Y = y;
+		return caption;
+	}
+
+	private TextButton AddPresetButton(string text, int x, UIComponent beside)
+	{
+		TextButton button = new TextButton(Interface.gui);
+		surface.Add(button);
+		button.Init(TextButton.TextButtonType.LCDToolTipBlack);
+		button.CheckedMode = CheckedModes.CannotBeChecked;
+		button.Text = text;
+		button.ScaleWidthToFitText();
+		button.X = x;
+		button.CenterThisVertically(beside.Y + beside.Height / 2);
+		return button;
+	}
+
+	private string SelectedPreset => presetCombo?.SelectedKey as string;
+
+	private void ApplyPreset()
+	{
+		string name = SelectedPreset;
+		ModPresets.Preset preset = ModPresets.All(GameStateManagement.UnclaimedWorld.LogError).FirstOrDefault((ModPresets.Preset p) => p.Name == name);
+		if (preset == null)
+		{
+			return;
+		}
+		int switched = ModPresets.Apply(preset, ModCatalog.Entries(), GameStateManagement.UnclaimedWorld.LogError);
+		lastPreset = preset.Name;
+		presetMessage = string.Format(UWGame.Locale.Text("{0} applied: {1} mods switched."), preset.Name, switched);
+		repopulate = true;
+	}
+
+	private void SavePreset()
+	{
+		string name = ModPresets.NormalizeName(presetName?.Text);
+		if (!ModPresets.CanSaveAs(name))
+		{
+			presetMessage = (name == null)
+				? UWGame.Locale.Text("Type a name for the preset first.")
+				: string.Format(UWGame.Locale.Text("{0} comes with the game and cannot be replaced. Choose another name."), name);
+		}
+		else if (ModPresets.Save(name, ModCatalog.Entries(), GameStateManagement.UnclaimedWorld.LogError))
+		{
+			lastPreset = name;
+			presetMessage = string.Format(UWGame.Locale.Text("Saved {0}."), name);
+		}
+		else
+		{
+			presetMessage = UWGame.Locale.Text("The preset could not be saved - see Errors.txt.");
+		}
+		repopulate = true;
+	}
+
+	private void DeletePreset()
+	{
+		string name = SelectedPreset;
+		if (name == null)
+		{
+			return;
+		}
+		if (ModPresets.BuiltIns().Any((ModPresets.Preset p) => p.Name == name))
+		{
+			presetMessage = string.Format(UWGame.Locale.Text("{0} comes with the game and cannot be deleted."), name);
+		}
+		else if (ModPresets.Delete(name, GameStateManagement.UnclaimedWorld.LogError))
+		{
+			presetMessage = string.Format(UWGame.Locale.Text("Deleted {0}."), name);
+		}
+		repopulate = true;
 	}
 
 	private int AddNote(string text, int y)
@@ -240,6 +397,11 @@ public class SelectModsPanel : Panel
 		if (panel == null || input == null || panel.Window == null || !panel.Window.IsVisibleAndActive)
 		{
 			return false;
+		}
+		if (panel.repopulate)
+		{
+			panel.repopulate = false;
+			panel.Populate();
 		}
 		if (input.IsKeyTapped(Microsoft.Xna.Framework.Input.Keys.Escape))
 		{

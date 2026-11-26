@@ -3870,6 +3870,54 @@ THANK YOU: Lau Korsgaard (GAME DESIGN), Chris Correia (VFX), Calvin Riedy, Samue
     <Value>Unfold a mod that is on, then MOD OPTIONS, to change its settings and keys - they apply and are saved at once. Mods are switched on and off in the main menu, under MODDING -&gt; SELECT MODS. A mod that changes items, recipes or the map takes effect at the next game you start or load.</Value>
   </String>
   <String>
+    <Key>GuiPRESET</Key>
+    <Value>PRESET</Value>
+  </String>
+  <String>
+    <Key>GuiAPresetIsAListOfModsSwitchedOnAPPLYSwitchesThos_e6ba8f3782a4</Key>
+    <Value>A preset is a list of mods switched on. APPLY switches those on and every other mod off; their settings stay as you left them. STOCK + DEBUG is the studio's game with only the debugging tools.</Value>
+  </String>
+  <String>
+    <Key>GuiAPPLY</Key>
+    <Value>APPLY</Value>
+  </String>
+  <String>
+    <Key>GuiSAVEAS</Key>
+    <Value>SAVE AS</Value>
+  </String>
+  <String>
+    <Key>GuiANameForTheModsSwitchedOnNowAPresetOfThatNameIs_1181beca57f3</Key>
+    <Value>A name for the mods switched on now. A preset of that name is replaced.</Value>
+  </String>
+  <String>
+    <Key>Gui0Applied1ModsSwitched_26ec5620dae7</Key>
+    <Value>{0} applied: {1} mods switched.</Value>
+  </String>
+  <String>
+    <Key>GuiTypeANameForThePresetFirst_cdd6c8e7e31d</Key>
+    <Value>Type a name for the preset first.</Value>
+  </String>
+  <String>
+    <Key>Gui0ComesWithTheGameAndCannotBeReplacedChooseAnoth_bc5d61e5c878</Key>
+    <Value>{0} comes with the game and cannot be replaced. Choose another name.</Value>
+  </String>
+  <String>
+    <Key>GuiSaved0_55e745f550a8</Key>
+    <Value>Saved {0}.</Value>
+  </String>
+  <String>
+    <Key>GuiThePresetCouldNotBeSavedSeeErrorsTxt_15b02c542da2</Key>
+    <Value>The preset could not be saved - see Errors.txt.</Value>
+  </String>
+  <String>
+    <Key>Gui0ComesWithTheGameAndCannotBeDeleted_3b9bd6cf2b3a</Key>
+    <Value>{0} comes with the game and cannot be deleted.</Value>
+  </String>
+  <String>
+    <Key>GuiDeleted0_a9d822f15c01</Key>
+    <Value>Deleted {0}.</Value>
+  </String>
+  <String>
     <Key>GuiBACK</Key>
     <Value>BACK</Value>
   </String>
