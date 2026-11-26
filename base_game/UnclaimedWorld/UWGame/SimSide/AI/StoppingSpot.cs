@@ -18,7 +18,7 @@ namespace UWGame.SimSide.AI;
 /// </summary>
 public enum StopPurpose
 {
-	/// <summary>On the way to a destination: nearest to it. A terminal (helipad) wins only near it.</summary>
+	/// <summary>On the way to a destination: on it when it is acceptable, else a free terminal (helipad) near it, else the nearest ground.</summary>
 	Travel,
 	/// <summary>Nothing to do: a terminal of the vehicle's kind first, else near the camp.</summary>
 	ReturnHome,
@@ -67,8 +67,8 @@ public static class StoppingSpot
 	public const float RecheckNearSeconds = 0.5f;
 	public const float RecheckNearDistance = 180f;
 
-	// On the way somewhere, a free terminal of the vehicle's kind wins over open ground only within
-	// this many tiles of the destination (issue #33, question 4; Lars: "5 tiles?").
+	// On the way somewhere the aircraft cannot land on, a free terminal of the vehicle's kind wins
+	// over the nearest open ground only within this many tiles of the destination (issue #33, question 4; Lars: "5 tiles?").
 	public const int TravelTerminalTiles = 5;
 
 	// OPEN (issue #33): below this AllegianceRelation.Relation two sides are at war, and neither
@@ -111,8 +111,8 @@ public static class StoppingSpot
 			switch (purpose)
 			{
 				case StopPurpose.Travel:
-					tile = ChooseTerminal(driver, vehicle, knowledge, MapManager.TileToWorldPos(near), TravelTerminalTiles, usable)
-						?? GoalExitVehicle.FindLandingTile(near, usable, GoalExitVehicle.LandingSearchRadius);
+					tile = ChooseTravelTile(near, usable,
+						() => ChooseTerminal(driver, vehicle, knowledge, MapManager.TileToWorldPos(near), TravelTerminalTiles, usable));
 					break;
 				case StopPurpose.ReturnHome:
 					tile = ChooseTerminal(driver, vehicle, knowledge, vehicle.PlaySiteLocation, null, usable)
@@ -134,6 +134,25 @@ public static class StoppingSpot
 
 		Reserve(knowledge, vehicle, spot);
 		return true;
+	}
+
+	/// <summary>
+	/// Where a Travel flight comes down: on the destination itself when it is acceptable; else a
+	/// free terminal near it (<paramref name="terminalNear"/>, asked only then); else the nearest
+	/// acceptable ground. Null when there is none.
+	///
+	/// The destination comes first since Lars's report (Discord 2026-11-25): with the terminal
+	/// first, a skimmer sent to scout open ground within TravelTerminalTiles of a helipad landed on
+	/// the pad, about 4 tiles short, where before #33 it landed on the spot. A terminal is for a
+	/// destination the aircraft cannot land on - a building, a blocked or unsafe tile.
+	/// </summary>
+	public static Point? ChooseTravelTile(Point near, Func<Point, bool> usable, Func<Point?> terminalNear)
+	{
+		if (usable(near))
+		{
+			return near;
+		}
+		return terminalNear() ?? GoalExitVehicle.FindLandingTile(near, usable, GoalExitVehicle.LandingSearchRadius);
 	}
 
 	/// <summary>

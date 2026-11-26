@@ -726,8 +726,8 @@ namespace UWGame.SimSide.AI.Goals
         /// <summary>
         /// NEW (issue #33): the studio's "TODO: Find Landing spot!". The aircraft landed on the
         /// destination tile whatever stood there - the building it was going to, another skimmer.
-        /// It now lands on the spot StoppingSpot chooses for Travel: a free helipad near the
-        /// destination, else the nearest acceptable ground to it, reserved and re-checked on the
+        /// It now lands on the spot StoppingSpot chooses for Travel: the destination itself when it
+        /// is acceptable, else a free helipad near it, else the nearest acceptable ground, reserved and re-checked on the
         /// way in. A pilot who came down short of his final destination walks the rest, as a
         /// driver who parked does (GoByVehicle). With no acceptable spot at all, the studio's
         /// flight, unreserved.
