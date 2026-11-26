@@ -141,6 +141,32 @@ namespace UWGame.ClientSide.Interface.HUD_Windows
             DisplayWindow.CenterChildVertically(buttonExpand);
             DisplayWindow.ViewPort.MouseOver += ViewPort_MouseOver;
             DisplayWindow.ViewPort.MouseOut += ViewPort_MouseOut;
+            // MOD: the arrow lights up the zone too (Kastuk, "Stockpile improvements", 2026-11-14:
+            // "hover over arrow near zone marker will highlight zone too"). It sits over the label,
+            // so the cursor on it is off the label's ViewPort.
+            buttonExpand.MouseOver += delegate
+            {
+                cursorOnArrow = true;
+                UpdateZoneHover();
+            };
+            buttonExpand.MouseOut += delegate
+            {
+                cursorOnArrow = false;
+                UpdateZoneHover();
+            };
+        }
+
+        /// <summary>MOD: where the cursor is - the label or its arrow - for HudMod's zone highlight.</summary>
+        private bool cursorOnLabel;
+        private bool cursorOnArrow;
+
+        /// <summary>
+        /// MOD: tells HudMod whether the cursor is on this zone's label or arrow. Both flags, so the
+        /// order in which the label's MouseOut and the arrow's MouseOver arrive does not matter.
+        /// </summary>
+        private void UpdateZoneHover()
+        {
+            UWGame.Mods.HudMod.HoverMarker(this, (cursorOnLabel || cursorOnArrow) && currentType == MarkerType.Zone);
         }
 
         //public MarkerWindow()
@@ -168,13 +194,15 @@ namespace UWGame.ClientSide.Interface.HUD_Windows
         private void ViewPort_MouseOut(UIComponent sender, InputEventSystem.MouseEventArgs args)
         {
             The.InGameUI.SetHoverEntity(null);
-            // MOD: HudMod lights up a zone while the cursor is on its label.
-            UWGame.Mods.HudMod.HoverMarker(this, over: false);
+            // MOD: HudMod lights up a zone while the cursor is on its label or its arrow.
+            cursorOnLabel = false;
+            UpdateZoneHover();
         }
 
         private void ViewPort_MouseOver(UIComponent sender, InputEventSystem.MouseEventArgs args)
         {
-            UWGame.Mods.HudMod.HoverMarker(this, currentType == MarkerType.Zone);
+            cursorOnLabel = true;
+            UpdateZoneHover();
             if (entityID.HasValue)
             {
                 The.InGameUI.UIAllegiance.SharedKnowledge.GetKnownData(entityID.Value, out var data);
@@ -220,6 +248,8 @@ namespace UWGame.ClientSide.Interface.HUD_Windows
             ChangeTypeToNone();
             showWhileLineIsSpoken = false;
             EntityID = null;
+            cursorOnLabel = false;
+            cursorOnArrow = false;
             UWGame.Mods.HudMod.HoverMarker(this, over: false);
             Zone = null;
             Expedition = null;
