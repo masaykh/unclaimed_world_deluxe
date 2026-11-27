@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
@@ -36,8 +37,8 @@ namespace UWGame.Mods;
 ///   GAME THREAD   Tick, from Client.Update, takes a snapshot every SnapshotMs: the category
 ///                 counts, the list for the category being watched, and the detail of the entity
 ///                 being watched, serialised to one JSON string. Only this thread touches the sim.
-///   SERVER THREAD answers requests with the last string, and records which category and entity
-///                 the page asked for. It never touches the sim, so it cannot change or stall it.
+///   SERVER THREAD answers requests with the last string, records what the page watches, and
+///                 queues commands. It never touches the sim, so it cannot change or stall it.
 ///
 /// EXPANDABLE. A category is one line in Categories and one case in CategoryOf; a detail section
 /// is one method returning a Section. The page renders the three kinds a section can be - rows,
@@ -120,6 +121,10 @@ public static class DebugMonitorMod
     /// <summary>The last snapshot. Written by the game thread, read by the server thread.</summary>
     private static volatile string stateJson = Idle("The game has not taken a snapshot yet.");
 
+    private static volatile string sessionToken;
+
+    private static readonly ConcurrentQueue<(string Session, long EntityId, string Action)> commands = new();
+
     // ---------------------------------------------------------------- game thread
 
     private static readonly Stopwatch clock = Stopwatch.StartNew();
@@ -133,6 +138,10 @@ public static class DebugMonitorMod
     private static bool failed;
 
     private static bool browserOpened;
+
+    private static Sim sessionSim;
+
+    private static object sessionSite;
 
     /// <summary>The page's address while the server runs, otherwise null.</summary>
     public static string Url => listener == null ? null : "http://localhost:" + listeningPort + "/";
@@ -170,6 +179,30 @@ public static class DebugMonitorMod
             {
                 browserOpened = true;
                 OpenInBrowser(Url);
+            }
+        }
+        Sim sim = The.Sim;
+        object site = sim?.Mode == Sim.EngineMode.Game ? sim.PlaySite : null;
+        if (sim != sessionSim || site != sessionSite)
+        {
+            sessionSim = sim;
+            sessionSite = site;
+            sessionToken = site == null ? null : Guid.NewGuid().ToString("N");
+            Interlocked.Exchange(ref lastSnapshotMs, long.MinValue);
+        }
+        while (commands.TryDequeue(out var command))
+        {
+            if (sessionToken != null && command.Session == sessionToken)
+            {
+                Entity entity = Entity.FindByID((EntityID)command.EntityId);
+                if (command.Action == "destroy")
+                {
+                    entity?.Destroy();
+                }
+                else if (command.Action == "kill" && CanKill(entity))
+                {
+                    entity.Kill(null);
+                }
             }
         }
         long now = clock.ElapsedMilliseconds;
@@ -272,6 +305,7 @@ public static class DebugMonitorMod
         return new Dictionary<string, object>
         {
             ["game"] = true,
+            ["session"] = sessionToken,
             ["day"] = sim.DateAndTime == null ? 0.0 : Math.Round(sim.DateAndTime.CurrentTimeDateYear.TotalDays, 3),
             ["categories"] = categories,
             ["category"] = category,
@@ -331,6 +365,11 @@ public static class DebugMonitorMod
         return key == null || name == key ? name : name + " (" + key + ")";
     }
 
+    private static bool CanKill(Entity entity)
+    {
+        return entity != null && !entity.IsDead && entity.EntityType?.BiologicalType != null;
+    }
+
     // ---------------------------------------------------------------- the detail of one entity
 
     private static Dictionary<string, object> Detail(Entity entity, string category)
@@ -349,6 +388,7 @@ public static class DebugMonitorMod
             ["id"] = (long)entity.EntityID,
             ["name"] = Label(entity),
             ["category"] = category,
+            ["canKill"] = CanKill(entity),
             ["sections"] = sections,
         };
     }
@@ -699,6 +739,11 @@ public static class DebugMonitorMod
     {
         HttpListener l = listener;
         listener = null;
+        sessionToken = null;
+        sessionSim = null;
+        sessionSite = null;
+        Interlocked.Exchange(ref lastSnapshotMs, long.MinValue);
+        while (commands.TryDequeue(out _)) { }
         if (l == null)
         {
             return;
@@ -727,7 +772,13 @@ public static class DebugMonitorMod
             }
             try
             {
-                byte[] body = Encoding.UTF8.GetBytes(Respond(context.Request.Url.AbsolutePath, context.Request.QueryString, out string contentType, out int status));
+                string path = context.Request.Url.AbsolutePath;
+                string response = path == "/api/command"
+                    ? RespondCommand(context.Request.HttpMethod, context.Request.Headers["Origin"], context.Request.Headers["X-UW-Debug-Monitor"], context.Request.QueryString, out string commandType, out int commandStatus)
+                    : Respond(path, context.Request.QueryString, out commandType, out commandStatus);
+                string contentType = commandType;
+                int status = commandStatus;
+                byte[] body = Encoding.UTF8.GetBytes(response);
                 context.Response.StatusCode = status;
                 context.Response.ContentType = contentType;
                 context.Response.Headers["Cache-Control"] = "no-store";
@@ -749,6 +800,43 @@ public static class DebugMonitorMod
                 }
             }
         }
+    }
+
+    /// <summary>Validates a browser command without accessing the simulation.</summary>
+    public static string RespondCommand(string method, string origin, string header, NameValueCollection query, out string contentType, out int status)
+    {
+        contentType = "text/plain; charset=utf-8";
+        if (method != "POST")
+        {
+            status = 405;
+            return "Commands require POST.";
+        }
+        if (header != "1" || (origin != null && !string.Equals(origin, "http://localhost:" + listeningPort, StringComparison.OrdinalIgnoreCase)))
+        {
+            status = 403;
+            return "Command origin is not allowed.";
+        }
+        string action = query?["action"];
+        if ((action != "destroy" && action != "kill") || !long.TryParse(query?["id"], NumberStyles.None, CultureInfo.InvariantCulture, out long id) || id < 0)
+        {
+            status = 400;
+            return "Invalid command or entity ID.";
+        }
+        string session = sessionToken;
+        long last = Interlocked.Read(ref lastSnapshotMs);
+        if (session == null || query?["session"] != session || last == long.MinValue || clock.ElapsedMilliseconds - last > StaleMs)
+        {
+            status = 409;
+            return "The game is no longer available. Refresh the monitor.";
+        }
+        if (commands.Count >= 32)
+        {
+            status = 429;
+            return "Too many commands are waiting.";
+        }
+        commands.Enqueue((session, id, action));
+        status = 202;
+        return action == "kill" ? "Kill command queued." : "Destroy command queued.";
     }
 
     /// <summary>

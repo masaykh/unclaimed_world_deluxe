@@ -1,8 +1,13 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using UWGame.Mods;
+using UWGame.SimSide.Entities;
+using UWGame.SimSide.Entities.Biological;
 
 namespace UnclaimedWorld.Test
 {
@@ -13,6 +18,7 @@ namespace UnclaimedWorld.Test
     /// game is, the field reader, and that a real browser request gets through.
     /// </summary>
     [TestClass]
+    [DoNotParallelize]
     public sealed class DebugMonitorTests
     {
         [TestMethod]
@@ -23,9 +29,27 @@ namespace UnclaimedWorld.Test
             StringAssert.StartsWith(type, "text/html");
             StringAssert.Contains(page, "<title>UW debug monitor</title>");
             StringAssert.Contains(page, "/api/state", "the page asks for the snapshot");
+            StringAssert.Contains(page, "Kill entity");
 
             DebugMonitorMod.Respond("/secrets", null, out _, out status);
             Assert.AreEqual(404, status);
+        }
+
+        [TestMethod]
+        public void Kill_IsAvailableOnlyForLivingBiologicalEntities()
+        {
+            var canKill = typeof(DebugMonitorMod).GetMethod("CanKill", BindingFlags.Static | BindingFlags.NonPublic)!;
+            bool Eligible(Entity? entity) => (bool)canKill.Invoke(null, new object?[] { entity })!;
+            var entity = (Entity)RuntimeHelpers.GetUninitializedObject(typeof(Entity));
+            var type = new EntityType();
+            typeof(Entity).GetProperty("EntityType")!.SetValue(entity, type);
+
+            Assert.IsFalse(Eligible(null));
+            Assert.IsFalse(Eligible(entity));
+            type.BiologicalType = new BiologicalType();
+            Assert.IsTrue(Eligible(entity));
+            entity.IsDead = true;
+            Assert.IsFalse(Eligible(entity));
         }
 
         [TestMethod]
@@ -93,6 +117,67 @@ namespace UnclaimedWorld.Test
                 DebugMonitorMod.StopServer();
             }
             Assert.IsNull(DebugMonitorMod.Url, "stopped");
+        }
+
+        [TestMethod]
+        public async Task Commands_ArePostOnlyOriginCheckedAndBoundToTheSnapshotSession()
+        {
+            var probe = new TcpListener(IPAddress.Loopback, 0);
+            probe.Start();
+            int port = ((IPEndPoint)probe.LocalEndpoint).Port;
+            probe.Stop();
+
+            Assert.IsTrue(DebugMonitorMod.StartServer(port));
+            try
+            {
+                using var http = new HttpClient { BaseAddress = new Uri($"http://localhost:{port}/"), Timeout = TimeSpan.FromSeconds(10) };
+                const string command = "/api/command?action=destroy&id=12&session=test-session";
+                const string kill = "/api/command?action=kill&id=56&session=test-session";
+                Assert.AreEqual(HttpStatusCode.MethodNotAllowed, (await http.GetAsync(command)).StatusCode);
+                Assert.AreEqual(HttpStatusCode.MethodNotAllowed, (await http.GetAsync(kill)).StatusCode);
+                Assert.AreEqual(HttpStatusCode.Forbidden, (await http.PostAsync(command, null)).StatusCode);
+
+                async Task<HttpStatusCode> Send(string path, string? origin = null)
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Post, path);
+                    request.Headers.Add("X-UW-Debug-Monitor", "1");
+                    if (origin != null) request.Headers.Add("Origin", origin);
+                    using var response = await http.SendAsync(request);
+                    return response.StatusCode;
+                }
+
+                Assert.AreEqual(HttpStatusCode.Forbidden, await Send(command, "https://example.com"));
+                Assert.AreEqual(HttpStatusCode.Forbidden, await Send(kill, "https://example.com"));
+                Assert.AreEqual(HttpStatusCode.BadRequest, await Send("/api/command?action=destroy&id=-1"));
+                Assert.AreEqual(HttpStatusCode.BadRequest, await Send("/api/command?action=kill&id=-1"));
+                Assert.AreEqual(HttpStatusCode.BadRequest, await Send("/api/command?action=other&id=12"));
+                Assert.AreEqual(HttpStatusCode.Conflict, await Send(command));
+                Assert.AreEqual(HttpStatusCode.Conflict, await Send(kill));
+
+                var flags = BindingFlags.Static | BindingFlags.NonPublic;
+                typeof(DebugMonitorMod).GetField("sessionToken", flags)!.SetValue(null, "test-session");
+                var clock = (System.Diagnostics.Stopwatch)typeof(DebugMonitorMod).GetField("clock", flags)!.GetValue(null)!;
+                typeof(DebugMonitorMod).GetField("lastSnapshotMs", flags)!.SetValue(null, clock.ElapsedMilliseconds);
+                Assert.AreEqual(HttpStatusCode.Conflict, await Send("/api/command?action=destroy&id=12&session=old"));
+                Assert.AreEqual(HttpStatusCode.Conflict, await Send("/api/command?action=kill&id=56&session=old"));
+                Assert.AreEqual(HttpStatusCode.Accepted, await Send(command, $"http://localhost:{port}"));
+                Assert.AreEqual(HttpStatusCode.Accepted, await Send(kill, $"http://localhost:{port}"));
+                await http.GetAsync("/api/state?cat=creatures&id=34");
+
+                var queue = (ConcurrentQueue<(string Session, long EntityId, string Action)>)typeof(DebugMonitorMod).GetField("commands", flags)!.GetValue(null)!;
+                Assert.IsTrue(queue.TryDequeue(out var queued));
+                Assert.AreEqual("test-session", queued.Session);
+                Assert.AreEqual(12L, queued.EntityId, "a later selection must not change the command target");
+                Assert.AreEqual("destroy", queued.Action);
+                Assert.IsTrue(queue.TryDequeue(out queued));
+                Assert.AreEqual("test-session", queued.Session);
+                Assert.AreEqual(56L, queued.EntityId);
+                Assert.AreEqual("kill", queued.Action);
+            }
+            finally
+            {
+                DebugMonitorMod.StopServer();
+            }
         }
     }
 }

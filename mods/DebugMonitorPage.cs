@@ -24,6 +24,8 @@ public static class DebugMonitorPage
   header { position:sticky; top:0; z-index:2; background:var(--panel); border-bottom:1px solid var(--line); padding:8px 12px; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
   header h1 { font-size:14px; margin:0 8px 0 0; color:var(--accent); }
   select, input[type=text] { background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:4px; padding:4px 6px; font:inherit; }
+  button { background:var(--panel); color:var(--warn); border:1px solid var(--line); border-radius:4px; padding:4px 6px; font:inherit; cursor:pointer; }
+  button:disabled { color:var(--dim); cursor:default; }
   #entity { min-width:320px; max-width:46vw; }
   label { color:var(--dim); user-select:none; }
   #status { margin-left:auto; color:var(--dim); }
@@ -57,6 +59,9 @@ public static class DebugMonitorPage
   <select id="entity" title="The one to show"></select>
   <label title="Show whatever is selected in the game"><input id="follow" type="checkbox" checked> follow selection</label>
   <label title="Stop refreshing, to read or copy"><input id="pause" type="checkbox"> pause</label>
+  <button id="kill" type="button" title="Kill a living entity and create its carcass" disabled>Kill entity</button>
+  <button id="destroy" type="button" disabled>Destroy entity</button>
+  <span id="commandStatus" role="status"></span>
   <span id="status">connecting...</span>
 </header>
 <main id="main"><div class="note">Waiting for the game...</div></main>
@@ -120,7 +125,14 @@ function fillList(st) {
   $("entity").innerHTML = h;
   $("entity").value = entityId ?? "";
 }
-let latest = null;
+let latest = null, commandPending = false;
+function updateCommandButton() {
+  const d = latest && latest.detail;
+  const disabled = commandPending || $("pause").checked || !latest || !latest.game || !latest.session ||
+    entityId == null || !d || d.gone || d.id !== entityId;
+  $("destroy").disabled = disabled;
+  $("kill").disabled = disabled || !d.canKill;
+}
 async function poll() {
   if (!$("pause").checked) {
     try {
@@ -135,7 +147,7 @@ async function poll() {
         lastDetail = "";
       } else {
         $("status").textContent = "day " + st.day.toFixed(3);
-        if ($("follow").checked && st.selected != null && st.selected !== entityId) {
+        if ($("follow").checked && st.selected !== entityId) {
           entityId = st.selected;
           if (st.selectedCategory) category = st.selectedCategory;
           lastCategories = ""; lastList = "";
@@ -150,10 +162,12 @@ async function poll() {
         }
       }
     } catch (e) {
+      latest = null;
       $("status").textContent = "the game is not answering - is it running with DEBUG MONITOR on?";
       $("status").className = "bad";
     }
   }
+  updateCommandButton();
   setTimeout(poll, 250);
 }
 $("category").onchange = () => { category = $("category").value; lastList = ""; };
@@ -162,7 +176,27 @@ $("entity").onchange = () => {
   entityId = v === "" ? null : Number(v);
   $("follow").checked = false;
   lastDetail = "";
+  updateCommandButton();
 };
+$("pause").onchange = updateCommandButton;
+async function sendCommand(action) {
+  if ($(action).disabled) return;
+  const d = latest.detail, session = latest.session;
+  commandPending = true;
+  updateCommandButton();
+  try {
+    const q = new URLSearchParams({ action, id: String(d.id), session });
+    const r = await fetch("/api/command?" + q, { method: "POST", headers: { "X-UW-Debug-Monitor": "1" } });
+    $("commandStatus").textContent = await r.text();
+  } catch (e) {
+    $("commandStatus").textContent = "Could not send the command.";
+  } finally {
+    commandPending = false;
+    updateCommandButton();
+  }
+}
+$("kill").onclick = () => sendCommand("kill");
+$("destroy").onclick = () => sendCommand("destroy");
 $("filter").oninput = () => { lastList = ""; if (latest && latest.game && latest.category === category) fillList(latest); };
 poll();
 </script>
