@@ -2,12 +2,11 @@ using UWGame.SimSide.Snapshots;
 
 namespace UWGame.SimSide.Vehicles;
 
+/// <summary>
+/// This class is now mainly used to control animation. Not a client class though.
+/// </summary>
 public class Aircraft : ISnapshot
 {
-	public SteeringType SteeringType;
-
-	public float VerticalSpeed;
-
 	public float RightDuctFanAngle;
 
 	public float LeftDuctFanAngle;
@@ -26,8 +25,6 @@ public class Aircraft : ISnapshot
 
 	public ISnapshot DoSnapshot(Snapshotter sn)
 	{
-		SteeringType = sn.DoEnum(SteeringType);
-		VerticalSpeed = sn.DoFloat(VerticalSpeed);
 		RightDuctFanAngle = sn.DoFloat(RightDuctFanAngle);
 		LeftDuctFanAngle = sn.DoFloat(LeftDuctFanAngle);
 		PropellerSpeed = sn.DoFloat(PropellerSpeed);

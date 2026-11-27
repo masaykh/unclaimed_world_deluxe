@@ -185,25 +185,25 @@ namespace UWGame.SimSide.AI.Goals
             if (!isAtTarget)
             {
 
-                // This code causes the tank to change its speed gradually while it 
+                // This code causes the aircraft to change its speed gradually while it 
                 // moves toward the waypoint previousMoveSpeed tracks how fast the 
-                // tank was going, desiredMoveSpeed finds how fast the tank want to 
-                // go and Math.Clamp keeps the tank from accelerating or decelerating 
+                // aircraft was going, desiredMoveSpeed finds how fast the aircraft want to 
+                // go and Math.Clamp keeps the aircraft from accelerating or decelerating 
                 // too fast.
                 float previousMoveSpeed = Aircraft.Locomotor.MoveSpeed;
 
                 float desiredMoveSpeed = 0f;
 
                 float headingDifference = 0f;
-                if (vehicleComponent.Aircraft.SteeringType == SteeringType.HardTurn)
+                if (Aircraft.Locomotor.VTOLLocomotor.SteeringType == SteeringType.HardTurn)
                 {
                     desiredMoveSpeed = FindMaxMoveSpeedForHardTurn(destinationPoint, elapsedTime, out headingDifference);
                 }
-                else if (vehicleComponent.Aircraft.SteeringType == SteeringType.Pivot)
+                else if (Aircraft.Locomotor.VTOLLocomotor.SteeringType == SteeringType.Pivot)
                 {
                     desiredMoveSpeed = FindPivotSpeed(elapsedTime);
                 }
-                else if (vehicleComponent.Aircraft.SteeringType == SteeringType.SlowTurn)
+                else if (Aircraft.Locomotor.VTOLLocomotor.SteeringType == SteeringType.SlowTurn)
                 {
                     desiredMoveSpeed = FindSlowCircleSpeed(elapsedTime, out headingDifference);
                 }
@@ -548,17 +548,17 @@ namespace UWGame.SimSide.AI.Goals
                 if (IsWaypointWithinTurningRadiusAtMaxSpeed(destinationPoint))
                 {
                     // make a long curve to the destination:
-                    vehicleComponent.Aircraft.SteeringType = SteeringType.SlowTurn;
+                    Aircraft.Locomotor.VTOLLocomotor.SteeringType = SteeringType.SlowTurn;
                 }
                 else
                 {   // make a hard turn, slowing down to get there:
-                    vehicleComponent.Aircraft.SteeringType = SteeringType.HardTurn;
+                    Aircraft.Locomotor.VTOLLocomotor.SteeringType = SteeringType.HardTurn;
                 }
 
             }
             else
             {   // pivot in place, then move straight:
-                vehicleComponent.Aircraft.SteeringType = SteeringType.Pivot;
+                Aircraft.Locomotor.VTOLLocomotor.SteeringType = SteeringType.Pivot;
             }
 
         }
@@ -693,7 +693,7 @@ namespace UWGame.SimSide.AI.Goals
             if (!IsWaypointWithinTurningRadiusAtMaxSpeed(destinationPoint))
             {
                 headingDifference = 0f;
-                vehicleComponent.Aircraft.SteeringType = SteeringType.HardTurn;
+                Aircraft.Locomotor.VTOLLocomotor.SteeringType = SteeringType.HardTurn;
                 return Aircraft.TravelLocomotor.NormalSpeed;
             }
 

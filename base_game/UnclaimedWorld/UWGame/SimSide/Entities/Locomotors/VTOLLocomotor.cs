@@ -1,10 +1,15 @@
 ﻿using UWGame.SimSide.Snapshots;
+using UWGame.SimSide.Vehicles;
 
 namespace UWGame.SimSide.Entities.Locomotors
 {
     public class VTOLLocomotor : ISnapshot, ITravelLocomotor
     {
         public Locomotor Parent;
+
+        public SteeringType SteeringType;
+
+        public float VerticalSpeed;
 
         public float MaxAirSpeed => Parent.Parent.EntityType.LocomotorType.VTOLLocomotorType.MaxAirSpeed;
 
@@ -31,6 +36,8 @@ namespace UWGame.SimSide.Entities.Locomotors
 
         public ISnapshot DoSnapshot(Snapshotter sn)
         {
+            SteeringType = sn.DoEnum(SteeringType);
+            VerticalSpeed = sn.DoFloat(VerticalSpeed);
             sn.Ignore(Parent);
             return this;
         }

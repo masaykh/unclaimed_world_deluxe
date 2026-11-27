@@ -155,7 +155,7 @@ namespace UWGame.SimSide.AI.Goals
                 // BASE: the vertical speed too. A landing cut short left it descending, and this climb
                 // began at that downward speed, with 30 px/s per second to turn it round (Lars's flight audit,
                 // 2026-11-17). A speed, not a position: nothing jumps.
-                vehicleComponent.Aircraft.VerticalSpeed = 0f;
+                Aircraft.Locomotor.VTOLLocomotor.VerticalSpeed = 0f;
                 return;
             }
 
@@ -232,7 +232,7 @@ namespace UWGame.SimSide.AI.Goals
             float elapsedTime = (float)elapsed.ElapsedGameTime.TotalSeconds;
 
             Vector2 planeAdjustment = Vector2.Zero;
-            float previousMoveSpeed = vehicleComponent.Aircraft.VerticalSpeed;
+            float previousMoveSpeed = aircraft.Locomotor.VTOLLocomotor.VerticalSpeed;
 
             // do vertical accel/decel:
             double distToTarget = Vector3.Distance(destinationPoint, aircraft.PlaySiteLocation);
@@ -246,7 +246,7 @@ namespace UWGame.SimSide.AI.Goals
                 // decelerate:
                 speed = (Math.Sign(speed)) * Math.Min(distToTarget / vehicleContainerType.Deceleration, Math.Abs(speed));
 
-                vehicleComponent.Aircraft.VerticalSpeed = (float)speed;
+                aircraft.Locomotor.VTOLLocomotor.VerticalSpeed = (float)speed;
 
             }
 
@@ -256,8 +256,8 @@ namespace UWGame.SimSide.AI.Goals
             planeAdjustment.Y = MathHelper.Clamp(destinationPoint.Y - aircraft.PlaySiteLocation.Y, -maxAdjustment, maxAdjustment);
 
             // move the aircraft:  
-            ////pilot.Location = aircraft.Location + new Vector3(planeAdjustment, vehicleComponent.Aircraft.VerticalSpeed * elapsedTime);
-            aircraft.Location = aircraft.Location + new Vector3(planeAdjustment, vehicleComponent.Aircraft.VerticalSpeed * elapsedTime);
+            ////pilot.Location = aircraft.Location + new Vector3(planeAdjustment, aircraft.Locomotor.VTOLLocomotor.VerticalSpeed * elapsedTime);
+            aircraft.Location = aircraft.Location + new Vector3(planeAdjustment, aircraft.Locomotor.VTOLLocomotor.VerticalSpeed * elapsedTime);
 
 
             if (aircraft.Renderable.RenderAsModel.ModelData.HasAircraftDucts)
@@ -299,7 +299,7 @@ namespace UWGame.SimSide.AI.Goals
                 if (UpdateAircraftUpDown(desiredMoveSpeed, elapsed, entity, Aircraft, vehicleComponent, destinationPoint))
                 {
                     Aircraft.Locomotor.MoveSpeed = 0f;
-                    vehicleComponent.Aircraft.VerticalSpeed = 0f;
+                    Aircraft.Locomotor.VTOLLocomotor.VerticalSpeed = 0f;
                     Status = Status.Completed;
                 }
                 else

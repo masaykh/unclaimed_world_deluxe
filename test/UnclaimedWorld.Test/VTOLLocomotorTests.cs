@@ -12,6 +12,7 @@ using UWGame.SimSide.Entities.Containers.Components;
 using UWGame.SimSide.Entities.Locomotors;
 using UWGame.SimSide.Maps;
 using UWGame.SimSide.Snapshots;
+using UWGame.SimSide.Vehicles;
 
 namespace UnclaimedWorld.Test;
 
@@ -128,6 +129,8 @@ public sealed class VTOLLocomotorTests
     [TestMethod]
     public void SnapshotRestoresVTOLParentAndSpeed()
     {
+        aircraft.Locomotor.VTOLLocomotor.SteeringType = SteeringType.Pivot;
+        aircraft.Locomotor.VTOLLocomotor.VerticalSpeed = -42f;
         using var stream = new MemoryStream();
         var snapshotter = new Snapshotter { mode = Snapshotter.Mode.Save };
         typeof(Snapshotter).GetField("m_writer", AnyInstance)!.SetValue(snapshotter, new BinaryWriter(stream));
@@ -145,6 +148,8 @@ public sealed class VTOLLocomotorTests
             Assert.AreSame(aircraft, restored.Parent);
             Assert.AreSame(restored, restored.VTOLLocomotor.Parent);
             Assert.AreEqual(180f, restored.CurrentMaximumSpeedForEvaluator);
+            Assert.AreEqual(SteeringType.Pivot, restored.VTOLLocomotor.SteeringType);
+            Assert.AreEqual(-42f, restored.VTOLLocomotor.VerticalSpeed);
         }
         finally
         {

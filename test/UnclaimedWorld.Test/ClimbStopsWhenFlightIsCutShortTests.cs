@@ -28,7 +28,7 @@ public sealed class ClimbStopsWhenFlightIsCutShortTests
 
     private Entity skimmer = null!;
     private Entity pilot = null!;
-    private Aircraft aircraft = null!;
+    private VTOLLocomotor vtolLocomotor = null!;
 
     private static Entity NewEntity(long id)
     {
@@ -50,13 +50,15 @@ public sealed class ClimbStopsWhenFlightIsCutShortTests
                 LocomotorType = new LocomotorType { VTOLLocomotorType = new VTOLLocomotorType() },
                 ContainerType = new VehicleContainerType { Aircraft = new AircraftType() }
             });
-        skimmer.Components[typeof(Locomotor)] = (Locomotor)RuntimeHelpers.GetUninitializedObject(typeof(Locomotor));
+        var locomotor = (Locomotor)RuntimeHelpers.GetUninitializedObject(typeof(Locomotor));
+        vtolLocomotor = new VTOLLocomotor(locomotor) { VerticalSpeed = ClimbSpeed };
+        locomotor.VTOLLocomotor = vtolLocomotor;
+        skimmer.Components[typeof(Locomotor)] = locomotor;
         // Cut short half way up, still climbing.
         typeof(GameObject).GetField("location", AnyInstance)!.SetValue(skimmer, (Vector3?)new Vector3(100f, 100f, 120f));
         typeof(Entity).GetField("mapPosition", AnyInstance)!.SetValue(skimmer, (Point?)new Point(3, 3));
-        aircraft = new Aircraft { VerticalSpeed = ClimbSpeed };
         var vehicle = (VehicleContainer)RuntimeHelpers.GetUninitializedObject(typeof(VehicleContainer));
-        vehicle.Aircraft = aircraft;
+        vehicle.Aircraft = new Aircraft();
         skimmer.Contains = vehicle;
 
         pilot = NewEntity(9402);
@@ -82,16 +84,16 @@ public sealed class ClimbStopsWhenFlightIsCutShortTests
     public void ALandingAfterACutShortClimbStartsFromAStandstill()
     {
         Start(new GoalLand());
-        Assert.AreEqual(0f, aircraft.VerticalSpeed, "not still climbing at the speed the cancelled takeoff left");
+        Assert.AreEqual(0f, vtolLocomotor.VerticalSpeed, "not still climbing at the speed the cancelled takeoff left");
         Assert.AreEqual(120f, skimmer.PlaySiteLocation.Z, "a speed is reset, the skimmer does not move");
     }
 
     [TestMethod]
     public void ATakeoffAlreadyInTheAirStartsFromAStandstill()
     {
-        aircraft.VerticalSpeed = -ClimbSpeed;
+        vtolLocomotor.VerticalSpeed = -ClimbSpeed;
         Start(new GoalTakeoff());
-        Assert.AreEqual(0f, aircraft.VerticalSpeed, "not still descending at the speed the cancelled landing left");
+        Assert.AreEqual(0f, vtolLocomotor.VerticalSpeed, "not still descending at the speed the cancelled landing left");
         Assert.AreEqual(120f, skimmer.PlaySiteLocation.Z);
     }
 }

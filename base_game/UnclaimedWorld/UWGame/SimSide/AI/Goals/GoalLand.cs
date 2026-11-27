@@ -105,7 +105,7 @@ namespace UWGame.SimSide.AI.Goals
             // MaxVerticalAcceleration (30 px/s per second) to turn it round - the skimmer kept climbing for a
             // while after it was told to come down (Lars's flight audit, 2026-11-17). Start from a
             // standstill instead. A speed, not a position: the skimmer stops climbing, it does not jump.
-            vehicleComponent.Aircraft.VerticalSpeed = 0f;
+            Aircraft.Locomotor.VTOLLocomotor.VerticalSpeed = 0f;
 
             Status = Status.Active;
             destinationPoint = new Vector3(MapManager.tileSize * (0.5f + entity.MapPosition.Value.X),
@@ -143,7 +143,7 @@ namespace UWGame.SimSide.AI.Goals
             {
                 Aircraft.Locomotor.MoveSpeed = 0f;
                 //  Aircraft.Renderable.RenderAsModel.RotationSpeed = 0f;
-                vehicleComponent.Aircraft.VerticalSpeed = 0f;
+                Aircraft.Locomotor.VTOLLocomotor.VerticalSpeed = 0f;
 
                 // Put the aircraft on the ground; the pilot is contained by it.
                 Aircraft.Location = new Vector3(Aircraft.PlaySiteLocation.X, Aircraft.PlaySiteLocation.Y, 0f);
