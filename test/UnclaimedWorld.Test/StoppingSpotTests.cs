@@ -124,6 +124,20 @@ public sealed class StoppingSpotTests
         Assert.IsNull(StoppingSpot.ChooseTravelTile(destination, _ => false, () => null), "nowhere at all");
     }
 
+    [TestMethod]
+    public void ATurnedDownDestinationIsReportedOnce()
+    {
+        // The diagnostic for Lars's second report (2026-11-26: no threats, no pad, still 4 tiles off):
+        // the reason is written only when the destination itself is turned down, not for every
+        // tile the fallback scan looks at.
+        Point destination = new Point(10, 10);
+        int reports = 0;
+        StoppingSpot.ChooseTravelTile(destination, _ => true, () => null, () => reports++);
+        Assert.AreEqual(0, reports, "landed on the spot: nothing to report");
+        StoppingSpot.ChooseTravelTile(destination, tile => tile != destination, () => null, () => reports++);
+        Assert.AreEqual(1, reports);
+    }
+
     // ---- saving ----
 
     private Entity pilot = null!;

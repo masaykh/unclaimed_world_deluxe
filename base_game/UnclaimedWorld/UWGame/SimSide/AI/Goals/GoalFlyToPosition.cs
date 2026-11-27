@@ -337,6 +337,7 @@ namespace UWGame.SimSide.AI.Goals
                 return true;
             }
 
+            StoppingSpot.Report(entity, Aircraft, spot, "on approach, " + distToTarget + " away, the spot"); // DIAGNOSTIC, Lars 2026-11-26
             StoppingSpot.Release(entity, Aircraft);
             if (StoppingSpot.Find(entity, Aircraft, stopNear, stopPurpose.Value, out Vector3 other))
             {

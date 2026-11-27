@@ -112,7 +112,8 @@ public static class StoppingSpot
 			{
 				case StopPurpose.Travel:
 					tile = ChooseTravelTile(near, usable,
-						() => ChooseTerminal(driver, vehicle, knowledge, MapManager.TileToWorldPos(near), TravelTerminalTiles, usable));
+						() => ChooseTerminal(driver, vehicle, knowledge, MapManager.TileToWorldPos(near), TravelTerminalTiles, usable),
+						() => Report(driver, vehicle, MapManager.TileToWorldPos(near), "travel destination"));
 					break;
 				case StopPurpose.ReturnHome:
 					tile = ChooseTerminal(driver, vehicle, knowledge, vehicle.PlaySiteLocation, null, usable)
@@ -146,13 +147,44 @@ public static class StoppingSpot
 	/// the pad, about 4 tiles short, where before #33 it landed on the spot. A terminal is for a
 	/// destination the aircraft cannot land on - a building, a blocked or unsafe tile.
 	/// </summary>
-	public static Point? ChooseTravelTile(Point near, Func<Point, bool> usable, Func<Point?> terminalNear)
+	public static Point? ChooseTravelTile(Point near, Func<Point, bool> usable, Func<Point?> terminalNear, Action rejected = null)
 	{
 		if (usable(near))
 		{
 			return near;
 		}
+		rejected?.Invoke();
 		return terminalNear() ?? GoalExitVehicle.FindLandingTile(near, usable, GoalExitVehicle.LandingSearchRadius);
+	}
+
+	/// <summary>
+	/// DIAGNOSTIC (Lars, Discord 2026-11-26: on MultipleVehicleTest, with no threats and no helipad
+	/// near, the skimmer still came down about 4 tiles from the scout zone). Why IsSuitable turns
+	/// this spot down, in words, or null when it does not. It repeats IsSuitable's tests and
+	/// reports the values behind each, so it is only called when a spot has been turned down.
+	/// </summary>
+	public static string Explain(Entity driver, Entity vehicle, Vector3 spot)
+	{
+		SharedKnowledge knowledge = KnowledgeOf(driver);
+		if (knowledge == null || vehicle == null)
+		{
+			return "the driver has no side knowledge";
+		}
+		Point tile = MapManager.WorldPosToTile(spot);
+		return UnsafeBecause(driver, vehicle, knowledge, tile, MapManager.WorldPosToSubtile(spot))
+			?? TakenBecause(driver.Intelligence.Allegiance, knowledge, vehicle, spot);
+	}
+
+	/// <summary>
+	/// DIAGNOSTIC: writes a line about a spot that was turned down, to the console and to the
+	/// debugger's output (Trace). Nothing in the game reads it.
+	/// </summary>
+	public static void Report(Entity driver, Entity vehicle, Vector3 spot, string what)
+	{
+		string line = "[StoppingSpot] " + (driver?.ToString() ?? "?") + " in " + (vehicle?.ToString() ?? "?") + ": " + what
+			+ " " + MapManager.WorldPosToTile(spot) + " turned down: " + (Explain(driver, vehicle, spot) ?? "(suitable now)");
+		Console.WriteLine(line);
+		System.Diagnostics.Trace.WriteLine(line);
 	}
 
 	/// <summary>
@@ -375,9 +407,19 @@ public static class StoppingSpot
 	/// </summary>
 	private static bool IsSafe(Entity driver, Entity vehicle, SharedKnowledge knowledge, Point tile, Point? subtile)
 	{
+		return UnsafeBecause(driver, vehicle, knowledge, tile, subtile, explain: false) == null;
+	}
+
+	// What UnsafeBecause and TakenBecause return for "turned down" when nobody asked why, so a
+	// scan over many tiles builds no strings.
+	private const string Rejected = "";
+
+	/// <summary>IsSafe's tests: null when the tile passes, else why not (<see cref="Rejected"/> unless <paramref name="explain"/>).</summary>
+	private static string UnsafeBecause(Entity driver, Entity vehicle, SharedKnowledge knowledge, Point tile, Point? subtile, bool explain = true)
+	{
 		if (tile.X < 0 || tile.Y < 0 || tile.X >= The.Map.mapTileWidth || tile.Y >= The.Map.mapTileHeight)
 		{
-			return false;
+			return explain ? "off the map" : Rejected;
 		}
 		Intelligence intelligence = driver.Intelligence;
 
@@ -397,7 +439,13 @@ public static class StoppingSpot
 		Point at = subtile ?? MapManager.TileToUpperLeftSubtile(tile) + new Point(1, 1);
 		if (The.Map.SubtileIsCompletelyBlocked(layer, at))
 		{
-			return false;
+			if (!explain)
+			{
+				return Rejected;
+			}
+			bool terrainToo = The.Map.SubtileIsCompletelyBlocked(The.Map.TerrainCosts[transport], at);
+			return "subtile " + at + " is blocked for " + transport + " in the " + (moveMap != null ? "driver's movement map" : "terrain")
+				+ (moveMap != null ? (terrainToo ? " (the terrain blocks it too)" : " (the terrain alone does NOT - a discomfort or threat does)") : "");
 		}
 
 		if (onPlaySite && intelligence.ThreatStance != ThreatStance.Bold)
@@ -405,10 +453,13 @@ public static class StoppingSpot
 			DiscomfortMap discomfort = knowledge.GetDiscomfortMap(intelligence.ProtectionLevel, driver.EntityType, intelligence.ThreatStance);
 			if (discomfort != null && discomfort.Map.GetValue(tile) > intelligence.PanicLevel)
 			{
-				return false;
+				return explain
+					? "discomfort " + discomfort.Map.GetValue(tile) + " is above the driver's panic level " + intelligence.PanicLevel
+						+ " (stance " + intelligence.ThreatStance + ", protection " + intelligence.ProtectionLevel + ")"
+					: Rejected;
 			}
 		}
-		return true;
+		return null;
 	}
 
 	/// <summary>
@@ -417,12 +468,21 @@ public static class StoppingSpot
 	/// </summary>
 	private static bool IsTaken(Allegiance own, SharedKnowledge knowledge, Entity vehicle, Vector3 spot)
 	{
+		return TakenBecause(own, knowledge, vehicle, spot, explain: false) != null;
+	}
+
+	/// <summary>IsTaken's tests: null when the spot is free, else by what (<see cref="Rejected"/> unless <paramref name="explain"/>).</summary>
+	private static string TakenBecause(Allegiance own, SharedKnowledge knowledge, Entity vehicle, Vector3 spot, bool explain = true)
+	{
 		float radius = vehicle.BoundingRadius3D;
 		foreach (KeyValuePair<EntityID, Vector3> held in VisibleLocks(own))
 		{
 			if (LiveLockRadius(held, vehicle, out float heldRadius) && Overlaps(spot, radius, held.Value, heldRadius))
 			{
-				return true;
+				return explain
+					? "reserved by " + (Entity.FindByID(held.Key)?.ToString() ?? held.Key.ToString()) + " for " + MapManager.WorldPosToTile(held.Value)
+						+ " (radii " + radius + " + " + heldRadius + ", distance " + Vector2.Distance(new Vector2(spot.X, spot.Y), new Vector2(held.Value.X, held.Value.Y)) + ")"
+					: Rejected;
 			}
 		}
 
@@ -439,11 +499,14 @@ public static class StoppingSpot
 				}
 				if (Overlaps(spot, radius, data.PlaySiteLocation, data.BoundingRadius3D))
 				{
-					return true;
+					return explain
+						? "a known vehicle " + id + " stands at " + MapManager.WorldPosToTile(data.PlaySiteLocation) + " (radii " + radius + " + " + data.BoundingRadius3D
+							+ ", distance " + Vector2.Distance(new Vector2(spot.X, spot.Y), new Vector2(data.PlaySiteLocation.X, data.PlaySiteLocation.Y)) + ")"
+						: Rejected;
 				}
 			}
 		}
-		return false;
+		return null;
 	}
 
 	/// <summary>A lock held by another vehicle that is still coming or still there, and its radius.</summary>
