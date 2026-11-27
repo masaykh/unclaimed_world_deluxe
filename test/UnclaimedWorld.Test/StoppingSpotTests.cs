@@ -104,6 +104,40 @@ public sealed class StoppingSpotTests
         Assert.IsNull(ChooseTerminalTile(near, AtTile(10, 10), _ => true), "none free: open ground near the destination");
     }
 
+    [TestMethod]
+    public void TravelLandsOnTheDestinationWhenItCan()
+    {
+        // Lars, Discord 2026-11-25: after #33 a skimmer sent scouting landed on a helipad about 4
+        // tiles from the zone, where before it came down on the spot.
+        Point destination = new Point(10, 10);
+        Point pad = new Point(13, 10);
+        bool padAsked = false;
+        Func<Point?> padNear = () => { padAsked = true; return pad; };
+
+        Assert.AreEqual(destination, StoppingSpot.ChooseTravelTile(destination, _ => true, padNear), "open ground: on the spot");
+        Assert.IsFalse(padAsked, "the helipads are not even looked at");
+
+        Assert.AreEqual(pad, StoppingSpot.ChooseTravelTile(destination, tile => tile != destination, padNear),
+            "a destination it cannot land on (a building): the pad near it");
+        Assert.AreEqual(new Point(10, 9), StoppingSpot.ChooseTravelTile(destination, tile => tile != destination, () => null),
+            "no free pad: the nearest acceptable ground (ties in scan order, as GoalExitVehicle.FindLandingTile)");
+        Assert.IsNull(StoppingSpot.ChooseTravelTile(destination, _ => false, () => null), "nowhere at all");
+    }
+
+    [TestMethod]
+    public void ATurnedDownDestinationIsReportedOnce()
+    {
+        // The diagnostic for Lars's second report (2026-11-26: no threats, no pad, still 4 tiles off):
+        // the reason is written only when the destination itself is turned down, not for every
+        // tile the fallback scan looks at.
+        Point destination = new Point(10, 10);
+        int reports = 0;
+        StoppingSpot.ChooseTravelTile(destination, _ => true, () => null, () => reports++);
+        Assert.AreEqual(0, reports, "landed on the spot: nothing to report");
+        StoppingSpot.ChooseTravelTile(destination, tile => tile != destination, () => null, () => reports++);
+        Assert.AreEqual(1, reports);
+    }
+
     // ---- saving ----
 
     private Entity pilot = null!;
