@@ -1847,7 +1847,11 @@ public class StructureLoader
 						}
 					}
 				},
-				ClientStateConditions = new ClientStateInfo[1]
+				// NEW: the second abatis, which the studio left commented out "till we get a way to vary
+				// the abatis billboard" - StructureFlavour is that way. Flavour2 draws abatis2, already
+				// in the sprite sheets; Flavour1 has no condition and draws the default, abatis1. The
+				// Ordered + Flavour2 entry keeps a planned abatis2 looking like the one that gets built.
+				ClientStateConditions = new ClientStateInfo[3]
 				{
 					new ClientStateInfo
 					{
@@ -1859,6 +1863,28 @@ public class StructureLoader
 							}
 						},
 						Conditions = new BitMask64(typeof(StateModifier), 0)
+					},
+					new ClientStateInfo
+					{
+						RenderAsBillboardType = new RenderAsBillboardType[1]
+						{
+							new RenderAsBillboardType
+							{
+								AssetName = "abatis2"
+							}
+						},
+						Conditions = new BitMask64(typeof(StateModifier), (int)StateModifier.Flavour2)
+					},
+					new ClientStateInfo
+					{
+						RenderAsBillboardType = new RenderAsBillboardType[1]
+						{
+							new RenderAsBillboardType
+							{
+								AssetName = "abatis2"
+							}
+						},
+						Conditions = new BitMask64(typeof(StateModifier), (int)StateModifier.Ordered, (int)StateModifier.Flavour2)
 					}
 				}
 			},

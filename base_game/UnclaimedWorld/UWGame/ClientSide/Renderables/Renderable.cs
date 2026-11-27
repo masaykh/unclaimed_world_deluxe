@@ -1131,12 +1131,32 @@ namespace UWGame.ClientSide.Renderables
           }*/
 
 
+        /// <summary>
+        /// NEW: a structure - or the player's memory of one - whose type draws in flavours and has
+        /// none yet takes the one its tile gives (StructureFlavour). Done here, when a sprite is
+        /// chosen, because the location is known by then; the flag then stays, so it runs once.
+        /// </summary>
+        private void ChooseStructureFlavour()
+        {
+            EntityType type = Entity?.EntityType ?? MemoryFact?.EntityType;
+            if (type?.StructureType == null || spriteConditions == null || StructureFlavour.HasOne(spriteConditions))
+            {
+                return;
+            }
+            Vector3? at = Location;
+            int count = StructureFlavour.FlavoursIn(RenderableType);
+            if (at.HasValue && count > 1)
+            {
+                SetSpriteStateFlag(spriteConditions, StructureFlavour.ForTile(UWGame.SimSide.Maps.MapManager.WorldPosToTile(at.Value), count));
+            }
+        }
+
         private void ReplaceSpriteConditionState()
         {
             //do the magical best match trick, on the current bits
             //this retrieves a reference to the read-only data defined in RenderableType
 
-
+            ChooseStructureFlavour();
 
             IStateInfo info = null;
             RenderableType.FindBestStaticInfo(spriteConditions, RenderableType.ClientStateConditions, RenderableType.DefaultClientState, out info);
