@@ -84,6 +84,11 @@ public class StiffAnimatedModel : AnimatedModel
 					{
 						effect.Parameters["BasicTexture"].SetValue(basicTexture);
 					}
+					else
+					{
+						// PORT FIX: an untextured part (the skimmer's glass) drew red on DirectX 11.
+						UWGame.Port.UntexturedModelPart.FillEmptyBasicTexture(effect, graphicsDevice);
+					}
 					effect.Parameters["AlphaFactor"].SetValue(alphaFactor);
 					effect.Parameters["World"].SetValue(value2);
 					effect.Parameters["View"].SetValue(view);
@@ -150,6 +155,7 @@ public class StiffAnimatedModel : AnimatedModel
 					UWGame.Port.EffectCompat.SetIfDeclared(effect2, "DirLight2SpecularColor", backLightColor);
 					break;
 				}
+				UWGame.Port.UntexturedModelPart.FillEmptyBasicTexture(effect2, graphicsDevice);
 				effect2.Parameters["ViewportSize"].SetValue(value);
 				effect2.Parameters["WindowPosition"].SetValue(The.MapUI.MapWindowWorldPosition);
 				effect2.Parameters["World"].SetValue(value3);
